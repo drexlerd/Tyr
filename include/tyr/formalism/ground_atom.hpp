@@ -46,6 +46,8 @@ private:
     ConstantList m_constants;
 
 public:
+    using IndexType = GroundAtomIndex<T>;
+
     GroundAtom();
     GroundAtom(GroundAtomIndex<T> index, RelationIndex<T> relation_index, ConstantList constants);
 

@@ -45,6 +45,8 @@ private:
     bool m_polarity;
 
 public:
+    using IndexType = GroundLiteralIndex<T>;
+
     GroundLiteral();
     GroundLiteral(GroundLiteralIndex<T> index, GroundAtomIndex<T> atom_index, bool polarity);
 

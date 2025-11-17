@@ -70,6 +70,9 @@ class GroundLiteral;
 
 class GroundRuleIndex;
 class GroundRule;
+
+class ProgramIndex;
+class Program;
 }
 
 #endif

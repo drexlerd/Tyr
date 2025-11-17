@@ -44,6 +44,8 @@ private:
     GroundAtomIndex<FluentTag> m_head;
 
 public:
+    using IndexType = GroundRuleIndex;
+
     GroundRule();
     GroundRule(GroundRuleIndex index,
                GroundLiteralIndexList<StaticTag> static_body,

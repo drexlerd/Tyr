@@ -44,6 +44,8 @@ private:
     AtomIndex<FluentTag> m_head;
 
 public:
+    using IndexType = RuleIndex;
+
     Rule();
     Rule(RuleIndex index, LiteralIndexList<StaticTag> static_body, LiteralIndexList<FluentTag> fluent_body, AtomIndex<FluentTag> head);
 

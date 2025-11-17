@@ -45,6 +45,8 @@ private:
     bool m_polarity;
 
 public:
+    using IndexType = LiteralIndex<T>;
+
     Literal();
     Literal(LiteralIndex<T> index, AtomIndex<T> atom_index, bool polarity);
 

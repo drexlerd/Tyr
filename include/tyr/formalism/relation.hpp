@@ -40,15 +40,17 @@ template<IsStaticOrFluentTag T>
 class Relation
 {
 private:
-    RelationIndex m_index;
+    RelationIndex<T> m_index;
     std::string m_name;
     uint_t m_arity;
 
 public:
-    Relation();
-    Relation(RelationIndex index, std::string name, uint_t arity);
+    using IndexType = RelationIndex<T>;
 
-    RelationIndex get_index() const noexcept;
+    Relation();
+    Relation(RelationIndex<T> index, std::string name, uint_t arity);
+
+    RelationIndex<T> get_index() const noexcept;
     const std::string& get_name() const noexcept;
     uint_t get_arity() const noexcept;
 

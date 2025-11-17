@@ -46,6 +46,8 @@ private:
     VariableList m_terms;
 
 public:
+    using IndexType = AtomIndex<T>;
+
     Atom();
     Atom(AtomIndex<T> index, RelationIndex<T> relation_index, VariableList terms);
 
