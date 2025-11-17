@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Dominik Drexler
+ * Copyright (C) 2025 Dominik Drexler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,62 +18,58 @@
 #ifndef TYR_FORMALISM_DECLARATIONS_HPP_
 #define TYR_FORMALISM_DECLARATIONS_HPP_
 
-#include <concepts>
-#include <cstddef>
-#include <ranges>
-#include <string>
-#include <string_view>
+#include "tyr/common/config.hpp"
 
-namespace tyr::datalog
+namespace tyr::formalism
 {
 
-template<typename T>
-concept IsNumber = std::integral<std::remove_cvref_t<T>>;
+/**
+ * Tags to distinguish relations and downstream types
+ */
+
+struct StaticTag;
+struct FluentTag;
 
 template<typename T>
-concept IsNumberRandomAccessRange = std::ranges::random_access_range<T> && IsNumber<std::ranges::range_reference_t<T>>;
+concept IsStaticOrFluentTag = std::same_as<T, StaticTag> || std::same_as<T, FluentTag>;
 
-template<typename T>
-concept IsName = std::convertible_to<T, std::string_view>;
+/**
+ * Forward declarations
+ */
 
-/// We will create a symbol table for variables
-template<typename T>
-concept IsVariable = requires(const T& a) {
-    { a.get_index() } -> IsNumber;
-    { a.get_name() } -> IsName;
-};
+enum class Constant;
+enum class Variable;
 
-template<typename T>
-concept IsRelation = requires(const T& a) {
-    { a.get_index() } -> IsNumber;
-    { a.get_arity() } -> IsNumber;
-};
+template<IsStaticOrFluentTag T>
+class RelationIndex;
+template<IsStaticOrFluentTag T>
+class Relation;
 
-template<typename T>
-concept IsAtom = requires(const T& a) {
-    { a.get_index() } -> IsNumber;
-    { a.get_relation() } -> IsRelation;
-    { a.get_arguments() } -> IsNumberRandomAccessRange;  /// positive numbers for constants, negative for variables
-};
+template<IsStaticOrFluentTag T>
+class AtomIndex;
+template<IsStaticOrFluentTag T>
+class Atom;
 
-template<typename T>
-concept IsAtomForwardRange = std::ranges::forward_range<T> && IsAtom<std::ranges::range_reference_t<T>>;
+template<IsStaticOrFluentTag T>
+class LiteralIndex;
+template<IsStaticOrFluentTag T>
+class Literal;
 
-template<typename T>
-concept IsFact = requires(const T& a) {
-    { a.get_index() } -> IsNumber;
-    { a.get_relation() } -> IsRelation;
-    { a.get_arguments() } -> IsNumberRandomAccessRange;
-};
+class RuleIndex;
+class Rule;
 
-template<typename T>
-concept IsRule = requires(const T& a) {
-    { a.get_index() } -> IsNumber;
-    { a.get_head() } -> IsAtom;
-    { a.get_static_body() } -> IsAtomForwardRange;
-    { a.get_fluent_body() } -> IsAtomForwardRange;
-};
+template<IsStaticOrFluentTag T>
+class GroundAtomIndex;
+template<IsStaticOrFluentTag T>
+class GroundAtom;
 
+template<IsStaticOrFluentTag T>
+class GroundLiteralIndex;
+template<IsStaticOrFluentTag T>
+class GroundLiteral;
+
+class GroundRuleIndex;
+class GroundRule;
 }
 
 #endif
