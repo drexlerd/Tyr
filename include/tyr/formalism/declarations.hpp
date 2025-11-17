@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MIMIR_DATALOG_DECLARATIONS_HPP_
-#define MIMIR_DATALOG_DECLARATIONS_HPP_
+#ifndef TYR_FORMALISM_DECLARATIONS_HPP_
+#define TYR_FORMALISM_DECLARATIONS_HPP_
 
 #include <concepts>
 #include <cstddef>
@@ -24,7 +24,7 @@
 #include <string>
 #include <string_view>
 
-namespace mimir::datalog
+namespace tyr::datalog
 {
 
 template<typename T>
