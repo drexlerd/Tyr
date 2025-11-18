@@ -49,9 +49,42 @@ struct EqualTo
 template<>
 struct EqualTo<::cista::offset::string>
 {
-    bool operator()(const ::cista::offset::string& lhs, const ::cista::offset::string& rhs) const
+    using Type = ::cista::offset::string;
+
+    bool operator()(const Type& lhs, const Type& rhs) const { return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<char> {}); }
+};
+
+template<typename T, template<typename> typename Ptr, bool IndexPointers, typename TemplateSizeType, class Allocator>
+struct EqualTo<::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>>
+{
+    using Type = ::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>;
+
+    bool operator()(const Type& lhs, const Type& rhs) const { return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<T> {}); }
+};
+
+template<typename... Ts>
+struct EqualTo<::cista::offset::variant<Ts...>>
+{
+    using Type = ::cista::offset::variant<Ts...>;
+
+    size_t operator()(const Type& lhs, const Type& rhs) const
     {
-        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<char> {});
+        return lhs.apply(
+            [&](auto&& l)
+            {
+                return rhs.apply(
+                    [&](auto&& r)
+                    {
+                        // Check if types match
+                        if constexpr (std::is_same_v<std::remove_cvref_t<decltype(l)>, std::remove_cvref_t<decltype(r)>>)
+                        {
+                            // Recursively apply EqualTo for matching types
+                            return EqualTo<std::remove_cvref_t<decltype(l)>> {}(l, r);
+                        }
+                        // Different types are always unequal
+                        return false;
+                    });
+            });
     }
 };
 
@@ -63,7 +96,7 @@ struct EqualTo<std::array<T, N>>
         if constexpr (N == 0)
             return true;
 
-        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::decay_t<T>> {});
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::remove_cvref_t<T>> {});
     }
 };
 
@@ -72,7 +105,7 @@ struct EqualTo<std::reference_wrapper<T>>
 {
     bool operator()(const std::reference_wrapper<T>& lhs, const std::reference_wrapper<T>& rhs) const
     {
-        return EqualTo<std::decay_t<T>> {}(lhs.get(), rhs.get());
+        return EqualTo<std::remove_cvref_t<T>> {}(lhs.get(), rhs.get());
     }
 };
 
@@ -88,7 +121,7 @@ struct EqualTo<std::set<Key, Compare, Allocator>>
         }
 
         // Compare each element using EqualTo
-        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::decay_t<Key>> {});
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::remove_cvref_t<Key>> {});
     }
 };
 
@@ -103,7 +136,7 @@ struct EqualTo<std::map<Key, T, Compare, Allocator>>
             return false;
         }
 
-        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::pair<std::decay_t<Key>, std::decay_t<T>>> {});
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::pair<std::remove_cvref_t<Key>, std::remove_cvref_t<T>>> {});
     }
 };
 
@@ -119,7 +152,7 @@ struct EqualTo<std::vector<T, Allocator>>
         }
 
         // Compare each element using EqualTo
-        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::decay_t<T>> {});
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::remove_cvref_t<T>> {});
     }
 };
 
@@ -128,7 +161,7 @@ struct EqualTo<std::pair<T1, T2>>
 {
     bool operator()(const std::pair<T1, T2>& lhs, const std::pair<T1, T2>& rhs) const
     {
-        return EqualTo<std::decay_t<T1>>()(lhs.first, rhs.first) && EqualTo<std::decay_t<T2>> {}(lhs.second, rhs.second);
+        return EqualTo<std::remove_cvref_t<T1>>()(lhs.first, rhs.first) && EqualTo<std::remove_cvref_t<T2>> {}(lhs.second, rhs.second);
     }
 };
 
@@ -139,7 +172,7 @@ struct EqualTo<std::tuple<Ts...>>
     {
         return std::apply(
             [&rhs](const Ts&... lhs_args)
-            { return std::apply([&lhs_args...](const Ts&... rhs_args) { return (EqualTo<std::decay_t<Ts>> {}(lhs_args, rhs_args) && ...); }, rhs); },
+            { return std::apply([&lhs_args...](const Ts&... rhs_args) { return (EqualTo<std::remove_cvref_t<Ts>> {}(lhs_args, rhs_args) && ...); }, rhs); },
             lhs);
     }
 };
@@ -153,10 +186,10 @@ struct EqualTo<std::variant<Ts...>>
             [](const auto& l, const auto& r)
             {
                 // Check if types match
-                if constexpr (std::is_same_v<std::decay_t<decltype(l)>, std::decay_t<decltype(r)>>)
+                if constexpr (std::is_same_v<std::remove_cvref_t<decltype(l)>, std::remove_cvref_t<decltype(r)>>)
                 {
                     // Recursively apply EqualTo for matching types
-                    return EqualTo<std::decay_t<decltype(l)>> {}(l, r);
+                    return EqualTo<std::remove_cvref_t<decltype(l)>> {}(l, r);
                 }
                 // Different types are always unequal
                 return false;
@@ -184,7 +217,7 @@ struct EqualTo<std::optional<T>>
         }
 
         // Compare the contained values using EqualTo
-        return EqualTo<std::decay_t<T>> {}(lhs.value(), rhs.value());
+        return EqualTo<std::remove_cvref_t<T>> {}(lhs.value(), rhs.value());
     }
 };
 
@@ -200,7 +233,7 @@ struct EqualTo<std::span<T, Extent>>
         }
 
         // Compare each element using EqualTo
-        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::decay_t<T>> {});
+        return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), EqualTo<std::remove_cvref_t<T>> {});
     }
 };
 
@@ -211,7 +244,7 @@ struct EqualTo<std::span<T, Extent>>
 template<typename T>
 struct EqualTo<ObserverPtr<T>>
 {
-    bool operator()(ObserverPtr<T> lhs, ObserverPtr<T> rhs) const { return EqualTo<std::decay_t<T>> {}(*lhs, *rhs); }
+    bool operator()(ObserverPtr<T> lhs, ObserverPtr<T> rhs) const { return EqualTo<std::remove_cvref_t<T>> {}(*lhs, *rhs); }
 };
 
 /// @brief EqualTo specialization for an `IdentifiableMembersProxy`
@@ -226,7 +259,7 @@ struct EqualTo<T>
 
     bool operator()(const T& lhs, const T& rhs) const
     {
-        return EqualTo<std::decay_t<MembersTupleType>> {}(lhs.identifying_members(), rhs.identifying_members());
+        return EqualTo<std::remove_cvref_t<MembersTupleType>> {}(lhs.identifying_members(), rhs.identifying_members());
     }
 
     // Mixed overloads required by Abseil: (T, view) and (view, T)
@@ -234,14 +267,14 @@ struct EqualTo<T>
         requires std::same_as<std::remove_cvref_t<U>, MembersTupleType>
     bool operator()(const T& a, const U& v) const noexcept
     {
-        return EqualTo<std::decay_t<MembersTupleType>> {}(a.identifying_members(), v);
+        return EqualTo<std::remove_cvref_t<MembersTupleType>> {}(a.identifying_members(), v);
     }
 
     template<class U>
         requires std::same_as<std::remove_cvref_t<U>, MembersTupleType>
     bool operator()(const U& v, const T& b) const noexcept
     {
-        return EqualTo<std::decay_t<MembersTupleType>> {}(v, b.identifying_members());
+        return EqualTo<std::remove_cvref_t<MembersTupleType>> {}(v, b.identifying_members());
     }
 
     // Optional: view-view compare (handy for testing)
@@ -249,7 +282,7 @@ struct EqualTo<T>
         requires(std::same_as<std::remove_cvref_t<U>, MembersTupleType> && std::same_as<std::remove_cvref_t<V>, MembersTupleType>)
     bool operator()(const U& u, const V& v) const noexcept
     {
-        return EqualTo<std::decay_t<MembersTupleType>> {}(u, v);
+        return EqualTo<std::remove_cvref_t<MembersTupleType>> {}(u, v);
     }
 };
 

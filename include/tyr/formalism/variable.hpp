@@ -32,6 +32,7 @@ struct VariableIndex
     uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }
+    auto identifying_members() const noexcept { return std::tie(value); }
 };
 
 struct VariableImpl

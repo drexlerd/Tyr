@@ -62,7 +62,9 @@ struct Hash
 template<>
 struct Hash<::cista::offset::string>
 {
-    bool operator()(const ::cista::offset::string& element) const
+    using Type = ::cista::offset::string;
+
+    size_t operator()(const Type& element) const
     {
         size_t aggregated_hash = element.size();
 
@@ -72,6 +74,35 @@ struct Hash<::cista::offset::string>
         }
 
         return aggregated_hash;
+    }
+};
+
+template<typename T, template<typename> typename Ptr, bool IndexPointers, typename TemplateSizeType, class Allocator>
+struct Hash<::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>>
+{
+    using Type = ::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>;
+
+    size_t operator()(const Type& element) const
+    {
+        size_t aggregated_hash = element.size();
+
+        for (const auto& element : element)
+        {
+            hash_combine(aggregated_hash, element);
+        }
+
+        return aggregated_hash;
+    }
+};
+
+template<typename... Ts>
+struct Hash<::cista::offset::variant<Ts...>>
+{
+    using Type = ::cista::offset::variant<Ts...>;
+
+    size_t operator()(const Type& variant) const
+    {
+        return variant.apply([](auto&& arg) -> size_t { return Hash<std::remove_cvref_t<decltype(arg)>> {}(arg); });
     }
 };
 
@@ -117,7 +148,7 @@ struct Hash<std::array<T, N>>
 template<typename T>
 struct Hash<std::reference_wrapper<T>>
 {
-    size_t operator()(const std::reference_wrapper<T>& ref) const { return Hash<std::decay_t<T>> {}(ref.get()); }
+    size_t operator()(const std::reference_wrapper<T>& ref) const { return Hash<std::remove_cvref_t<T>> {}(ref.get()); }
 };
 
 /// @brief Hash specialization for std::set.
@@ -214,7 +245,7 @@ struct Hash<std::variant<Ts...>>
 {
     size_t operator()(const std::variant<Ts...>& variant) const
     {
-        return std::visit([](const auto& arg) { return Hash<std::decay_t<decltype(arg)>> {}(arg); }, variant);
+        return std::visit([](const auto& arg) { return Hash<std::remove_cvref_t<decltype(arg)>> {}(arg); }, variant);
     }
 };
 
@@ -225,7 +256,7 @@ struct Hash<std::variant<Ts...>>
 template<typename T>
 struct Hash<std::optional<T>>
 {
-    size_t operator()(const std::optional<T>& optional) const { return optional.has_value() ? Hash<std::decay_t<T>> {}(optional.value()) : 0; }
+    size_t operator()(const std::optional<T>& optional) const { return optional.has_value() ? Hash<std::remove_cvref_t<T>> {}(optional.value()) : 0; }
 };
 
 /// @brief Hash specialization for a std::span.
@@ -244,7 +275,7 @@ struct Hash<std::span<T, Extent>>
 template<typename T>
 struct Hash<ObserverPtr<T>>
 {
-    size_t operator()(ObserverPtr<T> ptr) const { return Hash<std::decay_t<T>> {}(*ptr); }
+    size_t operator()(ObserverPtr<T> ptr) const { return Hash<std::remove_cvref_t<T>> {}(*ptr); }
 };
 
 /// @brief std::hash specialization for an `IdentifiableMembersProxy`
@@ -275,7 +306,7 @@ struct Hash<T>
 template<typename T>
 inline void hash_combine(size_t& seed, const T& value)
 {
-    seed ^= Hash<std::decay_t<T>> {}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= Hash<std::remove_cvref_t<T>> {}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 template<typename T, typename... Rest>
