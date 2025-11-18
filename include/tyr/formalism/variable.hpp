@@ -29,6 +29,8 @@ struct VariableIndex
     VariableIndex() = default;
     explicit VariableIndex(uint_t value) : value(value) {}
 
+    friend bool operator==(const VariableIndex& lhs, const VariableIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+
     uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }

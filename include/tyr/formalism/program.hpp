@@ -31,6 +31,8 @@ struct ProgramIndex
     ProgramIndex() = default;
     explicit ProgramIndex(uint_t value) : value(value) {}
 
+    friend bool operator==(const ProgramIndex& lhs, const ProgramIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+
     uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }

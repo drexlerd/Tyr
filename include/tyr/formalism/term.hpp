@@ -36,6 +36,8 @@ struct Term
     Term() = default;
     Term(Variant value) : value(value) {}
 
+    friend bool operator==(const Term& lhs, const Term& rhs) { return EqualTo<Variant> {}(lhs.value, rhs.value); }
+
     auto cista_members() const noexcept { return std::tie(value); }
     auto identifying_members() const noexcept { return std::tie(value); }
 };

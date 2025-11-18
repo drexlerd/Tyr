@@ -67,7 +67,7 @@ struct EqualTo<::cista::offset::variant<Ts...>>
 {
     using Type = ::cista::offset::variant<Ts...>;
 
-    size_t operator()(const Type& lhs, const Type& rhs) const
+    bool operator()(const Type& lhs, const Type& rhs) const
     {
         return lhs.apply(
             [&](auto&& l)

@@ -32,6 +32,11 @@ struct LiteralIndex
     LiteralIndex() = default;
     explicit LiteralIndex(RelationIndex<T> relation_index, uint_t value) : relation_index(relation_index), value(value) {}
 
+    friend bool operator==(const LiteralIndex& lhs, const LiteralIndex& rhs)
+    {
+        return EqualTo<RelationIndex<T>> {}(lhs.relation_index, rhs.relation_index) && EqualTo<uint_t> {}(lhs.value, rhs.value);
+    }
+
     uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(relation_index, value); }

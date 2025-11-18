@@ -30,6 +30,8 @@ struct Double
     Double() = default;
     explicit Double(double v) : value(v) {}
 
+    friend bool operator==(const Double& lhs, const Double& rhs) { return EqualTo<double> {}(lhs.value, rhs.value); }
+
     operator double() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }

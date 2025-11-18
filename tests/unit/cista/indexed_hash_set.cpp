@@ -40,8 +40,8 @@ TEST(TyrTests, TyrCistaIndexedHashSet)
     auto [relation_0, success_0] = repository.insert(builder, buffer);
 
     EXPECT_EQ(relation_0->index.value, 0);
-    EXPECT_EQ(relation_0->name, "relation_0");
-    EXPECT_EQ(relation_0->arity, 2);
+    EXPECT_EQ(relation_0->name, builder.name);
+    EXPECT_EQ(relation_0->arity, builder.arity);
 
     // Create a unique relation
     builder.name = "relation_1";
@@ -50,8 +50,8 @@ TEST(TyrTests, TyrCistaIndexedHashSet)
     auto [relation_1, success_1] = repository.insert(builder, buffer);
 
     EXPECT_EQ(relation_1->index.value, 1);
-    EXPECT_EQ(relation_1->name, "relation_1");
-    EXPECT_EQ(relation_1->arity, 3);
+    EXPECT_EQ(relation_1->name, builder.name);
+    EXPECT_EQ(relation_1->arity, builder.arity);
 
     // Create an existing relation
     builder.name = "relation_1";
@@ -60,8 +60,8 @@ TEST(TyrTests, TyrCistaIndexedHashSet)
     auto [relation_2, success_2] = repository.insert(builder, buffer);
 
     EXPECT_EQ(relation_2->index.value, 1);
-    EXPECT_EQ(relation_2->name, "relation_1");
-    EXPECT_EQ(relation_2->arity, 3);
+    EXPECT_EQ(relation_2->name, builder.name);
+    EXPECT_EQ(relation_2->arity, builder.arity);
 }
 
 }

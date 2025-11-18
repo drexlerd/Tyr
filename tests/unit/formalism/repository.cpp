@@ -41,8 +41,8 @@ TEST(TyrTests, TyrFormalismRepository)
 
     EXPECT_TRUE(relation_success_0);
     EXPECT_EQ(relation_0->index.value, 0);
-    EXPECT_EQ(relation_0->name, "relation_0");
-    EXPECT_EQ(relation_0->arity, 2);
+    EXPECT_EQ(relation_0->name, relation_builder.name);
+    EXPECT_EQ(relation_0->arity, relation_builder.arity);
 
     // Create a unique relation
     relation_builder.name = "relation_1";
@@ -52,10 +52,10 @@ TEST(TyrTests, TyrFormalismRepository)
 
     EXPECT_TRUE(relation_success_1);
     EXPECT_EQ(relation_1->index.value, 1);
-    EXPECT_EQ(relation_1->name, "relation_1");
-    EXPECT_EQ(relation_1->arity, 3);
+    EXPECT_EQ(relation_1->name, relation_builder.name);
+    EXPECT_EQ(relation_1->arity, relation_builder.arity);
 
-    // Create an existing relation
+    // Create same relation again
     relation_builder.name = "relation_1";
     relation_builder.arity = 3;
 
@@ -63,16 +63,24 @@ TEST(TyrTests, TyrFormalismRepository)
 
     EXPECT_FALSE(relation_success_2);
     EXPECT_EQ(relation_2->index.value, 1);
-    EXPECT_EQ(relation_2->name, "relation_1");
-    EXPECT_EQ(relation_2->arity, 3);
+    EXPECT_EQ(relation_2->name, relation_builder.name);
+    EXPECT_EQ(relation_2->arity, relation_builder.arity);
 
-    // Create some symbols
+    // Create symbols
     symbol_builder.name = "a";
     auto [symbol_0, symbol_success_0] = repository.get_or_create(symbol_builder, buffer);
+    EXPECT_TRUE(symbol_success_0);
+    EXPECT_EQ(symbol_0->name, symbol_builder.name);
+
     symbol_builder.name = "b";
     auto [symbol_1, symbol_success_1] = repository.get_or_create(symbol_builder, buffer);
+    EXPECT_TRUE(symbol_success_1);
+    EXPECT_EQ(symbol_1->name, symbol_builder.name);
+
     symbol_builder.name = "c";
     auto [symbol_2, symbol_success_2] = repository.get_or_create(symbol_builder, buffer);
+    EXPECT_TRUE(symbol_success_2);
+    EXPECT_EQ(symbol_2->name, symbol_builder.name);
 
     // Create atom
     atom_builder.terms.clear();
@@ -82,7 +90,7 @@ TEST(TyrTests, TyrFormalismRepository)
     auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);
 
     EXPECT_TRUE(atom_success_0);
-    EXPECT_TRUE(EqualTo<TermList> {}(atom_0->terms, TermList { Term(symbol_0->index), Term(symbol_1->index) }));
+    EXPECT_EQ(atom_0->terms, atom_builder.terms);
 
     // Create same atom again
     auto [atom_1, atom_success_1] = repository.get_or_create(atom_builder, buffer);

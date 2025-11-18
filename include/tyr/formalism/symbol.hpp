@@ -29,6 +29,8 @@ struct SymbolIndex
     SymbolIndex() = default;
     explicit SymbolIndex(uint_t value) : value(value) {}
 
+    friend bool operator==(const SymbolIndex& lhs, const SymbolIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+
     uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }
