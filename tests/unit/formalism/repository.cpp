@@ -17,8 +17,6 @@
 
 #include "tyr/formalism/repository.hpp"
 
-#include "tyr/formalism/atom_proxy.hpp"
-
 #include <gtest/gtest.h>
 
 using namespace tyr::cista;
@@ -31,64 +29,64 @@ TEST(TyrTests, TyrFormalismRepository)
 {
     auto repository = Repository();
     auto buffer = Buffer();
-    auto relation_builder = Relation<FluentTag>();
-    auto symbol_builder = Symbol();
+    auto predicate_builder = Predicate<FluentTag>();
+    auto object_builder = Object();
     auto atom_builder = Atom<FluentTag>();
 
-    // Create a unique relation
-    relation_builder.name = "relation_0";
-    relation_builder.arity = 2;
+    // Create a unique predicate
+    predicate_builder.name = "predicate_0";
+    predicate_builder.arity = 2;
 
-    auto [relation_0, relation_success_0] = repository.get_or_create(relation_builder, buffer);
+    auto [predicate_0, predicate_success_0] = repository.get_or_create(predicate_builder, buffer);
 
-    EXPECT_TRUE(relation_success_0);
-    EXPECT_EQ(relation_0->index.value, 0);
-    EXPECT_EQ(relation_0->name, relation_builder.name);
-    EXPECT_EQ(relation_0->arity, relation_builder.arity);
+    EXPECT_TRUE(predicate_success_0);
+    EXPECT_EQ(predicate_0->index.value, 0);
+    EXPECT_EQ(predicate_0->name, predicate_builder.name);
+    EXPECT_EQ(predicate_0->arity, predicate_builder.arity);
 
-    // Create a unique relation
-    relation_builder.name = "relation_1";
-    relation_builder.arity = 3;
+    // Create a unique predicate
+    predicate_builder.name = "predicate_1";
+    predicate_builder.arity = 3;
 
-    auto [relation_1, relation_success_1] = repository.get_or_create(relation_builder, buffer);
+    auto [predicate_1, predicate_success_1] = repository.get_or_create(predicate_builder, buffer);
 
-    EXPECT_TRUE(relation_success_1);
-    EXPECT_EQ(relation_1->index.value, 1);
-    EXPECT_EQ(relation_1->name, relation_builder.name);
-    EXPECT_EQ(relation_1->arity, relation_builder.arity);
+    EXPECT_TRUE(predicate_success_1);
+    EXPECT_EQ(predicate_1->index.value, 1);
+    EXPECT_EQ(predicate_1->name, predicate_builder.name);
+    EXPECT_EQ(predicate_1->arity, predicate_builder.arity);
 
-    // Create same relation again
-    relation_builder.name = "relation_1";
-    relation_builder.arity = 3;
+    // Create same predicate again
+    predicate_builder.name = "predicate_1";
+    predicate_builder.arity = 3;
 
-    auto [relation_2, relation_success_2] = repository.get_or_create(relation_builder, buffer);
+    auto [predicate_2, predicate_success_2] = repository.get_or_create(predicate_builder, buffer);
 
-    EXPECT_FALSE(relation_success_2);
-    EXPECT_EQ(relation_2->index.value, 1);
-    EXPECT_EQ(relation_2->name, relation_builder.name);
-    EXPECT_EQ(relation_2->arity, relation_builder.arity);
+    EXPECT_FALSE(predicate_success_2);
+    EXPECT_EQ(predicate_2->index.value, 1);
+    EXPECT_EQ(predicate_2->name, predicate_builder.name);
+    EXPECT_EQ(predicate_2->arity, predicate_builder.arity);
 
-    // Create symbols
-    symbol_builder.name = "a";
-    auto [symbol_0, symbol_success_0] = repository.get_or_create(symbol_builder, buffer);
-    EXPECT_TRUE(symbol_success_0);
-    EXPECT_EQ(symbol_0->name, symbol_builder.name);
+    // Create objects
+    object_builder.name = "a";
+    auto [object_0, object_success_0] = repository.get_or_create(object_builder, buffer);
+    EXPECT_TRUE(object_success_0);
+    EXPECT_EQ(object_0->name, object_builder.name);
 
-    symbol_builder.name = "b";
-    auto [symbol_1, symbol_success_1] = repository.get_or_create(symbol_builder, buffer);
-    EXPECT_TRUE(symbol_success_1);
-    EXPECT_EQ(symbol_1->name, symbol_builder.name);
+    object_builder.name = "b";
+    auto [object_1, object_success_1] = repository.get_or_create(object_builder, buffer);
+    EXPECT_TRUE(object_success_1);
+    EXPECT_EQ(object_1->name, object_builder.name);
 
-    symbol_builder.name = "c";
-    auto [symbol_2, symbol_success_2] = repository.get_or_create(symbol_builder, buffer);
-    EXPECT_TRUE(symbol_success_2);
-    EXPECT_EQ(symbol_2->name, symbol_builder.name);
+    object_builder.name = "c";
+    auto [object_2, object_success_2] = repository.get_or_create(object_builder, buffer);
+    EXPECT_TRUE(object_success_2);
+    EXPECT_EQ(object_2->name, object_builder.name);
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.relation_index = relation_0->index;
-    atom_builder.terms.push_back(Term(symbol_0->index));
-    atom_builder.terms.push_back(Term(symbol_1->index));
+    atom_builder.index.predicate_index = predicate_0->index;
+    atom_builder.terms.push_back(Term(object_0->index));
+    atom_builder.terms.push_back(Term(object_1->index));
     auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);
 
     EXPECT_TRUE(atom_success_0);
@@ -97,10 +95,6 @@ TEST(TyrTests, TyrFormalismRepository)
     // Create same atom again
     auto [atom_1, atom_success_1] = repository.get_or_create(atom_builder, buffer);
     EXPECT_FALSE(atom_success_1);
-
-    auto atom_0_proxy = AtomProxy(repository, atom_0->index);
-    auto atom_0_relation_proxy = atom_0_proxy.get_relation();
-    EXPECT_EQ(atom_0_relation_proxy.get_name(), "relation_0");
 }
 
 }

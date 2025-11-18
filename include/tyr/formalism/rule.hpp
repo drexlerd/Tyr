@@ -22,12 +22,14 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/literal_index.hpp"
 #include "tyr/formalism/rule_index.hpp"
+#include "tyr/formalism/variable_index.hpp"
 
 namespace tyr::formalism
 {
 struct Rule
 {
     RuleIndex index;
+    VariableIndexList variables;
     LiteralIndexList<StaticTag> static_body;
     LiteralIndexList<FluentTag> fluent_body;
     AtomIndex<FluentTag> head;
@@ -35,16 +37,21 @@ struct Rule
     using IndexType = RuleIndex;
 
     Rule() = default;
-    Rule(RuleIndex index, LiteralIndexList<StaticTag> static_body, LiteralIndexList<FluentTag> fluent_body, AtomIndex<FluentTag> head) :
+    Rule(RuleIndex index,
+         VariableIndexList variables,
+         LiteralIndexList<StaticTag> static_body,
+         LiteralIndexList<FluentTag> fluent_body,
+         AtomIndex<FluentTag> head) :
         index(index),
+        variables(std::move(variables)),
         static_body(std::move(static_body)),
         fluent_body(std::move(fluent_body)),
         head(head)
     {
     }
 
-    auto cista_members() const noexcept { return std::tie(index, static_body, fluent_body, head); }
-    auto identifying_members() const noexcept { return std::tie(static_body, fluent_body, head); }
+    auto cista_members() const noexcept { return std::tie(index, variables, static_body, fluent_body, head); }
+    auto identifying_members() const noexcept { return std::tie(variables, static_body, fluent_body, head); }
 };
 }
 

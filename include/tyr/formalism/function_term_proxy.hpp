@@ -15,30 +15,32 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_GROUND_ATOM_HPP_
-#define TYR_FORMALISM_GROUND_ATOM_HPP_
+#ifndef TYR_FORMALISM_FUNCTION_TERM_PROXY_HPP_
+#define TYR_FORMALISM_FUNCTION_TERM_PROXY_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_index.hpp"
-#include "tyr/formalism/object_index.hpp"
+#include "tyr/formalism/function_proxy.hpp"
+#include "tyr/formalism/function_term_index.hpp"
+#include "tyr/formalism/repository.hpp"
 
 namespace tyr::formalism
 {
 template<IsStaticOrFluentTag T>
-struct GroundAtom
+class FunctionTermProxy
 {
-    GroundAtomIndex<T> index;
-    ObjectIndexList terms;
+private:
+    const Repository* repository;
+    FunctionTermIndex<T> index;
 
-    using IndexType = GroundAtomIndex<T>;
+public:
+    FunctionTermProxy(const Repository& repository, FunctionTermIndex<T> index) : repository(&repository), index(index) {}
 
-    GroundAtom() = default;
-    GroundAtom(GroundAtomIndex<T> index, ObjectIndexList terms) : index(index), terms(std::move(terms)) {}
+    const auto& get() const { return repository->operator[]<FunctionTerm<T>>(index); }
 
-    auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.predicate_index, terms); }
+    auto get_index() const { return index; }
+    auto get_function() const { return FunctionProxy(*repository, index.function_index); }
+    auto get_terms() const { return SpanProxy((*repository), get().terms); }
 };
-
 }
 
 #endif

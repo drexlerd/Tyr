@@ -15,30 +15,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_GROUND_ATOM_HPP_
-#define TYR_FORMALISM_GROUND_ATOM_HPP_
+#ifndef TYR_FORMALISM_PREDICATE_HPP_
+#define TYR_FORMALISM_PREDICATE_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_index.hpp"
-#include "tyr/formalism/object_index.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 
 namespace tyr::formalism
 {
+
 template<IsStaticOrFluentTag T>
-struct GroundAtom
+struct Predicate
 {
-    GroundAtomIndex<T> index;
-    ObjectIndexList terms;
+    PredicateIndex<T> index;
+    ::cista::offset::string name;
+    uint_t arity;
 
-    using IndexType = GroundAtomIndex<T>;
+    using IndexType = PredicateIndex<T>;
 
-    GroundAtom() = default;
-    GroundAtom(GroundAtomIndex<T> index, ObjectIndexList terms) : index(index), terms(std::move(terms)) {}
+    Predicate() = default;
+    Predicate(PredicateIndex<T> index, ::cista::offset::string name, uint_t arity) : index(index), name(std::move(name)), arity(arity) {}
 
-    auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.predicate_index, terms); }
+    auto cista_members() const noexcept { return std::tie(index, name, arity); }
+    auto identifying_members() const noexcept { return std::tie(name, arity); }
 };
-
 }
 
 #endif

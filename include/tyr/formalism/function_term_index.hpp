@@ -15,30 +15,32 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_GROUND_ATOM_HPP_
-#define TYR_FORMALISM_GROUND_ATOM_HPP_
+#ifndef TYR_FORMALISM_FUNCTION_TERM_INDEX_HPP_
+#define TYR_FORMALISM_FUNCTION_TERM_INDEX_HPP_
 
+#include "tyr/common/equal_to.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_index.hpp"
-#include "tyr/formalism/object_index.hpp"
 
 namespace tyr::formalism
 {
 template<IsStaticOrFluentTag T>
-struct GroundAtom
+struct FunctionTermIndex
 {
-    GroundAtomIndex<T> index;
-    ObjectIndexList terms;
+    using ProxyType = FunctionTermProxy<T>;
 
-    using IndexType = GroundAtomIndex<T>;
+    FunctionIndex<T> function_index {};
+    uint_t value {};
 
-    GroundAtom() = default;
-    GroundAtom(GroundAtomIndex<T> index, ObjectIndexList terms) : index(index), terms(std::move(terms)) {}
+    FunctionTermIndex() = default;
+    explicit FunctionTermIndex(uint_t value) : value(value) {}
 
-    auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.predicate_index, terms); }
+    friend bool operator==(const FunctionTermIndex& lhs, const FunctionTermIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+
+    uint_t get() const noexcept { return value; }
+
+    auto cista_members() const noexcept { return std::tie(value); }
+    auto identifying_members() const noexcept { return std::tie(value); }
 };
-
 }
 
 #endif

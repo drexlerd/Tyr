@@ -15,29 +15,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_DOUBLE_HPP_
-#define TYR_FORMALISM_DOUBLE_HPP_
+#ifndef TYR_FORMALISM_PREDICATE_INDEX_HPP_
+#define TYR_FORMALISM_PREDICATE_INDEX_HPP_
 
-#include "tyr/common/config.hpp"
+#include "tyr/common/equal_to.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
-struct Double
+template<IsStaticOrFluentTag T>
+struct PredicateIndex
 {
-    double value {};
+    using ProxyType = PredicateProxy<T>;
 
-    Double() = default;
-    explicit Double(double v) : value(v) {}
+    uint_t value {};
 
-    friend bool operator==(const Double& lhs, const Double& rhs) { return EqualTo<double> {}(lhs.value, rhs.value); }
+    PredicateIndex() = default;
+    explicit PredicateIndex(uint_t value) : value(value) {}
 
-    operator double() const noexcept { return value; }
+    friend bool operator==(const PredicateIndex& lhs, const PredicateIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+
+    uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }
     auto identifying_members() const noexcept { return std::tie(value); }
 };
-
 }
 
 #endif

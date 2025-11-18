@@ -15,18 +15,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_SIGNED_HPP_
-#define TYR_FORMALISM_SIGNED_HPP_
+#ifndef TYR_FORMALISM_PREDICATE_PROXY_HPP_
+#define TYR_FORMALISM_PREDICATE_PROXY_HPP_
 
-#include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/predicate_index.hpp"
+#include "tyr/formalism/repository.hpp"
 
 namespace tyr::formalism
 {
-enum class Signed : int_t
+template<IsStaticOrFluentTag T>
+class PredicateProxy
 {
-};
+private:
+    const Repository* repository;
+    PredicateIndex<T> index;
 
+public:
+    PredicateProxy(const Repository& repository, PredicateIndex<T> index) : repository(&repository), index(index) {}
+
+    const auto& get() const { return repository->operator[]<Predicate<T>>(index); }
+
+    auto get_index() const { return index; }
+    const auto& get_name() const { return get().name; }
+    auto get_arity() const { return get().arity; }
+};
 }
 
 #endif

@@ -24,6 +24,7 @@
 #include "tyr/formalism/literal_proxy.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/rule_index.hpp"
+#include "tyr/formalism/variable_proxy.hpp"
 
 namespace tyr::formalism
 {
@@ -39,6 +40,7 @@ public:
     const auto& get() const { return repository->operator[]<Rule>(index); }
 
     auto get_index() const { return index; }
+    auto get_variables() const { return SpanProxy<VariableIndex, Repository>(*repository, get().variables); }
     auto get_static_body() const { return SpanProxy<LiteralIndex<StaticTag>, Repository>(*repository, get().static_body); }
     auto get_fluent_body() const { return SpanProxy<LiteralIndex<FluentTag>, Repository>(*repository, get().fluent_body); }
     auto get_head() const { return AtomProxy<FluentTag>(*repository, get().head); }

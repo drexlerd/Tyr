@@ -20,7 +20,7 @@
 
 #include "tyr/common/equal_to.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/relation_index.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 
 namespace tyr::formalism
 {
@@ -29,21 +29,21 @@ struct AtomIndex
 {
     using ProxyType = AtomProxy<T>;
 
-    RelationIndex<T> relation_index {};
+    PredicateIndex<T> predicate_index {};
     uint_t value {};
 
     AtomIndex() = default;
-    explicit AtomIndex(RelationIndex<T> relation_index, uint_t value) : relation_index(relation_index), value(value) {}
+    explicit AtomIndex(PredicateIndex<T> predicate_index, uint_t value) : predicate_index(predicate_index), value(value) {}
 
     friend bool operator==(const AtomIndex& lhs, const AtomIndex& rhs)
     {
-        return EqualTo<RelationIndex<T>> {}(lhs.relation_index, rhs.relation_index) && EqualTo<uint_t> {}(lhs.value, rhs.value);
+        return EqualTo<PredicateIndex<T>> {}(lhs.predicate_index, rhs.predicate_index) && EqualTo<uint_t> {}(lhs.value, rhs.value);
     }
 
     uint_t get() const noexcept { return value; }
 
-    auto cista_members() const noexcept { return std::tie(relation_index, value); }
-    auto identifying_members() const noexcept { return std::tie(relation_index, value); }
+    auto cista_members() const noexcept { return std::tie(predicate_index, value); }
+    auto identifying_members() const noexcept { return std::tie(predicate_index, value); }
 };
 
 template<IsStaticOrFluentTag T>

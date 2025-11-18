@@ -15,28 +15,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_SYMBOL_PROXY_HPP_
-#define TYR_FORMALISM_SYMBOL_PROXY_HPP_
+#ifndef TYR_FORMALISM_FUNCTION_PROXY_HPP_
+#define TYR_FORMALISM_FUNCTION_PROXY_HPP_
 
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/function_index.hpp"
 #include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/symbol_index.hpp"
 
 namespace tyr::formalism
 {
-class SymbolProxy
+template<IsStaticOrFluentTag T>
+class FunctionProxy
 {
 private:
     const Repository* repository;
-    SymbolIndex index;
+    FunctionIndex<T> index;
 
 public:
-    SymbolProxy(const Repository& repository, SymbolIndex index) : repository(&repository), index(index) {}
+    FunctionProxy(const Repository& repository, FunctionIndex<T> index) : repository(&repository), index(index) {}
 
-    const auto& get() const { return repository->operator[]<Symbol>(index); }
+    const auto& get() const { return repository->operator[]<Function<T>>(index); }
 
     auto get_index() const { return index; }
     const auto& get_name() const { return get().name; }
+    auto get_arity() const { return get().arity; }
 };
 }
 

@@ -15,31 +15,32 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_RELATION_PROXY_HPP_
-#define TYR_FORMALISM_RELATION_PROXY_HPP_
+#ifndef TYR_FORMALISM_OBJECT_INDEX_HPP_
+#define TYR_FORMALISM_OBJECT_INDEX_HPP_
 
+#include "tyr/common/equal_to.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/relation_index.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr::formalism
 {
-template<IsStaticOrFluentTag T>
-class RelationProxy
+struct ObjectIndex
 {
-private:
-    const Repository* repository;
-    RelationIndex<T> index;
+    using ProxyType = ObjectProxy;
 
-public:
-    RelationProxy(const Repository& repository, RelationIndex<T> index) : repository(&repository), index(index) {}
+    uint_t value {};
 
-    const auto& get() const { return repository->operator[]<Relation<T>>(index); }
+    ObjectIndex() = default;
+    explicit ObjectIndex(uint_t value) : value(value) {}
 
-    auto get_index() const { return index; }
-    const auto& get_name() const { return get().name; }
-    auto get_arity() const { return get().arity; }
+    friend bool operator==(const ObjectIndex& lhs, const ObjectIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+
+    uint_t get() const noexcept { return value; }
+
+    auto cista_members() const noexcept { return std::tie(value); }
+    auto identifying_members() const noexcept { return std::tie(value); }
 };
+
+using ObjectIndexList = ::cista::offset::vector<ObjectIndex>;
 }
 
 #endif

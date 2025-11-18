@@ -15,18 +15,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_UNSIGNED_HPP_
-#define TYR_FORMALISM_UNSIGNED_HPP_
+#ifndef TYR_FORMALISM_FUNCTION_TERM_HPP_
+#define TYR_FORMALISM_FUNCTION_TERM_HPP_
 
-#include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/function_term_index.hpp"
+#include "tyr/formalism/term.hpp"
 
 namespace tyr::formalism
 {
-enum class Unsigned : uint_t
-{
-};
 
+template<IsStaticOrFluentTag T>
+struct FunctionTerm
+{
+    FunctionTermIndex<T> index;
+    TermList terms;
+
+    using IndexType = FunctionTermIndex<T>;
+
+    FunctionTerm() = default;
+    FunctionTerm(FunctionTermIndex<T> index, TermList terms) : index(index), terms(std::move(terms)) {}
+
+    auto cista_members() const noexcept { return std::tie(index, terms); }
+    auto identifying_members() const noexcept { return std::tie(index.function_index, terms); }
+};
 }
 
 #endif

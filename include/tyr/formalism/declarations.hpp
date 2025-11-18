@@ -25,7 +25,7 @@ namespace tyr::formalism
 {
 
 /**
- * Tags to distinguish relations and downstream types
+ * Tags to distinguish predicates and downstream types
  */
 
 struct StaticTag;
@@ -47,16 +47,30 @@ struct VariableIndex;
 struct Variable;
 class VariableProxy;
 
-struct SymbolIndex;
-struct Symbol;
-class SymbolProxy;
+struct ObjectIndex;
+struct Object;
+class ObjectProxy;
 
 template<IsStaticOrFluentTag T>
-struct RelationIndex;
+struct PredicateIndex;
 template<IsStaticOrFluentTag T>
-struct Relation;
+struct Predicate;
 template<IsStaticOrFluentTag T>
-class RelationProxy;
+class PredicateProxy;
+
+template<IsStaticOrFluentTag T>
+struct FunctionIndex;
+template<IsStaticOrFluentTag T>
+struct Function;
+template<IsStaticOrFluentTag T>
+class FunctionProxy;
+
+template<IsStaticOrFluentTag T>
+struct FunctionTermIndex;
+template<IsStaticOrFluentTag T>
+struct FunctionTerm;
+template<IsStaticOrFluentTag T>
+class FunctionTermProxy;
 
 template<IsStaticOrFluentTag T>
 struct AtomIndex;

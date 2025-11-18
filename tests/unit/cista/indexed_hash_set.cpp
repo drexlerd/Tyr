@@ -17,7 +17,7 @@
 
 #include "tyr/cista/indexed_hash_set.hpp"
 
-#include "tyr/formalism/relation.hpp"
+#include "tyr/formalism/predicate.hpp"
 
 #include <gtest/gtest.h>
 
@@ -29,39 +29,39 @@ namespace tyr::tests
 
 TEST(TyrTests, TyrCistaIndexedHashSet)
 {
-    auto repository = IndexedHashSet<Relation<FluentTag>>();
+    auto repository = IndexedHashSet<Predicate<FluentTag>>();
     auto buffer = Buffer();
-    auto builder = Relation<FluentTag>();
+    auto builder = Predicate<FluentTag>();
 
-    // Create a unique relation
-    builder.name = "relation_0";
+    // Create a unique predicate
+    builder.name = "predicate_0";
     builder.arity = 2;
 
-    auto [relation_0, success_0] = repository.insert(builder, buffer);
+    auto [predicate_0, success_0] = repository.insert(builder, buffer);
 
-    EXPECT_EQ(relation_0->index.value, 0);
-    EXPECT_EQ(relation_0->name, builder.name);
-    EXPECT_EQ(relation_0->arity, builder.arity);
+    EXPECT_EQ(predicate_0->index.value, 0);
+    EXPECT_EQ(predicate_0->name, builder.name);
+    EXPECT_EQ(predicate_0->arity, builder.arity);
 
-    // Create a unique relation
-    builder.name = "relation_1";
+    // Create a unique predicate
+    builder.name = "predicate_1";
     builder.arity = 3;
 
-    auto [relation_1, success_1] = repository.insert(builder, buffer);
+    auto [predicate_1, success_1] = repository.insert(builder, buffer);
 
-    EXPECT_EQ(relation_1->index.value, 1);
-    EXPECT_EQ(relation_1->name, builder.name);
-    EXPECT_EQ(relation_1->arity, builder.arity);
+    EXPECT_EQ(predicate_1->index.value, 1);
+    EXPECT_EQ(predicate_1->name, builder.name);
+    EXPECT_EQ(predicate_1->arity, builder.arity);
 
-    // Create an existing relation
-    builder.name = "relation_1";
+    // Create an existing predicate
+    builder.name = "predicate_1";
     builder.arity = 3;
 
-    auto [relation_2, success_2] = repository.insert(builder, buffer);
+    auto [predicate_2, success_2] = repository.insert(builder, buffer);
 
-    EXPECT_EQ(relation_2->index.value, 1);
-    EXPECT_EQ(relation_2->name, builder.name);
-    EXPECT_EQ(relation_2->arity, builder.arity);
+    EXPECT_EQ(predicate_2->index.value, 1);
+    EXPECT_EQ(predicate_2->name, builder.name);
+    EXPECT_EQ(predicate_2->arity, builder.arity);
 }
 
 }

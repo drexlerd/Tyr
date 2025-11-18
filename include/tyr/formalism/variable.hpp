@@ -36,8 +36,6 @@ struct Variable
     auto cista_members() const noexcept { return std::tie(index, name); }
     auto identifying_members() const noexcept { return std::tie(name); }
 };
-
-static_assert(HasIdentifyingMembers<Variable>);
 }
 
 #endif

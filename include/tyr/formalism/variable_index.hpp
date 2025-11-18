@@ -39,6 +39,8 @@ struct VariableIndex
     auto cista_members() const noexcept { return std::tie(value); }
     auto identifying_members() const noexcept { return std::tie(value); }
 };
+
+using VariableIndexList = ::cista::offset::vector<VariableIndex>;
 }
 
 #endif

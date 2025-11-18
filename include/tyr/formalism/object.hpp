@@ -15,32 +15,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_RELATION_HPP_
-#define TYR_FORMALISM_RELATION_HPP_
+#ifndef TYR_FORMALISM_OBJECT_HPP_
+#define TYR_FORMALISM_OBJECT_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/relation_index.hpp"
+#include "tyr/formalism/object_index.hpp"
 
 namespace tyr::formalism
 {
-
-template<IsStaticOrFluentTag T>
-struct Relation
+struct Object
 {
-    RelationIndex<T> index;
+    ObjectIndex index;
     ::cista::offset::string name;
-    uint_t arity;
 
-    using IndexType = RelationIndex<T>;
+    using IndexType = ObjectIndex;
 
-    Relation() = default;
-    Relation(RelationIndex<T> index, ::cista::offset::string name, uint_t arity) : index(index), name(std::move(name)), arity(arity) {}
+    Object() = default;
+    Object(ObjectIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
 
-    auto cista_members() const noexcept { return std::tie(index, name, arity); }
-    auto identifying_members() const noexcept { return std::tie(name, arity); }
+    auto cista_members() const noexcept { return std::tie(index, name); }
+    auto identifying_members() const noexcept { return std::tie(name); }
 };
-
-static_assert(HasIdentifyingMembers<Relation<StaticTag>>);
 }
 
 #endif

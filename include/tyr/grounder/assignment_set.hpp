@@ -15,14 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MIMIR_FORMALISM_ASSIGNMENT_SET_HPP_
-#define MIMIR_FORMALISM_ASSIGNMENT_SET_HPP_
+#ifndef TYR_GROUNDER_ASSIGNMENT_SET_HPP_
+#define TYR_GROUNDER_ASSIGNMENT_SET_HPP_
 
-#include "mimir/common/closed_interval.hpp"
-#include "mimir/common/declarations.hpp"
-#include "mimir/common/types_cista.hpp"
-#include "mimir/formalism/assignment.hpp"
-#include "mimir/formalism/declarations.hpp"
+#include "tyr/formalism/declarations.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>
@@ -148,7 +144,6 @@ public:
 struct StaticAssignmentSets
 {
     PredicateAssignmentSets<StaticTag> static_predicate_assignment_sets;
-    FunctionSkeletonAssignmentSets<StaticTag> static_function_skeleton_assignment_sets;
 
     StaticAssignmentSets();
     StaticAssignmentSets(const ProblemImpl& problem);
@@ -157,9 +152,6 @@ struct StaticAssignmentSets
 struct DynamicAssignmentSets
 {
     PredicateAssignmentSets<FluentTag> fluent_predicate_assignment_sets;
-    PredicateAssignmentSets<DerivedTag> derived_predicate_assignment_sets;
-
-    FunctionSkeletonAssignmentSets<FluentTag> fluent_function_skeleton_assignment_sets;
 
     DynamicAssignmentSets();
     DynamicAssignmentSets(const ProblemImpl& problem);

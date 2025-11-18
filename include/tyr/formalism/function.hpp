@@ -15,29 +15,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_SYMBOL_HPP_
-#define TYR_FORMALISM_SYMBOL_HPP_
+#ifndef TYR_FORMALISM_FUNCTION_HPP_
+#define TYR_FORMALISM_FUNCTION_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/symbol_index.hpp"
+#include "tyr/formalism/function_index.hpp"
 
 namespace tyr::formalism
 {
-struct Symbol
+
+template<IsStaticOrFluentTag T>
+struct Function
 {
-    SymbolIndex index;
+    FunctionIndex<T> index;
     ::cista::offset::string name;
+    uint_t arity;
 
-    using IndexType = SymbolIndex;
+    using IndexType = FunctionIndex<T>;
 
-    Symbol() = default;
-    Symbol(SymbolIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
+    Function() = default;
+    Function(FunctionIndex<T> index, ::cista::offset::string name, uint_t arity) : index(index), name(std::move(name)), arity(arity) {}
 
-    auto cista_members() const noexcept { return std::tie(index, name); }
-    auto identifying_members() const noexcept { return std::tie(name); }
+    auto cista_members() const noexcept { return std::tie(index, name, arity); }
+    auto identifying_members() const noexcept { return std::tie(name, arity); }
 };
-
-static_assert(HasIdentifyingMembers<Symbol>);
 }
 
 #endif

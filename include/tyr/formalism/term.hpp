@@ -19,17 +19,14 @@
 #define TYR_FORMALISM_TERM_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/double.hpp"
-#include "tyr/formalism/signed.hpp"
-#include "tyr/formalism/symbol.hpp"
-#include "tyr/formalism/unsigned.hpp"
+#include "tyr/formalism/object.hpp"
 #include "tyr/formalism/variable.hpp"
 
 namespace tyr::formalism
 {
 struct Term
 {
-    using Variant = ::cista::offset::variant<SymbolIndex, VariableIndex, Unsigned, Signed, Double>;
+    using Variant = ::cista::offset::variant<ObjectIndex, VariableIndex>;
 
     Variant value;
 

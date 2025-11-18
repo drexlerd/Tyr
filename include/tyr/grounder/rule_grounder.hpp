@@ -15,31 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_SYMBOL_INDEX_HPP_
-#define TYR_FORMALISM_SYMBOL_INDEX_HPP_
+#ifndef TYR_GROUNDER_RULE_GROUNDER_HPP_
+#define TYR_GROUNDER_RULE_GROUNDER_HPP_
 
-#include "tyr/common/equal_to.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/ground_atom_index.hpp"
 
-namespace tyr::formalism
+namespace tyr::grounder
 {
-struct SymbolIndex
+class RuleGrounder
 {
-    using ProxyType = SymbolProxy;
-
-    uint_t value {};
-
-    SymbolIndex() = default;
-    explicit SymbolIndex(uint_t value) : value(value) {}
-
-    friend bool operator==(const SymbolIndex& lhs, const SymbolIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+public:
+    RuleGrounder(formalism::RuleIndex rule_index,
+                 const formalism::GroundAtomIndexList<formalism::StaticTag>& static_atoms,
+                 const formalism::GroundAtomIndexList<formalism::FluentTag>& fluent_atoms,
+                 const formalism::Repository& repository);
 };
-
 }
 
 #endif

@@ -22,18 +22,17 @@
 #include "tyr/cista/indexed_hash_set.hpp"
 #include "tyr/formalism/atom.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/double.hpp"
+#include "tyr/formalism/function.hpp"
+#include "tyr/formalism/function_term.hpp"
 #include "tyr/formalism/ground_atom.hpp"
 #include "tyr/formalism/ground_literal.hpp"
 #include "tyr/formalism/ground_rule.hpp"
 #include "tyr/formalism/literal.hpp"
+#include "tyr/formalism/object.hpp"
+#include "tyr/formalism/predicate.hpp"
 #include "tyr/formalism/program.hpp"
-#include "tyr/formalism/relation.hpp"
 #include "tyr/formalism/rule.hpp"
-#include "tyr/formalism/signed.hpp"
-#include "tyr/formalism/symbol.hpp"
 #include "tyr/formalism/term.hpp"
-#include "tyr/formalism/unsigned.hpp"
 #include "tyr/formalism/variable.hpp"
 
 #include <boost/hana.hpp>
@@ -57,28 +56,28 @@ template<IsStaticOrFluentTag T>
 struct TypeProperties<Atom<T>>
 {
     using PairType = MappedTypePerIndex<Atom<T>>;
-    static auto get_index(AtomIndex<T>& self) noexcept { return self.relation_index; }
+    static auto get_index(AtomIndex<T>& self) noexcept { return self.predicate_index; }
 };
 
 template<IsStaticOrFluentTag T>
 struct TypeProperties<Literal<T>>
 {
     using PairType = MappedTypePerIndex<Literal<T>>;
-    static auto get_index(LiteralIndex<T> self) noexcept { return self.relation_index; }
+    static auto get_index(LiteralIndex<T> self) noexcept { return self.predicate_index; }
 };
 
 template<IsStaticOrFluentTag T>
 struct TypeProperties<GroundAtom<T>>
 {
     using PairType = MappedTypePerIndex<GroundAtom<T>>;
-    static auto get_index(GroundAtomIndex<T> self) noexcept { return self.relation_index; }
+    static auto get_index(GroundAtomIndex<T> self) noexcept { return self.predicate_index; }
 };
 
 template<IsStaticOrFluentTag T>
 struct TypeProperties<GroundLiteral<T>>
 {
     using PairType = MappedTypePerIndex<GroundLiteral<T>>;
-    static auto get_index(GroundLiteralIndex<T> self) noexcept { return self.relation_index; }
+    static auto get_index(GroundLiteralIndex<T> self) noexcept { return self.predicate_index; }
 };
 
 template<>
@@ -105,10 +104,14 @@ private:
                                             TypeProperties<GroundAtom<FluentTag>>::PairType,
                                             TypeProperties<GroundLiteral<StaticTag>>::PairType,
                                             TypeProperties<GroundLiteral<FluentTag>>::PairType,
-                                            TypeProperties<Relation<StaticTag>>::PairType,
-                                            TypeProperties<Relation<FluentTag>>::PairType,
+                                            TypeProperties<Predicate<StaticTag>>::PairType,
+                                            TypeProperties<Predicate<FluentTag>>::PairType,
+                                            TypeProperties<Function<StaticTag>>::PairType,
+                                            TypeProperties<Function<FluentTag>>::PairType,
+                                            TypeProperties<FunctionTerm<StaticTag>>::PairType,
+                                            TypeProperties<FunctionTerm<FluentTag>>::PairType,
                                             TypeProperties<Variable>::PairType,
-                                            TypeProperties<Symbol>::PairType,
+                                            TypeProperties<Object>::PairType,
                                             TypeProperties<Rule>::PairType,
                                             TypeProperties<GroundRule>::PairType,
                                             TypeProperties<Program>::PairType>;

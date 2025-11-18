@@ -21,7 +21,7 @@
 #include "tyr/common/span.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
-#include "tyr/formalism/relation_proxy.hpp"
+#include "tyr/formalism/predicate_proxy.hpp"
 #include "tyr/formalism/repository.hpp"
 
 namespace tyr::formalism
@@ -39,7 +39,7 @@ public:
     const auto& get() const { return repository->operator[]<GroundAtom<T>>(index); }
 
     auto get_index() const { return index; }
-    auto get_relation() const { return RelationProxy(*repository, index.relation_index); }
+    auto get_predicate() const { return PredicateProxy(*repository, index.predicate_index); }
     auto get_terms() const { return SpanProxy((*repository), get().terms); }
 };
 }

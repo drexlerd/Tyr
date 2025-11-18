@@ -36,7 +36,7 @@ struct Atom
     Atom(AtomIndex<T> index, TermList terms) : index(index), terms(std::move(terms)) {}
 
     auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.relation_index, terms); }
+    auto identifying_members() const noexcept { return std::tie(index.predicate_index, terms); }
 };
 }
 

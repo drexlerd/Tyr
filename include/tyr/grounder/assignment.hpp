@@ -44,11 +44,11 @@ struct VertexAssignment
     uint_t index;
     uint_t object;
 
-    VertexAssignment() : index(MAX_INDEX), object(MAX_INDEX) {}
+    VertexAssignment() : index(std::numeric_limits<uint_t>::max()), object(std::numeric_limits<uint_t>::max()) {}
 
     VertexAssignment(uint_t index, uint_t object) : index(index), object(object) {}
 
-    inline bool is_valid() const noexcept { return index != MAX_INDEX && object != MAX_INDEX; }
+    inline bool is_valid() const noexcept { return index != std::numeric_limits<uint_t>::max() && object != std::numeric_limits<uint_t>::max(); }
 };
 
 /**
@@ -63,7 +63,13 @@ struct EdgeAssignment
     uint_t second_index;
     uint_t second_object;
 
-    EdgeAssignment() : first_index(MAX_INDEX), first_object(MAX_INDEX), second_index(MAX_INDEX), second_object(MAX_INDEX) {}
+    EdgeAssignment() :
+        first_index(std::numeric_limits<uint_t>::max()),
+        first_object(std::numeric_limits<uint_t>::max()),
+        second_index(std::numeric_limits<uint_t>::max()),
+        second_object(std::numeric_limits<uint_t>::max())
+    {
+    }
 
     EdgeAssignment(uint_t first_index, uint_t first_object, uint_t second_index, uint_t second_object) :
         first_index(first_index),
@@ -75,8 +81,8 @@ struct EdgeAssignment
 
     inline bool is_valid() const noexcept
     {
-        return (first_index < second_index) && (first_index != MAX_INDEX) && (second_index != MAX_INDEX) && (first_object != MAX_INDEX)
-               && (second_object != MAX_INDEX);
+        return (first_index < second_index) && (first_index != std::numeric_limits<uint_t>::max()) && (second_index != std::numeric_limits<uint_t>::max())
+               && (first_object != std::numeric_limits<uint_t>::max()) && (second_object != std::numeric_limits<uint_t>::max());
     }
 };
 

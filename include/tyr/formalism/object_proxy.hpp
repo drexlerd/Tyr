@@ -15,32 +15,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_GROUND_TERM_HPP_
-#define TYR_FORMALISM_GROUND_TERM_HPP_
+#ifndef TYR_FORMALISM_OBJECT_PROXY_HPP_
+#define TYR_FORMALISM_OBJECT_PROXY_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/double.hpp"
-#include "tyr/formalism/signed.hpp"
-#include "tyr/formalism/symbol.hpp"
-#include "tyr/formalism/unsigned.hpp"
+#include "tyr/formalism/object_index.hpp"
+#include "tyr/formalism/repository.hpp"
 
 namespace tyr::formalism
 {
-struct GroundTerm
+class ObjectProxy
 {
-    using Variant = ::cista::offset::variant<SymbolIndex, Unsigned, Signed, Double>;
+private:
+    const Repository* repository;
+    ObjectIndex index;
 
-    Variant value;
+public:
+    ObjectProxy(const Repository& repository, ObjectIndex index) : repository(&repository), index(index) {}
 
-    GroundTerm() = default;
-    GroundTerm(Variant value) : value(value) {}
+    const auto& get() const { return repository->operator[]<Object>(index); }
 
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    auto get_index() const { return index; }
+    const auto& get_name() const { return get().name; }
 };
-
-using GroundTermList = ::cista::offset::vector<GroundTerm>;
-
 }
 
 #endif

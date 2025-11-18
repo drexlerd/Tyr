@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_RELATION_INDEX_HPP_
-#define TYR_FORMALISM_RELATION_INDEX_HPP_
+#ifndef TYR_FORMALISM_FUNCTION_INDEX_HPP_
+#define TYR_FORMALISM_FUNCTION_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
 #include "tyr/formalism/declarations.hpp"
@@ -24,16 +24,16 @@
 namespace tyr::formalism
 {
 template<IsStaticOrFluentTag T>
-struct RelationIndex
+struct FunctionIndex
 {
-    using ProxyType = RelationProxy<T>;
+    using ProxyType = PredicateProxy<T>;
 
     uint_t value {};
 
-    RelationIndex() = default;
-    explicit RelationIndex(uint_t value) : value(value) {}
+    FunctionIndex() = default;
+    explicit FunctionIndex(uint_t value) : value(value) {}
 
-    friend bool operator==(const RelationIndex& lhs, const RelationIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+    friend bool operator==(const FunctionIndex& lhs, const FunctionIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
 
     uint_t get() const noexcept { return value; }
 

@@ -21,7 +21,7 @@
 #include "tyr/formalism/atom_proxy.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/literal_index.hpp"
-#include "tyr/formalism/relation_proxy.hpp"
+#include "tyr/formalism/predicate_proxy.hpp"
 
 namespace tyr::formalism
 {
@@ -38,7 +38,7 @@ public:
     const auto& get() const { return repository->operator[]<Literal<T>>(index); }
 
     auto get_index() const { return index; }
-    auto get_relation() const { return RelationProxy(*repository, index.relation_index); }
+    auto get_predicate() const { return PredicateProxy(*repository, index.predicate_index); }
     auto get_atom() const { return AtomProxy((*repository), get().atom_index); }
     auto get_polarity() const { return get().polarity; }
 };
