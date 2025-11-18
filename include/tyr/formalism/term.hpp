@@ -15,40 +15,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_TYR_HPP_
-#define TYR_TYR_HPP_
+#ifndef TYR_FORMALISM_TERM_HPP_
+#define TYR_FORMALISM_TERM_HPP_
 
-// Cista
-#include "tyr/cista/byte_buffer_segmented.hpp"
-#include "tyr/cista/declarations.hpp"
-#include "tyr/cista/indexed_hash_set.hpp"
-
-// Common
-#include "tyr/common/bits.hpp"
-#include "tyr/common/config.hpp"
-#include "tyr/common/declarations.hpp"
-#include "tyr/common/equal_to.hpp"
-#include "tyr/common/hash.hpp"
-#include "tyr/common/observer_ptr.hpp"
-#include "tyr/common/segmented_vector.hpp"
-
-// Formalism
-#include "tyr/formalism/atom.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/double.hpp"
-#include "tyr/formalism/ground_atom.hpp"
-#include "tyr/formalism/ground_literal.hpp"
-#include "tyr/formalism/ground_rule.hpp"
-#include "tyr/formalism/ground_term.hpp"
-#include "tyr/formalism/literal.hpp"
-#include "tyr/formalism/program.hpp"
-#include "tyr/formalism/relation.hpp"
-#include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/rule.hpp"
 #include "tyr/formalism/signed.hpp"
 #include "tyr/formalism/symbol.hpp"
-#include "tyr/formalism/term.hpp"
 #include "tyr/formalism/unsigned.hpp"
 #include "tyr/formalism/variable.hpp"
+
+namespace tyr::formalism
+{
+struct Term
+{
+    using Variant = ::cista::offset::variant<SymbolIndex, VariableIndex, Unsigned, Signed, Double>;
+
+    Variant value;
+
+    Term() = default;
+    Term(Variant value) : value(value) {}
+
+    auto cista_members() const noexcept { return std::tie(value); }
+    auto identifying_members() const noexcept { return std::tie(value); }
+};
+
+using TermList = ::cista::offset::vector<Term>;
+
+}
 
 #endif

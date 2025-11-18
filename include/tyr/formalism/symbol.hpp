@@ -15,40 +15,40 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_VARIABLE_HPP_
-#define TYR_FORMALISM_VARIABLE_HPP_
+#ifndef TYR_FORMALISM_SYMBOL_HPP_
+#define TYR_FORMALISM_SYMBOL_HPP_
 
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
-struct VariableIndex
+struct SymbolIndex
 {
     uint_t value {};
 
-    VariableIndex() = default;
-    explicit VariableIndex(uint_t value) : value(value) {}
+    SymbolIndex() = default;
+    explicit SymbolIndex(uint_t value) : value(value) {}
 
     uint_t get() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }
 };
 
-struct VariableImpl
+struct SymbolImpl
 {
-    VariableIndex index;
+    SymbolIndex index;
     ::cista::offset::string name;
 
-    using IndexType = VariableIndex;
+    using IndexType = SymbolIndex;
 
-    VariableImpl() = default;
-    VariableImpl(VariableIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
+    SymbolImpl() = default;
+    SymbolImpl(SymbolIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
 
     auto cista_members() const noexcept { return std::tie(index, name); }
     auto identifying_members() const noexcept { return std::tie(name); }
 };
 
-static_assert(HasIdentifyingMembers<VariableImpl>);
+static_assert(HasIdentifyingMembers<SymbolImpl>);
 }
 
 #endif

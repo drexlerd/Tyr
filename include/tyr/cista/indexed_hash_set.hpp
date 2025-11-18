@@ -117,6 +117,9 @@ public:
     auto operator[](IndexType index) const { return m_vec[index.get()]; }
 };
 
+template<typename T, typename H = Hash<ObserverPtr<const T>>, typename E = EqualTo<ObserverPtr<const T>>>
+using IndexedHashSetList = std::vector<IndexedHashSet<T, H, E>>;
+
 }
 
 #endif

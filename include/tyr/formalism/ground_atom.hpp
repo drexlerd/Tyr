@@ -18,8 +18,8 @@
 #ifndef TYR_FORMALISM_GROUND_ATOM_HPP_
 #define TYR_FORMALISM_GROUND_ATOM_HPP_
 
-#include "tyr/formalism/constant.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/ground_term.hpp"
 #include "tyr/formalism/relation.hpp"
 
 namespace tyr::formalism
@@ -45,19 +45,19 @@ struct GroundAtomImpl
 {
     GroundAtomIndex<T> index;
     RelationIndex<T> relation_index;
-    ConstantList constants;
+    GroundTermList terms;
 
     using IndexType = GroundAtomIndex<T>;
 
     GroundAtomImpl() = default;
-    GroundAtomImpl(GroundAtomIndex<T> index, RelationIndex<T> relation_index, ConstantList constants) :
+    GroundAtomImpl(GroundAtomIndex<T> index, RelationIndex<T> relation_index, GroundTermList terms) :
         index(index),
         relation_index(relation_index),
-        constants(std::move(constants))
+        terms(std::move(terms))
     {
     }
 
-    auto cista_members() const noexcept { return std::tie(index, relation_index, constants); }
+    auto cista_members() const noexcept { return std::tie(index, relation_index, terms); }
 };
 
 }

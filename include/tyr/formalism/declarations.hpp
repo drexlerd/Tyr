@@ -19,6 +19,7 @@
 #define TYR_FORMALISM_DECLARATIONS_HPP_
 
 #include "tyr/common/config.hpp"
+#include "tyr/common/declarations.hpp"
 
 namespace tyr::formalism
 {
@@ -37,8 +38,16 @@ concept IsStaticOrFluentTag = std::same_as<T, StaticTag> || std::same_as<T, Flue
  * Forward declarations
  */
 
-enum class Constant;
-enum class Variable;
+struct Term;
+struct GroundTerm;
+
+struct VariableIndex;
+struct VariableImpl;
+using Variable = const VariableImpl*;
+
+struct SymbolIndex;
+struct SymbolImpl;
+using Symbol = const SymbolImpl*;
 
 template<IsStaticOrFluentTag T>
 struct RelationIndex;

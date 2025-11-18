@@ -18,10 +18,53 @@
 #ifndef TYR_FORMALISM_REPOSITORY_HPP_
 #define TYR_FORMALISM_REPOSITORY_HPP_
 
+#include "tyr/cista/indexed_hash_set.hpp"
+#include "tyr/formalism/atom.hpp"
+#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/double.hpp"
+#include "tyr/formalism/ground_atom.hpp"
+#include "tyr/formalism/ground_literal.hpp"
+#include "tyr/formalism/ground_rule.hpp"
+#include "tyr/formalism/literal.hpp"
+#include "tyr/formalism/program.hpp"
+#include "tyr/formalism/relation.hpp"
+#include "tyr/formalism/rule.hpp"
+#include "tyr/formalism/signed.hpp"
+#include "tyr/formalism/symbol.hpp"
+#include "tyr/formalism/term.hpp"
+#include "tyr/formalism/unsigned.hpp"
+#include "tyr/formalism/variable.hpp"
+
+#include <boost/hana.hpp>
+
 namespace tyr::formalism
 {
 class Repository
 {
+private:
+    template<typename T>
+    using MappedType = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSet<T>>;
+
+    template<typename T>
+    using MappedListType = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSetList<T>>;
+
+    using HanaRepository = boost::hana::map<MappedListType<AtomImpl<StaticTag>>,
+                                            MappedListType<AtomImpl<StaticTag>>,
+                                            MappedListType<LiteralImpl<StaticTag>>,
+                                            MappedListType<LiteralImpl<StaticTag>>,
+                                            MappedListType<GroundAtomImpl<StaticTag>>,
+                                            MappedListType<GroundAtomImpl<StaticTag>>,
+                                            MappedListType<GroundLiteralImpl<StaticTag>>,
+                                            MappedListType<GroundLiteralImpl<StaticTag>>,
+                                            MappedListType<RelationImpl<StaticTag>>,
+                                            MappedListType<RelationImpl<FluentTag>>,
+                                            MappedType<VariableImpl>,
+                                            MappedType<SymbolImpl>,
+                                            MappedType<RuleImpl>,
+                                            MappedType<GroundRuleImpl>,
+                                            MappedType<ProgramImpl>>;
+
+    HanaRepository m_repository;
 };
 }
 

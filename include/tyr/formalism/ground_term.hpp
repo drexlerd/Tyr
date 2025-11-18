@@ -15,19 +15,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_CONSTANT_HPP_
-#define TYR_FORMALISM_CONSTANT_HPP_
+#ifndef TYR_FORMALISM_GROUND_TERM_HPP_
+#define TYR_FORMALISM_GROUND_TERM_HPP_
 
-#include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/double.hpp"
+#include "tyr/formalism/signed.hpp"
+#include "tyr/formalism/symbol.hpp"
+#include "tyr/formalism/unsigned.hpp"
 
 namespace tyr::formalism
 {
-enum class Constant : uint_t
+struct GroundTerm
 {
+    using Variant = ::cista::offset::variant<SymbolIndex, Unsigned, Signed, Double>;
+
+    Variant value;
+
+    GroundTerm() = default;
+    GroundTerm(Variant value) : value(value) {}
+
+    auto cista_members() const noexcept { return std::tie(value); }
+    auto identifying_members() const noexcept { return std::tie(value); }
 };
 
-using ConstantList = ::cista::offset::vector<Constant>;
+using GroundTermList = ::cista::offset::vector<GroundTerm>;
 
 }
 

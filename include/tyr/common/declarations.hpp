@@ -19,6 +19,7 @@
 #define TYR_COMMON_CONCEPTS_HPP_
 
 #include <cista/containers/string.h>
+#include <cista/containers/variant.h>
 #include <cista/containers/vector.h>
 #include <concepts>
 #include <functional>

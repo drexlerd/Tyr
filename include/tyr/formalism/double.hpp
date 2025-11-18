@@ -15,40 +15,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_VARIABLE_HPP_
-#define TYR_FORMALISM_VARIABLE_HPP_
+#ifndef TYR_FORMALISM_DOUBLE_HPP_
+#define TYR_FORMALISM_DOUBLE_HPP_
 
+#include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
-struct VariableIndex
+struct Double
 {
-    uint_t value {};
+    double value {};
 
-    VariableIndex() = default;
-    explicit VariableIndex(uint_t value) : value(value) {}
+    Double() = default;
+    explicit Double(double v) : value(v) {}
 
-    uint_t get() const noexcept { return value; }
+    operator double() const noexcept { return value; }
 
     auto cista_members() const noexcept { return std::tie(value); }
 };
 
-struct VariableImpl
-{
-    VariableIndex index;
-    ::cista::offset::string name;
-
-    using IndexType = VariableIndex;
-
-    VariableImpl() = default;
-    VariableImpl(VariableIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
-
-    auto cista_members() const noexcept { return std::tie(index, name); }
-    auto identifying_members() const noexcept { return std::tie(name); }
-};
-
-static_assert(HasIdentifyingMembers<VariableImpl>);
 }
 
 #endif
