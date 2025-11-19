@@ -15,3 +15,4 @@ endfunction()
 add_gtest(cista_indexed_hash_set                        "cista/indexed_hash_set.cpp")
 
 add_gtest(formalism_repository                          "formalism/repository.cpp")
+add_gtest(formalism_proxy                               "formalism/proxy.cpp")

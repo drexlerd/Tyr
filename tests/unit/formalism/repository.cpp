@@ -97,4 +97,31 @@ TEST(TyrTests, TyrFormalismRepository)
     EXPECT_FALSE(atom_success_1);
 }
 
+TEST(TyrTests, TyrFormalismProxy)
+{
+    auto repository = Repository();
+    auto buffer = Buffer();
+    auto predicate_builder = Predicate<FluentTag>();
+    auto object_builder = Object();
+    auto atom_builder = Atom<FluentTag>();
+
+    // Create a unique predicate
+    predicate_builder.name = "predicate_0";
+    predicate_builder.arity = 2;
+    auto [predicate_0, predicate_success_0] = repository.get_or_create(predicate_builder, buffer);
+
+    // Create objects
+    object_builder.name = "a";
+    auto [object_0, object_success_0] = repository.get_or_create(object_builder, buffer);
+    object_builder.name = "b";
+    auto [object_1, object_success_1] = repository.get_or_create(object_builder, buffer);
+
+    // Create atom
+    atom_builder.terms.clear();
+    atom_builder.index.predicate_index = predicate_0->index;
+    atom_builder.terms.push_back(Term(object_0->index));
+    atom_builder.terms.push_back(Term(object_1->index));
+    auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);
+}
+
 }

@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_TERM_HPP_
 #define TYR_FORMALISM_TERM_HPP_
 
+#include "tyr/common/variant.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/object.hpp"
 #include "tyr/formalism/variable.hpp"
@@ -27,6 +28,7 @@ namespace tyr::formalism
 struct Term
 {
     using Variant = ::cista::offset::variant<ObjectIndex, VariableIndex>;
+    using ProxyType = TermProxy;
 
     Variant value;
 

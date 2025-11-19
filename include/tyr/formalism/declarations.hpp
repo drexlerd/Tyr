@@ -41,7 +41,7 @@ concept IsStaticOrFluentTag = std::same_as<T, StaticTag> || std::same_as<T, Flue
 class Repository;
 
 struct Term;
-struct GroundTerm;
+class TermProxy;
 
 struct VariableIndex;
 struct Variable;

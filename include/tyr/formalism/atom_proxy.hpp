@@ -40,7 +40,7 @@ public:
 
     auto get_index() const { return index; }
     auto get_predicate() const { return PredicateProxy(*repository, index.predicate_index); }
-    auto get_terms() const { return SpanProxy((*repository), get().terms); }
+    auto get_terms() const { return SpanProxy<Term, Repository>(*repository, get().terms); }
 };
 }
 
