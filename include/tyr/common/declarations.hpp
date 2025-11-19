@@ -44,6 +44,9 @@ concept HasIdentifyingMembers = requires(const T a) {
     { a.identifying_members() };
 };
 
+template<typename T>
+concept HasProxyType = requires { typename T::ProxyType; };
+
 }
 
 #endif

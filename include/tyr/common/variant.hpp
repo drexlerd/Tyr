@@ -18,6 +18,8 @@
 #ifndef TYR_COMMON_VARIANT_HPP_
 #define TYR_COMMON_VARIANT_HPP_
 
+#include "tyr/common/declarations.hpp"
+
 #include <cista/containers/variant.h>
 #include <cstddef>
 #include <iterator>
@@ -26,6 +28,7 @@
 
 namespace tyr
 {
+
 template<typename Variant, typename Context>
 class VariantProxy
 {
@@ -54,8 +57,6 @@ public:
         return Proxy(context(), std::get<T>(index_variant()));
     }
 
-    /// Apply a callable to the *proxy* corresponding to the held index.
-    /// The callable F must accept any of the proxy types.
     template<typename F>
     decltype(auto) visit(F&& f) const
     {
@@ -63,8 +64,16 @@ public:
             [&](auto index) -> decltype(auto)
             {
                 using Index = std::decay_t<decltype(index)>;
-                using Proxy = typename Index::ProxyType;
-                return std::forward<F>(f)(Proxy(context(), index));
+
+                if constexpr (HasProxyType<Index>)
+                {
+                    using Proxy = typename Index::ProxyType;
+                    return std::forward<F>(f)(Proxy(context(), index));
+                }
+                else
+                {
+                    return std::forward<F>(f)(index);
+                }
             },
             index_variant());
     }

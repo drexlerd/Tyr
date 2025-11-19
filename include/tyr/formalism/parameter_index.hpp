@@ -15,34 +15,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_TERM_HPP_
-#define TYR_FORMALISM_TERM_HPP_
+#ifndef TYR_FORMALISM_PARAMETER_INDEX_HPP_
+#define TYR_FORMALISM_PARAMETER_INDEX_HPP_
 
-#include "tyr/common/variant.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/object_index.hpp"
-#include "tyr/formalism/parameter_index.hpp"
 
 namespace tyr::formalism
 {
-struct Term
+enum class ParameterIndex : uint_t
 {
-    using Variant = ::cista::offset::variant<ObjectIndex, ParameterIndex>;
-    using ProxyType = TermProxy;
-
-    Variant value;
-
-    Term() = default;
-    Term(Variant value) : value(value) {}
-
-    friend bool operator==(const Term& lhs, const Term& rhs) { return EqualTo<Variant> {}(lhs.value, rhs.value); }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
 };
-
-using TermList = ::cista::offset::vector<Term>;
-
 }
 
 #endif

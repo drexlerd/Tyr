@@ -18,6 +18,8 @@
 #ifndef TYR_COMMON_SPAN_HPP_
 #define TYR_COMMON_SPAN_HPP_
 
+#include "tyr/common/declarations.hpp"
+
 #include <cstddef>
 #include <iterator>
 #include <span>
@@ -32,7 +34,8 @@ private:
     std::span<const T> m_span;
 
 public:
-    using ProxyType = typename T::ProxyType;
+    // If T has a ProxyType, use it; otherwise the "proxy" is just T itself.
+    using ProxyType = std::conditional_t<HasProxyType<T>, typename T::ProxyType, T>;
 
     template<class Container>
     explicit SpanProxy(const Context& context, const Container& container) : m_context(context), m_span(std::data(container), std::size(container))
@@ -42,7 +45,17 @@ public:
     size_t size() const noexcept { return m_span.size(); }
     bool empty() const noexcept { return m_span.empty(); }
 
-    ProxyType operator[](size_t i) const { return ProxyType(m_context, m_span[i]); }
+    ProxyType operator[](size_t i) const
+    {
+        if constexpr (HasProxyType<T>)
+        {
+            return ProxyType(m_context, m_span[i]);
+        }
+        else
+        {
+            return m_span[i];
+        }
+    }
 
     struct const_iterator
     {
@@ -57,7 +70,17 @@ public:
         const_iterator() : ctx(nullptr), ptr(nullptr) {}
         const_iterator(const Context& ctx, const T* ptr) : ctx(&ctx), ptr(ptr) {}
 
-        ProxyType operator*() const { return ProxyType(*ctx, *ptr); }
+        ProxyType operator*() const
+        {
+            if constexpr (HasProxyType<T>)
+            {
+                return ProxyType(*ctx, *ptr);
+            }
+            else
+            {
+                return *ptr;
+            }
+        }
 
         const_iterator& operator++()
         {

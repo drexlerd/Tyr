@@ -40,11 +40,19 @@ public:
     decltype(auto) visit(F&& f) const
     {
         return std::visit(
-            [&](auto&& idx) -> decltype(auto)
+            [&](auto&& index) -> decltype(auto)
             {
-                using Index = std::decay_t<decltype(idx)>;
-                using Proxy = typename Index::ProxyType;
-                return std::forward<F>(f)(Proxy(context(), idx));
+                using Index = std::decay_t<decltype(index)>;
+
+                if constexpr (HasProxyType<Index>)
+                {
+                    using Proxy = typename Index::ProxyType;
+                    return std::forward<F>(f)(Proxy(context(), index));
+                }
+                else
+                {
+                    return std::forward<F>(f)(index);
+                }
             },
             index_variant());
     }

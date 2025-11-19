@@ -53,7 +53,7 @@ TEST(TyrTests, TyrFormalismProxy)
     atom_builder.terms.clear();
     atom_builder.index.predicate_index = predicate->index;
     atom_builder.terms.push_back(Term(object->index));
-    atom_builder.terms.push_back(Term(variable->index));
+    atom_builder.terms.push_back(Term(ParameterIndex(0)));
     auto [atom, atom_success] = repository.get_or_create(atom_builder, buffer);
 
     // Recurse through proxy
