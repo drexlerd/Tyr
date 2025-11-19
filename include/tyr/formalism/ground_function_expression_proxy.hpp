@@ -24,14 +24,14 @@
 
 namespace tyr::formalism
 {
-class FunctionExpressionProxy
+class GroundFunctionExpressionProxy
 {
 private:
     const Repository* m_repo;
-    const FunctionExpression* m_fexpr;
+    const GroundFunctionExpression* m_fexpr;
 
 public:
-    FunctionExpressionProxy(const Repository& repo, const FunctionExpression& fexpr) : m_repo(&repo), m_fexpr(&fexpr) {}
+    GroundFunctionExpressionProxy(const Repository& repo, const GroundFunctionExpression& fexpr) : m_repo(&repo), m_fexpr(&fexpr) {}
 
     const auto& index_variant() const noexcept { return m_fexpr->value; }
     const auto& context() const noexcept { return *m_repo; }

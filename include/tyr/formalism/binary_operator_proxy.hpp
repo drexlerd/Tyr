@@ -39,8 +39,8 @@ public:
     const auto& get() const { return repository->operator[]<BinaryOperator<Op, T>>(index); }
 
     auto get_index() const { return index; }
-    auto get_lhs() const { return VariantProxy<T, Repository>(*repository, get().lhs); }
-    auto get_rhs() const { return VariantProxy<T, Repository>(*repository, get().rhs); }
+    auto get_lhs() const { return VariantProxy(*repository, get().lhs); }
+    auto get_rhs() const { return VariantProxy(*repository, get().rhs); }
 };
 
 }

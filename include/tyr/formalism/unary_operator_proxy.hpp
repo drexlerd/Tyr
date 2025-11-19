@@ -39,7 +39,7 @@ public:
     const auto& get() const { return repository->operator[]<UnaryOperator<Op, T>>(index); }
 
     auto get_index() const { return index; }
-    auto get_arg() const { return VariantProxy<T, Repository>(*repository, get().arg); }
+    auto get_arg() const { return VariantProxy(*repository, get().arg); }
 };
 
 }

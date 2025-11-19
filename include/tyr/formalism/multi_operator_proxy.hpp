@@ -39,7 +39,7 @@ public:
     const auto& get() const { return repository->operator[]<MultiOperator<Op, T>>(index); }
 
     auto get_index() const { return index; }
-    auto get_args() const { return SpanProxy<T, Repository>(*repository, get().args); }
+    auto get_args() const { return SpanProxy<IndexType, Repository>(*repository, get().args); }
 };
 
 }

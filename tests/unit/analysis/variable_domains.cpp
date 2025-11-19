@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Dominik Drexler
+ * Copyright (C) 2023 Dominik Drexler and Simon Stahlberg
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,28 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_TYR_HPP_
-#define TYR_TYR_HPP_
+#include <gtest/gtest.h>
+#include <tyr/analysis/variable_domains.hpp>
 
-// Analysis
-#include "tyr/analysis/stratification.hpp"
-#include "tyr/analysis/variable_domains.hpp"
+using namespace tyr::cista;
+using namespace tyr::formalism;
 
-// Cista
-#include "tyr/cista/byte_buffer_segmented.hpp"
-#include "tyr/cista/declarations.hpp"
-#include "tyr/cista/indexed_hash_set.hpp"
+namespace tyr::tests
+{
 
-// Common
-#include "tyr/common/bits.hpp"
-#include "tyr/common/config.hpp"
-#include "tyr/common/declarations.hpp"
-#include "tyr/common/equal_to.hpp"
-#include "tyr/common/hash.hpp"
-#include "tyr/common/observer_ptr.hpp"
-#include "tyr/common/segmented_vector.hpp"
-
-// Formalism
-#include "tyr/formalism/formalism.hpp"
-
-#endif
+TEST(TyrTests, TyrFormalismProxy)
+{
+    auto repository = Repository();
+    auto program_builder = Program();
+    auto program_proxy = ProgramProxy(repository, program_builder.index);
+    analysis::compute_variable_list_per_predicate(program_proxy);
+}
+}

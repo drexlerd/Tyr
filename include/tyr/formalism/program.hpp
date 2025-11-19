@@ -20,6 +20,8 @@
 
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/object_index.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/program_index.hpp"
 #include "tyr/formalism/rule_index.hpp"
 
@@ -28,6 +30,9 @@ namespace tyr::formalism
 struct Program
 {
     ProgramIndex index;
+    PredicateIndexList<StaticTag> static_predicates;
+    PredicateIndexList<FluentTag> fluent_predicates;
+    ObjectIndexList objects;
     GroundAtomIndexList<StaticTag> static_atoms;
     GroundAtomIndexList<FluentTag> fluent_atoms;
     RuleIndexList rules;
@@ -35,16 +40,51 @@ struct Program
     using IndexType = ProgramIndex;
 
     Program() = default;
-    Program(ProgramIndex index, GroundAtomIndexList<StaticTag> static_atoms, GroundAtomIndexList<FluentTag> fluent_atoms, RuleIndexList rules) :
+    Program(ProgramIndex index,
+            PredicateIndexList<StaticTag> static_predicates,
+            PredicateIndexList<FluentTag> fluent_predicates,
+            ObjectIndexList objects,
+            GroundAtomIndexList<StaticTag> static_atoms,
+            GroundAtomIndexList<FluentTag> fluent_atoms,
+            RuleIndexList rules) :
         index(index),
+        static_predicates(std::move(static_predicates)),
+        fluent_predicates(std::move(fluent_predicates)),
+        objects(std::move(objects)),
         static_atoms(std::move(static_atoms)),
         fluent_atoms(std::move(fluent_atoms)),
         rules(std::move(rules))
     {
     }
 
-    auto cista_members() const noexcept { return std::tie(index, static_atoms, fluent_atoms, rules); }
-    auto identifying_members() const noexcept { return std::tie(static_atoms, fluent_atoms, rules); }
+    template<IsStaticOrFluentTag T>
+    const auto& get_predicates() const
+    {
+        if constexpr (std::same_as<T, StaticTag>)
+        {
+            return static_predicates;
+        }
+        else if constexpr (std::same_as<T, FluentTag>)
+        {
+            return fluent_predicates;
+        }
+    }
+
+    template<IsStaticOrFluentTag T>
+    const auto& get_atoms() const
+    {
+        if constexpr (std::same_as<T, StaticTag>)
+        {
+            return static_atoms;
+        }
+        else if constexpr (std::same_as<T, FluentTag>)
+        {
+            return fluent_atoms;
+        }
+    }
+
+    auto cista_members() const noexcept { return std::tie(index, static_predicates, fluent_predicates, objects, static_atoms, fluent_atoms, rules); }
+    auto identifying_members() const noexcept { return std::tie(static_predicates, fluent_predicates, objects, static_atoms, fluent_atoms, rules); }
 };
 
 }

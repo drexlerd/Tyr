@@ -20,7 +20,8 @@
 
 #include "tyr/common/span.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_proxy.hpp"
+#include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/program_index.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/rule_proxy.hpp"
@@ -39,8 +40,17 @@ public:
     const auto& get() const { return repository->operator[]<Program>(index); }
 
     auto get_index() const { return index; }
-    auto get_static_atoms() const { return SpanProxy<GroundAtomIndex<StaticTag>, Repository>(*repository, get().static_atoms); }
-    auto get_fluent_atoms() const { return SpanProxy<GroundAtomIndex<FluentTag>, Repository>(*repository, get().fluent_atoms); }
+    template<IsStaticOrFluentTag T>
+    auto get_predicates() const
+    {
+        return SpanProxy<PredicateIndex<T>, Repository>(*repository, get().template get_predicates<T>());
+    }
+    auto get_objects() const { return SpanProxy<ObjectIndex, Repository>(*repository, get().objects); }
+    template<IsStaticOrFluentTag T>
+    auto get_atoms() const
+    {
+        return SpanProxy<GroundAtomIndex<T>, Repository>(*repository, get().template get_atoms<T>());
+    }
     auto get_rules() const { return SpanProxy<RuleIndex, Repository>(*repository, get().rules); }
 };
 }

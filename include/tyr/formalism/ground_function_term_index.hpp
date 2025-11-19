@@ -33,7 +33,7 @@ struct GroundFunctionTermIndex
     uint_t value {};
 
     GroundFunctionTermIndex() = default;
-    explicit GroundFunctionTermIndex(uint_t value) : value(value) {}
+    explicit GroundFunctionTermIndex(FunctionIndex<T> function_index, uint_t value) : function_index(function_index), value(value) {}
 
     friend bool operator==(const GroundFunctionTermIndex& lhs, const GroundFunctionTermIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
 
