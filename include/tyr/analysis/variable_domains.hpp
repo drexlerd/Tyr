@@ -31,7 +31,7 @@ using DomainSetListList = std::vector<DomainSetList>;
 using DomainListList = std::vector<std::vector<formalism::ObjectIndex>>;
 using DomainListListList = std::vector<DomainListList>;
 
-DomainListList compute_variable_list_per_predicate(formalism::ProgramProxy program)
+std::pair<DomainListList, DomainListList> compute_variable_list_per_predicate(formalism::ProgramProxy program)
 {
     const auto num_static_predicates = program.get_predicates<formalism::StaticTag>().size();
     const auto num_fluent_predicates = program.get_predicates<formalism::FluentTag>().size();
@@ -44,13 +44,46 @@ DomainListList compute_variable_list_per_predicate(formalism::ProgramProxy progr
     for (const auto predicate : program.get_predicates<formalism::FluentTag>())
         fluent_domains[predicate.get_index().value].resize(predicate.get_arity());
 
-    for (const auto atom : program.get_atoms<formalism::StaticTag>()) {}
-    for (const auto atom : program.get_atoms<formalism::FluentTag>()) {}
+    for (const auto atom : program.get_atoms<formalism::StaticTag>())
+    {
+        const auto predicate = atom.get_predicate();
+        auto pos = size_t { 0 };
+        for (const auto& object : atom.get_terms())
+            static_domains[predicate.get_index().value][pos++].insert(object.get_index());
+    }
+    for (const auto atom : program.get_atoms<formalism::FluentTag>())
+    {
+        const auto predicate = atom.get_predicate();
+        auto pos = size_t { 0 };
+        for (const auto& object : atom.get_terms())
+            fluent_domains[predicate.get_index().value][pos++].insert(object.get_index());
+    }
 
+    // Copy static domain into fluent domain
     for (const auto lhs_rule : program.get_rules())
     {
-        for (const auto rhs_rule : program.get_rules()) {}
+        for (const auto rhs_rule : program.get_rules())
+        {
+            for (const auto lhs_static_literal : lhs_rule.get_static_body())
+            {
+                for (const auto rhs_fluent_literal : rhs_rule.get_fluent_body()) {}
+            }
+        }
     }
+
+    // Merge fluent domains until reaching fixed point
+    for (const auto lhs_rule : program.get_rules())
+    {
+        for (const auto rhs_rule : program.get_rules())
+        {
+            for (const auto lhs_fluent_literal : lhs_rule.get_fluent_body())
+            {
+                for (const auto rhs_fluent_literal : rhs_rule.get_fluent_body()) {}
+            }
+        }
+    }
+
+    return { std::move(static_domains), std::move(fluent_domains) };
 }
 
 DomainListList compute_variable_list_per_function(formalism::ProgramProxy program) {}

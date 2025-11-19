@@ -21,6 +21,7 @@
 #include "tyr/common/span.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/predicate_proxy.hpp"
 #include "tyr/formalism/repository.hpp"
 
@@ -40,7 +41,7 @@ public:
 
     auto get_index() const { return index; }
     auto get_predicate() const { return PredicateProxy(*repository, index.predicate_index); }
-    auto get_terms() const { return SpanProxy((*repository), get().terms); }
+    auto get_terms() const { return SpanProxy<ObjectIndex, Repository>((*repository), get().terms); }
 };
 }
 
