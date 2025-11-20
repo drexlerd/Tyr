@@ -20,7 +20,9 @@
 
 #include "tyr/common/span.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/function_index.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/ground_function_term_value_index.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/program_index.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -46,11 +48,21 @@ public:
     {
         return SpanProxy<PredicateIndex<T>, C>(get().template get_predicates<T>(), *context);
     }
+    template<IsStaticOrFluentTag T>
+    auto get_functions() const
+    {
+        return SpanProxy<FunctionIndex<T>, C>(get().template get_functions<T>(), *context);
+    }
     auto get_objects() const { return SpanProxy<ObjectIndex, C>(get().objects, *context); }
     template<IsStaticOrFluentTag T>
     auto get_atoms() const
     {
         return SpanProxy<GroundAtomIndex<T>, C>(get().template get_atoms<T>(), *context);
+    }
+    template<IsStaticOrFluentTag T>
+    auto get_function_values() const
+    {
+        return SpanProxy<GroundFunctionTermValueIndex<T>, C>(get().template get_function_values<T>(), *context);
     }
     auto get_rules() const { return SpanProxy<RuleIndex, C>(get().rules, *context); }
 };

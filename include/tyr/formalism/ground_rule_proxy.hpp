@@ -19,10 +19,12 @@
 #define TYR_FORMALISM_GROUND_RULE_PROXY_HPP_
 
 #include "tyr/common/span.hpp"
+#include "tyr/formalism/boolean_operator.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_proxy.hpp"
 #include "tyr/formalism/ground_literal_proxy.hpp"
 #include "tyr/formalism/ground_rule_index.hpp"
+#include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/repository.hpp"
 
 namespace tyr::formalism
@@ -40,8 +42,10 @@ public:
     const auto& get() const { return get_repository(*context).template operator[]<GroundRule>(index); }
 
     auto get_index() const { return index; }
+    auto get_binding() const { return SpanProxy<ObjectIndex, C>(get().objects, *context); }
     auto get_static_body() const { return SpanProxy<GroundLiteralIndex<StaticTag>, C>(get().static_body, *context); }
     auto get_fluent_body() const { return SpanProxy<GroundLiteralIndex<FluentTag>, C>(get().fluent_body, *context); }
+    auto get_numeric_body() const { return SpanProxy<BooleanOperator<GroundFunctionExpression>, C>(get().numeric_body, *context); }
     auto get_head() const { return GroundAtomProxy(get().head, *context); }
 };
 }

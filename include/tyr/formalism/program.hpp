@@ -19,7 +19,9 @@
 #define TYR_FORMALISM_PROGRAM_HPP_
 
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/function_index.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/ground_function_term_value_index.hpp"
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/program_index.hpp"
@@ -32,9 +34,13 @@ struct Program
     ProgramIndex index;
     PredicateIndexList<StaticTag> static_predicates;
     PredicateIndexList<FluentTag> fluent_predicates;
+    FunctionIndexList<StaticTag> static_functions;
+    FunctionIndexList<FluentTag> fluent_functions;
     ObjectIndexList objects;
     GroundAtomIndexList<StaticTag> static_atoms;
     GroundAtomIndexList<FluentTag> fluent_atoms;
+    GroundFunctionTermValueIndexList<StaticTag> static_function_values;
+    GroundFunctionTermValueIndexList<FluentTag> fluent_function_values;
     RuleIndexList rules;
 
     using IndexType = ProgramIndex;
@@ -43,16 +49,24 @@ struct Program
     Program(ProgramIndex index,
             PredicateIndexList<StaticTag> static_predicates,
             PredicateIndexList<FluentTag> fluent_predicates,
+            FunctionIndexList<StaticTag> static_functions,
+            FunctionIndexList<FluentTag> fluent_functions,
             ObjectIndexList objects,
             GroundAtomIndexList<StaticTag> static_atoms,
             GroundAtomIndexList<FluentTag> fluent_atoms,
+            GroundFunctionTermValueIndexList<StaticTag> static_function_values,
+            GroundFunctionTermValueIndexList<FluentTag> fluent_function_values,
             RuleIndexList rules) :
         index(index),
         static_predicates(std::move(static_predicates)),
         fluent_predicates(std::move(fluent_predicates)),
+        static_functions(std::move(static_functions)),
+        fluent_functions(std::move(fluent_functions)),
         objects(std::move(objects)),
         static_atoms(std::move(static_atoms)),
         fluent_atoms(std::move(fluent_atoms)),
+        static_function_values(std::move(static_function_values)),
+        fluent_function_values(std::move(fluent_function_values)),
         rules(std::move(rules))
     {
     }
@@ -71,6 +85,19 @@ struct Program
     }
 
     template<IsStaticOrFluentTag T>
+    const auto& get_functions() const
+    {
+        if constexpr (std::same_as<T, StaticTag>)
+        {
+            return static_functions;
+        }
+        else if constexpr (std::same_as<T, FluentTag>)
+        {
+            return fluent_functions;
+        }
+    }
+
+    template<IsStaticOrFluentTag T>
     const auto& get_atoms() const
     {
         if constexpr (std::same_as<T, StaticTag>)
@@ -83,8 +110,46 @@ struct Program
         }
     }
 
-    auto cista_members() const noexcept { return std::tie(index, static_predicates, fluent_predicates, objects, static_atoms, fluent_atoms, rules); }
-    auto identifying_members() const noexcept { return std::tie(static_predicates, fluent_predicates, objects, static_atoms, fluent_atoms, rules); }
+    template<IsStaticOrFluentTag T>
+    const auto& get_function_values() const
+    {
+        if constexpr (std::same_as<T, StaticTag>)
+        {
+            return static_function_values;
+        }
+        else if constexpr (std::same_as<T, FluentTag>)
+        {
+            return fluent_function_values;
+        }
+    }
+
+    auto cista_members() const noexcept
+    {
+        return std::tie(index,
+                        static_predicates,
+                        fluent_predicates,
+                        static_functions,
+                        fluent_functions,
+                        objects,
+                        static_atoms,
+                        fluent_atoms,
+                        static_function_values,
+                        fluent_function_values,
+                        rules);
+    }
+    auto identifying_members() const noexcept
+    {
+        return std::tie(static_predicates,
+                        fluent_predicates,
+                        static_functions,
+                        fluent_functions,
+                        objects,
+                        static_atoms,
+                        fluent_atoms,
+                        static_function_values,
+                        fluent_function_values,
+                        rules);
+    }
 };
 
 }

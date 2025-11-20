@@ -41,6 +41,9 @@ struct FunctionIndex
     auto cista_members() const noexcept { return std::tie(value); }
     auto identifying_members() const noexcept { return std::tie(value); }
 };
+
+template<IsStaticOrFluentTag T>
+using FunctionIndexList = ::cista::offset::vector<FunctionIndex<T>>;
 }
 
 #endif

@@ -19,6 +19,7 @@
 #define TYR_FORMALISM_GROUND_RULE_HPP_
 
 #include "tyr/common/span.hpp"
+#include "tyr/formalism/boolean_operator.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom.hpp"
 #include "tyr/formalism/ground_literal.hpp"
@@ -31,26 +32,32 @@ namespace tyr::formalism
 struct GroundRule
 {
     GroundRuleIndex index;
+    ObjectIndexList binding;
     GroundLiteralIndexList<StaticTag> static_body;
     GroundLiteralIndexList<FluentTag> fluent_body;
+    BooleanOperatorList<GroundFunctionExpression> numeric_body;
     GroundAtomIndex<FluentTag> head;
 
     using IndexType = GroundRuleIndex;
 
     GroundRule() = default;
     GroundRule(GroundRuleIndex index,
+               ObjectIndexList binding,
                GroundLiteralIndexList<StaticTag> static_body,
                GroundLiteralIndexList<FluentTag> fluent_body,
+               BooleanOperatorList<GroundFunctionExpression> numeric_body,
                GroundAtomIndex<FluentTag> head) :
         index(index),
+        binding(std::move(binding)),
         static_body(std::move(static_body)),
         fluent_body(std::move(fluent_body)),
+        numeric_body(std::move(numeric_body)),
         head(head)
     {
     }
 
-    auto cista_members() const noexcept { return std::tie(index, static_body, fluent_body, head); }
-    auto identifying_members() const noexcept { return std::tie(index.rule_index, static_body, fluent_body, head); }
+    auto cista_members() const noexcept { return std::tie(index, binding, static_body, fluent_body, numeric_body, head); }
+    auto identifying_members() const noexcept { return std::tie(index.rule_index, binding, static_body, fluent_body, numeric_body, head); }
 };
 
 }
