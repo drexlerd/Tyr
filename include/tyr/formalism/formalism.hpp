@@ -26,6 +26,7 @@
 #include "tyr/formalism/binary_operator_proxy.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/double.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/function.hpp"
 #include "tyr/formalism/function_expression.hpp"
 #include "tyr/formalism/function_expression_proxy.hpp"

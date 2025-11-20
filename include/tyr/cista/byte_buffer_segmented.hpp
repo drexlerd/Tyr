@@ -93,6 +93,7 @@ public:
     const uint8_t* write(const uint8_t* data, size_t amount, size_t align = 1)
     {
         assert(data);
+        assert((align & (align - 1)) == 0 || align == 1);
 
         // Ensure that there is enough capacity for data written with correct alignment
         const auto worst_padding = (align > 1) ? (align - 1) : 0;

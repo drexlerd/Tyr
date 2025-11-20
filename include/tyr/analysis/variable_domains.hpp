@@ -18,6 +18,7 @@
 #ifndef TYR_ANALYSIS_VARIABLE_DOMAINS_HPP_
 #define TYR_ANALYSIS_VARIABLE_DOMAINS_HPP_
 
+#include "tyr/common/formatter.hpp"
 #include "tyr/common/unordered_set.hpp"
 #include "tyr/formalism/formalism.hpp"
 
@@ -59,6 +60,8 @@ std::pair<DomainSetListList, DomainSetListList> compute_variable_list_per_predic
         for (const auto& object : atom.get_terms())
             static_domains[predicate.get_index().value][pos++].insert(object.get_index());
     }
+
+    std::cout << "Static domains: " << "\n" << static_domains << std::endl;
 
     for (const auto atom : program.get_atoms<formalism::FluentTag>())
     {
