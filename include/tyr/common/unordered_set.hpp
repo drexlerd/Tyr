@@ -35,6 +35,12 @@ void intersect_inplace(std::unordered_set<T, H, E>& target, const std::unordered
             ++it;
     }
 }
+
+template<typename T, typename H, typename E>
+void union_inplace(std::unordered_set<T, H, E>& target, const std::unordered_set<T, H, E>& other)
+{
+    target.insert(other.begin(), other.end());
+}
 }
 
 #endif

@@ -25,6 +25,8 @@ namespace tyr::formalism
 enum class ParameterIndex : uint_t
 {
 };
+
+inline uint_t to_uint_t(ParameterIndex index) noexcept { return static_cast<uint_t>(index); }
 }
 
 #endif

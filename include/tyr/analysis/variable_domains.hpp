@@ -45,6 +45,7 @@ std::pair<DomainSetListList, DomainSetListList> compute_variable_list_per_predic
         objects.push_back(object.get_index());
     auto universe = DomainSet(objects.begin(), objects.end());
 
+    ///--- Step 1: Initialize static and fluent predicate parameter domains
     auto static_domains = DomainSetListList(num_static_predicates);
     for (const auto predicate : program.get_predicates<formalism::StaticTag>())
         static_domains[predicate.get_index().value].resize(predicate.get_arity());
@@ -61,8 +62,6 @@ std::pair<DomainSetListList, DomainSetListList> compute_variable_list_per_predic
             static_domains[predicate.get_index().value][pos++].insert(object.get_index());
     }
 
-    std::cout << "Static domains: " << "\n" << static_domains << std::endl;
-
     for (const auto atom : program.get_atoms<formalism::FluentTag>())
     {
         const auto predicate = atom.get_predicate();
@@ -71,7 +70,37 @@ std::pair<DomainSetListList, DomainSetListList> compute_variable_list_per_predic
             fluent_domains[predicate.get_index().value][pos++].insert(object.get_index());
     }
 
-    // Find tighest domain for each variable in each rule
+    ///--- Step 2: Compute rule parameter domains as tightest bound from the previously computed domains of the static predicates.
+    auto func_restrict_rule_parameter_domain = [&](auto&& atom, auto&& parameter_domains)
+    {
+        const auto predicate = atom.get_predicate();
+
+        auto pos = size_t { 0 };
+        for (const auto term : atom.get_terms())
+        {
+            term.visit(
+                [&](auto&& arg)
+                {
+                    using ProxyType = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<ProxyType, formalism::ObjectProxy<>>) {}
+                    else if constexpr (std::is_same_v<ProxyType, formalism::ParameterIndex>)
+                    {
+                        const auto parameter_index = to_uint_t(arg);
+                        auto& parameter_domain = parameter_domains[parameter_index];
+                        auto& predicate_domain = static_domains[predicate.get_index().value][pos];
+
+                        intersect_inplace(parameter_domain, predicate_domain);
+                    }
+                    else
+                    {
+                        static_assert(dependent_false<ProxyType>::value, "Missing case");
+                    }
+                });
+            ++pos;
+        }
+    };
+
     auto parameter_domains_per_rule = DomainSetListList();
     {
         for (const auto rule : program.get_rules())
@@ -81,53 +110,60 @@ std::pair<DomainSetListList, DomainSetListList> compute_variable_list_per_predic
 
             for (const auto literal : rule.get_static_body())
             {
-                auto pos = size_t { 0 };
-                for (const auto term : literal.get_atom().get_terms())
-                {
-                    term.visit(
-                        [&](auto&& arg)
-                        {
-                            using ProxyType = std::decay_t<decltype(arg)>;
-
-                            if constexpr (std::is_same_v<ProxyType, formalism::VariableProxy<formalism::Repository>>)
-                            {
-                                const auto parameter_index = arg.get_index();
-                                auto& parameter_domain = parameter_domains[parameter_index.value];
-                                auto& predicate_domain = static_domains[literal.get_atom().get_predicate().get_index().value][pos];
-
-                                intersect_inplace(parameter_domain, predicate_domain);
-                            }
-                        });
-                    ++pos;
-                }
+                func_restrict_rule_parameter_domain(literal.get_atom(), parameter_domains);
             }
+
             parameter_domains_per_rule.push_back(std::move(parameter_domains));
         }
     }
 
-    // Copy static domain into fluent domain
-    for (const auto lhs_rule : program.get_rules())
+    ///--- Step 3: Lift the fluent predicate domains given the variable relationships in the rules.
+
+    auto func_lift_fluent_domain = [&](auto&& atom, auto&& parameter_domains)
     {
-        for (const auto rhs_rule : program.get_rules())
+        const auto predicate = atom.get_predicate();
+
+        auto pos = size_t { 0 };
+        for (const auto term : atom.get_terms())
         {
-            for (const auto lhs_static_literal : lhs_rule.get_static_body())
-            {
-                for (const auto rhs_fluent_literal : rhs_rule.get_fluent_body()) {}
-            }
+            term.visit(
+                [&](auto&& arg)
+                {
+                    using ProxyType = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<ProxyType, formalism::ObjectProxy<>>) {}
+                    else if constexpr (std::is_same_v<ProxyType, formalism::ParameterIndex>)
+                    {
+                        const auto parameter_index = to_uint_t(arg);
+                        auto& parameter_domain = parameter_domains[parameter_index];
+                        auto& predicate_domain = fluent_domains[predicate.get_index().value][pos];
+
+                        union_inplace(predicate_domain, parameter_domain);
+                    }
+                    else
+                    {
+                        static_assert(dependent_false<ProxyType>::value, "Missing case");
+                    }
+                });
+            ++pos;
         }
+    };
+
+    for (const auto rule : program.get_rules())
+    {
+        auto& parameter_domains = parameter_domains_per_rule[rule.get_index().value];
+
+        for (const auto literal : rule.get_fluent_body())
+        {
+            func_lift_fluent_domain(literal.get_atom(), parameter_domains);
+        }
+
+        func_lift_fluent_domain(rule.get_head(), parameter_domains);
     }
 
-    // Merge fluent domains until reaching fixed point
-    for (const auto lhs_rule : program.get_rules())
-    {
-        for (const auto rhs_rule : program.get_rules())
-        {
-            for (const auto lhs_fluent_literal : lhs_rule.get_fluent_body())
-            {
-                for (const auto rhs_fluent_literal : rhs_rule.get_fluent_body()) {}
-            }
-        }
-    }
+    std::cout << "Static domains: " << "\n" << static_domains << std::endl;
+    std::cout << "Fluent domains: " << "\n" << fluent_domains << std::endl;
+    std::cout << "Rule domains: " << "\n" << parameter_domains_per_rule << std::endl;
 
     return { std::move(static_domains), std::move(fluent_domains) };
 }
@@ -135,7 +171,6 @@ std::pair<DomainSetListList, DomainSetListList> compute_variable_list_per_predic
 DomainListList compute_variable_list_per_function(formalism::ProgramProxy<> program) {}
 
 DomainListList compute_variable_lists_per_rule(formalism::ProgramProxy<> program) {}
-
 }
 
 #endif
