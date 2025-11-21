@@ -31,8 +31,6 @@ struct GroundFunctionTerm
     GroundFunctionTermIndex<T> index;
     ObjectIndexList terms;
 
-    using IndexType = GroundFunctionTermIndex<T>;
-
     GroundFunctionTerm() = default;
     GroundFunctionTerm(GroundFunctionTermIndex<T> index, ObjectIndexList terms) : index(index), terms(std::move(terms)) {}
 

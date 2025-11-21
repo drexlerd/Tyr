@@ -30,8 +30,6 @@ struct GroundAtom
     GroundAtomIndex<T> index;
     ObjectIndexList terms;
 
-    using IndexType = GroundAtomIndex<T>;
-
     GroundAtom() = default;
     GroundAtom(GroundAtomIndex<T> index, ObjectIndexList terms) : index(index), terms(std::move(terms)) {}
 

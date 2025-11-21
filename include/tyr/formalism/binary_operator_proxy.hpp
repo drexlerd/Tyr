@@ -28,22 +28,20 @@ template<IsOp Op, typename T, IsContext C>
 class BinaryOperatorProxy
 {
 private:
-    using IndexType = BinaryOperatorIndex<Op, T>;
-
     const C* context;
-    IndexType index;
+    BinaryOperatorIndex<Op, T> index;
 
 public:
-    BinaryOperatorProxy(IndexType index, const C& context) : context(&context), index(index) {}
+    BinaryOperatorProxy(BinaryOperatorIndex<Op, T> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
     auto get_lhs() const
     {
-        if constexpr (HasProxyType<T, C>)
+        if constexpr (IndexTypeHasProxy<T, C>)
         {
-            using ProxyType = typename T::ProxyType<C>;
+            using ProxyType = typename IndexTraits<T>::template ProxyType<C>;
             return ProxyType(get().lhs, *context);
         }
         else
@@ -53,9 +51,9 @@ public:
     }
     auto get_rhs() const
     {
-        if constexpr (HasProxyType<T, C>)
+        if constexpr (IndexTypeHasProxy<T, C>)
         {
-            using ProxyType = typename T::ProxyType<C>;
+            using ProxyType = typename IndexTraits<T>::template ProxyType<C>;
             return ProxyType(get().rhs, *context);
         }
         else

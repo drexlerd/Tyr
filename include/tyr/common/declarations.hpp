@@ -19,6 +19,7 @@
 #define TYR_COMMON_CONCEPTS_HPP_
 
 #include "tyr/common/config.hpp"
+#include "tyr/common/type_traits.hpp"
 
 #include <boost/hana.hpp>
 #include <cista/containers/string.h>
@@ -47,16 +48,33 @@ concept HasIdentifyingMembers = requires(const T a) {
     { a.identifying_members() };
 };
 
-/// @brief Check whether T is an index type for a corresponding data type.
+/// @brief Check whether T is an index type for an arbitrary context C.
 template<typename T>
 concept IsIndexType = requires(const T& a) {
-    typename T::DataType;
+    // Required traits
+    typename IndexTraits<T>::DataType;
+    // Required functions
     { a.get() } -> std::same_as<uint_t>;
 };
 
-/// @brief Check whether T can be wrapped into a ProxyType.
 template<typename T, typename C>
-concept HasProxyType = requires { typename T::template ProxyType<C>; };
+concept IndexTypeHasProxy = requires { typename IndexTraits<T>::template ProxyType<C>; };
+
+/// @brief Check whether T is a data type for an arbitrary context C.
+template<typename T, typename C>
+concept IsDataType = requires {
+    // Required traits
+    typename DataTraits<T>::IndexType;
+    typename DataTraits<T>::template ProxyType<C>;
+};
+
+/// @brief Check whether T is a proxy type.
+template<typename T>
+concept IsProxyType = requires {
+    // Required traits
+    typename ProxyTraits<T>::IndexType;
+    typename ProxyTraits<T>::DataType;
+};
 
 template<typename T>
 struct dependent_false : std::false_type

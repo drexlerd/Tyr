@@ -30,13 +30,11 @@ template<IsStaticOrFluentTag T, IsContext C>
 class GroundFunctionTermProxy
 {
 private:
-    using IndexType = GroundFunctionTermIndex<T>;
-
     const C* context;
-    IndexType index;
+    GroundFunctionTermIndex<T> index;
 
 public:
-    GroundFunctionTermProxy(IndexType index, const C& context) : context(&context), index(index) {}
+    GroundFunctionTermProxy(GroundFunctionTermIndex<T> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 

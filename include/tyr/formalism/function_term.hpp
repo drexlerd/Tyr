@@ -31,8 +31,6 @@ struct FunctionTerm
     FunctionTermIndex<T> index;
     TermList terms;
 
-    using IndexType = FunctionTermIndex<T>;
-
     FunctionTerm() = default;
     FunctionTerm(FunctionTermIndex<T> index, TermList terms) : index(index), terms(std::move(terms)) {}
 

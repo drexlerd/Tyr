@@ -30,8 +30,6 @@ struct Atom
     AtomIndex<T> index;
     TermList terms;
 
-    using IndexType = AtomIndex<T>;
-
     Atom() = default;
     Atom(AtomIndex<T> index, TermList terms) : index(index), terms(std::move(terms)) {}
 

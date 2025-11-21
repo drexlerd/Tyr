@@ -28,22 +28,20 @@ template<IsOp Op, typename T, IsContext C>
 class UnaryOperatorProxy
 {
 private:
-    using IndexType = UnaryOperatorIndex<Op, T>;
-
     const C* context;
-    IndexType index;
+    UnaryOperatorIndex<Op, T> index;
 
 public:
-    UnaryOperatorProxy(IndexType index, const C& context) : context(&context), index(index) {}
+    UnaryOperatorProxy(UnaryOperatorIndex<Op, T> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
     auto get_arg() const
     {
-        if constexpr (HasProxyType<T, C>)
+        if constexpr (IndexTypeHasProxy<T, C>)
         {
-            using ProxyType = typename T::ProxyType<C>;
+            using ProxyType = typename IndexTraits<T>::template ProxyType<C>;
             return ProxyType(get().arg, *context);
         }
         else

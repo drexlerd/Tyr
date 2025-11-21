@@ -18,6 +18,12 @@
 #ifndef TYR_FORMALISM_FORMALISM_HPP_
 #define TYR_FORMALISM_FORMALISM_HPP_
 
+// Include specialization headers first
+#include "tyr/formalism/data_traits.hpp"
+#include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/index_traits.hpp"
+#include "tyr/formalism/proxy_traits.hpp"
+//
 #include "tyr/formalism/arithmetic_operator.hpp"
 #include "tyr/formalism/arithmetic_operator_proxy.hpp"
 #include "tyr/formalism/atom.hpp"
@@ -28,10 +34,8 @@
 #include "tyr/formalism/binary_operator_proxy.hpp"
 #include "tyr/formalism/boolean_operator.hpp"
 #include "tyr/formalism/boolean_operator_proxy.hpp"
-#include "tyr/formalism/data_traits.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/double.hpp"
-#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/function.hpp"
 #include "tyr/formalism/function_expression.hpp"
 #include "tyr/formalism/function_expression_proxy.hpp"
@@ -57,7 +61,6 @@
 #include "tyr/formalism/ground_rule.hpp"
 #include "tyr/formalism/ground_rule_index.hpp"
 #include "tyr/formalism/ground_rule_proxy.hpp"
-#include "tyr/formalism/index_traits.hpp"
 #include "tyr/formalism/literal.hpp"
 #include "tyr/formalism/literal_index.hpp"
 #include "tyr/formalism/literal_proxy.hpp"
@@ -74,7 +77,6 @@
 #include "tyr/formalism/program.hpp"
 #include "tyr/formalism/program_index.hpp"
 #include "tyr/formalism/program_proxy.hpp"
-#include "tyr/formalism/proxy_traits.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/rule.hpp"
 #include "tyr/formalism/rule_index.hpp"

@@ -31,8 +31,6 @@ struct Function
     ::cista::offset::string name;
     uint_t arity;
 
-    using IndexType = FunctionIndex<T>;
-
     Function() = default;
     Function(FunctionIndex<T> index, ::cista::offset::string name, uint_t arity) : index(index), name(std::move(name)), arity(arity) {}
 

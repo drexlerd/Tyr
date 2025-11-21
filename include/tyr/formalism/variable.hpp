@@ -28,8 +28,6 @@ struct Variable
     VariableIndex index;
     ::cista::offset::string name;
 
-    using IndexType = VariableIndex;
-
     Variable() = default;
     Variable(VariableIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
 

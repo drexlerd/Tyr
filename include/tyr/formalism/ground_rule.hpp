@@ -38,8 +38,6 @@ struct GroundRule
     BooleanOperatorList<GroundFunctionExpression> numeric_body;
     GroundAtomIndex<FluentTag> head;
 
-    using IndexType = GroundRuleIndex;
-
     GroundRule() = default;
     GroundRule(GroundRuleIndex index,
                ObjectIndexList binding,

@@ -15,9 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/cista/indexed_hash_set.hpp"
-
-#include "tyr/formalism/predicate.hpp"
+#include "tyr/tyr.hpp"
 
 #include <gtest/gtest.h>
 

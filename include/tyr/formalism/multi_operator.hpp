@@ -26,13 +26,11 @@ namespace tyr::formalism
 template<IsOp Op, typename T>
 struct MultiOperator
 {
-    using IndexType = MultiOperatorIndex<Op, T>;
-
-    IndexType index;
+    MultiOperatorIndex<Op, T> index;
     ::cista::offset::vector<T> args;
 
     MultiOperator() = default;
-    MultiOperator(IndexType index, ::cista::offset::vector<T> args) : index(index), args(std::move(args)) {}
+    MultiOperator(MultiOperatorIndex<Op, T> index, ::cista::offset::vector<T> args) : index(index), args(std::move(args)) {}
 
     auto cista_members() const noexcept { return std::tie(index, args); }
     auto identifying_members() const noexcept { return std::tie(args); }

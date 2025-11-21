@@ -27,10 +27,6 @@ namespace tyr::formalism
 template<IsStaticOrFluentTag T>
 struct GroundFunctionTermValueIndex
 {
-    using DataType = GroundFunctionTermValue<T>;
-    template<IsContext C>
-    using ProxyType = GroundFunctionTermValueProxy<T, C>;
-
     FunctionIndex<T> function_index {};
     uint_t value {};
 

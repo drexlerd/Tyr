@@ -26,10 +26,6 @@ namespace tyr::formalism
 template<IsOp Op, typename T>
 struct BinaryOperatorIndex
 {
-    using DataType = BinaryOperator<Op, T>;
-    template<IsContext C>
-    using ProxyType = BinaryOperatorProxy<Op, T, C>;
-
     uint_t value {};
 
     BinaryOperatorIndex() = default;

@@ -37,7 +37,7 @@ template<typename T, typename H = Hash<ObserverPtr<const T>>, typename E = Equal
 class IndexedHashSet
 {
 private:
-    using IndexType = typename T::IndexType;
+    using IndexType = typename DataTraits<T>::IndexType;
 
     // Persistent storage
     ByteBufferSegmented m_storage;

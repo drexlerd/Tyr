@@ -29,13 +29,11 @@ template<IsStaticOrFluentTag T, IsContext C>
 class FunctionTermProxy
 {
 private:
-    using IndexType = FunctionTermIndex<T>;
-
     const C* context;
-    IndexType index;
+    FunctionTermIndex<T> index;
 
 public:
-    FunctionTermProxy(IndexType index, const C& context) : context(&context), index(index) {}
+    FunctionTermProxy(FunctionTermIndex<T> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 

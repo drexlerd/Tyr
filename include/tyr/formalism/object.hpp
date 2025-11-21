@@ -28,8 +28,6 @@ struct Object
     ObjectIndex index;
     ::cista::offset::string name;
 
-    using IndexType = ObjectIndex;
-
     Object() = default;
     Object(ObjectIndex index, ::cista::offset::string name) : index(index), name(std::move(name)) {}
 

@@ -26,10 +26,6 @@ namespace tyr::formalism
 template<IsStaticOrFluentTag T>
 struct FunctionTermIndex
 {
-    using DataType = FunctionTerm<T>;
-    template<IsContext C>
-    using ProxyType = FunctionTermProxy<T, C>;
-
     FunctionIndex<T> function_index {};
     uint_t value {};
 

@@ -34,10 +34,6 @@ struct ArithmeticOperator
                                              MultiOperatorIndex<OpAdd, T>,
                                              MultiOperatorIndex<OpMul, T>>;
 
-    using DataType = ArithmeticOperator<T>;
-    template<IsContext C>
-    using ProxyType = ArithmeticOperatorProxy<T, C>;
-
     Variant value;
 
     ArithmeticOperator() = default;

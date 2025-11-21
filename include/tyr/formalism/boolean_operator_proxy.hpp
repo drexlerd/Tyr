@@ -28,13 +28,11 @@ template<typename T, IsContext C>
 class BooleanOperatorProxy : public VariantProxy<typename BooleanOperator<T>::Variant, C>
 {
 private:
-    using IndexType = BooleanOperator<T>;
-
     using Base = VariantProxy<typename BooleanOperator<T>::Variant, C>;
 
 public:
     // Have to pass by const ref because VariantProxy holds a pointer
-    BooleanOperatorProxy(const IndexType& op, const C& context) : Base(op.value, context) {}
+    BooleanOperatorProxy(const BooleanOperator<T>& op, const C& context) : Base(op.value, context) {}
 };
 }
 

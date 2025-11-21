@@ -43,8 +43,6 @@ struct Program
     GroundFunctionTermValueIndexList<FluentTag> fluent_function_values;
     RuleIndexList rules;
 
-    using IndexType = ProgramIndex;
-
     Program() = default;
     Program(ProgramIndex index,
             PredicateIndexList<StaticTag> static_predicates,

@@ -26,10 +26,6 @@ namespace tyr::formalism
 template<IsOp Op, typename T>
 struct MultiOperatorIndex
 {
-    using DataType = MultiOperator<Op, T>;
-    template<IsContext C>
-    using ProxyType = MultiOperatorProxy<Op, T, C>;
-
     uint_t value {};
 
     MultiOperatorIndex() = default;

@@ -15,11 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/formalism/atom_proxy.hpp"
-#include "tyr/formalism/object_proxy.hpp"
-#include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/term_proxy.hpp"
-#include "tyr/formalism/variable_proxy.hpp"
+#include "tyr/tyr.hpp"
 
 #include <gtest/gtest.h>
 

@@ -26,14 +26,12 @@ namespace tyr::formalism
 template<IsOp Op, typename T>
 struct BinaryOperator
 {
-    using IndexType = BinaryOperatorIndex<Op, T>;
-
-    IndexType index;
+    BinaryOperatorIndex<Op, T> index;
     T lhs;
     T rhs;
 
     BinaryOperator() = default;
-    BinaryOperator(IndexType index, T lhs, T rhs) : index(index), lhs(lhs), rhs(rhs) {}
+    BinaryOperator(BinaryOperatorIndex<Op, T> index, T lhs, T rhs) : index(index), lhs(lhs), rhs(rhs) {}
 
     auto cista_members() const noexcept { return std::tie(index, lhs, rhs); }
     auto identifying_members() const noexcept { return std::tie(lhs, rhs); }

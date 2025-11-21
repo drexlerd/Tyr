@@ -53,10 +53,10 @@ public:
     template<typename T>
     auto get() const
     {
-        if constexpr (HasProxyType<T, Context>)
+        if constexpr (IndexTypeHasProxy<T, Context>)
         {
-            using Proxy = typename T::ProxyType<Context>;
-            return Proxy(std::get<T>(index_variant()), context());
+            using ProxyType = typename IndexTraits<T>::template ProxyType<Context>;
+            return ProxyType(std::get<T>(index_variant()), context());
         }
         else
         {
@@ -72,10 +72,10 @@ public:
             {
                 using Index = std::decay_t<decltype(index)>;
 
-                if constexpr (HasProxyType<Index, Context>)
+                if constexpr (IndexTypeHasProxy<Index, Context>)
                 {
-                    using Proxy = typename Index::ProxyType<Context>;
-                    return std::forward<F>(f)(Proxy(index, context()));
+                    using ProxyType = typename IndexTraits<Index>::template ProxyType<Context>;
+                    return std::forward<F>(f)(ProxyType(index, context()));
                 }
                 else
                 {

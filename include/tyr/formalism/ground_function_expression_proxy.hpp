@@ -28,13 +28,11 @@ template<IsContext C>
 class GroundFunctionExpressionProxy : public VariantProxy<GroundFunctionExpression::Variant, C>
 {
 private:
-    using IndexType = GroundFunctionExpression;
-
     using Base = VariantProxy<GroundFunctionExpression::Variant, C>;
 
 public:
     // Have to pass by const ref because VariantProxy holds a pointer
-    GroundFunctionExpressionProxy(const IndexType& fexpr, const C& context) : Base(fexpr.value, context) {}
+    GroundFunctionExpressionProxy(const GroundFunctionExpression& fexpr, const C& context) : Base(fexpr.value, context) {}
 };
 }
 

@@ -28,13 +28,11 @@ template<IsContext C>
 class TermProxy : public VariantProxy<Term::Variant, C>
 {
 private:
-    using IndexType = Term;
-
     using Base = VariantProxy<Term::Variant, C>;
 
 public:
     // Have to pass by const ref because VariantProxy holds a pointer
-    TermProxy(const IndexType& term, const C& context) : Base(term.value, context) {}
+    TermProxy(const Term& term, const C& context) : Base(term.value, context) {}
 };
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Dominik Drexler
+ * Copyright (C) 2023 Dominik Drexler and Simon Stahlberg
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,34 +10,29 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ *<
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_OBJECT_PROXY_HPP_
-#define TYR_FORMALISM_OBJECT_PROXY_HPP_
+#ifndef TYR_COMMON_TYPE_TRAITS_HPP_
+#define TYR_COMMON_TYPE_TRAITS_HPP_
 
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/object_index.hpp"
-#include "tyr/formalism/repository.hpp"
-
-namespace tyr::formalism
+namespace tyr
 {
-template<IsContext C>
-class ObjectProxy
+template<typename T>
+struct DataTraits
 {
-private:
-    const C* context;
-    ObjectIndex index;
+};
 
-public:
-    ObjectProxy(ObjectIndex index, const C& context) : context(&context), index(index) {}
+template<typename T>
+struct IndexTraits
+{
+};
 
-    const auto& get() const { return get_repository(*context)[index]; }
-
-    auto get_index() const { return index; }
-    const auto& get_name() const { return get().name; }
+template<typename T>
+struct ProxyTraits
+{
 };
 }
 

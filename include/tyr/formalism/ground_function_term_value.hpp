@@ -33,8 +33,6 @@ struct GroundFunctionTermValue
     GroundFunctionTermIndex<T> term;
     Double value;
 
-    using IndexType = GroundFunctionTermValueIndex<T>;
-
     GroundFunctionTermValue() = default;
     GroundFunctionTermValue(GroundFunctionTermValueIndex<T> index, GroundFunctionTermIndex<T> term, Double value) : index(index), term(term), value(value) {}
 

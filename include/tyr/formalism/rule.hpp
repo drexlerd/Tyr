@@ -36,8 +36,6 @@ struct Rule
     BooleanOperatorList<FunctionExpression> numeric_body;
     AtomIndex<FluentTag> head;
 
-    using IndexType = RuleIndex;
-
     Rule() = default;
     Rule(RuleIndex index,
          VariableIndexList variables,

@@ -31,8 +31,6 @@ struct Literal
     AtomIndex<T> atom_index;
     bool polarity;
 
-    using IndexType = LiteralIndex<T>;
-
     Literal() = default;
     Literal(LiteralIndex<T> index, AtomIndex<T> atom_index, bool polarity) : index(index), atom_index(atom_index), polarity(polarity) {}
 

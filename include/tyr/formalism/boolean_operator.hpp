@@ -32,10 +32,6 @@ struct BooleanOperator
                                              BinaryOperatorIndex<OpGe, T>,
                                              BinaryOperatorIndex<OpGt, T>>;
 
-    using DataType = BooleanOperator<T>;
-    template<IsContext C>
-    using ProxyType = BooleanOperatorProxy<T, C>;
-
     Variant value;
 
     BooleanOperator() = default;

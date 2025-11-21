@@ -18,125 +18,164 @@
 #ifndef TYR_FORMALISM_PROXY_TRAITS_HPP_
 #define TYR_FORMALISM_PROXY_TRAITS_HPP_
 
+#include "tyr/common/type_traits.hpp"
 #include "tyr/formalism/declarations.hpp"
 
-namespace tyr::formalism
+namespace tyr
 {
 
-template<typename T>
-struct ProxyTraits
+template<formalism::IsOp Op, typename T, formalism::IsContext C>
+struct ProxyTraits<formalism::UnaryOperatorProxy<Op, T, C>>
 {
+    using IndexType = formalism::UnaryOperatorIndex<Op, T>;
+    using DataType = formalism::UnaryOperator<Op, T>;
 };
 
-template<IsOp Op, typename T, IsContext C>
-struct ProxyTraits<UnaryOperatorProxy<Op, T, C>>
+template<formalism::IsOp Op, typename T, formalism::IsContext C>
+struct ProxyTraits<formalism::BinaryOperatorProxy<Op, T, C>>
 {
+    using IndexType = formalism::BinaryOperatorIndex<Op, T>;
+    using DataType = formalism::BinaryOperator<Op, T>;
 };
 
-template<IsOp Op, typename T, IsContext C>
-struct ProxyTraits<BinaryOperatorProxy<Op, T, C>>
+template<formalism::IsOp Op, typename T, formalism::IsContext C>
+struct ProxyTraits<formalism::MultiOperatorProxy<Op, T, C>>
 {
+    using IndexType = formalism::MultiOperatorIndex<Op, T>;
+    using DataType = formalism::MultiOperator<Op, T>;
 };
 
-template<IsOp Op, typename T, IsContext C>
-struct ProxyTraits<MultiOperatorProxy<Op, T, C>>
+template<typename T, formalism::IsContext C>
+struct ProxyTraits<formalism::ArithmeticOperatorProxy<T, C>>
 {
+    using IndexType = formalism::ArithmeticOperator<T>;
+    using DataType = formalism::ArithmeticOperator<T>;
 };
 
-template<typename T, IsContext C>
-struct ProxyTraits<ArithmeticOperatorProxy<T, C>>
+template<typename T, formalism::IsContext C>
+struct ProxyTraits<formalism::BooleanOperatorProxy<T, C>>
 {
+    using IndexType = formalism::BooleanOperator<T>;
+    using DataType = formalism::BooleanOperator<T>;
 };
 
-template<typename T, IsContext C>
-struct ProxyTraits<BooleanOperatorProxy<T, C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::VariableProxy<C>>
 {
+    using IndexType = formalism::VariableIndex;
+    using DataType = formalism::Variable;
 };
 
-template<IsContext C>
-struct ProxyTraits<VariableProxy<C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::ObjectProxy<C>>
 {
+    using IndexType = formalism::ObjectIndex;
+    using DataType = formalism::Object;
 };
 
-template<IsContext C>
-struct ProxyTraits<ObjectProxy<C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::TermProxy<C>>
 {
+    using IndexType = formalism::Term;
+    using DataType = formalism::Term;
 };
 
-struct Term;
-template<IsContext C>
-struct ProxyTraits<TermProxy<C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::PredicateProxy<T, C>>
 {
+    using IndexType = formalism::PredicateIndex<T>;
+    using DataType = formalism::Predicate<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<PredicateProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::AtomProxy<T, C>>
 {
+    using IndexType = formalism::AtomIndex<T>;
+    using DataType = formalism::Atom<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<AtomProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::LiteralProxy<T, C>>
 {
+    using IndexType = formalism::LiteralIndex<T>;
+    using DataType = formalism::Literal<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<LiteralProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::GroundAtomProxy<T, C>>
 {
+    using IndexType = formalism::GroundAtomIndex<T>;
+    using DataType = formalism::GroundAtom<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<GroundAtomProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::GroundLiteralProxy<T, C>>
 {
+    using IndexType = formalism::GroundLiteralIndex<T>;
+    using DataType = formalism::GroundLiteral<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<GroundLiteralProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::FunctionProxy<T, C>>
 {
+    using IndexType = formalism::FunctionIndex<T>;
+    using DataType = formalism::Function<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<FunctionProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::FunctionTermProxy<T, C>>
 {
+    using IndexType = formalism::FunctionTermIndex<T>;
+    using DataType = formalism::FunctionTerm<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<FunctionTermProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::GroundFunctionTermProxy<T, C>>
 {
+    using IndexType = formalism::GroundFunctionTermIndex<T>;
+    using DataType = formalism::GroundFunctionTerm<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<GroundFunctionTermProxy<T, C>>
+template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+struct ProxyTraits<formalism::GroundFunctionTermValueProxy<T, C>>
 {
+    using IndexType = formalism::GroundFunctionTermValueIndex<T>;
+    using DataType = formalism::GroundFunctionTermValue<T>;
 };
 
-template<IsStaticOrFluentTag T, IsContext C>
-struct ProxyTraits<GroundFunctionTermValueProxy<T, C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::FunctionExpressionProxy<C>>
 {
+    using IndexType = formalism::FunctionExpression;
+    using DataType = formalism::FunctionExpression;
 };
 
-template<IsContext C>
-struct ProxyTraits<FunctionExpressionProxy<C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::GroundFunctionExpressionProxy<C>>
 {
+    using IndexType = formalism::GroundFunctionExpression;
+    using DataType = formalism::GroundFunctionExpression;
 };
 
-template<IsContext C>
-struct ProxyTraits<GroundFunctionExpressionProxy<C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::RuleProxy<C>>
 {
+    using IndexType = formalism::RuleIndex;
+    using DataType = formalism::Rule;
 };
 
-template<IsContext C>
-struct ProxyTraits<RuleProxy<C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::GroundRuleProxy<C>>
 {
+    using IndexType = formalism::GroundRuleIndex;
+    using DataType = formalism::GroundRule;
 };
 
-template<IsContext C>
-struct ProxyTraits<GroundRuleProxy<C>>
+template<formalism::IsContext C>
+struct ProxyTraits<formalism::ProgramProxy<C>>
 {
-};
-
-template<IsContext C>
-struct ProxyTraits<ProgramProxy<C>>
-{
+    using IndexType = formalism::ProgramIndex;
+    using DataType = formalism::Program;
 };
 
 }

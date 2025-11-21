@@ -26,13 +26,11 @@ namespace tyr::formalism
 template<IsOp Op, typename T>
 struct UnaryOperator
 {
-    using IndexType = UnaryOperatorIndex<Op, T>;
-
-    IndexType index;
+    UnaryOperatorIndex<Op, T> index;
     T arg;
 
     UnaryOperator() = default;
-    UnaryOperator(IndexType index, T lhs, T rhs) : index(index), arg(arg) {}
+    UnaryOperator(UnaryOperatorIndex<Op, T> index, T lhs, T rhs) : index(index), arg(arg) {}
 
     auto cista_members() const noexcept { return std::tie(index, arg); }
     auto identifying_members() const noexcept { return std::tie(arg); }

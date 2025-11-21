@@ -33,13 +33,11 @@ template<IsContext C>
 class RuleProxy
 {
 private:
-    using IndexType = RuleIndex;
-
     const C* context;
-    IndexType index;
+    RuleIndex index;
 
 public:
-    RuleProxy(IndexType index, const C& context) : context(&context), index(index) {}
+    RuleProxy(RuleIndex index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 

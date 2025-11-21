@@ -31,8 +31,6 @@ struct Predicate
     ::cista::offset::string name;
     uint_t arity;
 
-    using IndexType = PredicateIndex<T>;
-
     Predicate() = default;
     Predicate(PredicateIndex<T> index, ::cista::offset::string name, uint_t arity) : index(index), name(std::move(name)), arity(arity) {}
 

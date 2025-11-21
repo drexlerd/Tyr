@@ -18,6 +18,11 @@
 #ifndef TYR_FORMALISM_REPOSITORY_HPP_
 #define TYR_FORMALISM_REPOSITORY_HPP_
 
+// Include specialization headers first
+#include "tyr/formalism/data_traits.hpp"
+#include "tyr/formalism/index_traits.hpp"
+#include "tyr/formalism/proxy_traits.hpp"
+//
 #include "tyr/cista/declarations.hpp"
 #include "tyr/cista/indexed_hash_set.hpp"
 #include "tyr/formalism/atom.hpp"
@@ -228,11 +233,11 @@ public:
         return indexed_hash_set.insert(builder, buf);
     }
 
-    template<IsIndexType I>
-        requires IsMappedTypePerIndex<typename I::DataType>
-    const auto& operator[](I index) const
+    template<IsIndexType T>
+        requires IsMappedTypePerIndex<typename IndexTraits<T>::DataType>
+    const auto& operator[](T index) const
     {
-        using DataType = typename I::DataType;
+        using DataType = typename IndexTraits<T>::DataType;
 
         const auto& list = boost::hana::at_key(m_repository, boost::hana::type<DataType> {});
 
@@ -245,11 +250,11 @@ public:
         return repository[index];
     }
 
-    template<IsIndexType I>
-        requires IsMappedType<typename I::DataType>
-    const auto& operator[](I index) const
+    template<IsIndexType T>
+        requires IsMappedType<typename IndexTraits<T>::DataType>
+    const auto& operator[](T index) const
     {
-        using DataType = typename I::DataType;
+        using DataType = typename IndexTraits<T>::DataType;
 
         const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<DataType> {});
 

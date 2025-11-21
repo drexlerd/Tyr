@@ -18,6 +18,11 @@
 #ifndef TYR_FORMALISM_SCOPED_REPOSITORY_HPP_
 #define TYR_FORMALISM_SCOPED_REPOSITORY_HPP_
 
+// Include specialization headers first
+#include "tyr/formalism/data_traits.hpp"
+#include "tyr/formalism/index_traits.hpp"
+#include "tyr/formalism/proxy_traits.hpp"
+//
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/repository.hpp"
 
@@ -31,15 +36,15 @@ private:
     Repository& local;
 
 public:
-    template<IsIndexType I>
-        requires IsMappedTypePerIndex<typename I::DataType>
-    const typename IndexType::DataType& operator[](I index) const
+    template<IsIndexType T>
+        requires IsMappedTypePerIndex<typename IndexTraits<T>::DataType>
+    const typename IndexTraits<T>::DataType& operator[](T index) const
     {
     }
 
-    template<IsIndexType I>
-        requires IsMappedType<typename I::DataType>
-    const typename IndexType::DataType& operator[](I index) const
+    template<IsIndexType T>
+        requires IsMappedType<typename IndexTraits<T>::DataType>
+    const typename IndexTraits<T>::DataType& operator[](T index) const
     {
     }
 };

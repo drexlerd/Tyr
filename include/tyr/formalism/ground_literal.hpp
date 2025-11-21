@@ -32,8 +32,6 @@ struct GroundLiteral
     GroundAtomIndex<T> atom_index;
     bool polarity;
 
-    using IndexType = GroundLiteralIndex<T>;
-
     GroundLiteral() = default;
     GroundLiteral(GroundLiteralIndex<T> index, GroundAtomIndex<T> atom_index, bool polarity) : index(index), atom_index(atom_index), polarity(polarity) {}
 
