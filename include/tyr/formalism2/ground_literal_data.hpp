@@ -28,6 +28,8 @@ namespace tyr
 template<formalism::IsStaticOrFluentTag T>
 struct Data<formalism::GroundLiteral<T>>
 {
+    using Tag = formalism::GroundLiteral<T>;
+
     Index<formalism::GroundLiteral<T>> index;
     Index<formalism::GroundAtom<T>> atom_index;
     bool polarity;

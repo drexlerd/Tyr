@@ -39,10 +39,6 @@ struct Data<formalism::BooleanOperator<T>>
 
     Data() = default;
     Data(Variant value) : value(value) {}
-    Data(const Data& other) = delete;
-    Data& operator=(const Data& other) = delete;
-    Data(Data&& other) = default;
-    Data& operator=(Data&& other) = default;
 
     friend bool operator==(const Data& lhs, const Data& rhs) { return EqualTo<Variant> {}(lhs.value, rhs.value); }
 

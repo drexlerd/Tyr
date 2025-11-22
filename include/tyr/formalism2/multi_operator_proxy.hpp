@@ -40,7 +40,17 @@ public:
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_args() const { return SpanProxy<T, C>(get().args, *context); }
+    auto get_args() const
+    {
+        if constexpr (!HasTag<T>)
+        {
+            SpanProxy<T, C>(get().args, *context);
+        }
+        else
+        {
+            return SpanProxy<typename T::Tag, C>(get().args, *context);
+        }
+    }
 };
 
 }

@@ -29,7 +29,7 @@ TEST(TyrTests, TyrCistaIndexedHashSet)
 {
     auto repository = IndexedHashSet<Predicate<FluentTag>>();
     auto buffer = Buffer();
-    auto builder = Predicate<FluentTag>();
+    auto builder = Data<Predicate<FluentTag>>();
 
     // Create a unique predicate
     builder.name = "predicate_0";

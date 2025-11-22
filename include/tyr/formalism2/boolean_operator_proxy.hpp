@@ -23,7 +23,7 @@
 #include "tyr/formalism2/boolean_operator_data.hpp"
 #include "tyr/formalism2/repository.hpp"
 
-namespace tyr::formalism
+namespace tyr
 {
 template<typename T, formalism::IsContext C>
 class Proxy<formalism::BooleanOperator<T>, C> : public VariantProxy<typename Data<formalism::BooleanOperator<T>>::Variant, C>

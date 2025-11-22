@@ -30,6 +30,8 @@ namespace tyr
 template<>
 struct Data<formalism::GroundFunctionExpression>
 {
+    using Tag = formalism::GroundFunctionExpression;
+
     using Variant = ::cista::offset::variant<formalism::Double,
                                              Index<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>>,
                                              Index<formalism::BinaryOperator<formalism::OpAdd, formalism::FunctionExpression>>,

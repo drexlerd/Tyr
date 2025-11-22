@@ -30,6 +30,8 @@ namespace tyr
 template<>
 struct Data<formalism::GroundRule>
 {
+    using Tag = formalism::GroundRule;
+
     Index<formalism::GroundRule> index;
     IndexList<formalism::Object> binding;
     IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_body;

@@ -26,15 +26,15 @@
 namespace tyr
 {
 template<typename T, formalism::IsContext C>
-class Proxy<formalism::ArithmeticOperator<T>, C> : public VariantProxy<typename Data<ArithmeticOperator<T>>::Variant, C>
+class Proxy<formalism::ArithmeticOperator<T>, C> : public VariantProxy<typename Data<formalism::ArithmeticOperator<T>>::Variant, C>
 {
 private:
-    using Base = VariantProxy<typename Data<ArithmeticOperator<T>>::Variant, C>;
+    using Base = VariantProxy<typename Data<formalism::ArithmeticOperator<T>>::Variant, C>;
 
 public:
     using Tag = formalism::ArithmeticOperator<T>;
 
-    Proxy(Data<ArithmeticOperator<T>> op, const C& context) : Base(op.value, context) {}
+    Proxy(Data<formalism::ArithmeticOperator<T>> op, const C& context) : Base(op.value, context) {}
 };
 }
 

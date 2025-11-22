@@ -31,7 +31,8 @@ private:
     using Base = VariantProxy<typename Data<formalism::FunctionExpression>::Variant, C>;
 
 public:
-    // Have to pass by const ref because VariantProxy holds a pointer
+    using Tag = formalism::FunctionExpression;
+
     Proxy(Data<formalism::FunctionExpression> fexpr, const C& context) : Base(fexpr.value, context) {}
 };
 }

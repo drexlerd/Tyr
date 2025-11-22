@@ -32,6 +32,8 @@ private:
     using Base = VariantProxy<typename Data<formalism::Term>::Variant, C>;
 
 public:
+    using Tag = formalism::Term;
+
     Proxy(Data<formalism::Term> term, const C& context) : Base(term.value, context) {}
 };
 

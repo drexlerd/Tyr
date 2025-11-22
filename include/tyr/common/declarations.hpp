@@ -84,7 +84,7 @@ concept IsGroupType = HasValue<Index<Tag>> && HasGroup<Index<Tag>>;
 /// @brief Check whether T is proxyable.
 template<typename Tag, typename C>
 concept IsProxyable = requires(Index<Tag> index, const C& context) { Proxy<Tag, C>(index, context); }
-                      || requires(const Data<Tag>& data, const C& context) { Proxy<Tag, C>(data, context); };
+                      || requires(Data<Tag> data, const C& context) { Proxy<Tag, C>(data, context); };
 
 /**
  * Forward declarations and type defs

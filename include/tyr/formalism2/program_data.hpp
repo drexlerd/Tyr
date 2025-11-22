@@ -32,6 +32,8 @@ namespace tyr
 template<>
 struct Data<formalism::Program>
 {
+    using Tag = formalism::Program;
+
     Index<formalism::Program> index;
     IndexList<formalism::Predicate<formalism::StaticTag>> static_predicates;
     IndexList<formalism::Predicate<formalism::FluentTag>> fluent_predicates;

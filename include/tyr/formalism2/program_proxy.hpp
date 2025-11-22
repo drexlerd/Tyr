@@ -38,29 +38,31 @@ private:
     Index<formalism::Program> index;
 
 public:
+    using Tag = formalism::Program;
+
     Proxy(Index<formalism::Program> index, const C& context) : context(&context), index(index) {}
 
     const C& get_context() const { return *context; }
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    template<IsStaticOrFluentTag T>
+    template<formalism::IsStaticOrFluentTag T>
     auto get_predicates() const
     {
         return SpanProxy<formalism::Predicate<T>, C>(get().template get_predicates<T>(), *context);
     }
-    template<IsStaticOrFluentTag T>
+    template<formalism::IsStaticOrFluentTag T>
     auto get_functions() const
     {
         return SpanProxy<formalism::Function<T>, C>(get().template get_functions<T>(), *context);
     }
     auto get_objects() const { return SpanProxy<formalism::Object, C>(get().objects, *context); }
-    template<IsStaticOrFluentTag T>
+    template<formalism::IsStaticOrFluentTag T>
     auto get_atoms() const
     {
         return SpanProxy<formalism::GroundAtom<T>, C>(get().template get_atoms<T>(), *context);
     }
-    template<IsStaticOrFluentTag T>
+    template<formalism::IsStaticOrFluentTag T>
     auto get_function_values() const
     {
         return SpanProxy<formalism::GroundFunctionTermValue<T>, C>(get().template get_function_values<T>(), *context);

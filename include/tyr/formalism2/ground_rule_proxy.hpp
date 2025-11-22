@@ -37,14 +37,16 @@ private:
     Index<formalism::GroundRule> index;
 
 public:
+    using Tag = formalism::GroundRule;
+
     Proxy(Index<formalism::GroundRule> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
     auto get_binding() const { return SpanProxy<formalism::Object, C>(get().objects, *context); }
-    auto get_static_body() const { return SpanProxy<formalism::GroundLiteral<StaticTag>, C>(get().static_body, *context); }
-    auto get_fluent_body() const { return SpanProxy<formalism::GroundLiteral<FluentTag>, C>(get().fluent_body, *context); }
+    auto get_static_body() const { return SpanProxy<formalism::GroundLiteral<formalism::StaticTag>, C>(get().static_body, *context); }
+    auto get_fluent_body() const { return SpanProxy<formalism::GroundLiteral<formalism::FluentTag>, C>(get().fluent_body, *context); }
     auto get_numeric_body() const { return SpanProxy<formalism::BooleanOperator<formalism::GroundFunctionExpression>, C>(get().numeric_body, *context); }
     auto get_head() const { return Proxy<formalism::GroundAtom<formalism::FluentTag>, C>(get().head, *context); }
 };

@@ -36,6 +36,6 @@
 #include "tyr/common/segmented_vector.hpp"
 
 // Formalism
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism2/formalism.hpp"
 
 #endif

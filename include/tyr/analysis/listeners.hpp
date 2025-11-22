@@ -19,14 +19,14 @@
 #define TYR_ANALYSIS_LISTENERS_HPP_
 
 #include "tyr/analysis/declarations.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism2/formalism.hpp"
 
 namespace tyr::analysis
 {
 
 struct Listeners
 {
-    std::unordered_map<formalism::PredicateIndex<formalism::FluentTag>, formalism::RuleIndexList> positive_listeners;
+    UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, IndexList<formalism::Rule>> positive_listeners;
 };
 
 Listeners compute_listeners_per_rule(const RuleStrata& strata) {}

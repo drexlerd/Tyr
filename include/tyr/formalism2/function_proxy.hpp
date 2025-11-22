@@ -32,6 +32,8 @@ private:
     Index<formalism::Function<T>> index;
 
 public:
+    using Tag = formalism::Function<T>;
+
     Proxy(Index<formalism::Function<T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }

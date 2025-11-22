@@ -48,7 +48,7 @@ public:
         }
         else
         {
-            return Proxy<T, C>(get().arg, *context);
+            return Proxy<typename T::Tag, C>(get().arg, *context);
         }
     }
 };

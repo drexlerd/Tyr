@@ -18,7 +18,7 @@
 #ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
 #define TYR_ANALYSIS_STRATIFICATION_HPP_
 
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism2/formalism.hpp"
 
 #include <vector>
 
@@ -27,7 +27,7 @@ namespace tyr::analysis
 
 struct RuleStrata
 {
-    std::vector<formalism::RuleIndexList> strata;
+    std::vector<IndexList<formalism::Rule>> strata;
 };
 
 namespace details
@@ -41,12 +41,12 @@ enum class StratumStatus
 
 struct PredicateStrata
 {
-    std::vector<UnorderedSet<formalism::PredicateIndex<formalism::FluentTag>>> strata;
+    std::vector<UnorderedSet<Index<formalism::Predicate<formalism::FluentTag>>>> strata;
 };
 
-PredicateStrata compute_predicate_stratification(formalism::ProgramProxy<> program)
+PredicateStrata compute_predicate_stratification(Proxy<formalism::Program, formalism::Repository> program)
 {
-    auto R = UnorderedMap<formalism::PredicateIndex<formalism::FluentTag>, UnorderedMap<formalism::PredicateIndex<formalism::FluentTag>, StratumStatus>> {};
+    auto R = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, StratumStatus>> {};
 
     // lines 2-4
     for (const auto predicate_1 : program.get_predicates<formalism::FluentTag>())
@@ -106,11 +106,11 @@ PredicateStrata compute_predicate_stratification(formalism::ProgramProxy<> progr
     }
 
     auto predicate_strata = PredicateStrata {};
-    auto remaining = UnorderedSet<formalism::PredicateIndex<formalism::FluentTag>>(program.get().get_predicates<formalism::FluentTag>().begin(),
-                                                                                   program.get().get_predicates<formalism::FluentTag>().end());
+    auto remaining = UnorderedSet<Index<formalism::Predicate<formalism::FluentTag>>>(program.get().get_predicates<formalism::FluentTag>().begin(),
+                                                                                     program.get().get_predicates<formalism::FluentTag>().end());
     while (!remaining.empty())
     {
-        auto stratum = UnorderedSet<formalism::PredicateIndex<formalism::FluentTag>> {};
+        auto stratum = UnorderedSet<Index<formalism::Predicate<formalism::FluentTag>>> {};
         for (const auto& predicate_1 : remaining)
         {
             if (std::all_of(remaining.begin(),
@@ -138,21 +138,21 @@ PredicateStrata compute_predicate_stratification(formalism::ProgramProxy<> progr
 /// Source: https://users.cecs.anu.edu.au/~thiebaux/papers/ijcai03.pdf
 /// @param program is the program
 /// @return is the RuleStrata
-RuleStrata compute_rule_stratification(formalism::ProgramProxy<> program)
+RuleStrata compute_rule_stratification(Proxy<formalism::Program, formalism::Repository> program)
 {
     const auto predicate_stratification = details::compute_predicate_stratification(program);
 
     auto rule_strata = RuleStrata {};
 
-    auto remaining_rules = UnorderedSet<formalism::RuleIndex>(program.get().rules.begin(), program.get().rules.end());
+    auto remaining_rules = UnorderedSet<Index<formalism::Rule>>(program.get().rules.begin(), program.get().rules.end());
 
     for (const auto& predicate_stratum : predicate_stratification.strata)
     {
-        auto stratum = UnorderedSet<formalism::RuleIndex> {};
+        auto stratum = UnorderedSet<Index<formalism::Rule>> {};
 
         for (const auto rule : remaining_rules)
         {
-            if (predicate_stratum.count(formalism::RuleProxy(rule, program.get_context()).get_head().get_predicate().get_index()))
+            if (predicate_stratum.count(Proxy<formalism::Rule, formalism::Repository>(rule, program.get_context()).get_head().get_predicate().get_index()))
             {
                 stratum.insert(rule);
             }
@@ -163,7 +163,7 @@ RuleStrata compute_rule_stratification(formalism::ProgramProxy<> program)
             remaining_rules.erase(rule);
         }
 
-        rule_strata.strata.push_back(formalism::RuleIndexList(stratum.begin(), stratum.end()));
+        rule_strata.strata.push_back(IndexList<formalism::Rule>(stratum.begin(), stratum.end()));
     }
 
     return rule_strata;

@@ -28,6 +28,8 @@ namespace tyr
 template<formalism::IsStaticOrFluentTag T>
 struct Data<formalism::FunctionTerm<T>>
 {
+    using Tag = formalism::FunctionTerm<T>;
+
     Index<formalism::FunctionTerm<T>> index;
     DataList<formalism::Term> terms;
 

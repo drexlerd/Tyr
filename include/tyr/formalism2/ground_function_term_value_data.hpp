@@ -30,6 +30,8 @@ namespace tyr
 template<formalism::IsStaticOrFluentTag T>
 struct Data<formalism::GroundFunctionTermValue<T>>
 {
+    using Tag = formalism::GroundFunctionTermValue<T>;
+
     Index<formalism::GroundFunctionTermValue<T>> index;
     Index<formalism::GroundFunctionTerm<T>> term;
     formalism::Double value;

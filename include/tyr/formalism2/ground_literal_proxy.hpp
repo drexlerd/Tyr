@@ -34,6 +34,8 @@ private:
     Index<formalism::GroundLiteral<T>> index;
 
 public:
+    using Tag = formalism::GroundLiteral<T>;
+
     Proxy(Index<formalism::GroundLiteral<T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(context)[index]; }

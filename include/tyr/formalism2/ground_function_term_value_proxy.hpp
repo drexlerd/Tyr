@@ -33,12 +33,14 @@ private:
     Index<formalism::GroundFunctionTermValue<T>> index;
 
 public:
+    using Tag = formalism::GroundFunctionTermValue<T>;
+
     Proxy(Index<formalism::GroundFunctionTermValue<T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_term() const { return Proxy<GroundFunctionTerm<T>, C>(get().term, *context); }
+    auto get_term() const { return Proxy<formalism::GroundFunctionTerm<T>, C>(get().term, *context); }
     auto get_value() const { return get().value; }
 };
 }

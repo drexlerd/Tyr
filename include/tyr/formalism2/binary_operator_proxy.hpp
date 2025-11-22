@@ -23,7 +23,7 @@
 #include "tyr/formalism2/binary_operator_index.hpp"
 #include "tyr/formalism2/declarations.hpp"
 
-namespace tyr::formalism
+namespace tyr
 {
 template<formalism::IsOp Op, typename T, formalism::IsContext C>
 class Proxy<formalism::BinaryOperator<Op, T>, C>
@@ -48,7 +48,7 @@ public:
         }
         else
         {
-            return Proxy<T, C>(get().lhs, *context);
+            return Proxy<typename T::Tag, C>(get().lhs, *context);
         }
     }
     auto get_rhs() const
@@ -59,7 +59,7 @@ public:
         }
         else
         {
-            return Proxy<T, C>(get().rhs, *context);
+            return Proxy<typename T::Tag, C>(get().rhs, *context);
         }
     }
 };

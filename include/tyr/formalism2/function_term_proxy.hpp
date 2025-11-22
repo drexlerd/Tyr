@@ -33,12 +33,14 @@ private:
     Index<formalism::FunctionTerm<T>> index;
 
 public:
+    using Tag = formalism::FunctionTerm<T>;
+
     Proxy(Index<formalism::FunctionTerm<T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_function() const { return Proxy<formalism::Function, C>(index.group, *context); }
+    auto get_function() const { return Proxy<formalism::Function<T>, C>(index.group, *context); }
     auto get_terms() const { return SpanProxy<formalism::Term, C>(get().terms, *context); }
 };
 }

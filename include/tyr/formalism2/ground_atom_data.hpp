@@ -27,6 +27,8 @@ namespace tyr
 template<formalism::IsStaticOrFluentTag T>
 struct Data<formalism::GroundAtom<T>>
 {
+    using Tag = formalism::GroundAtom<T>;
+
     Index<formalism::GroundAtom<T>> index;
     IndexList<formalism::Object> terms;
 

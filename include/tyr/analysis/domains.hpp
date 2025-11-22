@@ -20,18 +20,18 @@
 
 #include "tyr/common/formatter.hpp"
 #include "tyr/common/unordered_set.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism2/formalism.hpp"
 
 #include <unordered_set>
 #include <vector>
 
 namespace tyr::analysis
 {
-using DomainSet = std::unordered_set<formalism::ObjectIndex, Hash<formalism::ObjectIndex>, EqualTo<formalism::ObjectIndex>>;
+using DomainSet = UnorderedSet<Index<formalism::Object>>;
 using DomainSetList = std::vector<DomainSet>;
 using DomainSetListList = std::vector<DomainSetList>;
 
-using DomainList = std::vector<formalism::ObjectIndex>;
+using DomainList = std::vector<Index<formalism::Object>>;
 using DomainListList = std::vector<DomainList>;
 using DomainListListList = std::vector<DomainListList>;
 
@@ -64,7 +64,7 @@ inline DomainListListList to_list(const DomainSetListList& set)
 }
 
 template<formalism::IsStaticOrFluentTag T>
-inline DomainSetListList initialize_predicate_domain_sets(formalism::ProgramProxy<> program)
+inline DomainSetListList initialize_predicate_domain_sets(Proxy<formalism::Program, formalism::Repository> program)
 {
     const auto num_predicates = program.get_predicates<T>().size();
     auto predicate_domain_sets = DomainSetListList(num_predicates);
@@ -84,7 +84,7 @@ inline DomainSetListList initialize_predicate_domain_sets(formalism::ProgramProx
 }
 
 template<formalism::IsStaticOrFluentTag T>
-inline DomainSetListList initialize_function_domain_sets(formalism::ProgramProxy<> program)
+inline DomainSetListList initialize_function_domain_sets(Proxy<formalism::Program, formalism::Repository> program)
 {
     const auto num_functions = program.get_functions<T>().size();
     auto function_domain_sets = DomainSetListList(num_functions);
@@ -104,7 +104,7 @@ inline DomainSetListList initialize_function_domain_sets(formalism::ProgramProxy
     return function_domain_sets;
 }
 
-void restrict_parameter_domain_from_static_atom(formalism::AtomProxy<formalism::StaticTag> atom,
+void restrict_parameter_domain_from_static_atom(Proxy<formalism::Atom<formalism::StaticTag>, formalism::Repository> atom,
                                                 DomainSetList& parameter_domains,
                                                 const DomainSetListList& static_predicate_domain_sets)
 {
@@ -118,7 +118,7 @@ void restrict_parameter_domain_from_static_atom(formalism::AtomProxy<formalism::
             {
                 using ProxyType = std::decay_t<decltype(arg)>;
 
-                if constexpr (std::is_same_v<ProxyType, formalism::ObjectProxy<>>) {}
+                if constexpr (std::is_same_v<ProxyType, Proxy<formalism::Object, formalism::Repository>>) {}
                 else if constexpr (std::is_same_v<ProxyType, formalism::ParameterIndex>)
                 {
                     const auto parameter_index = to_uint_t(arg);
@@ -137,7 +137,7 @@ void restrict_parameter_domain_from_static_atom(formalism::AtomProxy<formalism::
     }
 }
 
-void restrict_parameter_domain_from_static_function_term(formalism::FunctionTermProxy<formalism::StaticTag> fterm,
+void restrict_parameter_domain_from_static_function_term(Proxy<formalism::FunctionTerm<formalism::StaticTag>, formalism::Repository> fterm,
                                                          DomainSetList& parameter_domains,
                                                          const DomainSetListList& static_function_domain_sets)
 {
@@ -151,7 +151,7 @@ void restrict_parameter_domain_from_static_function_term(formalism::FunctionTerm
             {
                 using ProxyType = std::decay_t<decltype(arg)>;
 
-                if constexpr (std::is_same_v<ProxyType, formalism::ObjectProxy<>>) {}
+                if constexpr (std::is_same_v<ProxyType, Proxy<formalism::Object, formalism::Repository>>) {}
                 else if constexpr (std::is_same_v<ProxyType, formalism::ParameterIndex>)
                 {
                     const auto parameter_index = to_uint_t(arg);
@@ -170,7 +170,7 @@ void restrict_parameter_domain_from_static_function_term(formalism::FunctionTerm
     }
 }
 
-void restrict_parameter_domain_from_function_expression(formalism::FunctionExpressionProxy<> fexpr,
+void restrict_parameter_domain_from_function_expression(Proxy<formalism::FunctionExpression, formalism::Repository> fexpr,
                                                         DomainSetList& parameter_domains,
                                                         const DomainSetListList& static_function_domain_sets)
 {
@@ -180,45 +180,52 @@ void restrict_parameter_domain_from_function_expression(formalism::FunctionExpre
             using ProxyType = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<ProxyType, formalism::Double>) {}
-            else if constexpr (std::is_same_v<ProxyType, formalism::UnaryOperatorProxy<formalism::OpSub, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 restrict_parameter_domain_from_function_expression(arg.get_arg(), parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpSub, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpSub, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 restrict_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, static_function_domain_sets);
                 restrict_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpAdd, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpAdd, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 restrict_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, static_function_domain_sets);
                 restrict_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpMul, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpMul, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 restrict_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, static_function_domain_sets);
                 restrict_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpDiv, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpDiv, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 restrict_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, static_function_domain_sets);
                 restrict_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::MultiOperatorProxy<formalism::OpAdd, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::MultiOperator<formalism::OpAdd, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 for (const auto part : arg.get_args())
                     restrict_parameter_domain_from_function_expression(part, parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::MultiOperatorProxy<formalism::OpMul, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::MultiOperator<formalism::OpMul, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 for (const auto part : arg.get_args())
                     restrict_parameter_domain_from_function_expression(part, parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::FunctionTermProxy<formalism::StaticTag>>)
+            else if constexpr (std::is_same_v<ProxyType, Proxy<formalism::FunctionTerm<formalism::StaticTag>, formalism::Repository>>)
             {
                 restrict_parameter_domain_from_static_function_term(arg, parameter_domains, static_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::FunctionTermProxy<formalism::FluentTag>>) {}
+            else if constexpr (std::is_same_v<ProxyType, Proxy<formalism::FunctionTerm<formalism::FluentTag>, formalism::Repository>>) {}
             else
             {
                 static_assert(dependent_false<ProxyType>::value, "Missing case");
@@ -227,7 +234,7 @@ void restrict_parameter_domain_from_function_expression(formalism::FunctionExpre
         fexpr);
 }
 
-void restrict_parameter_domain_from_boolean_operator(formalism::BooleanOperatorProxy<formalism::FunctionExpression> op,
+void restrict_parameter_domain_from_boolean_operator(Proxy<formalism::BooleanOperator<formalism::FunctionExpression>, formalism::Repository> op,
                                                      DomainSetList& parameter_domains,
                                                      const DomainSetListList& static_function_domain_sets)
 {
@@ -240,7 +247,7 @@ void restrict_parameter_domain_from_boolean_operator(formalism::BooleanOperatorP
         op);
 }
 
-void lift_parameter_domain_from_fluent_atom(formalism::AtomProxy<formalism::FluentTag> atom,
+void lift_parameter_domain_from_fluent_atom(Proxy<formalism::Atom<formalism::FluentTag>, formalism::Repository> atom,
                                             const DomainSetList& parameter_domains,
                                             DomainSetListList& fluent_predicate_domain_sets)
 {
@@ -254,7 +261,7 @@ void lift_parameter_domain_from_fluent_atom(formalism::AtomProxy<formalism::Flue
             {
                 using ProxyType = std::decay_t<decltype(arg)>;
 
-                if constexpr (std::is_same_v<ProxyType, formalism::ObjectProxy<>>) {}
+                if constexpr (std::is_same_v<ProxyType, Proxy<formalism::Object, formalism::Repository>>) {}
                 else if constexpr (std::is_same_v<ProxyType, formalism::ParameterIndex>)
                 {
                     const auto parameter_index = to_uint_t(arg);
@@ -273,7 +280,7 @@ void lift_parameter_domain_from_fluent_atom(formalism::AtomProxy<formalism::Flue
     }
 }
 
-void lift_parameter_domain_from_fluent_function_term(formalism::FunctionTermProxy<formalism::FluentTag> fterm,
+void lift_parameter_domain_from_fluent_function_term(Proxy<formalism::FunctionTerm<formalism::FluentTag>, formalism::Repository> fterm,
                                                      const DomainSetList& parameter_domains,
                                                      DomainSetListList& fluent_function_domain_sets)
 {
@@ -287,7 +294,7 @@ void lift_parameter_domain_from_fluent_function_term(formalism::FunctionTermProx
             {
                 using ProxyType = std::decay_t<decltype(arg)>;
 
-                if constexpr (std::is_same_v<ProxyType, formalism::ObjectProxy<>>) {}
+                if constexpr (std::is_same_v<ProxyType, Proxy<formalism::Object, formalism::Repository>>) {}
                 else if constexpr (std::is_same_v<ProxyType, formalism::ParameterIndex>)
                 {
                     const auto parameter_index = to_uint_t(arg);
@@ -306,7 +313,7 @@ void lift_parameter_domain_from_fluent_function_term(formalism::FunctionTermProx
     }
 }
 
-void lift_parameter_domain_from_function_expression(formalism::FunctionExpressionProxy<> fexpr,
+void lift_parameter_domain_from_function_expression(Proxy<formalism::FunctionExpression, formalism::Repository> fexpr,
                                                     const DomainSetList& parameter_domains,
                                                     DomainSetListList& fluent_function_domain_sets)
 {
@@ -316,42 +323,49 @@ void lift_parameter_domain_from_function_expression(formalism::FunctionExpressio
             using ProxyType = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<ProxyType, formalism::Double>) {}
-            else if constexpr (std::is_same_v<ProxyType, formalism::UnaryOperatorProxy<formalism::OpSub, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 lift_parameter_domain_from_function_expression(arg.get_arg(), parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpSub, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpSub, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 lift_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, fluent_function_domain_sets);
                 lift_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpAdd, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpAdd, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 lift_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, fluent_function_domain_sets);
                 lift_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpMul, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpMul, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 lift_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, fluent_function_domain_sets);
                 lift_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::BinaryOperatorProxy<formalism::OpDiv, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::BinaryOperator<formalism::OpDiv, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 lift_parameter_domain_from_function_expression(arg.get_lhs(), parameter_domains, fluent_function_domain_sets);
                 lift_parameter_domain_from_function_expression(arg.get_rhs(), parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::MultiOperatorProxy<formalism::OpAdd, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::MultiOperator<formalism::OpAdd, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 for (const auto part : arg.get_args())
                     lift_parameter_domain_from_function_expression(part, parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::MultiOperatorProxy<formalism::OpMul, formalism::FunctionExpression>>)
+            else if constexpr (std::is_same_v<ProxyType,
+                                              Proxy<formalism::MultiOperator<formalism::OpMul, formalism::FunctionExpression>, formalism::Repository>>)
             {
                 for (const auto part : arg.get_args())
                     lift_parameter_domain_from_function_expression(part, parameter_domains, fluent_function_domain_sets);
             }
-            else if constexpr (std::is_same_v<ProxyType, formalism::FunctionTermProxy<formalism::StaticTag>>) {}
-            else if constexpr (std::is_same_v<ProxyType, formalism::FunctionTermProxy<formalism::FluentTag>>)
+            else if constexpr (std::is_same_v<ProxyType, Proxy<formalism::FunctionTerm<formalism::StaticTag>, formalism::Repository>>) {}
+            else if constexpr (std::is_same_v<ProxyType, Proxy<formalism::FunctionTerm<formalism::FluentTag>, formalism::Repository>>)
             {
                 lift_parameter_domain_from_fluent_function_term(arg, parameter_domains, fluent_function_domain_sets);
             }
@@ -363,7 +377,7 @@ void lift_parameter_domain_from_function_expression(formalism::FunctionExpressio
         fexpr);
 }
 
-void lift_parameter_domain_from_boolean_operator(formalism::BooleanOperatorProxy<formalism::FunctionExpression> op,
+void lift_parameter_domain_from_boolean_operator(Proxy<formalism::BooleanOperator<formalism::FunctionExpression>, formalism::Repository> op,
                                                  const DomainSetList& parameter_domains,
                                                  DomainSetListList& fluent_function_domain_sets)
 {
@@ -376,9 +390,9 @@ void lift_parameter_domain_from_boolean_operator(formalism::BooleanOperatorProxy
         op);
 }
 
-VariableDomains compute_variable_list_per_predicate(formalism::ProgramProxy<> program)
+VariableDomains compute_variable_list_per_predicate(Proxy<formalism::Program, formalism::Repository> program)
 {
-    auto objects = std::vector<formalism::ObjectIndex> {};
+    auto objects = std::vector<Index<formalism::Object>> {};
     for (const auto object : program.get_objects())
         objects.push_back(object.get_index());
     auto universe = DomainSet(objects.begin(), objects.end());
@@ -435,11 +449,11 @@ VariableDomains compute_variable_list_per_predicate(formalism::ProgramProxy<> pr
     auto fluent_function_domains = to_list(fluent_function_domain_sets);
     auto rule_domains = to_list(rule_domain_sets);
 
-    std::cout << "Static predicate domains: " << "\n" << static_predicate_domains << std::endl;
-    std::cout << "Fluent predicate domains: " << "\n" << fluent_predicate_domains << std::endl;
-    std::cout << "Static function domains: " << "\n" << static_function_domains << std::endl;
-    std::cout << "Fluent function domains: " << "\n" << fluent_function_domains << std::endl;
-    std::cout << "Rule domains: " << "\n" << rule_domains << std::endl;
+    // std::cout << "Static predicate domains: " << "\n" << static_predicate_domains << std::endl;
+    // std::cout << "Fluent predicate domains: " << "\n" << fluent_predicate_domains << std::endl;
+    // std::cout << "Static function domains: " << "\n" << static_function_domains << std::endl;
+    // std::cout << "Fluent function domains: " << "\n" << fluent_function_domains << std::endl;
+    // std::cout << "Rule domains: " << "\n" << rule_domains << std::endl;
 
     return VariableDomains { std::move(static_predicate_domains),
                              std::move(fluent_predicate_domains),

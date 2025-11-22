@@ -19,7 +19,7 @@
 #define TYR_TESTS_UTILS_HPP_
 
 #include <string>
-#include <tyr/formalism/formalism.hpp>
+#include <tyr/formalism2/formalism.hpp>
 #include <vector>
 
 namespace tyr::tests
@@ -106,11 +106,11 @@ namespace tyr::tests
     3 ball / 1
     4 gripper / 1
 */
-inline formalism::PredicateIndexList<formalism::StaticTag> add_static_predicates(formalism::Repository& repository)
+inline IndexList<formalism::Predicate<formalism::StaticTag>> add_static_predicates(formalism::Repository& repository)
 {
-    auto result = formalism::PredicateIndexList<formalism::StaticTag> {};
+    auto result = IndexList<formalism::Predicate<formalism::StaticTag>> {};
 
-    auto predicate_builder = formalism::Predicate<formalism::StaticTag> {};
+    auto predicate_builder = Data<formalism::Predicate<formalism::StaticTag>> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& [name, arity] : std::vector<std::pair<std::string, size_t>> { { "object", 1 },  //
@@ -136,9 +136,9 @@ enum class GripperStaticPredicate : uint_t
     Gripper = 4,
 };
 
-inline formalism::PredicateIndex<formalism::StaticTag> convert(GripperStaticPredicate e) noexcept
+inline Index<formalism::Predicate<formalism::StaticTag>> convert(GripperStaticPredicate e) noexcept
 {
-    return formalism::PredicateIndex<formalism::StaticTag>(static_cast<uint_t>(e));
+    return Index<formalism::Predicate<formalism::StaticTag>>(static_cast<uint_t>(e));
 }
 
 /*
@@ -150,11 +150,11 @@ inline formalism::PredicateIndex<formalism::StaticTag> convert(GripperStaticPred
     5 pick / 3
     6 drop / 3
 */
-inline formalism::PredicateIndexList<formalism::FluentTag> add_fluent_predicates(formalism::Repository& repository)
+inline IndexList<formalism::Predicate<formalism::FluentTag>> add_fluent_predicates(formalism::Repository& repository)
 {
-    auto result = formalism::PredicateIndexList<formalism::FluentTag> {};
+    auto result = IndexList<formalism::Predicate<formalism::FluentTag>> {};
 
-    auto predicate_builder = formalism::Predicate<formalism::FluentTag> {};
+    auto predicate_builder = Data<formalism::Predicate<formalism::FluentTag>> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& [name, arity] : std::vector<std::pair<std::string, size_t>> { { "at-robby", 1 },
@@ -184,9 +184,9 @@ enum class GripperFluentPredicate : uint_t
     Drop = 6,
 };
 
-inline formalism::PredicateIndex<formalism::FluentTag> convert(GripperFluentPredicate e) noexcept
+inline Index<formalism::Predicate<formalism::FluentTag>> convert(GripperFluentPredicate e) noexcept
 {
-    return formalism::PredicateIndex<formalism::FluentTag>(static_cast<uint_t>(e));
+    return Index<formalism::Predicate<formalism::FluentTag>>(static_cast<uint_t>(e));
 }
 
 /*
@@ -197,11 +197,11 @@ inline formalism::PredicateIndex<formalism::FluentTag> convert(GripperFluentPred
     4 ball1
     5 ball2
 */
-inline formalism::ObjectIndexList add_objects(formalism::Repository& repository)
+inline IndexList<formalism::Object> add_objects(formalism::Repository& repository)
 {
-    auto result = formalism::ObjectIndexList {};
+    auto result = IndexList<formalism::Object> {};
 
-    auto object_builder = formalism::Object {};
+    auto object_builder = Data<formalism::Object> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& name : std::vector<std::string> { "rooma", "roomb", "left", "right", "ball1", "ball2" })
@@ -223,7 +223,7 @@ enum class GripperObject : uint_t
     Ball2 = 5,
 };
 
-inline formalism::ObjectIndex convert(GripperObject e) noexcept { return formalism::ObjectIndex(static_cast<uint_t>(e)); }
+inline Index<formalism::Object> convert(GripperObject e) noexcept { return Index<formalism::Object>(static_cast<uint_t>(e)); }
 
 /*
     0 (object rooma)
@@ -239,11 +239,11 @@ inline formalism::ObjectIndex convert(GripperObject e) noexcept { return formali
     10 (ball ball1)
     11 (ball ball2)
 */
-inline formalism::GroundAtomIndexList<formalism::StaticTag> add_static_ground_atoms(formalism::Repository& repository)
+inline IndexList<formalism::GroundAtom<formalism::StaticTag>> add_static_ground_atoms(formalism::Repository& repository)
 {
-    auto result = formalism::GroundAtomIndexList<formalism::StaticTag> {};
+    auto result = IndexList<formalism::GroundAtom<formalism::StaticTag>> {};
 
-    auto ground_atom_builder = formalism::GroundAtom<formalism::StaticTag> {};
+    auto ground_atom_builder = Data<formalism::GroundAtom<formalism::StaticTag>> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& [predicate, atoms] : std::vector<std::pair<GripperStaticPredicate, std::vector<std::vector<GripperObject>>>> {
@@ -280,11 +280,11 @@ inline formalism::GroundAtomIndexList<formalism::StaticTag> add_static_ground_at
     3 (at ball2 rooma)
     4 (at-robby rooma)
 */
-inline formalism::GroundAtomIndexList<formalism::FluentTag> add_fluent_ground_atoms(formalism::Repository& repository)
+inline IndexList<formalism::GroundAtom<formalism::FluentTag>> add_fluent_ground_atoms(formalism::Repository& repository)
 {
-    auto result = formalism::GroundAtomIndexList<formalism::FluentTag> {};
+    auto result = IndexList<formalism::GroundAtom<formalism::FluentTag>> {};
 
-    auto ground_atom_builder = formalism::GroundAtom<formalism::FluentTag> {};
+    auto ground_atom_builder = Data<formalism::GroundAtom<formalism::FluentTag>> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& [predicate, atoms] : std::vector<std::pair<GripperFluentPredicate, std::vector<std::vector<GripperObject>>>> {
@@ -316,14 +316,14 @@ inline formalism::GroundAtomIndexList<formalism::FluentTag> add_fluent_ground_at
         (move ?from_0 ?to_0)
 )
 */
-inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
+inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
 {
-    auto variable_builder = formalism::Variable {};
-    auto static_atom_builder = formalism::Atom<formalism::StaticTag> {};
-    auto fluent_atom_builder = formalism::Atom<formalism::FluentTag> {};
-    auto static_literal_builder = formalism::Literal<formalism::StaticTag> {};
-    auto fluent_literal_builder = formalism::Literal<formalism::FluentTag> {};
-    auto rule_builder = formalism::Rule {};
+    auto variable_builder = Data<formalism::Variable> {};
+    auto static_atom_builder = Data<formalism::Atom<formalism::StaticTag>> {};
+    auto fluent_atom_builder = Data<formalism::Atom<formalism::FluentTag>> {};
+    auto static_literal_builder = Data<formalism::Literal<formalism::StaticTag>> {};
+    auto fluent_literal_builder = Data<formalism::Literal<formalism::FluentTag>> {};
+    auto rule_builder = Data<formalism::Rule> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& name : std::vector<std::string> { "?from_0", "?to_0" })
@@ -344,7 +344,7 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
             static_atom_builder.terms.clear();
             for (const auto& param : params)
             {
-                static_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(param)));
+                static_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first;
             static_literal_builder.atom_index = atom_i->index;
@@ -364,7 +364,7 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
             fluent_atom_builder.terms.clear();
             for (const auto& param : params)
             {
-                fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(param)));
+                fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first;
             fluent_literal_builder.atom_index = atom_i->index;
@@ -376,8 +376,8 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
 
     fluent_atom_builder.index.group = convert(GripperFluentPredicate::Move);
     fluent_atom_builder.terms.clear();
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(0)));
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(1)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
     const auto head = repository.get_or_create(fluent_atom_builder, buffer).first;
     rule_builder.head = head->index;
 
@@ -395,14 +395,14 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
         (pick ?obj_0 ?room_0 ?gripper_0)
 )
 */
-inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
+inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
 {
-    auto variable_builder = formalism::Variable {};
-    auto static_atom_builder = formalism::Atom<formalism::StaticTag> {};
-    auto fluent_atom_builder = formalism::Atom<formalism::FluentTag> {};
-    auto static_literal_builder = formalism::Literal<formalism::StaticTag> {};
-    auto fluent_literal_builder = formalism::Literal<formalism::FluentTag> {};
-    auto rule_builder = formalism::Rule {};
+    auto variable_builder = Data<formalism::Variable> {};
+    auto static_atom_builder = Data<formalism::Atom<formalism::StaticTag>> {};
+    auto fluent_atom_builder = Data<formalism::Atom<formalism::FluentTag>> {};
+    auto static_literal_builder = Data<formalism::Literal<formalism::StaticTag>> {};
+    auto fluent_literal_builder = Data<formalism::Literal<formalism::FluentTag>> {};
+    auto rule_builder = Data<formalism::Rule> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& name : std::vector<std::string> { "?obj_0", "?room_0", "?gripper_0" })
@@ -425,7 +425,7 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
             static_atom_builder.terms.clear();
             for (const auto& param : params)
             {
-                static_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(param)));
+                static_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first;
             static_literal_builder.atom_index = atom_i->index;
@@ -447,7 +447,7 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
             fluent_atom_builder.terms.clear();
             for (const auto& param : params)
             {
-                fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(param)));
+                fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first;
             fluent_literal_builder.atom_index = atom_i->index;
@@ -459,9 +459,9 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
 
     fluent_atom_builder.index.group = convert(GripperFluentPredicate::Pick);
     fluent_atom_builder.terms.clear();
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(0)));
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(1)));
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(2)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(2)));
     const auto head = repository.get_or_create(fluent_atom_builder, buffer).first;
     rule_builder.head = head->index;
 
@@ -479,14 +479,14 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
         (drop ?obj_0 ?room_0 ?gripper_0)
 )
 */
-inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
+inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
 {
-    auto variable_builder = formalism::Variable {};
-    auto static_atom_builder = formalism::Atom<formalism::StaticTag> {};
-    auto fluent_atom_builder = formalism::Atom<formalism::FluentTag> {};
-    auto static_literal_builder = formalism::Literal<formalism::StaticTag> {};
-    auto fluent_literal_builder = formalism::Literal<formalism::FluentTag> {};
-    auto rule_builder = formalism::Rule {};
+    auto variable_builder = Data<formalism::Variable> {};
+    auto static_atom_builder = Data<formalism::Atom<formalism::StaticTag>> {};
+    auto fluent_atom_builder = Data<formalism::Atom<formalism::FluentTag>> {};
+    auto static_literal_builder = Data<formalism::Literal<formalism::StaticTag>> {};
+    auto fluent_literal_builder = Data<formalism::Literal<formalism::FluentTag>> {};
+    auto rule_builder = Data<formalism::Rule> {};
     auto buffer = cista::Buffer {};
 
     for (const auto& name : std::vector<std::string> { "?obj_0", "?room_0", "?gripper_0" })
@@ -509,7 +509,7 @@ inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
             static_atom_builder.terms.clear();
             for (const auto& param : params)
             {
-                static_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(param)));
+                static_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first;
             static_literal_builder.atom_index = atom_i->index;
@@ -530,7 +530,7 @@ inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
             fluent_atom_builder.terms.clear();
             for (const auto& param : params)
             {
-                fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(param)));
+                fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first;
             fluent_literal_builder.atom_index = atom_i->index;
@@ -542,9 +542,9 @@ inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
 
     fluent_atom_builder.index.group = convert(GripperFluentPredicate::Drop);
     fluent_atom_builder.terms.clear();
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(0)));
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(1)));
-    fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(2)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
+    fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(2)));
     const auto head = repository.get_or_create(fluent_atom_builder, buffer).first;
     rule_builder.head = head->index;
 
@@ -558,12 +558,12 @@ enum class GripperRule : uint_t
     Drop = 2,
 };
 
-inline formalism::RuleIndex convert(GripperRule e) noexcept { return formalism::RuleIndex(static_cast<uint_t>(e)); }
+inline Index<formalism::Rule> convert(GripperRule e) noexcept { return Index<formalism::Rule>(static_cast<uint_t>(e)); }
 
-inline std::pair<formalism::ProgramIndex, formalism::Repository> create_example_problem()
+inline std::pair<Index<formalism::Program>, formalism::Repository> create_example_problem()
 {
     auto repository = formalism::Repository();
-    auto program_builder = formalism::Program {};
+    auto program_builder = Data<formalism::Program> {};
     auto buffer = cista::Buffer {};
 
     program_builder.static_predicates = add_static_predicates(repository);

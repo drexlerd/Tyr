@@ -27,6 +27,8 @@ namespace tyr
 template<formalism::IsStaticOrFluentTag T>
 struct Index<formalism::Function<T>> : FlatIndexMixin<Index<formalism::Function<T>>>
 {
+    using Tag = formalism::Function<T>;
+
     // Inherit constructors
     using Base = FlatIndexMixin<Index<formalism::Function<T>>>;
     using Base::Base;

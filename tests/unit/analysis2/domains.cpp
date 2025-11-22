@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Dominik Drexler
+ * Copyright (C) 2023 Dominik Drexler and Simon Stahlberg
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,26 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM2_LITERAL_INDEX_HPP_
-#define TYR_FORMALISM2_LITERAL_INDEX_HPP_
+#include "../utils.hpp"
 
-#include "tyr/common/equal_to.hpp"
-#include "tyr/common/index_mixins.hpp"
-#include "tyr/formalism2/declarations.hpp"
-#include "tyr/formalism2/predicate_index.hpp"
+#include <gtest/gtest.h>
+#include <tyr/tyr.hpp>
 
-namespace tyr
+using namespace tyr::cista;
+using namespace tyr::formalism;
+
+namespace tyr::tests
 {
-template<formalism::IsStaticOrFluentTag T>
-struct Index<formalism::Literal<T>> : GroupIndexMixin<Index<formalism::Literal<T>>, Index<formalism::Predicate<T>>>
+
+TEST(TyrTests, TyrAnalysisDomains)
 {
-    using Tag = formalism::Literal<T>;
+    auto [program_index, repository] = create_example_problem();
+    auto program = Proxy<Program, Repository>(program_index, repository);
 
-    // Inherit constructors
-    using Base = GroupIndexMixin<Index<formalism::Literal<T>>, Index<formalism::Predicate<T>>>;
-    using Base::Base;
-};
-
+    analysis::compute_variable_list_per_predicate(program);
 }
-
-#endif
+}

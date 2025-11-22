@@ -37,6 +37,8 @@ private:
     Index<formalism::Rule> index;
 
 public:
+    using Tag = formalism::Rule;
+
     Proxy(Index<formalism::Rule> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }

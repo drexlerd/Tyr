@@ -27,6 +27,8 @@ namespace tyr
 template<>
 struct Index<formalism::Program> : FlatIndexMixin<Index<formalism::Program>>
 {
+    using Tag = formalism::Program;
+
     // Inherit constructors
     using Base = FlatIndexMixin<Index<formalism::Program>>;
     using Base::Base;

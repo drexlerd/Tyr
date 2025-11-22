@@ -35,12 +35,14 @@ private:
     Index<formalism::GroundAtom<T>> index;
 
 public:
+    using Tag = formalism::GroundAtom<T>;
+
     Proxy(Index<formalism::GroundAtom<T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_predicate() const { return Proxy<formalism::Predicate, C>(index.group, *context); }
+    auto get_predicate() const { return Proxy<formalism::Predicate<T>, C>(index.group, *context); }
     auto get_terms() const { return SpanProxy<formalism::Object, C>(get().terms, *context); }
 };
 }

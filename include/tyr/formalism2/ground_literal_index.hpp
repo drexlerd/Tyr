@@ -28,6 +28,8 @@ namespace tyr
 template<formalism::IsStaticOrFluentTag T>
 struct Index<formalism::GroundLiteral<T>> : GroupIndexMixin<Index<formalism::GroundLiteral<T>>, Index<formalism::Predicate<T>>>
 {
+    using Tag = formalism::GroundLiteral<T>;
+
     // Inherit constructors
     using Base = GroupIndexMixin<Index<formalism::GroundLiteral<T>>, Index<formalism::Predicate<T>>>;
     using Base::Base;
