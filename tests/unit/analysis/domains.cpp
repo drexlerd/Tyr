@@ -18,7 +18,7 @@
 #include "../utils.hpp"
 
 #include <gtest/gtest.h>
-#include <tyr/analysis/domains.hpp>
+#include <tyr/tyr.hpp>
 
 using namespace tyr::cista;
 using namespace tyr::formalism;
@@ -26,7 +26,7 @@ using namespace tyr::formalism;
 namespace tyr::tests
 {
 
-TEST(TyrTests, TyrFormalismProxy)
+TEST(TyrTests, TyrAnalysisDomains)
 {
     auto [program_index, repository] = create_example_problem();
     auto program = ProgramProxy<>(program_index, repository);

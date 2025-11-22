@@ -12,7 +12,7 @@ function(add_gtest test_name source_file)
 endfunction()
 
 # Add each test source file as a separate test executable
-add_gtest(variable_domains                              "analysis/variable_domains.cpp")
+add_gtest(analysis_domains                              "analysis/domains.cpp")
 
 add_gtest(cista_indexed_hash_set                        "cista/indexed_hash_set.cpp")
 

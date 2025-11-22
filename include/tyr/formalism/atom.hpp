@@ -38,7 +38,7 @@ struct Atom
     Atom& operator=(Atom&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.predicate_index, terms); }
+    auto identifying_members() const noexcept { return std::tie(index.group, terms); }
 };
 }
 

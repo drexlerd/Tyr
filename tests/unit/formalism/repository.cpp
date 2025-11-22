@@ -84,7 +84,7 @@ TEST(TyrTests, TyrFormalismRepository)
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.predicate_index = predicate_0->index;
+    atom_builder.index.group = predicate_0->index;
     atom_builder.terms.push_back(Term(object_0->index));
     atom_builder.terms.push_back(Term(object_1->index));
     auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);
@@ -118,7 +118,7 @@ TEST(TyrTests, TyrFormalismProxy)
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.predicate_index = predicate_0->index;
+    atom_builder.index.group = predicate_0->index;
     atom_builder.terms.push_back(Term(object_0->index));
     atom_builder.terms.push_back(Term(object_1->index));
     auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);

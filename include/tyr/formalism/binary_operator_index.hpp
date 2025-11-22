@@ -19,24 +19,17 @@
 #define TYR_FORMALISM_BINARY_OPERATOR_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
 template<IsOp Op, typename T>
-struct BinaryOperatorIndex
+struct BinaryOperatorIndex : FlatIndexMixin<BinaryOperatorIndex<Op, T>>
 {
-    uint_t value {};
-
-    BinaryOperatorIndex() = default;
-    explicit BinaryOperatorIndex(uint_t value) : value(value) {}
-
-    friend bool operator==(const BinaryOperatorIndex& lhs, const BinaryOperatorIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    // Inherit constructors
+    using Base = FlatIndexMixin<BinaryOperatorIndex<Op, T>>;
+    using Base::Base;
 };
 }
 

@@ -19,29 +19,18 @@
 #define TYR_FORMALISM_ATOM_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 
 namespace tyr::formalism
 {
 template<IsStaticOrFluentTag T>
-struct AtomIndex
+struct AtomIndex : GroupIndexMixin<AtomIndex<T>, PredicateIndex<T>>
 {
-    PredicateIndex<T> predicate_index {};
-    uint_t value {};
-
-    AtomIndex() = default;
-    explicit AtomIndex(PredicateIndex<T> predicate_index, uint_t value) : predicate_index(predicate_index), value(value) {}
-
-    friend bool operator==(const AtomIndex& lhs, const AtomIndex& rhs)
-    {
-        return EqualTo<PredicateIndex<T>> {}(lhs.predicate_index, rhs.predicate_index) && EqualTo<uint_t> {}(lhs.value, rhs.value);
-    }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(predicate_index, value); }
-    auto identifying_members() const noexcept { return std::tie(predicate_index, value); }
+    // Inherit constructors
+    using Base = GroupIndexMixin<AtomIndex<T>, PredicateIndex<T>>;
+    using Base::Base;
 };
 
 template<IsStaticOrFluentTag T>

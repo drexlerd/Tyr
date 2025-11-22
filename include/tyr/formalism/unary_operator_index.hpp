@@ -19,24 +19,17 @@
 #define TYR_FORMALISM_UNARY_OPERATOR_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
 template<IsOp Op, typename T>
-struct UnaryOperatorIndex
+struct UnaryOperatorIndex : FlatIndexMixin<UnaryOperatorIndex<Op, T>>
 {
-    uint_t value {};
-
-    UnaryOperatorIndex() = default;
-    explicit UnaryOperatorIndex(uint_t value) : value(value) {}
-
-    friend bool operator==(const UnaryOperatorIndex& lhs, const UnaryOperatorIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    // Inherit constructors
+    using Base = FlatIndexMixin<UnaryOperatorIndex<Op, T>>;
+    using Base::Base;
 };
 }
 

@@ -39,7 +39,7 @@ struct FunctionTerm
     FunctionTerm& operator=(FunctionTerm&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.function_index, terms); }
+    auto identifying_members() const noexcept { return std::tie(index.group, terms); }
 };
 }
 

@@ -41,7 +41,7 @@ struct GroundFunctionTermValue
     GroundFunctionTermValue& operator=(GroundFunctionTermValue&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, term, value); }
-    auto identifying_members() const noexcept { return std::tie(index.function_index, term, value); }
+    auto identifying_members() const noexcept { return std::tie(index.group, term, value); }
 };
 }
 

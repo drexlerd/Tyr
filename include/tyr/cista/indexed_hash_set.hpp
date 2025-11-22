@@ -117,7 +117,7 @@ public:
      * Lookup
      */
 
-    const T& operator[](IndexType index) const { return *m_vec[index.get()]; }
+    const T& operator[](IndexType index) const { return *m_vec[index.get_value()]; }
 };
 
 }

@@ -19,24 +19,17 @@
 #define TYR_FORMALISM_FUNCTION_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
 template<IsStaticOrFluentTag T>
-struct FunctionIndex
+struct FunctionIndex : FlatIndexMixin<FunctionIndex<T>>
 {
-    uint_t value {};
-
-    FunctionIndex() = default;
-    explicit FunctionIndex(uint_t value) : value(value) {}
-
-    friend bool operator==(const FunctionIndex& lhs, const FunctionIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    // Inherit constructors
+    using Base = FlatIndexMixin<FunctionIndex<T>>;
+    using Base::Base;
 };
 
 template<IsStaticOrFluentTag T>

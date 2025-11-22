@@ -39,7 +39,7 @@ struct Literal
     Literal& operator=(Literal&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, atom_index, polarity); }
-    auto identifying_members() const noexcept { return std::tie(index.predicate_index, atom_index, polarity); }
+    auto identifying_members() const noexcept { return std::tie(index.group, atom_index, polarity); }
 };
 
 }

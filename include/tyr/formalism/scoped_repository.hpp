@@ -39,7 +39,7 @@ public:
     ScopedRepository(const Repository& global, Repository& local) : global(global), local(local) {}
 
     // nullptr signals that the object does not exist.
-    template<IsIndexedRepository T>
+    template<IsGroupRepository T>
     const T* find(const T& builder) const
     {
         if (auto ptr = global.find(builder))
@@ -60,7 +60,7 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<IsIndexedRepository T, bool AssignIndex = true>
+    template<IsGroupRepository T, bool AssignIndex = true>
     std::pair<const T*, bool> get_or_create(T& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
@@ -87,7 +87,7 @@ public:
     }
 
     template<IsIndexType T>
-        requires IsIndexedRepository<typename IndexTraits<T>::DataType>
+        requires IsGroupRepository<typename IndexTraits<T>::DataType>
     const typename IndexTraits<T>::DataType& operator[](T index) const
     {
         if (index.value < global.size(index))

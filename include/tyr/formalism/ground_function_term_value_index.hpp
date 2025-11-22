@@ -19,29 +19,18 @@
 #define TYR_FORMALISM_GROUND_FUNCTION_TERM_VALUE_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_index.hpp"
 
 namespace tyr::formalism
 {
 template<IsStaticOrFluentTag T>
-struct GroundFunctionTermValueIndex
+struct GroundFunctionTermValueIndex : GroupIndexMixin<GroundFunctionTermValueIndex<T>, FunctionIndex<T>>
 {
-    FunctionIndex<T> function_index {};
-    uint_t value {};
-
-    GroundFunctionTermValueIndex() = default;
-    explicit GroundFunctionTermValueIndex(FunctionIndex<T> function_index, uint_t value) : function_index(function_index), value(value) {}
-
-    friend bool operator==(const GroundFunctionTermValueIndex& lhs, const GroundFunctionTermValueIndex& rhs)
-    {
-        return EqualTo<uint_t> {}(lhs.value, rhs.value);
-    }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    // Inherit constructors
+    using Base = GroupIndexMixin<GroundFunctionTermValueIndex<T>, FunctionIndex<T>>;
+    using Base::Base;
 };
 
 template<IsStaticOrFluentTag T>

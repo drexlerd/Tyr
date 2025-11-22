@@ -30,9 +30,9 @@ namespace tyr::formalism
 template<typename T>
 using FlatRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSet<T>>;
 
-/// @brief `IndexedRepositoryEntry` is the mapping from data type to a list of indexed hash sets.
+/// @brief `GroupRepositoryEntry` is the mapping from data type to a list of indexed hash sets.
 template<typename T>
-using IndexedRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSetList<T>>;
+using GroupRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSetList<T>>;
 
 template<typename T>
 struct RepositoryTraits
@@ -43,43 +43,43 @@ struct RepositoryTraits
 template<IsStaticOrFluentTag T>
 struct RepositoryTraits<Atom<T>>
 {
-    using EntryType = IndexedRepositoryEntry<Atom<T>>;
+    using EntryType = GroupRepositoryEntry<Atom<T>>;
 };
 
 template<IsStaticOrFluentTag T>
 struct RepositoryTraits<GroundAtom<T>>
 {
-    using EntryType = IndexedRepositoryEntry<GroundAtom<T>>;
+    using EntryType = GroupRepositoryEntry<GroundAtom<T>>;
 };
 
 template<IsStaticOrFluentTag T>
 struct RepositoryTraits<Literal<T>>
 {
-    using EntryType = IndexedRepositoryEntry<Literal<T>>;
+    using EntryType = GroupRepositoryEntry<Literal<T>>;
 };
 
 template<IsStaticOrFluentTag T>
 struct RepositoryTraits<FunctionTerm<T>>
 {
-    using EntryType = IndexedRepositoryEntry<FunctionTerm<T>>;
+    using EntryType = GroupRepositoryEntry<FunctionTerm<T>>;
 };
 
 template<IsStaticOrFluentTag T>
 struct RepositoryTraits<GroundFunctionTerm<T>>
 {
-    using EntryType = IndexedRepositoryEntry<GroundFunctionTerm<T>>;
+    using EntryType = GroupRepositoryEntry<GroundFunctionTerm<T>>;
 };
 
 template<IsStaticOrFluentTag T>
 struct RepositoryTraits<GroundFunctionTermValue<T>>
 {
-    using EntryType = IndexedRepositoryEntry<GroundFunctionTermValue<T>>;
+    using EntryType = GroupRepositoryEntry<GroundFunctionTermValue<T>>;
 };
 
 template<>
 struct RepositoryTraits<GroundRule>
 {
-    using EntryType = IndexedRepositoryEntry<GroundRule>;
+    using EntryType = GroupRepositoryEntry<GroundRule>;
 };
 
 /// Checks whether T is defined to use a single indexed hash set.
@@ -88,7 +88,7 @@ concept IsFlatRepository = std::same_as<typename RepositoryTraits<T>::EntryType,
 
 /// Checks whether T is defined to use a list of indexed hash sets.
 template<typename T>
-concept IsIndexedRepository = std::same_as<typename RepositoryTraits<T>::EntryType, IndexedRepositoryEntry<T>>;
+concept IsGroupRepository = std::same_as<typename RepositoryTraits<T>::EntryType, GroupRepositoryEntry<T>>;
 
 }
 

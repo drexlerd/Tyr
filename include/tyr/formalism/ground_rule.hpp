@@ -59,7 +59,7 @@ struct GroundRule
     GroundRule& operator=(GroundRule&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, binding, static_body, fluent_body, numeric_body, head); }
-    auto identifying_members() const noexcept { return std::tie(index.rule_index, binding, static_body, fluent_body, numeric_body, head); }
+    auto identifying_members() const noexcept { return std::tie(index.group, binding, static_body, fluent_body, numeric_body, head); }
 };
 
 }

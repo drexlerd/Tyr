@@ -105,54 +105,16 @@ private:
 
     HanaRepository m_repository;
 
-    template<IsStaticOrFluentTag T>
-    static auto get_index(AtomIndex<T>& self) noexcept
-    {
-        return self.predicate_index;
-    }
-
-    template<IsStaticOrFluentTag T>
-    static auto get_index(GroundAtomIndex<T> self) noexcept
-    {
-        return self.predicate_index;
-    }
-
-    template<IsStaticOrFluentTag T>
-    static auto get_index(LiteralIndex<T> self) noexcept
-    {
-        return self.predicate_index;
-    }
-
-    template<IsStaticOrFluentTag T>
-    static auto get_index(FunctionTermIndex<T> self) noexcept
-    {
-        return self.function_index;
-    }
-
-    template<IsStaticOrFluentTag T>
-    static auto get_index(GroundFunctionTermIndex<T>& self) noexcept
-    {
-        return self.function_index;
-    }
-
-    template<IsStaticOrFluentTag T>
-    static auto get_index(GroundFunctionTermValueIndex<T>& self) noexcept
-    {
-        return self.function_index;
-    }
-
-    static auto get_index(GroundRuleIndex self) noexcept { return self.rule_index; }
-
 public:
     Repository() = default;
 
     // nullptr signals that the object does not exist.
-    template<IsIndexedRepository T>
+    template<IsGroupRepository T>
     const T* find(const T& builder) const
     {
         const auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
-        const auto i = get_index(builder.index).get();
+        const auto i = builder.index.get_group().get_value();
 
         if (i >= list.size())
             return nullptr;
@@ -173,12 +135,12 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<IsIndexedRepository T, bool AssignIndex = true>
+    template<IsGroupRepository T, bool AssignIndex = true>
     std::pair<const T*, bool> get_or_create(T& builder, cista::Buffer& buf)
     {
         auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
-        const auto i = get_index(builder.index).get();
+        const auto i = builder.index.get_group().get_value();
 
         if (i >= list.size())
             list.resize(i + 1);
@@ -206,14 +168,14 @@ public:
 
     /// @brief Access the element with the given index.
     template<IsIndexType T>
-        requires IsIndexedRepository<typename IndexTraits<T>::DataType>
+        requires IsGroupRepository<typename IndexTraits<T>::DataType>
     const auto& operator[](T index) const
     {
         using DataType = typename IndexTraits<T>::DataType;
 
         const auto& list = boost::hana::at_key(m_repository, boost::hana::type<DataType> {});
 
-        const auto i = get_index(index).get();
+        const auto i = index.get_group().get_value();
 
         assert(i < list.size());
 
@@ -236,14 +198,14 @@ public:
 
     /// @brief Get the number of stored elements.
     template<IsIndexType T>
-        requires IsIndexedRepository<typename IndexTraits<T>::DataType>
+        requires IsGroupRepository<typename IndexTraits<T>::DataType>
     size_t size(T index) const
     {
         using DataType = typename IndexTraits<T>::DataType;
 
         const auto& list = boost::hana::at_key(m_repository, boost::hana::type<DataType> {});
 
-        const auto i = get_index(index).get();
+        const auto i = index.get_group().get_value();
 
         assert(i < list.size());
 

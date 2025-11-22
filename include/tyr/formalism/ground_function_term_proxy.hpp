@@ -39,7 +39,7 @@ public:
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_function() const { return FunctionProxy(index.function_index, *context); }
+    auto get_function() const { return FunctionProxy(index.group, *context); }
     auto get_terms() const { return SpanProxy<ObjectIndex, C>(get().terms, *context); }
 };
 }

@@ -258,7 +258,7 @@ inline formalism::GroundAtomIndexList<formalism::StaticTag> add_static_ground_at
              { GripperStaticPredicate::Gripper, { { GripperObject::Left }, { GripperObject::Right } } },
              { GripperStaticPredicate::Ball, { { GripperObject::Ball1 }, { GripperObject::Ball2 } } } })
     {
-        ground_atom_builder.index.predicate_index = convert(predicate);
+        ground_atom_builder.index.group = convert(predicate);
         for (const auto& atom : atoms)
         {
             ground_atom_builder.terms.clear();
@@ -292,7 +292,7 @@ inline formalism::GroundAtomIndexList<formalism::FluentTag> add_fluent_ground_at
              { GripperFluentPredicate::At, { { GripperObject::Ball1, GripperObject::RoomA }, { GripperObject::Ball2, GripperObject::RoomA } } },
              { GripperFluentPredicate::AtRobby, { { GripperObject::RoomA } } } })
     {
-        ground_atom_builder.index.predicate_index = convert(predicate);
+        ground_atom_builder.index.group = convert(predicate);
         for (const auto& atom : atoms)
         {
             ground_atom_builder.terms.clear();
@@ -338,7 +338,7 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
              { GripperStaticPredicate::Object, { { true, { 0 } }, { true, { 1 } } } },
              { GripperStaticPredicate::Room, { { true, { 0 } }, { true, { 1 } } } } })
     {
-        static_atom_builder.index.predicate_index = convert(predicate);
+        static_atom_builder.index.group = convert(predicate);
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
             static_atom_builder.terms.clear();
@@ -358,7 +358,7 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
          std::vector<std::pair<GripperFluentPredicate, std::vector<std::pair<bool, std::vector<size_t>>>>> {
              { GripperFluentPredicate::AtRobby, { { true, { 0 } } } } })
     {
-        fluent_atom_builder.index.predicate_index = convert(predicate);
+        fluent_atom_builder.index.group = convert(predicate);
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
             fluent_atom_builder.terms.clear();
@@ -374,7 +374,7 @@ inline formalism::RuleIndex add_rule_move(formalism::Repository& repository)
         }
     }
 
-    fluent_atom_builder.index.predicate_index = convert(GripperFluentPredicate::Move);
+    fluent_atom_builder.index.group = convert(GripperFluentPredicate::Move);
     fluent_atom_builder.terms.clear();
     fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(1)));
@@ -419,7 +419,7 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
              { GripperStaticPredicate::Room, { { true, { 1 } } } },
              { GripperStaticPredicate::Gripper, { { true, { 2 } } } } })
     {
-        static_atom_builder.index.predicate_index = convert(predicate);
+        static_atom_builder.index.group = convert(predicate);
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
             static_atom_builder.terms.clear();
@@ -441,7 +441,7 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
              { GripperFluentPredicate::AtRobby, { { true, { 1 } } } },
              { GripperFluentPredicate::Free, { { true, { 2 } } } } })
     {
-        fluent_atom_builder.index.predicate_index = convert(predicate);
+        fluent_atom_builder.index.group = convert(predicate);
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
             fluent_atom_builder.terms.clear();
@@ -457,7 +457,7 @@ inline formalism::RuleIndex add_rule_pick(formalism::Repository& repository)
         }
     }
 
-    fluent_atom_builder.index.predicate_index = convert(GripperFluentPredicate::Pick);
+    fluent_atom_builder.index.group = convert(GripperFluentPredicate::Pick);
     fluent_atom_builder.terms.clear();
     fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(1)));
@@ -503,7 +503,7 @@ inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
              { GripperStaticPredicate::Room, { { true, { 1 } } } },
              { GripperStaticPredicate::Gripper, { { true, { 2 } } } } })
     {
-        static_atom_builder.index.predicate_index = convert(predicate);
+        static_atom_builder.index.group = convert(predicate);
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
             static_atom_builder.terms.clear();
@@ -524,7 +524,7 @@ inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
              { GripperFluentPredicate::AtRobby, { { true, { 1 } } } },
              { GripperFluentPredicate::Carry, { { true, { 0, 2 } } } } })
     {
-        fluent_atom_builder.index.predicate_index = convert(predicate);
+        fluent_atom_builder.index.group = convert(predicate);
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
             fluent_atom_builder.terms.clear();
@@ -540,7 +540,7 @@ inline formalism::RuleIndex add_rule_drop(formalism::Repository& repository)
         }
     }
 
-    fluent_atom_builder.index.predicate_index = convert(GripperFluentPredicate::Drop);
+    fluent_atom_builder.index.group = convert(GripperFluentPredicate::Drop);
     fluent_atom_builder.terms.clear();
     fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(formalism::Term(formalism::ParameterIndex(1)));

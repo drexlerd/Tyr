@@ -19,23 +19,16 @@
 #define TYR_FORMALISM_VARIABLE_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
-struct VariableIndex
+struct VariableIndex : FlatIndexMixin<VariableIndex>
 {
-    uint_t value {};
-
-    VariableIndex() = default;
-    explicit VariableIndex(uint_t value) : value(value) {}
-
-    friend bool operator==(const VariableIndex& lhs, const VariableIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    // Inherit constructors
+    using Base = FlatIndexMixin<VariableIndex>;
+    using Base::Base;
 };
 
 using VariableIndexList = ::cista::offset::vector<VariableIndex>;

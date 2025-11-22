@@ -19,24 +19,17 @@
 #define TYR_FORMALISM_MULTI_OPERATOR_INDEX_HPP_
 
 #include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
 {
 template<IsOp Op, typename T>
-struct MultiOperatorIndex
+struct MultiOperatorIndex : FlatIndexMixin<MultiOperatorIndex<Op, T>>
 {
-    uint_t value {};
-
-    MultiOperatorIndex() = default;
-    explicit MultiOperatorIndex(uint_t value) : value(value) {}
-
-    friend bool operator==(const MultiOperatorIndex& lhs, const MultiOperatorIndex& rhs) { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-
-    uint_t get() const noexcept { return value; }
-
-    auto cista_members() const noexcept { return std::tie(value); }
-    auto identifying_members() const noexcept { return std::tie(value); }
+    // Inherit constructors
+    using Base = FlatIndexMixin<MultiOperatorIndex<Op, T>>;
+    using Base::Base;
 };
 }
 

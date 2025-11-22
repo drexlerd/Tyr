@@ -56,7 +56,17 @@ concept IsIndexType = requires(const T& a) {
     // Required traits
     typename IndexTraits<T>::DataType;
     // Required functions
-    { a.get() } -> std::same_as<uint_t>;
+    { a.get_value() } -> std::same_as<uint_t>;
+};
+
+/// @brief Check whether T is an index type for an arbitrary context C.
+template<typename T>
+concept IsGroupIndexType = requires(const T& a) {
+    // Required traits
+    typename IndexTraits<T>::DataType;
+    // Required functions
+    { a.get_group() } -> IsIndexType;
+    { a.get_value() } -> std::same_as<uint_t>;
 };
 
 template<typename T, typename C>
