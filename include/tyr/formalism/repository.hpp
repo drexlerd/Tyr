@@ -22,7 +22,6 @@
 #include "tyr/formalism/data_traits.hpp"
 #include "tyr/formalism/index_traits.hpp"
 #include "tyr/formalism/proxy_traits.hpp"
-#include "tyr/formalism/repository_traits.hpp"
 //
 #include "tyr/cista/declarations.hpp"
 #include "tyr/cista/indexed_hash_set.hpp"
@@ -55,6 +54,20 @@ namespace tyr::formalism
 class Repository
 {
 private:
+    /// @brief `FlatRepositoryEntry` is the mapping from data type to an indexed hash set.
+    template<typename T>
+    using FlatRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSet<T>>;
+
+    /// @brief `GroupRepositoryEntry` is the mapping from data type to a list of indexed hash sets.
+    template<typename T>
+    using GroupRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSetList<T>>;
+
+    template<typename T>
+    struct RepositoryTraits
+    {
+        using EntryType = std::conditional_t<IsGroupDataType<T>, GroupRepositoryEntry<T>, FlatRepositoryEntry<T>>;
+    };
+
     using HanaRepository = boost::hana::map<RepositoryTraits<Variable>::EntryType,
                                             RepositoryTraits<Object>::EntryType,
                                             RepositoryTraits<Predicate<StaticTag>>::EntryType,
@@ -109,7 +122,7 @@ public:
     Repository() = default;
 
     // nullptr signals that the object does not exist.
-    template<IsGroupRepository T>
+    template<IsGroupDataType T>
     const T* find(const T& builder) const
     {
         const auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -125,7 +138,7 @@ public:
     }
 
     // nullptr signals that the object does not exist.
-    template<IsFlatRepository T>
+    template<IsFlatDataType T>
     const T* find(const T& builder) const
     {
         const auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -135,7 +148,7 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<IsGroupRepository T, bool AssignIndex = true>
+    template<IsGroupDataType T, bool AssignIndex = true>
     std::pair<const T*, bool> get_or_create(T& builder, cista::Buffer& buf)
     {
         auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -155,7 +168,7 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<IsFlatRepository T, bool AssignIndex = true>
+    template<IsFlatDataType T, bool AssignIndex = true>
     std::pair<const T*, bool> get_or_create(T& builder, cista::Buffer& buf)
     {
         auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -167,8 +180,7 @@ public:
     }
 
     /// @brief Access the element with the given index.
-    template<IsIndexType T>
-        requires IsGroupRepository<typename IndexTraits<T>::DataType>
+    template<IsGroupIndexType T>
     const auto& operator[](T index) const
     {
         using DataType = typename IndexTraits<T>::DataType;
@@ -185,8 +197,7 @@ public:
     }
 
     /// @brief Access the element with the given index.
-    template<IsIndexType T>
-        requires IsFlatRepository<typename IndexTraits<T>::DataType>
+    template<IsFlatIndexType T>
     const auto& operator[](T index) const
     {
         using DataType = typename IndexTraits<T>::DataType;
@@ -197,8 +208,7 @@ public:
     }
 
     /// @brief Get the number of stored elements.
-    template<IsIndexType T>
-        requires IsGroupRepository<typename IndexTraits<T>::DataType>
+    template<IsGroupIndexType T>
     size_t size(T index) const
     {
         using DataType = typename IndexTraits<T>::DataType;
@@ -215,8 +225,7 @@ public:
     }
 
     /// @brief Get the number of stored elements.
-    template<IsIndexType T>
-        requires IsFlatRepository<typename IndexTraits<T>::DataType>
+    template<IsFlatIndexType T>
     size_t size() const
     {
         using DataType = typename IndexTraits<T>::DataType;

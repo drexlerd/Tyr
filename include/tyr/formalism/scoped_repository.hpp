@@ -39,7 +39,7 @@ public:
     ScopedRepository(const Repository& global, Repository& local) : global(global), local(local) {}
 
     // nullptr signals that the object does not exist.
-    template<IsGroupRepository T>
+    template<IsGroupDataType T>
     const T* find(const T& builder) const
     {
         if (auto ptr = global.find(builder))
@@ -49,7 +49,7 @@ public:
     }
 
     // nullptr signals that the object does not exist.
-    template<IsFlatRepository T>
+    template<IsFlatDataType T>
     const T* find(const T& builder) const
     {
         if (auto ptr = global.find(builder))
@@ -60,7 +60,7 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<IsGroupRepository T, bool AssignIndex = true>
+    template<IsGroupDataType T, bool AssignIndex = true>
     std::pair<const T*, bool> get_or_create(T& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
@@ -74,7 +74,7 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<IsFlatRepository T, bool AssignIndex = true>
+    template<IsFlatDataType T, bool AssignIndex = true>
     std::pair<const T*, bool> get_or_create(T& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
@@ -86,8 +86,7 @@ public:
         return local.get_or_create<T, false>(builder, buf);
     }
 
-    template<IsIndexType T>
-        requires IsGroupRepository<typename IndexTraits<T>::DataType>
+    template<IsGroupIndexType T>
     const typename IndexTraits<T>::DataType& operator[](T index) const
     {
         if (index.value < global.size(index))
@@ -96,8 +95,7 @@ public:
         return local[index];
     }
 
-    template<IsIndexType T>
-        requires IsFlatRepository<typename IndexTraits<T>::DataType>
+    template<IsFlatIndexType T>
     const typename IndexTraits<T>::DataType& operator[](T index) const
     {
         if (index.value < global.size())

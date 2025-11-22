@@ -36,6 +36,10 @@
 namespace tyr
 {
 
+/**
+ * General utility
+ */
+
 /// @brief Checks whether T is a floating point
 template<typename T>
 concept IsFloatingPoint = std::is_floating_point_v<T>;
@@ -50,7 +54,16 @@ concept HasIdentifyingMembers = requires(const T a) {
     { a.identifying_members() };
 };
 
-/// @brief Check whether T is an index type for an arbitrary context C.
+template<typename T>
+struct dependent_false : std::false_type
+{
+};
+
+/**
+ * Index, data, and proxy concepts
+ */
+
+/// @brief Check whether T is any index type.
 template<typename T>
 concept IsIndexType = requires(const T& a) {
     // Required traits
@@ -59,7 +72,7 @@ concept IsIndexType = requires(const T& a) {
     { a.get_value() } -> std::same_as<uint_t>;
 };
 
-/// @brief Check whether T is an index type for an arbitrary context C.
+/// @brief Check whether T is a group index type.
 template<typename T>
 concept IsGroupIndexType = requires(const T& a) {
     // Required traits
@@ -68,6 +81,10 @@ concept IsGroupIndexType = requires(const T& a) {
     { a.get_group() } -> IsIndexType;
     { a.get_value() } -> std::same_as<uint_t>;
 };
+
+/// @brief Check whether T is a flat index type.
+template<typename T>
+concept IsFlatIndexType = IsIndexType<T> && !IsGroupIndexType<T>;
 
 template<typename T, typename C>
 concept IndexTypeHasProxy = requires { typename IndexTraits<T>::template ProxyType<C>; };
@@ -80,6 +97,18 @@ concept IsDataType = requires {
     typename DataTraits<T>::template ProxyType<C>;
 };
 
+template<typename T>
+concept IsFlatDataType = requires {
+    typename DataTraits<T>::IndexType;
+    requires IsFlatIndexType<typename DataTraits<T>::IndexType>;
+};
+
+template<typename T>
+concept IsGroupDataType = requires {
+    typename DataTraits<T>::IndexType;
+    requires IsGroupIndexType<typename DataTraits<T>::IndexType>;
+};
+
 /// @brief Check whether T is a proxy type.
 template<typename T>
 concept IsProxyType = requires {
@@ -89,9 +118,20 @@ concept IsProxyType = requires {
 };
 
 template<typename T>
-struct dependent_false : std::false_type
-{
+concept IsFlatProxyType = requires {
+    typename ProxyTraits<T>::IndexType;
+    requires IsFlatIndexType<typename ProxyTraits<T>::IndexType>;
 };
+
+template<typename T>
+concept IsGroupProxyType = requires {
+    typename ProxyTraits<T>::IndexType;
+    requires IsGroupIndexType<typename ProxyTraits<T>::IndexType>;
+};
+
+/**
+ * Forward declarations and type defs
+ */
 
 template<typename T>
 struct Hash;
