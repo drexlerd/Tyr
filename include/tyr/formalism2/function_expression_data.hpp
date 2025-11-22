@@ -33,13 +33,13 @@ struct Data<formalism::FunctionExpression>
     using Tag = formalism::FunctionExpression;
 
     using Variant = ::cista::offset::variant<formalism::Double,
-                                             Index<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpAdd, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpSub, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpMul, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpDiv, formalism::FunctionExpression>>,
-                                             Index<formalism::MultiOperator<formalism::OpAdd, formalism::FunctionExpression>>,
-                                             Index<formalism::MultiOperator<formalism::OpMul, formalism::FunctionExpression>>,
+                                             Index<formalism::UnaryOperator<formalism::OpSub, Data<formalism::FunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpAdd, Data<formalism::FunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpSub, Data<formalism::FunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpMul, Data<formalism::FunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpDiv, Data<formalism::FunctionExpression>>>,
+                                             Index<formalism::MultiOperator<formalism::OpAdd, Data<formalism::FunctionExpression>>>,
+                                             Index<formalism::MultiOperator<formalism::OpMul, Data<formalism::FunctionExpression>>>,
                                              Index<formalism::FunctionTerm<formalism::StaticTag>>,
                                              Index<formalism::FunctionTerm<formalism::FluentTag>>>;
 

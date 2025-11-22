@@ -36,7 +36,7 @@ struct Data<formalism::GroundRule>
     IndexList<formalism::Object> binding;
     IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_body;
     IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_body;
-    DataList<formalism::BooleanOperator<formalism::GroundFunctionExpression>> numeric_body;
+    DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_body;
     Index<formalism::GroundAtom<formalism::FluentTag>> head;
 
     Data() = default;
@@ -44,7 +44,7 @@ struct Data<formalism::GroundRule>
          IndexList<formalism::Object> binding,
          IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_body,
          IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_body,
-         DataList<formalism::BooleanOperator<formalism::GroundFunctionExpression>> numeric_body,
+         DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_body,
          Index<formalism::GroundAtom<formalism::FluentTag>> head) :
         index(index),
         binding(std::move(binding)),

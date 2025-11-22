@@ -36,7 +36,7 @@ struct Data<formalism::Rule>
     IndexList<formalism::Variable> variables;
     IndexList<formalism::Literal<formalism::StaticTag>> static_body;
     IndexList<formalism::Literal<formalism::FluentTag>> fluent_body;
-    DataList<formalism::BooleanOperator<formalism::FunctionExpression>> numeric_body;
+    DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>> numeric_body;
     Index<formalism::Atom<formalism::FluentTag>> head;
 
     Data() = default;
@@ -44,7 +44,7 @@ struct Data<formalism::Rule>
          IndexList<formalism::Variable> variables,
          IndexList<formalism::Literal<formalism::StaticTag>> static_body,
          IndexList<formalism::Literal<formalism::FluentTag>> fluent_body,
-         DataList<formalism::BooleanOperator<formalism::FunctionExpression>> numeric_body,
+         DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>> numeric_body,
          Index<formalism::Atom<formalism::FluentTag>> head) :
         index(index),
         variables(std::move(variables)),

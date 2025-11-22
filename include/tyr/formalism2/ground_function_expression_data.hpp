@@ -33,13 +33,13 @@ struct Data<formalism::GroundFunctionExpression>
     using Tag = formalism::GroundFunctionExpression;
 
     using Variant = ::cista::offset::variant<formalism::Double,
-                                             Index<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpAdd, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpSub, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpMul, formalism::FunctionExpression>>,
-                                             Index<formalism::BinaryOperator<formalism::OpDiv, formalism::FunctionExpression>>,
-                                             Index<formalism::MultiOperator<formalism::OpAdd, formalism::FunctionExpression>>,
-                                             Index<formalism::MultiOperator<formalism::OpMul, formalism::FunctionExpression>>,
+                                             Index<formalism::UnaryOperator<formalism::OpSub, Data<formalism::GroundFunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpAdd, Data<formalism::GroundFunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpSub, Data<formalism::GroundFunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpMul, Data<formalism::GroundFunctionExpression>>>,
+                                             Index<formalism::BinaryOperator<formalism::OpDiv, Data<formalism::GroundFunctionExpression>>>,
+                                             Index<formalism::MultiOperator<formalism::OpAdd, Data<formalism::GroundFunctionExpression>>>,
+                                             Index<formalism::MultiOperator<formalism::OpMul, Data<formalism::GroundFunctionExpression>>>,
                                              Index<formalism::GroundFunctionTerm<formalism::StaticTag>>,
                                              Index<formalism::GroundFunctionTerm<formalism::FluentTag>>>;
 

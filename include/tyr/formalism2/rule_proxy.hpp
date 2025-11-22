@@ -47,7 +47,7 @@ public:
     auto get_variables() const { return SpanProxy<formalism::Variable, C>(get().variables, *context); }
     auto get_static_body() const { return SpanProxy<formalism::Literal<formalism::StaticTag>, C>(get().static_body, *context); }
     auto get_fluent_body() const { return SpanProxy<formalism::Literal<formalism::FluentTag>, C>(get().fluent_body, *context); }
-    auto get_numeric_body() const { return SpanProxy<formalism::BooleanOperator<formalism::FunctionExpression>, C>(get().numeric_body, *context); }
+    auto get_numeric_body() const { return SpanProxy<formalism::BooleanOperator<Data<formalism::FunctionExpression>>, C>(get().numeric_body, *context); }
     auto get_head() const { return Proxy<formalism::Atom<formalism::FluentTag>, C>(get().head, *context); }
 };
 }
