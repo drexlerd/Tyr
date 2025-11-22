@@ -60,7 +60,7 @@ struct dependent_false : std::false_type
 };
 
 /**
- * Index, data, and proxy concepts
+ * Index type concepts
  */
 
 /// @brief Check whether T is any index type.
@@ -86,8 +86,13 @@ concept IsGroupIndexType = requires(const T& a) {
 template<typename T>
 concept IsFlatIndexType = IsIndexType<T> && !IsGroupIndexType<T>;
 
+/// @brief Check whether T defines a proxy type.
 template<typename T, typename C>
-concept IndexTypeHasProxy = requires { typename IndexTraits<T>::template ProxyType<C>; };
+concept HasProxyType = requires { typename IndexTraits<T>::template ProxyType<C>; };
+
+/**
+ * Data type concepts
+ */
 
 /// @brief Check whether T is a data type for an arbitrary context C.
 template<typename T, typename C>
@@ -97,17 +102,23 @@ concept IsDataType = requires {
     typename DataTraits<T>::template ProxyType<C>;
 };
 
+/// @brief Check whether T is a flat data type.
 template<typename T>
 concept IsFlatDataType = requires {
     typename DataTraits<T>::IndexType;
     requires IsFlatIndexType<typename DataTraits<T>::IndexType>;
 };
 
+/// @brief Check whether T is a group data type.
 template<typename T>
 concept IsGroupDataType = requires {
     typename DataTraits<T>::IndexType;
     requires IsGroupIndexType<typename DataTraits<T>::IndexType>;
 };
+
+/**
+ * Proxy type concepts
+ */
 
 /// @brief Check whether T is a proxy type.
 template<typename T>
@@ -117,12 +128,14 @@ concept IsProxyType = requires {
     typename ProxyTraits<T>::DataType;
 };
 
+/// @brief Check whether T is a flat proxy type.
 template<typename T>
 concept IsFlatProxyType = requires {
     typename ProxyTraits<T>::IndexType;
     requires IsFlatIndexType<typename ProxyTraits<T>::IndexType>;
 };
 
+/// @brief Check whether T is a group proxy type.
 template<typename T>
 concept IsGroupProxyType = requires {
     typename ProxyTraits<T>::IndexType;

@@ -39,7 +39,7 @@ public:
     auto get_index() const { return index; }
     auto get_lhs() const
     {
-        if constexpr (IndexTypeHasProxy<T, C>)
+        if constexpr (HasProxyType<T, C>)
         {
             using ProxyType = typename IndexTraits<T>::template ProxyType<C>;
             return ProxyType(get().lhs, *context);
@@ -51,7 +51,7 @@ public:
     }
     auto get_rhs() const
     {
-        if constexpr (IndexTypeHasProxy<T, C>)
+        if constexpr (HasProxyType<T, C>)
         {
             using ProxyType = typename IndexTraits<T>::template ProxyType<C>;
             return ProxyType(get().rhs, *context);

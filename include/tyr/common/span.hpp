@@ -35,7 +35,7 @@ private:
 
 public:
     // If T has a ProxyType, use it; otherwise the "proxy" is just T itself.
-    using ProxyType = std::conditional_t<IndexTypeHasProxy<T, Context>, typename IndexTraits<T>::template ProxyType<Context>, T>;
+    using ProxyType = std::conditional_t<HasProxyType<T, Context>, typename IndexTraits<T>::template ProxyType<Context>, T>;
 
     template<class Container>
     explicit SpanProxy(const Container& container, const Context& context) : m_context(&context), m_span(std::data(container), std::size(container))
@@ -47,7 +47,7 @@ public:
 
     ProxyType operator[](size_t i) const
     {
-        if constexpr (IndexTypeHasProxy<T, Context>)
+        if constexpr (HasProxyType<T, Context>)
         {
             return ProxyType(m_span[i], *m_context);
         }
@@ -72,7 +72,7 @@ public:
 
         ProxyType operator*() const
         {
-            if constexpr (IndexTypeHasProxy<T, Context>)
+            if constexpr (HasProxyType<T, Context>)
             {
                 return ProxyType(*ptr, *ctx);
             }
@@ -145,7 +145,7 @@ public:
         // []
         ProxyType operator[](difference_type n) const
         {
-            if constexpr (IndexTypeHasProxy<T, Context>)
+            if constexpr (HasProxyType<T, Context>)
                 return ProxyType(*(ptr + n), *ctx);
             else
                 return *(ptr + n);
