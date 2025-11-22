@@ -12,15 +12,10 @@ function(add_gtest test_name source_file)
 endfunction()
 
 # Add each test source file as a separate test executable
-# add_gtest(analysis_domains                              "analysis/domains.cpp")
 
+add_gtest(analysis_domains                               "analysis/domains.cpp")
 
-# add_gtest(formalism_repository                          "formalism/repository.cpp")
-# add_gtest(formalism_proxy                               "formalism/proxy.cpp")
+add_gtest(cista_indexed_hash_set                         "cista/indexed_hash_set.cpp")
 
-add_gtest(analysis2_domains                               "analysis2/domains.cpp")
-
-add_gtest(cista_indexed_hash_set                          "cista/indexed_hash_set.cpp")
-
-add_gtest(formalism2_repository                           "formalism2/repository.cpp")
-add_gtest(formalism2_proxy                                "formalism2/proxy.cpp")
+add_gtest(formalism_repository                           "formalism/repository.cpp")
+add_gtest(formalism_proxy                                "formalism/proxy.cpp")

@@ -15,21 +15,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_LISTENERS_HPP_
-#define TYR_ANALYSIS_LISTENERS_HPP_
+#ifndef TYR_FORMALISM_BOOLEAN_OPERATOR_PROXY_HPP_
+#define TYR_FORMALISM_BOOLEAN_OPERATOR_PROXY_HPP_
 
-#include "tyr/analysis/declarations.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/common/variant.hpp"
+#include "tyr/formalism/boolean_operator_data.hpp"
+#include "tyr/formalism/repository.hpp"
 
-namespace tyr::analysis
+namespace tyr
 {
-
-struct Listeners
+template<typename T, formalism::IsContext C>
+class Proxy<formalism::BooleanOperator<T>, C> : public VariantProxy<typename Data<formalism::BooleanOperator<T>>::Variant, C>
 {
-    UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, IndexList<formalism::Rule>> positive_listeners;
+private:
+    using Base = VariantProxy<typename Data<formalism::BooleanOperator<T>>::Variant, C>;
+
+public:
+    using Tag = formalism::BooleanOperator<T>;
+
+    Proxy(Data<formalism::BooleanOperator<T>> op, const C& context) : Base(op.value, context) {}
 };
-
-Listeners compute_listeners_per_rule(const RuleStrata& strata) {}
 }
 
 #endif

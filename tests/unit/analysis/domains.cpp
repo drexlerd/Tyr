@@ -29,7 +29,7 @@ namespace tyr::tests
 TEST(TyrTests, TyrAnalysisDomains)
 {
     auto [program_index, repository] = create_example_problem();
-    auto program = ProgramProxy<>(program_index, repository);
+    auto program = Proxy<Program, Repository>(program_index, repository);
 
     analysis::compute_variable_list_per_predicate(program);
 }

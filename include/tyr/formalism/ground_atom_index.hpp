@@ -15,21 +15,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_LISTENERS_HPP_
-#define TYR_ANALYSIS_LISTENERS_HPP_
+#ifndef TYR_FORMALISM_GROUND_ATOM_INDEX_HPP_
+#define TYR_FORMALISM_GROUND_ATOM_INDEX_HPP_
 
-#include "tyr/analysis/declarations.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/index_mixins.hpp"
+#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 
-namespace tyr::analysis
+namespace tyr
 {
-
-struct Listeners
+template<formalism::IsStaticOrFluentTag T>
+struct Index<formalism::GroundAtom<T>> : GroupIndexMixin<Index<formalism::GroundAtom<T>>, Index<formalism::Predicate<T>>>
 {
-    UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, IndexList<formalism::Rule>> positive_listeners;
+    using Tag = formalism::GroundAtom<T>;
+
+    // Inherit constructors
+    using Base = GroupIndexMixin<Index<formalism::GroundAtom<T>>, Index<formalism::Predicate<T>>>;
+    using Base::Base;
 };
 
-Listeners compute_listeners_per_rule(const RuleStrata& strata) {}
 }
 
 #endif

@@ -19,7 +19,7 @@
 #define TYR_TESTS_UTILS_HPP_
 
 #include <string>
-#include <tyr/formalism2/formalism.hpp>
+#include <tyr/formalism/formalism.hpp>
 #include <vector>
 
 namespace tyr::tests

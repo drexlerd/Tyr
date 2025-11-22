@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/formalism.hpp"
 
 #include <gtest/gtest.h>
 
@@ -29,9 +29,9 @@ TEST(TyrTests, TyrFormalismRepository)
 {
     auto repository = Repository();
     auto buffer = Buffer();
-    auto predicate_builder = Predicate<FluentTag>();
-    auto object_builder = Object();
-    auto atom_builder = Atom<FluentTag>();
+    auto predicate_builder = Data<Predicate<FluentTag>>();
+    auto object_builder = Data<Object>();
+    auto atom_builder = Data<Atom<FluentTag>>();
 
     // Create a unique predicate
     predicate_builder.name = "predicate_0";
@@ -85,8 +85,8 @@ TEST(TyrTests, TyrFormalismRepository)
     // Create atom
     atom_builder.terms.clear();
     atom_builder.index.group = predicate_0->index;
-    atom_builder.terms.push_back(Term(object_0->index));
-    atom_builder.terms.push_back(Term(object_1->index));
+    atom_builder.terms.push_back(Data<Term>(object_0->index));
+    atom_builder.terms.push_back(Data<Term>(object_1->index));
     auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);
 
     EXPECT_TRUE(atom_success_0);
@@ -101,9 +101,9 @@ TEST(TyrTests, TyrFormalismProxy)
 {
     auto repository = Repository();
     auto buffer = Buffer();
-    auto predicate_builder = Predicate<FluentTag>();
-    auto object_builder = Object();
-    auto atom_builder = Atom<FluentTag>();
+    auto predicate_builder = Data<Predicate<FluentTag>>();
+    auto object_builder = Data<Object>();
+    auto atom_builder = Data<Atom<FluentTag>>();
 
     // Create a unique predicate
     predicate_builder.name = "predicate_0";
@@ -119,8 +119,8 @@ TEST(TyrTests, TyrFormalismProxy)
     // Create atom
     atom_builder.terms.clear();
     atom_builder.index.group = predicate_0->index;
-    atom_builder.terms.push_back(Term(object_0->index));
-    atom_builder.terms.push_back(Term(object_1->index));
+    atom_builder.terms.push_back(Data<Term>(object_0->index));
+    atom_builder.terms.push_back(Data<Term>(object_1->index));
     auto [atom_0, atom_success_0] = repository.get_or_create(atom_builder, buffer);
 }
 

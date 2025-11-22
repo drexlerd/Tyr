@@ -15,21 +15,29 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_LISTENERS_HPP_
-#define TYR_ANALYSIS_LISTENERS_HPP_
+#ifndef TYR_FORMALISM_TERM_PROXY_HPP_
+#define TYR_FORMALISM_TERM_PROXY_HPP_
 
-#include "tyr/analysis/declarations.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/common/variant.hpp"
+#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/term_data.hpp"
 
-namespace tyr::analysis
+namespace tyr
 {
-
-struct Listeners
+template<formalism::IsContext C>
+class Proxy<formalism::Term, C> : public VariantProxy<typename Data<formalism::Term>::Variant, C>
 {
-    UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, IndexList<formalism::Rule>> positive_listeners;
+private:
+    using Base = VariantProxy<typename Data<formalism::Term>::Variant, C>;
+
+public:
+    using Tag = formalism::Term;
+
+    Proxy(Data<formalism::Term> term, const C& context) : Base(term.value, context) {}
 };
 
-Listeners compute_listeners_per_rule(const RuleStrata& strata) {}
+static_assert(IsProxyable<formalism::Term, formalism::Repository>);
 }
 
 #endif

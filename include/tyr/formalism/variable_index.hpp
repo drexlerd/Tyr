@@ -15,21 +15,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_LISTENERS_HPP_
-#define TYR_ANALYSIS_LISTENERS_HPP_
+#ifndef TYR_FORMALISM_VARIABLE_INDEX_HPP_
+#define TYR_FORMALISM_VARIABLE_INDEX_HPP_
 
-#include "tyr/analysis/declarations.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/index_mixins.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
 
-namespace tyr::analysis
+namespace tyr
 {
-
-struct Listeners
+template<>
+struct Index<formalism::Variable> : FlatIndexMixin<Index<formalism::Variable>>
 {
-    UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, IndexList<formalism::Rule>> positive_listeners;
+    using Tag = formalism::Variable;
+
+    // Inherit constructors
+    using Base = FlatIndexMixin<Index<formalism::Variable>>;
+    using Base::Base;
 };
-
-Listeners compute_listeners_per_rule(const RuleStrata& strata) {}
 }
 
 #endif

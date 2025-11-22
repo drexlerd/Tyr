@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/tyr.hpp"
+#include "tyr/formalism/formalism.hpp"
 
 #include <gtest/gtest.h>
 
@@ -29,10 +29,10 @@ TEST(TyrTests, TyrFormalismProxy)
 {
     auto repository = Repository();
     auto buffer = Buffer();
-    auto predicate_builder = Predicate<FluentTag>();
-    auto object_builder = Object();
-    auto variable_builder = Variable();
-    auto atom_builder = Atom<FluentTag>();
+    auto predicate_builder = Data<Predicate<FluentTag>>();
+    auto object_builder = Data<Object>();
+    auto variable_builder = Data<Variable>();
+    auto atom_builder = Data<Atom<FluentTag>>();
 
     // Create a unique predicate
     predicate_builder.name = "predicate";
@@ -46,12 +46,12 @@ TEST(TyrTests, TyrFormalismProxy)
     // Create atom
     atom_builder.terms.clear();
     atom_builder.index.group = predicate->index;
-    atom_builder.terms.push_back(Term(object->index));
-    atom_builder.terms.push_back(Term(ParameterIndex(0)));
+    atom_builder.terms.push_back(Data<Term>(object->index));
+    atom_builder.terms.push_back(Data<Term>(ParameterIndex(0)));
     auto [atom, atom_success] = repository.get_or_create(atom_builder, buffer);
 
     // Recurse through proxy
-    auto atom_proxy = AtomProxy<FluentTag>(atom->index, repository);
+    auto atom_proxy = Proxy<Atom<FluentTag>, Repository>(atom->index, repository);
     auto atom_relation_proxy = atom_proxy.get_predicate();
     auto atom_terms_proxy = atom_proxy.get_terms();
 
@@ -62,7 +62,7 @@ TEST(TyrTests, TyrFormalismProxy)
         {
             using ProxyType = std::decay_t<decltype(arg)>;
 
-            if constexpr (std::is_same_v<ProxyType, ObjectProxy<>>)
+            if constexpr (std::is_same_v<ProxyType, Proxy<Object, Repository>>)
             {
                 EXPECT_EQ(arg.get_index(), object->index);
             }
