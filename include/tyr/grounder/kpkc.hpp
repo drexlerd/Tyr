@@ -39,14 +39,6 @@ struct DenseConsistencyGraph
     std::vector<std::vector<uint_t>> partitions;            ///< Dimensions K x V
     size_t num_vertices;
     size_t k;
-
-    explicit DenseConsistencyGraph(size_t num_vertices, size_t k) :
-        adjacency_matrix(num_vertices, boost::dynamic_bitset<>(num_vertices, false)),
-        partitions(k),
-        num_vertices(num_vertices),
-        k(k)
-    {
-    }
 };
 
 /// @brief Helper to allocate a DenseConsistencyGraph from a given StaticConsistencyGraph.
