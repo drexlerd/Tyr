@@ -20,17 +20,16 @@
 
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/grounder/declarations.hpp"
 
 namespace tyr::grounder
 {
-class RuleGrounder
+void ground(Proxy<formalism::Rule, formalism::ScopedRepository> rule,
+            formalism::ScopedRepository& repository,
+            const AssignmentSets<formalism::StaticTag>& static_assignment_sets,
+            const AssignmentSets<formalism::FluentTag>& fluent_assignment_sets)
 {
-public:
-    RuleGrounder(formalism::RuleIndex rule_index,
-                 const formalism::GroundAtomIndexList<formalism::StaticTag>& static_atoms,
-                 const formalism::GroundAtomIndexList<formalism::FluentTag>& fluent_atoms,
-                 const formalism::Repository& repository);
-};
+}
 }
 
 #endif

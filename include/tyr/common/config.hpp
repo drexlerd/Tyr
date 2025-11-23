@@ -32,6 +32,7 @@ namespace tyr
 {
 using int_t = std::int32_t;
 using uint_t = std::uint32_t;
+using float_t = double;
 }
 
 #endif

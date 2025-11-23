@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Dominik Drexler and Simon Stahlberg
+ * Copyright (C) 2025 Dominik Drexler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,10 @@
 #ifndef TYR_GROUNDER_ASSIGNMENT_SET_HPP_
 #define TYR_GROUNDER_ASSIGNMENT_SET_HPP_
 
+#include "tyr/analysis/domains.hpp"
+#include "tyr/common/closed_interval.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/grounder/assignment.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>
@@ -26,7 +29,7 @@
 #include <tuple>
 #include <vector>
 
-namespace mimir::formalism
+namespace tyr::grounder
 {
 
 struct PerfectAssignmentHash
@@ -35,7 +38,7 @@ struct PerfectAssignmentHash
     std::vector<std::vector<uint32_t>> m_remapping;  ///< The remapping of o in O to index for each type legal [i/o]
     std::vector<uint32_t> m_offsets;                 ///< The offsets of i
 
-    PerfectAssignmentHash(const ParameterList& parameters, const ObjectList& objects);
+    PerfectAssignmentHash(const analysis::DomainList& parameter_domains, size_t num_objects);
 
     size_t get_assignment_rank(const VertexAssignment& assignment) const noexcept;
 
@@ -44,21 +47,23 @@ struct PerfectAssignmentHash
     size_t size() const noexcept;
 };
 
-template<IsStaticOrFluentOrDerivedTag P>
+template<formalism::IsStaticOrFluentTag T>
 class PredicateAssignmentSet
 {
 private:
-    Predicate<P> m_predicate;
+    Index<formalism::Predicate<T>> m_predicate;
 
     PerfectAssignmentHash m_hash;
     boost::dynamic_bitset<> m_set;
 
 public:
-    PredicateAssignmentSet(const ObjectList& objects, Predicate<P> predicate);
+    template<formalism::IsContext C>
+    PredicateAssignmentSet(Proxy<formalism::Predicate<T>, C> predicate, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert_ground_atom(GroundAtom<P> ground_atom);
+    template<formalism::IsContext C>
+    void insert_ground_atom(Proxy<formalism::GroundAtom<T>, C> ground_atom);
 
     bool operator[](const VertexAssignment& assignment) const noexcept;
     bool operator[](const EdgeAssignment& assignment) const noexcept;
@@ -66,95 +71,103 @@ public:
     size_t size() const noexcept;
 };
 
-template<IsStaticOrFluentOrDerivedTag P>
+template<formalism::IsStaticOrFluentTag T>
 class PredicateAssignmentSets
 {
 private:
-    std::vector<PredicateAssignmentSet<P>> m_sets;
-
-    GroundAtomList<P> m_atoms_scratch;
+    std::vector<PredicateAssignmentSet<T>> m_sets;
 
 public:
     PredicateAssignmentSets() = default;
 
-    PredicateAssignmentSets(const ObjectList& objects, const PredicateList<P>& predicates);
+    template<formalism::IsContext C>
+    PredicateAssignmentSets(SpanProxy<formalism::Predicate<T>, C>& predicates, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert_ground_atoms(const GroundAtomList<P>& ground_atoms);
+    template<formalism::IsContext C>
+    void insert_ground_atoms(SpanProxy<formalism::GroundAtom<T>, C>& ground_atoms);
 
-    void insert_ground_atom(GroundAtom<P> ground_atom);
+    template<formalism::IsContext C>
+    void insert_ground_atom(Proxy<formalism::GroundAtom<T>, C> ground_atom);
 
-    const PredicateAssignmentSet<P>& get_set(Predicate<P> predicate) const noexcept;
+    const PredicateAssignmentSet<T>& get_set(Index<formalism::Predicate<T>> predicate) const noexcept;
 
     size_t size() const noexcept;
-
-    GroundAtomList<P>& get_atoms_scratch();
 };
 
-template<IsStaticOrFluentTag F>
+template<formalism::IsStaticOrFluentTag T>
 class FunctionSkeletonAssignmentSet
 {
 private:
-    FunctionSkeleton<F> m_function_skeleton;
+    Index<formalism::Function<T>> m_function;
 
     PerfectAssignmentHash m_hash;
-    std::vector<ClosedInterval<ContinuousCost>> m_set;
+    std::vector<ClosedInterval<float_t>> m_set;
 
 public:
     FunctionSkeletonAssignmentSet() = default;
 
-    FunctionSkeletonAssignmentSet(const ObjectList& objects, FunctionSkeleton<F> function_skeleton);
+    template<formalism::IsContext C>
+    FunctionSkeletonAssignmentSet(Proxy<formalism::Function<T>, C> function, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert_ground_function_value(GroundFunction<F> ground_function, ContinuousCost value);
+    template<formalism::IsContext C>
+    void insert_ground_function_term_value(Proxy<formalism::GroundFunctionTerm<T>, C> term, float_t value);
 
-    ClosedInterval<ContinuousCost> operator[](const EmptyAssignment& assignment) const noexcept;
-    ClosedInterval<ContinuousCost> operator[](const VertexAssignment& assignment) const noexcept;
-    ClosedInterval<ContinuousCost> operator[](const EdgeAssignment& assignment) const noexcept;
+    ClosedInterval<float_t> operator[](const EmptyAssignment& assignment) const noexcept;
+    ClosedInterval<float_t> operator[](const VertexAssignment& assignment) const noexcept;
+    ClosedInterval<float_t> operator[](const EdgeAssignment& assignment) const noexcept;
 
     size_t size() const noexcept;
 };
 
-template<IsStaticOrFluentTag F>
+template<formalism::IsStaticOrFluentTag T>
 class FunctionSkeletonAssignmentSets
 {
 private:
-    std::vector<FunctionSkeletonAssignmentSet<F>> m_sets;
-
-    GroundFunctionList<F> m_functions_scratch;
+    std::vector<FunctionSkeletonAssignmentSet<T>> m_sets;
 
 public:
     FunctionSkeletonAssignmentSets() = default;
 
-    FunctionSkeletonAssignmentSets(const ObjectList& objects, const FunctionSkeletonList<F>& function_skeletons);
+    template<formalism::IsContext C>
+    FunctionSkeletonAssignmentSets(SpanProxy<formalism::FunctionSkeleton<T>, C>& functions, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert_ground_function_values(const GroundFunctionList<F>& ground_functions, const FlatDoubleList& numeric_values);
+    template<formalism::IsContext C>
+    void insert_ground_function_values(SpanProxy<formalism::GroundFunctionTerm<T>, C>& terms, const std::vector<float_T>& values);
 
-    const FunctionSkeletonAssignmentSet<F>& get_set(FunctionSkeleton<F> function_skeleton) const noexcept;
+    const FunctionSkeletonAssignmentSet<T>& get_set(Index<formalism::Function<T>> function) const noexcept;
 
     size_t size() const noexcept;
-
-    GroundFunctionList<F>& get_functions_scratch();
 };
 
-struct StaticAssignmentSets
-{
-    PredicateAssignmentSets<StaticTag> static_predicate_assignment_sets;
+template<formalism::IsStaticOrFluentTag T>
+struct AssignmentSets;
 
-    StaticAssignmentSets();
-    StaticAssignmentSets(const ProblemImpl& problem);
+template<>
+struct AssignmentSets<formalism::StaticTag>
+{
+    PredicateAssignmentSets<formalism::StaticTag> static_predicate_assignment_sets;
+
+    AssignmentSets();
+
+    template<formalism::IsContext C>
+    AssignmentSets(Proxy<formalism::Program, C> program);
 };
 
-struct DynamicAssignmentSets
+template<>
+struct AssignmentSets<formalism::FluentTag>
 {
-    PredicateAssignmentSets<FluentTag> fluent_predicate_assignment_sets;
+    PredicateAssignmentSets<formalism::FluentTag> fluent_predicate_assignment_sets;
 
-    DynamicAssignmentSets();
-    DynamicAssignmentSets(const ProblemImpl& problem);
+    AssignmentSets();
+
+    template<formalism::IsContext C>
+    AssignmentSets(Proxy<formalism::Program, C> program);
 };
 
 }

@@ -15,22 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_TYR_HPP_
-#define TYR_TYR_HPP_
+#ifndef TYR_GROUNDER_GROUNDER_HPP_
+#define TYR_GROUNDER_GROUNDER_HPP_
 
-// Analysis
-#include "tyr/analysis/analysis.hpp"
-
-// Cista
-#include "tyr/cista/cista.hpp"
-
-// Common
-#include "tyr/common/common.hpp"
-
-// Formalism
-#include "tyr/formalism/formalism.hpp"
-
-// Grounder
-#include "tyr/grounder/grounder.hpp"
+#include "tyr/grounder/assignment.hpp"
+#include "tyr/grounder/assignment_set.hpp"
+#include "tyr/grounder/declarations.hpp"
+#include "tyr/grounder/rule_grounder.hpp"
 
 #endif
