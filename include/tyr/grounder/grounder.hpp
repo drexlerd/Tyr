@@ -21,6 +21,7 @@
 #include "tyr/grounder/assignment.hpp"
 #include "tyr/grounder/assignment_set.hpp"
 #include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/rule_grounder.hpp"
+#include "tyr/grounder/generator.hpp"
+#include "tyr/grounder/kpkc.hpp"
 
 #endif

@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_RULE_GROUNDER_HPP_
-#define TYR_GROUNDER_RULE_GROUNDER_HPP_
+#ifndef TYR_GROUNDER_GENERATOR_HPP_
+#define TYR_GROUNDER_GENERATOR_HPP_
 
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
