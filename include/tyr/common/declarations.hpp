@@ -72,6 +72,14 @@ concept HasGroup = requires(const T& a) {
 template<typename T>
 concept HasTag = requires { typename T::Tag; };
 
+/// @brief Check whether T uses index storage. Heavyweight types should do that.
+template<typename T>
+concept IsIndexStorage = HasTag<T> && std::same_as<T, Index<typename T::Tag>>;
+
+/// @brief Check whether T uses data storage. Only lightweight types should do that.
+template<typename T>
+concept IsDataStorage = !IsIndexStorage<T> && HasTag<T> && std::same_as<T, Data<typename T::Tag>>;
+
 /// @brief Check whether T is a flat type.
 template<typename Tag>
 concept IsFlatType = HasValue<Index<Tag>> && !HasGroup<Index<Tag>>;
