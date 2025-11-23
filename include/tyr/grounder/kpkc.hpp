@@ -32,116 +32,135 @@ namespace tyr::grounder::kpkc
  * K = num partitions
  */
 
-struct DynamicBitsetView
-{
-    boost::dynamic_bitset<>* data;
-    size_t begin;
-    size_t end;
-
-    DynamicBitsetView(boost::dynamic_bitset<>& data) : data(&data), begin(0), end(data.size()) {}
-
-    DynamicBitsetView(boost::dynamic_bitset<>& data, size_t begin, size_t end) : data(&data), begin(begin), end(end) { assert(begin <= end); }
-
-    DynamicBitsetView(DynamicBitsetView parent, size_t relative_begin, size_t relative_end) : data(parent.data)
-    {
-        // Check bounds against parent's size
-        assert(relative_begin <= relative_end);
-        assert(parent.begin + relative_end <= parent.end);
-        assert(data == parent.data);
-
-        begin = parent.begin + relative_begin;
-        end = parent.begin + relative_end;
-    }
-
-    DynamicBitsetView slice(size_t i, size_t d)
-    {
-        assert(d > 0);
-        return DynamicBitsetView(*data, begin + d * i, begin + d * (i + 1));
-    }
-
-    decltype(auto) test(size_t bit) const
-    {
-        assert(bit < size());
-        return data->test(begin + bit);
-    }
-
-    void set(size_t bit)
-    {
-        assert(bit < size());
-        data->set(begin + bit);
-    }
-
-    size_t size() const noexcept { return end - begin; }
-};
-
-struct DynamicBitsetConstView
-{
-    const boost::dynamic_bitset<>* data;
-    size_t begin;
-    size_t end;
-
-    DynamicBitsetConstView(const boost::dynamic_bitset<>& data) : data(&data), begin(0), end(data.size()) {}
-
-    DynamicBitsetConstView(const boost::dynamic_bitset<>& data, size_t begin, size_t end) : data(&data), begin(begin), end(end) { assert(begin <= end); }
-
-    DynamicBitsetConstView slice(size_t i, size_t d)
-    {
-        assert(d > 0);
-        return DynamicBitsetConstView(*data, begin + d * i, begin + d * (i + 1));
-    }
-
-    decltype(auto) test(size_t bit) const
-    {
-        assert(bit < size());
-        return data->test(begin + bit);
-    }
-
-    size_t size() const noexcept { return end - begin; }
-};
-
 /// @brief `DenseConsistencyGraph` is a dense representation of the consistency graph for a rule and a set of facts.
 struct DenseConsistencyGraph
 {
-    boost::dynamic_bitset<> adjacency_matrix;  ///< Dimensions V x V
-    std::vector<uint_t> vertex_partitioning;   ///< Dimensions V
-    std::vector<uint_t> partition_offsets;     ///< Dimensions K + 1
+    std::vector<boost::dynamic_bitset<>> adjacency_matrix;  ///< Dimensions V x V
+    std::vector<std::vector<uint_t>> partitions;            ///< Dimensions K x V
     size_t num_vertices;
     size_t k;
 
     explicit DenseConsistencyGraph(size_t num_vertices, size_t k) :
-        adjacency_matrix(num_vertices * num_vertices, false),
-        vertex_partitioning(k),
-        partition_offsets(k + 1),
+        adjacency_matrix(num_vertices, boost::dynamic_bitset<>(num_vertices, false)),
+        partitions(k),
         num_vertices(num_vertices),
         k(k)
     {
     }
-
-    DynamicBitsetConstView get_adjacency_matrix() const { return DynamicBitsetConstView(adjacency_matrix); }
-    std::span<const uint_t> get_vertex_partition(size_t vertex) const
-    {
-        return std::span<const uint_t>(vertex_partitioning.begin() + partition_offsets[vertex], vertex_partitioning.begin() + partition_offsets[vertex + 1]);
-    }
-    size_t get_num_vertices() const { return num_vertices; }
-    size_t get_k() const { return k; }
 };
+
+/// @brief Helper to allocate a DenseConsistencyGraph from a given StaticConsistencyGraph.
+inline DenseConsistencyGraph allocate_dense_graph(const StaticConsistencyGraph& sparse_graph);
 
 /// @brief `Workspace` is preallocated memory for a rule.
 struct Workspace
 {
-    boost::dynamic_bitset<> compatible_vertices;  ///< Dimensions K x K x K
-    boost::dynamic_bitset<> partition_bits;       ///< Dimensions K
-    std::vector<uint_t> partial_solution;         ///< Dimensions K
+    std::vector<std::vector<boost::dynamic_bitset<>>> compatible_vertices;  ///< Dimensions K x K x V
+    boost::dynamic_bitset<> partition_bits;                                 ///< Dimensions K
+    std::vector<uint_t> partial_solution;                                   ///< Dimensions K
     size_t k;
-
-    DynamicBitsetView get_compatible_vertices() { return DynamicBitsetView(compatible_vertices); }
-    DynamicBitsetView get_partition_bits() { return DynamicBitsetView(partition_bits); }
-    std::vector<uint_t>& get_partial_solution() { return partial_solution; }
-    size_t get_k() const { return k; }
 };
 
+/// @brief Helper to allocate a Workspace from a given StaticConsistencyGraph.
+inline Workspace allocate_workspace(const StaticConsistencyGraph& sparse_graph);
+
 template<typename Callback>
-void create_k_clique_in_k_partite_graph_generator(const DenseConsistencyGraph& graph, Workspace& workspace, Callback&& callback);
+void create_k_clique_in_k_partite_graph_generator_recursively(const DenseConsistencyGraph& graph, Workspace& workspace, Callback&& callback, size_t depth)
+{
+    assert(depth < graph.partitions.size());
+
+    uint_t k = graph.partitions.size();
+    uint_t best_set_bits = std::numeric_limits<uint_t>::max();
+    uint_t best_partition = std::numeric_limits<uint_t>::max();
+
+    auto& compatible_vertices = workspace.compatible_vertices[depth];
+    auto& partition_bits = workspace.partition_bits;
+    auto& partial_solution = workspace.partial_solution;
+
+    // Find the best partition to work with
+    for (uint_t partition = 0; partition < k; ++partition)
+    {
+        auto num_set_bits = compatible_vertices[partition].count();
+        if (!partition_bits[partition] && (num_set_bits < best_set_bits))
+        {
+            best_set_bits = num_set_bits;
+            best_partition = partition;
+        }
+    }
+
+    // Iterate through compatible vertices in the best partition
+    auto& best_partition_compatible_vertices = compatible_vertices[best_partition];
+    uint_t adjacent_index = best_partition_compatible_vertices.find_first();
+    while (adjacent_index < best_partition_compatible_vertices.size())
+    {
+        uint_t vertex = partitions[best_partition][adjacent_index];
+        best_partition_compatible_vertices[adjacent_index] = 0;
+
+        partial_solution.push_back(vertex);
+
+        if (partial_solution.size() == k)
+        {
+            callback(partial_solution);
+        }
+        else
+        {
+            assert(worspace.partial_solution.size() - 1 == depth);
+
+            // Update compatible vertices for the next recursion
+            auto& compatible_vertices_next = compatible_vertices[depth + 1];
+            for (uint_t partition = 0; partition < k; ++partition)
+            {
+                auto& partition_compatible_vertices_next = compatible_vertices_next[partition];
+                auto& partition_compatible_vertices = compatible_vertices[partition];
+                partition_compatible_vertices_next = partition_compatible_vertices;  // copy bits from current to next iteration
+            }
+
+            uint_t offset = 0;
+            for (uint_t partition = 0; partition < k; ++partition)
+            {
+                auto& partition_compatible_vertices_next = compatible_vertices_next[partition];
+                auto partition_size = partition_compatible_vertices_next.size();
+                if (!partition_bits[partition])
+                {
+                    for (uint_t index = 0; index < partition_size; ++index)
+                    {
+                        partition_compatible_vertices_next[index] &= graph.adjacency_matrix[vertex][index + offset];
+                    }
+                }
+                offset += partition_size;
+            }
+
+            partition_bits[best_partition] = 1;
+
+            uint_t possible_additions = 0;
+            for (uint_t partition = 0; partition < k; ++partition)
+            {
+                auto& partition_compatible_vertices = compatible_vertices[partition];
+                if (!partition_bits[partition] && partition_compatible_vertices.any())
+                {
+                    ++possible_additions;
+                }
+            }
+
+            if ((partial_solution.size() + possible_additions) == k)
+            {
+                find_all_k_cliques_in_k_partite_graph_helper(graph, workspace, callback, depth + 1);
+            }
+
+            partition_bits[best_partition] = 0;
+        }
+
+        partial_solution.pop_back();
+
+        adjacent_index = best_partition_compatible_vertices.find_next(adjacent_index);
+    }
+}
+
+template<typename Callback>
+void create_k_clique_in_k_partite_graph_generator(const DenseConsistencyGraph& graph, Workspace& workspace, Callback&& callback)
+{
+    create_k_clique_in_k_partite_graph_generator_recursively(graph, workspace, callback, 0);
+}
 }
 
 #endif

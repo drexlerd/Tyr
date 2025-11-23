@@ -24,6 +24,8 @@ namespace tyr::grounder
 {
 template<formalism::IsStaticOrFluentTag T>
 struct AssignmentSets;
+
+class StaticConsistencyGraph;
 }
 
 #endif
