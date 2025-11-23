@@ -20,7 +20,9 @@
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
+#include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/ground_atom_proxy.hpp"
 #include "tyr/grounder/assignment.hpp"
 
 #include <boost/dynamic_bitset.hpp>
@@ -38,13 +40,62 @@ struct PerfectAssignmentHash
     std::vector<std::vector<uint32_t>> m_remapping;  ///< The remapping of o in O to index for each type legal [i/o]
     std::vector<uint32_t> m_offsets;                 ///< The offsets of i
 
-    PerfectAssignmentHash(const analysis::DomainList& parameter_domains, size_t num_objects);
+    PerfectAssignmentHash(const analysis::DomainListList& parameter_domains, size_t num_objects)
+    {
+        const auto num_parameters = parameter_domains.size();
 
-    size_t get_assignment_rank(const VertexAssignment& assignment) const noexcept;
+        m_remapping.resize(num_parameters + 1);
+        m_offsets.resize(num_parameters + 1);
 
-    size_t get_assignment_rank(const EdgeAssignment& assignment) const noexcept;
+        m_remapping[0].resize(1, 0);  // 0 is sentinel to map to 0
+        m_offsets[0] = m_num_assignments++;
 
-    size_t size() const noexcept;
+        for (uint_t i = 0; i < num_parameters; ++i)
+        {
+            m_remapping[i + 1].resize(num_objects + 1, 0);  // 0 is sentinel to map to 0
+            m_offsets[i + 1] = m_num_assignments++;
+
+            const auto& parameter_domain = parameter_domains[i];
+            auto new_index = uint_t { 0 };
+            for (const auto object_index : parameter_domain)
+            {
+                m_remapping[i + 1][object_index.value + 1] = ++new_index;
+                ++m_num_assignments;
+            }
+        }
+    }
+
+    size_t get_assignment_rank(const VertexAssignment& assignment) const noexcept
+    {
+        assert(assignment.is_valid());
+
+        const auto o = m_remapping[assignment.index + 1][assignment.object + 1];
+
+        const auto result = m_offsets[assignment.index + 1] + o;
+
+        assert(result < m_num_assignments);
+
+        return result;
+    }
+
+    size_t get_assignment_rank(const EdgeAssignment& assignment) const noexcept
+    {
+        assert(assignment.is_valid());
+
+        const auto o1 = m_remapping[assignment.first_index + 1][assignment.first_object + 1];
+        const auto o2 = m_remapping[assignment.second_index + 1][assignment.second_object + 1];
+
+        const auto j1 = m_offsets[assignment.first_index + 1] + o1;
+        const auto j2 = m_offsets[assignment.second_index + 1] + o2;
+
+        const auto result = j1 * m_num_assignments + j2;
+
+        assert(result < m_num_assignments * m_num_assignments);
+
+        return result;
+    }
+
+    size_t size() const noexcept { return m_num_assignments * m_num_assignments; }
 };
 
 template<formalism::IsStaticOrFluentTag T>
@@ -58,17 +109,45 @@ private:
 
 public:
     template<formalism::IsContext C>
-    PredicateAssignmentSet(Proxy<formalism::Predicate<T>, C> predicate, size_t num_objects);
+    PredicateAssignmentSet(Proxy<formalism::Predicate<T>, C> predicate, const analysis::DomainListList& predicate_parameter_domains, size_t num_objects) :
+        m_predicate(predicate.get_index()),
+        m_hash(PerfectAssignmentHash(predicate_parameter_domains, num_objects)),
+        m_set(m_hash.size(), false)
+    {
+    }
 
-    void reset() noexcept;
+    void reset() noexcept { m_set.reset(); }
 
     template<formalism::IsContext C>
-    void insert_ground_atom(Proxy<formalism::GroundAtom<T>, C> ground_atom);
+    void insert_ground_atom(Proxy<formalism::GroundAtom<T>, C> ground_atom)
+    {
+        const auto arity = ground_atom.get_predicate().get_arity();
+        const auto objects = ground_atom.get_terms();
 
-    bool operator[](const VertexAssignment& assignment) const noexcept;
-    bool operator[](const EdgeAssignment& assignment) const noexcept;
+        assert(ground_atom.get_predicate().get_index() == m_predicate);
 
-    size_t size() const noexcept;
+        for (size_t first_index = 0; first_index < arity; ++first_index)
+        {
+            const auto first_object = objects[first_index];
+
+            // Complete vertex.
+            m_set.set(m_hash.get_assignment_rank(VertexAssignment(first_index, first_object.get_index().value)));
+
+            for (size_t second_index = first_index + 1; second_index < arity; ++second_index)
+            {
+                const auto second_object = objects[second_index];
+
+                // Ordered complete edge.
+                m_set.set(
+                    m_hash.get_assignment_rank(EdgeAssignment(first_index, first_object.get_index().value, second_index, second_object.get_index().value)));
+            }
+        }
+    }
+
+    bool operator[](const VertexAssignment& assignment) const noexcept { return m_set.test(m_hash.get_assignment_rank(assignment)); }
+    bool operator[](const EdgeAssignment& assignment) const noexcept { return m_set.test(m_hash.get_assignment_rank(assignment)); }
+
+    size_t size() const noexcept { return m_set.size(); }
 };
 
 template<formalism::IsStaticOrFluentTag T>
@@ -133,12 +212,12 @@ public:
     FunctionSkeletonAssignmentSets() = default;
 
     template<formalism::IsContext C>
-    FunctionSkeletonAssignmentSets(SpanProxy<formalism::FunctionSkeleton<T>, C>& functions, size_t num_objects);
+    FunctionSkeletonAssignmentSets(SpanProxy<formalism::Function<T>, C>& functions, size_t num_objects);
 
     void reset() noexcept;
 
     template<formalism::IsContext C>
-    void insert_ground_function_values(SpanProxy<formalism::GroundFunctionTerm<T>, C>& terms, const std::vector<float_T>& values);
+    void insert_ground_function_values(SpanProxy<formalism::GroundFunctionTerm<T>, C>& terms, const std::vector<float_t>& values);
 
     const FunctionSkeletonAssignmentSet<T>& get_set(Index<formalism::Function<T>> function) const noexcept;
 
