@@ -30,17 +30,16 @@ template<typename T, typename Context>
 class SpanProxy
 {
 public:
-    using Storage = StorageType<T>;
     using Reference = ReferenceType<T>;
     using Proxy = ProxyType<T, Context>;
 
 private:
     const Context* m_context;
-    std::span<const Storage> m_span;
+    std::span<const Reference> m_span;
 
 public:
     template<std::ranges::random_access_range Container>
-        requires std::convertible_to<std::ranges::range_value_t<const Container>, Storage>
+        requires std::convertible_to<std::ranges::range_value_t<const Container>, Reference>
     explicit SpanProxy(const Container& container, const Context& context) : m_context(&context), m_span(std::data(container), std::size(container))
     {
     }
@@ -63,7 +62,7 @@ public:
     struct const_iterator
     {
         const Context* ctx;
-        const Storage* ptr;
+        const Reference* ptr;
 
         using difference_type = std::ptrdiff_t;
         using value_type = Proxy;
@@ -71,7 +70,7 @@ public:
         using iterator_concept = std::random_access_iterator_tag;
 
         const_iterator() : ctx(nullptr), ptr(nullptr) {}
-        const_iterator(const Storage* ptr, const Context& ctx) : ctx(&ctx), ptr(ptr) {}
+        const_iterator(const Reference* ptr, const Context& ctx) : ctx(&ctx), ptr(ptr) {}
 
         Proxy operator*() const
         {

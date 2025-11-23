@@ -24,18 +24,18 @@
 
 namespace tyr
 {
-template<formalism::IsOp Op, typename ArgTag>
-struct Data<formalism::MultiOperator<Op, ArgTag>>
+template<formalism::IsOp Op, typename T>
+struct Data<formalism::MultiOperator<Op, T>>
 {
-    using Tag = formalism::MultiOperator<Op, ArgTag>;
+    using Tag = formalism::MultiOperator<Op, T>;
 
-    using ArgStorageType = std::conditional_t<HasTag<Index<ArgTag>>, Index<ArgTag>, Data<ArgTag>>;
+    using Reference = ReferenceType<T>;
 
-    Index<formalism::MultiOperator<Op, ArgTag>> index;
-    ::cista::offset::vector<ArgStorageType> args;
+    Index<formalism::MultiOperator<Op, T>> index;
+    ::cista::offset::vector<Reference> args;
 
     Data() = default;
-    Data(Index<formalism::MultiOperator<Op, ArgTag>> index, ::cista::offset::vector<ArgStorageType> args) : index(index), args(std::move(args)) {}
+    Data(Index<formalism::MultiOperator<Op, T>> index, ::cista::offset::vector<Reference> args) : index(index), args(std::move(args)) {}
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;

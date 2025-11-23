@@ -109,7 +109,7 @@ template<typename T>
     requires IsIndexStorage<T>
 struct StorageTypeImpl<T>
 {
-    using Type = Index<T>;
+    using Type = Data<T>;
 };
 
 template<typename T>
@@ -134,14 +134,14 @@ template<typename T>
     requires IsIndexStorage<T>
 struct ReferenceTypeImpl<T>
 {
-    using Type = Data<T>;
+    using Type = Index<T>;
 };
 
 template<typename T>
     requires(!IsIndexStorage<T> && IsDataStorage<T>)
 struct ReferenceTypeImpl<T>
 {
-    using Type = Index<T>;
+    using Type = Data<T>;
 };
 
 template<typename T>

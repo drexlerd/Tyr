@@ -25,22 +25,22 @@
 
 namespace tyr
 {
-template<formalism::IsOp Op, typename ArgTag, formalism::IsContext C>
-class Proxy<formalism::MultiOperator<Op, ArgTag>, C>
+template<formalism::IsOp Op, typename T, formalism::IsContext C>
+class Proxy<formalism::MultiOperator<Op, T>, C>
 {
 private:
     const C* context;
-    Index<formalism::MultiOperator<Op, ArgTag>> index;
+    Index<formalism::MultiOperator<Op, T>> index;
 
 public:
-    using Tag = formalism::MultiOperator<Op, ArgTag>;
+    using Tag = formalism::MultiOperator<Op, T>;
 
-    Proxy(Index<formalism::MultiOperator<Op, ArgTag>> index, const C& context) : context(&context), index(index) {}
+    Proxy(Index<formalism::MultiOperator<Op, T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_args() const { return SpanProxy<ArgTag, C>(get().args, *context); }
+    auto get_args() const { return SpanProxy<T, C>(get().args, *context); }
 };
 
 }

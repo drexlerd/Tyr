@@ -25,22 +25,32 @@
 
 namespace tyr
 {
-template<formalism::IsOp Op, typename ArgTag, formalism::IsContext C>
-class Proxy<formalism::UnaryOperator<Op, ArgTag>, C>
+template<formalism::IsOp Op, typename T, formalism::IsContext C>
+class Proxy<formalism::UnaryOperator<Op, T>, C>
 {
 private:
     const C* context;
-    Index<formalism::UnaryOperator<Op, ArgTag>> index;
+    Index<formalism::UnaryOperator<Op, T>> index;
 
 public:
-    using Tag = formalism::UnaryOperator<Op, ArgTag>;
+    using Tag = formalism::UnaryOperator<Op, T>;
 
-    Proxy(Index<formalism::UnaryOperator<Op, ArgTag>> index, const C& context) : context(&context), index(index) {}
+    Proxy(Index<formalism::UnaryOperator<Op, T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_arg() const { return Proxy<ArgTag, C>(get().arg, *context); }
+    auto get_arg() const
+    {
+        if constexpr (IsProxyable<T, C>)
+        {
+            return ProxyType<T, C>(get().arg, *context);
+        }
+        else
+        {
+            return get().arg;
+        }
+    }
 };
 
 }

@@ -51,13 +51,13 @@ public:
     template<typename T>
     auto get() const
     {
-        if constexpr (!HasTag<T>)
+        if constexpr (IsProxyable<T, Context>)
         {
-            return std::get<T>(index_variant());
+            return ProxyType<T, Context>(std::get<T>(index_variant()), context());
         }
         else
         {
-            return Proxy<typename T::Tag, Context>(std::get<T>(index_variant()), context());
+            return std::get<T>(index_variant());
         }
     }
 
@@ -69,13 +69,13 @@ public:
             {
                 using T = std::decay_t<decltype(arg)>;
 
-                if constexpr (!HasTag<T>)
+                if constexpr (IsProxyable<T, Context>)
                 {
-                    return std::forward<F>(f)(arg);
+                    return std::forward<F>(f)(ProxyType<T, Context>(arg, context()));
                 }
                 else
                 {
-                    return std::forward<F>(f)(Proxy<typename T::Tag, Context>(arg, context()));
+                    return std::forward<F>(f)(arg);
                 }
             },
             index_variant());

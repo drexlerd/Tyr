@@ -24,18 +24,18 @@
 
 namespace tyr
 {
-template<formalism::IsOp Op, typename ArgTag>
-struct Data<formalism::UnaryOperator<Op, ArgTag>>
+template<formalism::IsOp Op, typename T>
+struct Data<formalism::UnaryOperator<Op, T>>
 {
-    using Tag = formalism::UnaryOperator<Op, ArgTag>;
+    using Tag = formalism::UnaryOperator<Op, T>;
 
-    using ArgStorageType = std::conditional_t<HasTag<Index<ArgTag>>, Index<ArgTag>, Data<ArgTag>>;
+    using Reference = ReferenceType<T>;
 
-    Index<formalism::UnaryOperator<Op, ArgTag>> index;
-    ArgStorageType arg;
+    Index<formalism::UnaryOperator<Op, T>> index;
+    Reference arg;
 
     Data() = default;
-    Data(Index<formalism::UnaryOperator<Op, ArgTag>> index, ArgStorageType arg) : index(index), arg(arg) {}
+    Data(Index<formalism::UnaryOperator<Op, T>> index, Reference arg) : index(index), arg(arg) {}
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;

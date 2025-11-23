@@ -25,23 +25,43 @@
 
 namespace tyr
 {
-template<formalism::IsOp Op, typename ArgTag, formalism::IsContext C>
-class Proxy<formalism::BinaryOperator<Op, ArgTag>, C>
+template<formalism::IsOp Op, typename T, formalism::IsContext C>
+class Proxy<formalism::BinaryOperator<Op, T>, C>
 {
 private:
     const C* context;
-    Index<formalism::BinaryOperator<Op, ArgTag>> index;
+    Index<formalism::BinaryOperator<Op, T>> index;
 
 public:
-    using Tag = formalism::BinaryOperator<Op, ArgTag>;
+    using Tag = formalism::BinaryOperator<Op, T>;
 
-    Proxy(Index<formalism::BinaryOperator<Op, ArgTag>> index, const C& context) : context(&context), index(index) {}
+    Proxy(Index<formalism::BinaryOperator<Op, T>> index, const C& context) : context(&context), index(index) {}
 
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_lhs() const { return Proxy<ArgTag, C>(get().lhs, *context); }
-    auto get_rhs() const { return Proxy<ArgTag, C>(get().rhs, *context); }
+    auto get_lhs() const
+    {
+        if constexpr (IsProxyable<T, C>)
+        {
+            return ProxyType<T, C>(get().lhs, *context);
+        }
+        else
+        {
+            return get().lhs;
+        }
+    }
+    auto get_rhs() const
+    {
+        if constexpr (IsProxyable<T, C>)
+        {
+            return ProxyType<T, C>(get().rhs, *context);
+        }
+        else
+        {
+            return get().rhs;
+        }
+    }
 };
 
 }

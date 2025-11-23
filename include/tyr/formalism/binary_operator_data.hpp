@@ -24,19 +24,19 @@
 
 namespace tyr
 {
-template<formalism::IsOp Op, typename ArgTag>
-struct Data<formalism::BinaryOperator<Op, ArgTag>>
+template<formalism::IsOp Op, typename T>
+struct Data<formalism::BinaryOperator<Op, T>>
 {
-    using Tag = formalism::BinaryOperator<Op, ArgTag>;
+    using Tag = formalism::BinaryOperator<Op, T>;
 
-    using ArgStorageType = std::conditional_t<HasTag<Index<ArgTag>>, Index<ArgTag>, Data<ArgTag>>;
+    using Reference = ReferenceType<T>;
 
-    Index<formalism::BinaryOperator<Op, ArgTag>> index;
-    ArgStorageType lhs;
-    ArgStorageType rhs;
+    Index<formalism::BinaryOperator<Op, T>> index;
+    Reference lhs;
+    Reference rhs;
 
     Data() = default;
-    Data(Index<formalism::BinaryOperator<Op, ArgTag>> index, ArgStorageType lhs, ArgStorageType rhs) : index(index), lhs(lhs), rhs(rhs) {}
+    Data(Index<formalism::BinaryOperator<Op, T>> index, Reference lhs, Reference rhs) : index(index), lhs(lhs), rhs(rhs) {}
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;
