@@ -59,6 +59,121 @@ struct dependent_false : std::false_type
 {
 };
 
+/**
+ * We distinguish between Tag, instantiations of Data<Tag>, Index<Tag>, Proxy<Tag>, and other data types.
+ * - Lightweight types might not define an Index<Tag> specialization,
+ *   in which case we would like to store Data<Tag> directly inplace.
+ * - Data<Tag> stores either Index<Tag2> or Data<Tag2> or other data types.
+ * - Index<Tag> is just 1 or 2 integers to reference Data<Tag>.
+ * - Proxy<Tag> is just an Index<Tag> and a Context to recurse through the underlying Data.
+ */
+
+template<typename T>
+concept HasTag = requires { typename T::Tag; };
+
+template<typename T, bool HasTag>
+struct UnderlyingTagOrTImpl_Helper
+{
+    using Type = T;
+};
+
+template<typename T>
+struct UnderlyingTagOrTImpl_Helper<T, true>
+{
+    using Type = typename T::Tag;
+};
+
+/// @brief Retrieve the Tag of T if available, allowing us to analyze more details, and otherwise, use T.
+template<typename T>
+using UnderlyingTagOrT = typename UnderlyingTagOrTImpl_Helper<T, HasTag<T>>::Type;
+
+/// @brief The concept succeeds if there is an Index specialization associated with T.
+/// Data will be deduplicated and referenced via Index.
+template<typename T>
+concept IsIndexStorage = HasTag<Index<UnderlyingTagOrT<T>>>;
+
+/// @brief The concept succeeds if there is a Data but no Index specialization associated with T.
+/// Data will be stored inline, and hence, should be cheap.
+template<typename T>
+concept IsDataStorage = !IsIndexStorage<UnderlyingTagOrT<T>> && HasTag<Data<UnderlyingTagOrT<T>>>;
+
+/* Extract type to store data. */
+
+template<typename T, typename = void>
+struct StorageTypeImpl
+{
+    using Type = T;
+};
+
+template<typename T>
+    requires IsIndexStorage<T>
+struct StorageTypeImpl<T>
+{
+    using Type = Index<T>;
+};
+
+template<typename T>
+    requires(!IsIndexStorage<T> && IsDataStorage<T>)
+struct StorageTypeImpl<T>
+{
+    using Type = Data<T>;
+};
+
+template<typename T>
+using StorageType = typename StorageTypeImpl<UnderlyingTagOrT<T>>::Type;
+
+/* Extract type to reference data. */
+
+template<typename T, typename = void>
+struct ReferenceTypeImpl
+{
+    using Type = T;
+};
+
+template<typename T>
+    requires IsIndexStorage<T>
+struct ReferenceTypeImpl<T>
+{
+    using Type = Data<T>;
+};
+
+template<typename T>
+    requires(!IsIndexStorage<T> && IsDataStorage<T>)
+struct ReferenceTypeImpl<T>
+{
+    using Type = Index<T>;
+};
+
+template<typename T>
+using ReferenceType = typename ReferenceTypeImpl<UnderlyingTagOrT<T>>::Type;
+
+/* Extract type to proxy data. */
+
+template<typename T, typename C, typename = void>
+struct ProxyTypeImpl
+{
+    using Type = T;
+};
+
+template<typename T, typename C>
+    requires IsIndexStorage<T>
+struct ProxyTypeImpl<T, C>
+{
+    using Type = Proxy<T, C>;
+};
+
+template<typename T, typename C>
+    requires(!IsIndexStorage<T> && IsDataStorage<T>)
+struct ProxyTypeImpl<T, C>
+{
+    using Type = Proxy<T, C>;
+};
+
+template<typename T, typename C>
+using ProxyType = typename ProxyTypeImpl<UnderlyingTagOrT<T>, C>::Type;
+
+/* Define requirements on Index. */
+
 template<typename T>
 concept HasValue = requires(const T& a) {
     { a.get_value() } -> std::same_as<uint_t>;
@@ -69,29 +184,18 @@ concept HasGroup = requires(const T& a) {
     { a.get_group() } -> HasValue;
 };
 
-template<typename T>
-concept HasTag = requires { typename T::Tag; };
-
-/// @brief Check whether T uses index storage. Heavyweight types should do that.
-template<typename T>
-concept IsIndexStorage = HasTag<T> && std::same_as<T, Index<typename T::Tag>>;
-
-/// @brief Check whether T uses data storage. Only lightweight types should do that.
-template<typename T>
-concept IsDataStorage = !IsIndexStorage<T> && HasTag<T> && std::same_as<T, Data<typename T::Tag>>;
-
 /// @brief Check whether T is a flat type.
-template<typename Tag>
-concept IsFlatType = HasValue<Index<Tag>> && !HasGroup<Index<Tag>>;
+template<typename T>
+concept IsFlatType = HasValue<Index<UnderlyingTagOrT<T>>> && !HasGroup<Index<UnderlyingTagOrT<T>>>;
 
 /// @brief Check whether T is a group type.
-template<typename Tag>
-concept IsGroupType = HasValue<Index<Tag>> && HasGroup<Index<Tag>>;
+template<typename T>
+concept IsGroupType = HasValue<Index<UnderlyingTagOrT<T>>> && HasGroup<Index<UnderlyingTagOrT<T>>>;
 
 /// @brief Check whether T is proxyable.
-template<typename Tag, typename C>
-concept IsProxyable = requires(Index<Tag> index, const C& context) { Proxy<Tag, C>(index, context); }
-                      || requires(Data<Tag> data, const C& context) { Proxy<Tag, C>(data, context); };
+template<typename T, typename C>
+concept IsProxyable = requires(Index<UnderlyingTagOrT<T>> index, const C& context) { Proxy<UnderlyingTagOrT<T>, C>(index, context); }
+                      || requires(Data<UnderlyingTagOrT<T>> data, const C& context) { Proxy<UnderlyingTagOrT<T>, C>(data, context); };
 
 /**
  * Forward declarations and type defs

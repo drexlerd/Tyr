@@ -26,21 +26,21 @@
 
 namespace tyr
 {
-// T is either Data<Tag> or Index<Tag>
-template<typename Tag, typename Context>
+template<typename T, typename Context>
 class SpanProxy
 {
 public:
-    using StorageType = std::conditional_t<HasTag<Index<Tag>>, Index<Tag>, Data<Tag>>;
-
-    using ProxyType = std::conditional_t<IsProxyable<Tag, Context>, Proxy<Tag, Context>, StorageType>;
+    using Storage = StorageType<T>;
+    using Reference = ReferenceType<T>;
+    using Proxy = ProxyType<T, Context>;
 
 private:
     const Context* m_context;
-    std::span<const StorageType> m_span;
+    std::span<const Storage> m_span;
 
 public:
-    template<class Container>
+    template<std::ranges::random_access_range Container>
+        requires std::convertible_to<std::ranges::range_value_t<const Container>, Storage>
     explicit SpanProxy(const Container& container, const Context& context) : m_context(&context), m_span(std::data(container), std::size(container))
     {
     }
@@ -48,11 +48,11 @@ public:
     size_t size() const noexcept { return m_span.size(); }
     bool empty() const noexcept { return m_span.empty(); }
 
-    ProxyType operator[](size_t i) const
+    Proxy operator[](size_t i) const
     {
-        if constexpr (IsProxyable<Tag, Context>)
+        if constexpr (IsProxyable<T, Context>)
         {
-            return ProxyType(m_span[i], *m_context);
+            return Proxy(m_span[i], *m_context);
         }
         else
         {
@@ -63,21 +63,21 @@ public:
     struct const_iterator
     {
         const Context* ctx;
-        const StorageType* ptr;
+        const Storage* ptr;
 
         using difference_type = std::ptrdiff_t;
-        using value_type = ProxyType;
+        using value_type = Proxy;
         using iterator_category = std::random_access_iterator_tag;
         using iterator_concept = std::random_access_iterator_tag;
 
         const_iterator() : ctx(nullptr), ptr(nullptr) {}
-        const_iterator(const StorageType* ptr, const Context& ctx) : ctx(&ctx), ptr(ptr) {}
+        const_iterator(const Storage* ptr, const Context& ctx) : ctx(&ctx), ptr(ptr) {}
 
-        ProxyType operator*() const
+        Proxy operator*() const
         {
-            if constexpr (IsProxyable<Tag, Context>)
+            if constexpr (IsProxyable<T, Context>)
             {
-                return ProxyType(*ptr, *ctx);
+                return Proxy(*ptr, *ctx);
             }
             else
             {
@@ -146,10 +146,10 @@ public:
         friend difference_type operator-(const_iterator lhs, const_iterator rhs) { return lhs.ptr - rhs.ptr; }
 
         // []
-        ProxyType operator[](difference_type n) const
+        Proxy operator[](difference_type n) const
         {
-            if constexpr (IsProxyable<Tag, Context>)
-                return ProxyType(*(ptr + n), *ctx);
+            if constexpr (IsProxyable<T, Context>)
+                return Proxy(*(ptr + n), *ctx);
             else
                 return *(ptr + n);
         }

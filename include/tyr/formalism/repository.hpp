@@ -71,9 +71,12 @@
 namespace tyr::formalism
 {
 
+
 class Repository
 {
 private:
+
+
     /// @brief `FlatRepositoryEntry` is the mapping from data type to an indexed hash set.
     template<typename T>
     using FlatRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSet<T>>;
