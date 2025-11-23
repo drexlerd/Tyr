@@ -40,7 +40,7 @@ struct PerfectAssignmentHash
     std::vector<std::vector<uint32_t>> m_remapping;  ///< The remapping of o in O to index for each type legal [i/o]
     std::vector<uint32_t> m_offsets;                 ///< The offsets of i
 
-    PerfectAssignmentHash(const analysis::DomainListList& parameter_domains, size_t num_objects)
+    PerfectAssignmentHash(const analysis::DomainListList& parameter_domains, size_t num_objects) : m_num_assignments(0), m_remapping(), m_offsets()
     {
         const auto num_parameters = parameter_domains.size();
 
@@ -160,7 +160,7 @@ public:
     PredicateAssignmentSets() = default;
 
     template<formalism::IsContext C>
-    PredicateAssignmentSets(SpanProxy<formalism::Predicate<T>, C>& predicates, const analysis::DomainListListList& predicate_domains, size_t num_objects) :
+    PredicateAssignmentSets(SpanProxy<formalism::Predicate<T>, C> predicates, const analysis::DomainListListList& predicate_domains, size_t num_objects) :
         m_sets()
     {
         /* Validate inputs. */
@@ -179,7 +179,7 @@ public:
     }
 
     template<formalism::IsContext C>
-    void insert_ground_atoms(SpanProxy<formalism::GroundAtom<T>, C>& ground_atoms)
+    void insert_ground_atoms(SpanProxy<formalism::GroundAtom<T>, C> ground_atoms)
     {
         for (const auto ground_atom : ground_atoms)
             m_sets[ground_atom.get_index().get_group().get_value()].insert_ground_atom(ground_atom);
@@ -275,7 +275,7 @@ public:
     FunctionAssignmentSets() = default;
 
     template<formalism::IsContext C>
-    FunctionAssignmentSets(SpanProxy<formalism::Function<T>, C>& functions, const analysis::DomainListListList& function_domains, size_t num_objects) : m_sets()
+    FunctionAssignmentSets(SpanProxy<formalism::Function<T>, C> functions, const analysis::DomainListListList& function_domains, size_t num_objects) : m_sets()
     {
         /* Validate inputs. */
         for (uint_t i = 0; i < functions.size(); ++i)
@@ -293,14 +293,14 @@ public:
     }
 
     template<formalism::IsContext C>
-    void insert_ground_function_term_values(SpanProxy<formalism::GroundFunctionTerm<T>, C>& function_terms, const std::vector<float_t>& values)
+    void insert_ground_function_term_values(SpanProxy<formalism::GroundFunctionTerm<T>, C> function_terms, const std::vector<float_t>& values)
     {
         for (size_t i = 0; i < function_terms.size(); ++i)
             m_sets[function_terms[i].get_index().get_group().get_value()].insert_ground_function_term_value(function_terms[i], values[i]);
     }
 
     template<formalism::IsContext C>
-    void insert_ground_function_term_values(SpanProxy<formalism::GroundFunctionTermValue<T>, C>& function_term_values)
+    void insert_ground_function_term_values(SpanProxy<formalism::GroundFunctionTermValue<T>, C> function_term_values)
     {
         for (size_t i = 0; i < function_term_values.size(); ++i)
             m_sets[function_term_values[i].get_index().get_group().get_value()].insert_ground_function_term_value(function_term_values[i]);

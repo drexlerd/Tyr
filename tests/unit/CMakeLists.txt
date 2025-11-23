@@ -21,3 +21,5 @@ add_gtest(cista_indexed_hash_set                         "cista/indexed_hash_set
 
 add_gtest(formalism_repository                           "formalism/repository.cpp")
 add_gtest(formalism_proxy                                "formalism/proxy.cpp")
+
+add_gtest(grounder_assignment_sets                       "grounder/assignment_sets.cpp")
