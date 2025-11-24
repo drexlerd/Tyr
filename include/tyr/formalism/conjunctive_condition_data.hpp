@@ -55,6 +55,19 @@ struct Data<formalism::ConjunctiveCondition>
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
+    template<formalism::IsStaticOrFluentTag T>
+    const auto& get_literals() const
+    {
+        if constexpr (std::same_as<T, formalism::StaticTag>)
+        {
+            return static_literals;
+        }
+        else if constexpr (std::same_as<T, formalism::FluentTag>)
+        {
+            return fluent_literals;
+        }
+    }
+
     auto cista_members() const noexcept { return std::tie(index, variables, static_literals, fluent_literals, numeric_constraints); }
     auto identifying_members() const noexcept { return std::tie(variables, static_literals, fluent_literals, numeric_constraints); }
 };

@@ -20,7 +20,7 @@
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/formalism.hpp"
 #include "tyr/grounder/assignment_set.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
@@ -58,7 +58,7 @@ public:
         void advance() noexcept
         {
             /* Try to advance index. */
-            for (Index index = m_assignment.index + 1; index < get_terms().size(); ++index)
+            for (uint_t index = m_assignment.index + 1; index < get_terms().size(); ++index)
             {
                 auto object = get_vertex().get_object_if_overlap(get_terms()[index]);
 
@@ -284,7 +284,7 @@ public:
                     continue;  ///< Can only handly unary negated literals due to overapproximation
                 }
 
-                const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate);
+                const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate.get_index());
                 const auto terms = atom.get_terms();
 
                 for (const auto& assignment : VertexAssignmentRange(terms, *this))
@@ -309,11 +309,11 @@ public:
         }
 
         template<typename T>
-        bool consistent_literals(SpanProxy<formalism::BooleanOperator<T>> numeric_constraints,
+        bool consistent_literals(SpanProxy<formalism::BooleanOperator<T>, C> numeric_constraints,
                                  const FunctionAssignmentSet<formalism::StaticTag>& static_function_assignment_sets,
                                  const FunctionAssignmentSet<formalism::FluentTag>& fluent_function_assignment_sets) const noexcept;
 
-        uint_t get_object_if_overlap(VariantProxy<formalism::Term, C> term) const noexcept
+        uint_t get_object_if_overlap(Proxy<formalism::Term, C> term) const noexcept
         {
             return std::visit(
                 [&](auto&& arg)
@@ -322,14 +322,14 @@ public:
 
                     if constexpr (std::is_same_v<Type, formalism::ParameterIndex>)
                     {
-                        if (m_parameter_index == arg)
+                        if (m_parameter_index == to_uint_t(arg))
                             return m_object_index;
                         else
                             return std::numeric_limits<uint_t>::max();
                     }
                     else if constexpr (std::is_same_v<Type, Index<formalism::Object>>)
                     {
-                        return arg;
+                        return arg.get_value();
                     }
                     else
                     {
@@ -379,7 +379,7 @@ public:
                     continue;  ///< Can only handly binary negated literals due to overapproximation
                 }
 
-                const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate);
+                const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate.get_index());
                 const auto terms = atom.get_terms();
 
                 /* Iterate edges. */
@@ -406,11 +406,11 @@ public:
         }
 
         template<typename T>
-        bool consistent_literals(SpanProxy<formalism::BooleanOperator<T>> numeric_constraints,
+        bool consistent_literals(SpanProxy<formalism::BooleanOperator<T>, C> numeric_constraints,
                                  const FunctionAssignmentSet<formalism::StaticTag>& static_function_assignment_sets,
                                  const FunctionAssignmentSet<formalism::FluentTag>& fluent_function_assignment_sets) const noexcept;
 
-        uint_t get_object_if_overlap(VariantProxy<formalism::Term, C> term) const noexcept
+        uint_t get_object_if_overlap(Proxy<formalism::Term, C> term) const noexcept
         {
             return std::visit(
                 [&](auto&& arg)
@@ -419,16 +419,16 @@ public:
 
                     if constexpr (std::is_same_v<Type, formalism::ParameterIndex>)
                     {
-                        if (m_src.get_parameter_index() == arg)
+                        if (m_src.get_parameter_index() == to_uint_t(arg))
                             return m_src.get_object_index();
-                        else if (m_dst.get_parameter_index() == arg)
+                        else if (m_dst.get_parameter_index() == to_uint_t(arg))
                             return m_dst.get_object_index();
                         else
                             return std::numeric_limits<uint_t>::max();
                     }
                     else if constexpr (std::is_same_v<Type, Index<formalism::Object>>)
                     {
-                        return arg;
+                        return arg.get_value();
                     }
                     else
                     {
@@ -449,14 +449,93 @@ public:
     auto get_edges() const noexcept { return std::ranges::subrange(EdgeIterator(*this, true), EdgeIterator(*this, false)); }
 
     /// @brief Helper to initialize vertices.
-    Vertices compute_vertices(Proxy<formalism::ConjunctiveCondition, C> condition, const analysis::DomainListList& parameter_domains);
+    Vertices compute_vertices(Proxy<formalism::ConjunctiveCondition, C> condition,
+                              const analysis::DomainListList& parameter_domains,
+                              const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets)
+    {
+        auto vertices = Vertices {};
+
+        for (uint_t parameter_index = 0; parameter_index < condition.get_arity(); ++parameter_index)
+        {
+            auto& parameter_domain = parameter_domains[parameter_index];
+
+            for (const auto object_index : parameter_domain)
+            {
+                const auto vertex_index = static_cast<uint_t>(vertices.size());
+
+                auto vertex = Vertex(vertex_index, parameter_index, object_index.get_value());
+
+                assert(vertex.get_index() == vertex_index);
+
+                if (vertex.consistent_literals(condition.template get_literals<formalism::StaticTag>(), static_assignment_sets.predicate))
+                    vertices.push_back(std::move(vertex));
+            }
+        }
+
+        return vertices;
+    }
 
     /// @brief Helper to initialize edges.
     std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>>
-    compute_edges(Proxy<formalism::ConjunctiveCondition, C> condition, const analysis::DomainListList& parameter_domains, const Vertices& vertices);
+    compute_edges(Proxy<formalism::ConjunctiveCondition, C> condition,
+                  const analysis::DomainListList& parameter_domains,
+                  const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                  const Vertices& vertices)
+    {
+        auto sources = std::vector<uint_t> {};
+
+        auto target_offsets = std::vector<uint_t> {};
+        target_offsets.reserve(vertices.size());
+
+        auto targets = std::vector<uint_t> {};
+
+        for (uint_t first_vertex_index = 0; first_vertex_index < vertices.size(); ++first_vertex_index)
+        {
+            const auto targets_before = targets.size();
+            for (uint_t second_vertex_index = (first_vertex_index + 1); second_vertex_index < vertices.size(); ++second_vertex_index)
+            {
+                const auto& first_vertex = vertices.at(first_vertex_index);
+                const auto& second_vertex = vertices.at(second_vertex_index);
+
+                assert(first_vertex.get_index() == first_vertex_index);
+                assert(second_vertex.get_index() == second_vertex_index);
+
+                auto edge = Edge(first_vertex, second_vertex);
+
+                // Part 1 of definition of substitution consistency graph (Stahlberg-ecai2023): exclude I^\neq
+                if (first_vertex.get_parameter_index() != second_vertex.get_parameter_index()
+                    && edge.consistent_literals(condition.template get_literals<formalism::StaticTag>(), static_assignment_sets.predicate))
+                {
+                    targets.push_back(second_vertex_index);
+                }
+            }
+
+            if (targets_before < targets.size())
+            {
+                sources.push_back(first_vertex_index);
+                target_offsets.push_back(targets.size());
+            }
+        }
+
+        return { std::move(sources), std::move(target_offsets), std::move(targets) };
+    }
 
 public:
-    StaticConsistencyGraph(Proxy<formalism::ConjunctiveCondition, C> condition, const analysis::DomainListList& parameter_domains);
+    StaticConsistencyGraph(Proxy<formalism::ConjunctiveCondition, C> condition,
+                           const analysis::DomainListList& parameter_domains,
+                           const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets) :
+        m_condition(condition)
+    {
+        m_vertices = compute_vertices(condition, parameter_domains, static_assignment_sets);
+
+        auto [sources_, target_offsets_, targets_] = compute_edges(condition, parameter_domains, static_assignment_sets, m_vertices);
+
+        m_sources = std::move(sources_);
+        m_target_offsets = std::move(target_offsets_);
+        m_targets = std::move(targets_);
+
+        m_vertex_mask.resize(m_vertices.size());
+    }
 
     auto consistent_vertices(const AssignmentSets& assignment_sets) const
     {

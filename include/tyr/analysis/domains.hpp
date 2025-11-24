@@ -416,7 +416,7 @@ VariableDomains compute_variable_domains(Proxy<formalism::Program, formalism::Re
             auto variables = rule.get_body().get_variables();
             auto parameter_domains = DomainSetList(variables.size(), universe);
 
-            for (const auto literal : rule.get_body().get_static_literals())
+            for (const auto literal : rule.get_body().get_literals<formalism::StaticTag>())
                 restrict_parameter_domain_from_static_atom(literal.get_atom(), parameter_domains, static_predicate_domain_sets);
 
             for (const auto op : rule.get_body().get_numeric_constraints())
@@ -432,7 +432,7 @@ VariableDomains compute_variable_domains(Proxy<formalism::Program, formalism::Re
     {
         auto& parameter_domains = rule_domain_sets[rule.get_index().value];
 
-        for (const auto literal : rule.get_body().get_fluent_literals())
+        for (const auto literal : rule.get_body().get_literals<formalism::FluentTag>())
             lift_parameter_domain_from_fluent_atom(literal.get_atom(), parameter_domains, fluent_predicate_domain_sets);
 
         for (const auto op : rule.get_body().get_numeric_constraints())

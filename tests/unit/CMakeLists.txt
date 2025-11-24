@@ -23,3 +23,4 @@ add_gtest(formalism_repository                           "formalism/repository.c
 add_gtest(formalism_proxy                                "formalism/proxy.cpp")
 
 add_gtest(grounder_assignment_sets                       "grounder/assignment_sets.cpp")
+add_gtest(grounder_static_consistency_graph              "grounder/static_consistency_graph.cpp")

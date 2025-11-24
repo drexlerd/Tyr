@@ -30,6 +30,7 @@ struct TaggedAssignmentSets;
 
 struct AssignmentSets;
 
+template<formalism::IsContext C>
 class StaticConsistencyGraph;
 }
 

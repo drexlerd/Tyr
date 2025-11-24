@@ -44,8 +44,11 @@ public:
 
     auto get_index() const { return index; }
     auto get_variables() const { return SpanProxy<formalism::Variable, C>(get().variables, *context); }
-    auto get_static_literals() const { return SpanProxy<formalism::Literal<formalism::StaticTag>, C>(get().static_literals, *context); }
-    auto get_fluent_literals() const { return SpanProxy<formalism::Literal<formalism::FluentTag>, C>(get().fluent_literals, *context); }
+    template<formalism::IsStaticOrFluentTag T>
+    auto get_literals() const
+    {
+        return SpanProxy<formalism::Literal<T>, C>(get().template get_literals<T>(), *context);
+    }
     auto get_numeric_constraints() const
     {
         return SpanProxy<formalism::BooleanOperator<formalism::FunctionExpression>, C>(get().numeric_constraints, *context);
