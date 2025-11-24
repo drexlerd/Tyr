@@ -15,14 +15,26 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_GROUNDER_HPP_
-#define TYR_GROUNDER_GROUNDER_HPP_
+#ifndef TYR_GROUNDER_FACT_SET_HPP_
+#define TYR_GROUNDER_FACT_SET_HPP_
 
-#include "tyr/grounder/assignment.hpp"
-#include "tyr/grounder/assignment_set.hpp"
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/fact_set.hpp"
-#include "tyr/grounder/generator.hpp"
-#include "tyr/grounder/kpkc.hpp"
+#include "tyr/formalism/declarations.hpp"
+
+namespace tyr::grounder
+{
+struct GroundAtomSets
+{
+};
+
+struct GroundFunctionTermValueSets
+{
+};
+
+struct FactSets
+{
+    GroundAtomSets atoms;
+    GroundFunctionTermValueSets numerics;
+};
+}
 
 #endif
