@@ -201,14 +201,14 @@ bool is_canonical(const Data<Program>& data)
 template<typename T>
 void canonicalize(IndexList<T>& list)
 {
-    if (!std::is_sorted(list.begin(), list.end()))
+    if (!is_canonical(list))
         std::sort(list.begin(), list.end());
 }
 
 template<typename T>
 void canonicalize(DataList<T>& list)
 {
-    if (!std::is_sorted(list.begin(), list.end()))
+    if (!is_canonical(list))
         std::sort(list.begin(), list.end());
 }
 

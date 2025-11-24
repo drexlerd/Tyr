@@ -32,8 +32,22 @@ TEST(TyrTests, TyrGrounderAssignmentSets)
     auto [program_index, repository] = create_example_problem();
     auto program = Proxy<Program, Repository>(program_index, repository);
 
-    auto domains = analysis::compute_variable_list_per_predicate(program);
+    // Analyze variable domains to compress assignment sets
+    auto domains = analysis::compute_variable_domains(program);
 
-    auto static_assignment_set = grounder::AssignmentSets<formalism::StaticTag>(program, domains);
+    // Allocate
+    auto assignment_sets = grounder::AssignmentSets(program, domains);
+
+    // Reset
+    assignment_sets.static_sets.predicate.reset();
+    assignment_sets.fluent_sets.predicate.reset();
+    assignment_sets.static_sets.function.reset();
+    assignment_sets.fluent_sets.function.reset();
+
+    // Insert for a given set of facts
+    assignment_sets.static_sets.predicate.insert(program.get_atoms<formalism::StaticTag>());
+    assignment_sets.fluent_sets.predicate.insert(program.get_atoms<formalism::FluentTag>());
+    assignment_sets.static_sets.function.insert(program.get_function_values<formalism::StaticTag>());
+    assignment_sets.fluent_sets.function.insert(program.get_function_values<formalism::FluentTag>());
 }
 }

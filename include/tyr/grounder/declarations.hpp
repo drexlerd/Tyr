@@ -22,7 +22,12 @@
 
 namespace tyr::grounder
 {
+template<formalism::IsContext C>
+struct FactSets;
+
 template<formalism::IsStaticOrFluentTag T>
+struct TaggedAssignmentSets;
+
 struct AssignmentSets;
 
 class StaticConsistencyGraph;

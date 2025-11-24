@@ -31,7 +31,7 @@ TEST(TyrTests, TyrAnalysisDomains)
     auto [program_index, repository] = create_example_problem();
     auto program = Proxy<Program, Repository>(program_index, repository);
 
-    auto domains = analysis::compute_variable_list_per_predicate(program);
+    auto domains = analysis::compute_variable_domains(program);
 
     std::cout << "Static predicate domains: " << "\n" << to_string(domains.static_predicate_domains) << std::endl;
     std::cout << "Fluent predicate domains: " << "\n" << to_string(domains.fluent_predicate_domains) << std::endl;

@@ -24,12 +24,7 @@
 
 namespace tyr::grounder
 {
-void ground(Proxy<formalism::Rule, formalism::ScopedRepository> rule,
-            formalism::ScopedRepository& repository,
-            const AssignmentSets<formalism::StaticTag>& static_assignment_sets,
-            const AssignmentSets<formalism::FluentTag>& fluent_assignment_sets)
-{
-}
+void ground(Proxy<formalism::Rule, formalism::ScopedRepository> rule, formalism::ScopedRepository& repository, const AssignmentSets& assignment_sets) {}
 }
 
 #endif

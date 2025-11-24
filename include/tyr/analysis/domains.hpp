@@ -390,7 +390,7 @@ void lift_parameter_domain_from_boolean_operator(Proxy<formalism::BooleanOperato
         op);
 }
 
-VariableDomains compute_variable_list_per_predicate(Proxy<formalism::Program, formalism::Repository> program)
+VariableDomains compute_variable_domains(Proxy<formalism::Program, formalism::Repository> program)
 {
     auto objects = std::vector<Index<formalism::Object>> {};
     for (const auto object : program.get_objects())

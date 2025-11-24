@@ -22,18 +22,11 @@
 
 namespace tyr::grounder
 {
-struct GroundAtomSets
-{
-};
-
-struct GroundFunctionTermValueSets
-{
-};
-
+template<formalism::IsContext C>
 struct FactSets
 {
-    GroundAtomSets atoms;
-    GroundFunctionTermValueSets numerics;
+    SpanProxy<formalism::GroundAtom<formalism::FluentTag>, C> predicate;
+    SpanProxy<formalism::GroundFunctionTermValue<formalism::FluentTag>, C> function;
 };
 }
 
