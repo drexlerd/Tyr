@@ -62,7 +62,7 @@ PredicateStrata compute_predicate_stratification(Proxy<formalism::Program, forma
     {
         const auto head_predicate = rule.get_head().get_predicate();
 
-        for (const auto literal : rule.get_fluent_body())
+        for (const auto literal : rule.get_body().get_fluent_literals())
         {
             const auto body_predicate = literal.get_atom().get_predicate();
 

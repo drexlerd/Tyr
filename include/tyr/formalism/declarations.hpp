@@ -175,6 +175,14 @@ struct GroundFunctionTermValue
 {
 };
 
+struct ConjunctiveCondition
+{
+};
+
+struct GroundConjunctiveCondition
+{
+};
+
 struct Rule
 {
 };

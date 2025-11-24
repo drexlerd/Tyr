@@ -19,13 +19,10 @@
 #define TYR_FORMALISM_RULE_PROXY_HPP_
 
 #include "tyr/common/span.hpp"
-#include "tyr/formalism/atom_proxy.hpp"
-#include "tyr/formalism/boolean_operator_proxy.hpp"
+#include "tyr/formalism/conjunctive_condition_proxy.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/literal_proxy.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/rule_index.hpp"
-#include "tyr/formalism/variable_proxy.hpp"
 
 namespace tyr
 {
@@ -44,10 +41,7 @@ public:
     const auto& get() const { return get_repository(*context)[index]; }
 
     auto get_index() const { return index; }
-    auto get_variables() const { return SpanProxy<formalism::Variable, C>(get().variables, *context); }
-    auto get_static_body() const { return SpanProxy<formalism::Literal<formalism::StaticTag>, C>(get().static_body, *context); }
-    auto get_fluent_body() const { return SpanProxy<formalism::Literal<formalism::FluentTag>, C>(get().fluent_body, *context); }
-    auto get_numeric_body() const { return SpanProxy<formalism::BooleanOperator<formalism::FunctionExpression>, C>(get().numeric_body, *context); }
+    auto get_body() const { return Proxy<formalism::ConjunctiveCondition, C>(get().body, *context); }
     auto get_head() const { return Proxy<formalism::Atom<formalism::FluentTag>, C>(get().head, *context); }
 };
 }

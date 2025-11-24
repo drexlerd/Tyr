@@ -183,9 +183,19 @@ bool is_canonical(const Data<GroundFunctionTermValue<T>>& data)
     return true;
 }
 
-bool is_canonical(const Data<Rule>& data) { return is_canonical(data.static_body) && is_canonical(data.fluent_body) && is_canonical(data.numeric_body); }
+bool is_canonical(const Data<ConjunctiveCondition>& data)
+{
+    return is_canonical(data.static_literals) && is_canonical(data.fluent_literals) && is_canonical(data.numeric_constraints);
+}
 
-bool is_canonical(const Data<GroundRule>& data) { return is_canonical(data.static_body) && is_canonical(data.fluent_body) && is_canonical(data.numeric_body); }
+bool is_canonical(const Data<GroundConjunctiveCondition>& data)
+{
+    return is_canonical(data.static_literals) && is_canonical(data.fluent_literals) && is_canonical(data.numeric_constraints);
+}
+
+bool is_canonical(const Data<Rule>& data) { return true; }
+
+bool is_canonical(const Data<GroundRule>& data) { return true; }
 
 bool is_canonical(const Data<Program>& data)
 {
@@ -346,18 +356,28 @@ void canonicalize(Data<GroundFunctionTermValue<T>>& data)
     // Trivially canonical
 }
 
+void canonicalize(Data<ConjunctiveCondition>& data)
+{
+    canonicalize(data.static_literals);
+    canonicalize(data.fluent_literals);
+    canonicalize(data.numeric_constraints);
+}
+
+void canonicalize(Data<GroundConjunctiveCondition>& data)
+{
+    canonicalize(data.static_literals);
+    canonicalize(data.fluent_literals);
+    canonicalize(data.numeric_constraints);
+}
+
 void canonicalize(Data<Rule>& data)
 {
-    canonicalize(data.static_body);
-    canonicalize(data.fluent_body);
-    canonicalize(data.numeric_body);
+    // Trivially canonical
 }
 
 void canonicalize(Data<GroundRule>& data)
 {
-    canonicalize(data.static_body);
-    canonicalize(data.fluent_body);
-    canonicalize(data.numeric_body);
+    // Trivially canonical
 }
 
 void canonicalize(Data<Program>& data)

@@ -27,6 +27,8 @@
 #include "tyr/formalism/binary_operator_index.hpp"
 #include "tyr/formalism/boolean_operator_data.hpp"
 #include "tyr/formalism/boolean_operator_proxy.hpp"
+#include "tyr/formalism/conjunctive_condition_data.hpp"
+#include "tyr/formalism/conjunctive_condition_index.hpp"
 #include "tyr/formalism/function_data.hpp"
 #include "tyr/formalism/function_expression_data.hpp"
 #include "tyr/formalism/function_expression_proxy.hpp"
@@ -35,6 +37,8 @@
 #include "tyr/formalism/function_term_index.hpp"
 #include "tyr/formalism/ground_atom_data.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/ground_conjunctive_condition_data.hpp"
+#include "tyr/formalism/ground_conjunctive_condition_index.hpp"
 #include "tyr/formalism/ground_function_expression_data.hpp"
 #include "tyr/formalism/ground_function_expression_proxy.hpp"
 #include "tyr/formalism/ground_function_term_data.hpp"
@@ -71,12 +75,9 @@
 namespace tyr::formalism
 {
 
-
 class Repository
 {
 private:
-
-
     /// @brief `FlatRepositoryEntry` is the mapping from data type to an indexed hash set.
     template<typename T>
     using FlatRepositoryEntry = boost::hana::pair<boost::hana::type<T>, cista::IndexedHashSet<T>>;
@@ -135,6 +136,8 @@ private:
                                             RepositoryTraits<BinaryOperator<OpLt, GroundFunctionExpression>>::EntryType,
                                             RepositoryTraits<BinaryOperator<OpGe, GroundFunctionExpression>>::EntryType,
                                             RepositoryTraits<BinaryOperator<OpGt, GroundFunctionExpression>>::EntryType,
+                                            RepositoryTraits<ConjunctiveCondition>::EntryType,
+                                            RepositoryTraits<GroundConjunctiveCondition>::EntryType,
                                             RepositoryTraits<Rule>::EntryType,
                                             RepositoryTraits<GroundRule>::EntryType,
                                             RepositoryTraits<Program>::EntryType>;

@@ -328,6 +328,7 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
     auto fluent_atom_builder = Data<formalism::Atom<formalism::FluentTag>> {};
     auto static_literal_builder = Data<formalism::Literal<formalism::StaticTag>> {};
     auto fluent_literal_builder = Data<formalism::Literal<formalism::FluentTag>> {};
+    auto conjunctive_condition_builder = Data<formalism::ConjunctiveCondition> {};
     auto rule_builder = Data<formalism::Rule> {};
     auto buffer = cista::Buffer {};
 
@@ -336,7 +337,7 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
         variable_builder.name = name;
         canonicalize(variable_builder);
         const auto variable = repository.get_or_create(variable_builder, buffer).first;
-        rule_builder.variables.push_back(variable->index);
+        conjunctive_condition_builder.variables.push_back(variable->index);
     }
 
     for (const auto& [predicate, polarity_and_params_per_atoms] :
@@ -360,7 +361,7 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
             static_literal_builder.polarity = polarity;
             canonicalize(static_literal_builder);
             const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first;
-            rule_builder.static_body.push_back(literal_i->index);
+            conjunctive_condition_builder.static_literals.push_back(literal_i->index);
         }
     }
 
@@ -384,9 +385,13 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
             fluent_literal_builder.polarity = polarity;
             canonicalize(fluent_literal_builder);
             const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first;
-            rule_builder.fluent_body.push_back(literal_i->index);
+            conjunctive_condition_builder.fluent_literals.push_back(literal_i->index);
         }
     }
+
+    canonicalize(conjunctive_condition_builder);
+    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
+    rule_builder.body = conjunctive_condition->index;
 
     fluent_atom_builder.index.group = convert(GripperFluentPredicate::Move);
     fluent_atom_builder.terms.clear();
@@ -418,6 +423,7 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
     auto fluent_atom_builder = Data<formalism::Atom<formalism::FluentTag>> {};
     auto static_literal_builder = Data<formalism::Literal<formalism::StaticTag>> {};
     auto fluent_literal_builder = Data<formalism::Literal<formalism::FluentTag>> {};
+    auto conjunctive_condition_builder = Data<formalism::ConjunctiveCondition> {};
     auto rule_builder = Data<formalism::Rule> {};
     auto buffer = cista::Buffer {};
 
@@ -426,7 +432,7 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
         variable_builder.name = name;
         canonicalize(variable_builder);
         const auto variable = repository.get_or_create(variable_builder, buffer).first;
-        rule_builder.variables.push_back(variable->index);
+        conjunctive_condition_builder.variables.push_back(variable->index);
     }
 
     for (const auto& [predicate, polarity_and_params_per_atoms] :
@@ -452,7 +458,7 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
             static_literal_builder.polarity = polarity;
             canonicalize(static_literal_builder);
             const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first;
-            rule_builder.static_body.push_back(literal_i->index);
+            conjunctive_condition_builder.static_literals.push_back(literal_i->index);
         }
     }
 
@@ -478,9 +484,13 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
             fluent_literal_builder.polarity = polarity;
             canonicalize(fluent_literal_builder);
             const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first;
-            rule_builder.fluent_body.push_back(literal_i->index);
+            conjunctive_condition_builder.fluent_literals.push_back(literal_i->index);
         }
     }
+
+    canonicalize(conjunctive_condition_builder);
+    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
+    rule_builder.body = conjunctive_condition->index;
 
     fluent_atom_builder.index.group = convert(GripperFluentPredicate::Pick);
     fluent_atom_builder.terms.clear();
@@ -513,6 +523,7 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
     auto fluent_atom_builder = Data<formalism::Atom<formalism::FluentTag>> {};
     auto static_literal_builder = Data<formalism::Literal<formalism::StaticTag>> {};
     auto fluent_literal_builder = Data<formalism::Literal<formalism::FluentTag>> {};
+    auto conjunctive_condition_builder = Data<formalism::ConjunctiveCondition> {};
     auto rule_builder = Data<formalism::Rule> {};
     auto buffer = cista::Buffer {};
 
@@ -521,7 +532,7 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
         variable_builder.name = name;
         canonicalize(variable_builder);
         const auto variable = repository.get_or_create(variable_builder, buffer).first;
-        rule_builder.variables.push_back(variable->index);
+        conjunctive_condition_builder.variables.push_back(variable->index);
     }
 
     for (const auto& [predicate, polarity_and_params_per_atoms] :
@@ -547,7 +558,7 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
             static_literal_builder.polarity = polarity;
             canonicalize(static_literal_builder);
             const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first;
-            rule_builder.static_body.push_back(literal_i->index);
+            conjunctive_condition_builder.static_literals.push_back(literal_i->index);
         }
     }
 
@@ -572,9 +583,13 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
             fluent_literal_builder.polarity = polarity;
             canonicalize(fluent_literal_builder);
             const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first;
-            rule_builder.fluent_body.push_back(literal_i->index);
+            conjunctive_condition_builder.fluent_literals.push_back(literal_i->index);
         }
     }
+
+    canonicalize(conjunctive_condition_builder);
+    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
+    rule_builder.body = conjunctive_condition->index;
 
     fluent_atom_builder.index.group = convert(GripperFluentPredicate::Drop);
     fluent_atom_builder.terms.clear();

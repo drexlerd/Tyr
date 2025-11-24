@@ -33,24 +33,13 @@ struct Data<formalism::GroundRule>
     using Tag = formalism::GroundRule;
 
     Index<formalism::GroundRule> index;
-    IndexList<formalism::Object> binding;
-    IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_body;
-    IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_body;
-    DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_body;
+    Index<formalism::GroundConjunctiveCondition> body;
     Index<formalism::GroundAtom<formalism::FluentTag>> head;
 
     Data() = default;
-    Data(Index<formalism::GroundRule> index,
-         IndexList<formalism::Object> binding,
-         IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_body,
-         IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_body,
-         DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_body,
-         Index<formalism::GroundAtom<formalism::FluentTag>> head) :
+    Data(Index<formalism::GroundRule> index, Index<formalism::GroundConjunctiveCondition> body, Index<formalism::GroundAtom<formalism::FluentTag>> head) :
         index(index),
-        binding(std::move(binding)),
-        static_body(std::move(static_body)),
-        fluent_body(std::move(fluent_body)),
-        numeric_body(std::move(numeric_body)),
+        body(body),
         head(head)
     {
     }
@@ -59,8 +48,8 @@ struct Data<formalism::GroundRule>
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    auto cista_members() const noexcept { return std::tie(index, binding, static_body, fluent_body, numeric_body, head); }
-    auto identifying_members() const noexcept { return std::tie(index.group, binding, static_body, fluent_body, numeric_body, head); }
+    auto cista_members() const noexcept { return std::tie(index, head, head); }
+    auto identifying_members() const noexcept { return std::tie(index.group, head, head); }
 };
 
 }

@@ -413,13 +413,13 @@ VariableDomains compute_variable_domains(Proxy<formalism::Program, formalism::Re
     {
         for (const auto rule : program.get_rules())
         {
-            auto variables = rule.get_variables();
+            auto variables = rule.get_body().get_variables();
             auto parameter_domains = DomainSetList(variables.size(), universe);
 
-            for (const auto literal : rule.get_static_body())
+            for (const auto literal : rule.get_body().get_static_literals())
                 restrict_parameter_domain_from_static_atom(literal.get_atom(), parameter_domains, static_predicate_domain_sets);
 
-            for (const auto op : rule.get_numeric_body())
+            for (const auto op : rule.get_body().get_numeric_constraints())
                 restrict_parameter_domain_from_boolean_operator(op, parameter_domains, static_function_domain_sets);
 
             rule_domain_sets.push_back(std::move(parameter_domains));
@@ -432,10 +432,10 @@ VariableDomains compute_variable_domains(Proxy<formalism::Program, formalism::Re
     {
         auto& parameter_domains = rule_domain_sets[rule.get_index().value];
 
-        for (const auto literal : rule.get_fluent_body())
+        for (const auto literal : rule.get_body().get_fluent_literals())
             lift_parameter_domain_from_fluent_atom(literal.get_atom(), parameter_domains, fluent_predicate_domain_sets);
 
-        for (const auto op : rule.get_numeric_body())
+        for (const auto op : rule.get_body().get_numeric_constraints())
             lift_parameter_domain_from_boolean_operator(op, parameter_domains, fluent_function_domain_sets);
 
         lift_parameter_domain_from_fluent_atom(rule.get_head(), parameter_domains, fluent_predicate_domain_sets);
