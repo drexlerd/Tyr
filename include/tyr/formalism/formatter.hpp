@@ -30,7 +30,6 @@
 #include "tyr/formalism/boolean_operator_data.hpp"
 #include "tyr/formalism/boolean_operator_proxy.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/double.hpp"
 #include "tyr/formalism/function_data.hpp"
 #include "tyr/formalism/function_expression_data.hpp"
 #include "tyr/formalism/function_expression_proxy.hpp"
@@ -91,12 +90,6 @@
 
 namespace tyr
 {
-inline std::ostream& print(std::ostream& os, const formalism::Double& el)
-{
-    fmt::print(os, "{}", el.value);
-    return os;
-}
-
 inline std::ostream& print(std::ostream& os, const formalism::ParameterIndex& el)
 {
     fmt::print(os, "{}", to_uint_t(el));
@@ -394,8 +387,6 @@ inline std::ostream& print(std::ostream& os, const Proxy<formalism::Program, C>&
 
 namespace formalism
 {
-inline std::ostream& operator<<(std::ostream& os, const Double& el) { return tyr::print(os, el); }
-
 inline std::ostream& operator<<(std::ostream& os, const ParameterIndex& el) { return tyr::print(os, el); }
 
 template<IsOp Op, typename T>

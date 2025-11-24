@@ -256,7 +256,7 @@ public:
     template<formalism::IsContext C>
     void insert(Proxy<formalism::GroundFunctionTermValue<T>, C> function_term_value)
     {
-        insert(function_term_value.get_term(), function_term_value.get_value().value);
+        insert(function_term_value.get_term(), function_term_value.get_value());
     }
 
     ClosedInterval<float_t> operator[](const EmptyAssignment& assignment) const noexcept { return m_set[EmptyAssignment::rank]; }

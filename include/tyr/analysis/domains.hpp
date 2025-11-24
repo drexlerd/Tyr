@@ -179,7 +179,7 @@ void restrict_parameter_domain_from_function_expression(Proxy<formalism::Functio
         {
             using ProxyType = std::decay_t<decltype(arg)>;
 
-            if constexpr (std::is_same_v<ProxyType, formalism::Double>) {}
+            if constexpr (std::is_same_v<ProxyType, float_t>) {}
             else if constexpr (std::is_same_v<ProxyType,
                                               Proxy<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>, formalism::Repository>>)
             {
@@ -322,7 +322,7 @@ void lift_parameter_domain_from_function_expression(Proxy<formalism::FunctionExp
         {
             using ProxyType = std::decay_t<decltype(arg)>;
 
-            if constexpr (std::is_same_v<ProxyType, formalism::Double>) {}
+            if constexpr (std::is_same_v<ProxyType, float_t>) {}
             else if constexpr (std::is_same_v<ProxyType,
                                               Proxy<formalism::UnaryOperator<formalism::OpSub, formalism::FunctionExpression>, formalism::Repository>>)
             {

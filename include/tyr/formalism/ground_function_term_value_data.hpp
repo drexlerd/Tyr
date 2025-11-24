@@ -19,7 +19,6 @@
 #define TYR_FORMALISM_GROUND_FUNCTION_TERM_VALUE_DATA_HPP_
 
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/double.hpp"
 #include "tyr/formalism/ground_function_term_index.hpp"
 #include "tyr/formalism/ground_function_term_value_index.hpp"
 #include "tyr/formalism/term_data.hpp"
@@ -34,10 +33,10 @@ struct Data<formalism::GroundFunctionTermValue<T>>
 
     Index<formalism::GroundFunctionTermValue<T>> index;
     Index<formalism::GroundFunctionTerm<T>> term;
-    formalism::Double value;
+    float_t value;
 
     Data() = default;
-    Data(Index<formalism::GroundFunctionTermValue<T>> index, Index<formalism::GroundFunctionTerm<T>> term, formalism::Double value) :
+    Data(Index<formalism::GroundFunctionTermValue<T>> index, Index<formalism::GroundFunctionTerm<T>> term, float_t value) :
         index(index),
         term(term),
         value(value)

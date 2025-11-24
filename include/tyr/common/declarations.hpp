@@ -90,12 +90,12 @@ using UnderlyingTagOrT = typename UnderlyingTagOrTImpl_Helper<T, HasTag<T>>::Typ
 /// @brief The concept succeeds if there is an Index specialization associated with T.
 /// Data will be deduplicated and referenced via Index.
 template<typename T>
-concept IsIndexStorage = HasTag<Index<UnderlyingTagOrT<T>>>;
+concept ReferenceIsIndex = HasTag<Index<UnderlyingTagOrT<T>>>;
 
 /// @brief The concept succeeds if there is a Data but no Index specialization associated with T.
 /// Data will be stored inline, and hence, should be cheap.
 template<typename T>
-concept IsDataStorage = !IsIndexStorage<UnderlyingTagOrT<T>> && HasTag<Data<UnderlyingTagOrT<T>>>;
+concept ReferenceIsData = !ReferenceIsIndex<UnderlyingTagOrT<T>> && HasTag<Data<UnderlyingTagOrT<T>>>;
 
 /* Extract type to store data. */
 
@@ -106,14 +106,14 @@ struct StorageTypeImpl
 };
 
 template<typename T>
-    requires IsIndexStorage<T>
+    requires ReferenceIsIndex<T>
 struct StorageTypeImpl<T>
 {
     using Type = Data<T>;
 };
 
 template<typename T>
-    requires(!IsIndexStorage<T> && IsDataStorage<T>)
+    requires(!ReferenceIsIndex<T> && ReferenceIsData<T>)
 struct StorageTypeImpl<T>
 {
     using Type = Data<T>;
@@ -131,14 +131,14 @@ struct ReferenceTypeImpl
 };
 
 template<typename T>
-    requires IsIndexStorage<T>
+    requires ReferenceIsIndex<T>
 struct ReferenceTypeImpl<T>
 {
     using Type = Index<T>;
 };
 
 template<typename T>
-    requires(!IsIndexStorage<T> && IsDataStorage<T>)
+    requires(!ReferenceIsIndex<T> && ReferenceIsData<T>)
 struct ReferenceTypeImpl<T>
 {
     using Type = Data<T>;
@@ -156,14 +156,14 @@ struct ProxyTypeImpl
 };
 
 template<typename T, typename C>
-    requires IsIndexStorage<T>
+    requires ReferenceIsIndex<T>
 struct ProxyTypeImpl<T, C>
 {
     using Type = Proxy<T, C>;
 };
 
 template<typename T, typename C>
-    requires(!IsIndexStorage<T> && IsDataStorage<T>)
+    requires(!ReferenceIsIndex<T> && ReferenceIsData<T>)
 struct ProxyTypeImpl<T, C>
 {
     using Type = Proxy<T, C>;

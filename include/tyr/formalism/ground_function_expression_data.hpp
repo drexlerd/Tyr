@@ -20,7 +20,6 @@
 
 #include "tyr/formalism/binary_operator_index.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/double.hpp"
 #include "tyr/formalism/ground_function_term_index.hpp"
 #include "tyr/formalism/multi_operator_index.hpp"
 #include "tyr/formalism/unary_operator_index.hpp"
@@ -32,7 +31,7 @@ struct Data<formalism::GroundFunctionExpression>
 {
     using Tag = formalism::GroundFunctionExpression;
 
-    using Variant = ::cista::offset::variant<formalism::Double,
+    using Variant = ::cista::offset::variant<float_t,
                                              Index<formalism::UnaryOperator<formalism::OpSub, formalism::GroundFunctionExpression>>,
                                              Index<formalism::BinaryOperator<formalism::OpAdd, formalism::GroundFunctionExpression>>,
                                              Index<formalism::BinaryOperator<formalism::OpSub, formalism::GroundFunctionExpression>>,
