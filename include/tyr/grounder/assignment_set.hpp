@@ -196,7 +196,7 @@ public:
         m_sets[ground_atom.get_index().get_group().get_value()].insert(ground_atom);
     }
 
-    const PredicateAssignmentSet<T>& get_set(Index<formalism::Predicate<T>> predicate) const noexcept { return m_sets[predicate.get_value()]; }
+    const PredicateAssignmentSet<T>& get_set(Index<formalism::Predicate<T>> index) const noexcept { return m_sets[index.get_value()]; }
 
     size_t size() const noexcept
     {
@@ -315,7 +315,7 @@ public:
             m_sets[function_term_values[i].get_index().get_group().get_value()].insert(function_term_values[i]);
     }
 
-    const FunctionAssignmentSet<T>& get_set(Index<formalism::Function<T>> function) const noexcept { return m_sets[function.get_index().get_value()]; }
+    const FunctionAssignmentSet<T>& get_set(Index<formalism::Function<T>> index) const noexcept { return m_sets[index.get_value()]; }
 
     size_t size() const noexcept
     {

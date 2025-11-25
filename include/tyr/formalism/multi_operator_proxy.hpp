@@ -35,6 +35,7 @@ private:
 
 public:
     using Tag = formalism::MultiOperator<Op, T>;
+    using OpType = Op;
 
     Proxy(Index<formalism::MultiOperator<Op, T>> index, const C& context) : context(&context), index(index) {}
 

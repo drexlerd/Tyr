@@ -24,6 +24,20 @@
 
 namespace tyr::formalism
 {
+/**
+ * Unary
+ */
+
+template<IsFloatingPoint A>
+inline ClosedInterval<A> apply(OpSub, const ClosedInterval<A>& el)
+{
+    return -el;
+}
+
+/**
+ * Binary
+ */
+
 template<IsFloatingPoint A>
 inline ClosedInterval<A> apply(OpAdd, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {

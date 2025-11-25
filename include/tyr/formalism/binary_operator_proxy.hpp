@@ -34,6 +34,7 @@ private:
 
 public:
     using Tag = formalism::BinaryOperator<Op, T>;
+    using OpType = Op;
 
     Proxy(Index<formalism::BinaryOperator<Op, T>> index, const C& context) : context(&context), index(index) {}
 

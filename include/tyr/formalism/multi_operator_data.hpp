@@ -28,6 +28,7 @@ template<formalism::IsOp Op, typename T>
 struct Data<formalism::MultiOperator<Op, T>>
 {
     using Tag = formalism::MultiOperator<Op, T>;
+    using OpType = Op;
 
     Index<formalism::MultiOperator<Op, T>> index;
     ::cista::offset::vector<T> args;

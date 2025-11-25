@@ -28,6 +28,7 @@ template<formalism::IsOp Op, typename T>
 struct Data<formalism::UnaryOperator<Op, T>>
 {
     using Tag = formalism::UnaryOperator<Op, T>;
+    using OpType = Op;
 
     Index<formalism::UnaryOperator<Op, T>> index;
     T arg;

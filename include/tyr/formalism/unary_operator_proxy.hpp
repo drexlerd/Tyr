@@ -34,6 +34,7 @@ private:
 
 public:
     using Tag = formalism::UnaryOperator<Op, T>;
+    using OpType = Op;
 
     Proxy(Index<formalism::UnaryOperator<Op, T>> index, const C& context) : context(&context), index(index) {}
 

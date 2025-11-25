@@ -29,6 +29,7 @@ template<formalism::IsOp Op, typename T>
 struct Index<formalism::UnaryOperator<Op, T>> : FlatIndexMixin<Index<formalism::UnaryOperator<Op, T>>>
 {
     using Tag = formalism::UnaryOperator<Op, T>;
+    using OpType = Op;
 
     // Inherit constructors
     using Base = FlatIndexMixin<Index<formalism::UnaryOperator<Op, T>>>;

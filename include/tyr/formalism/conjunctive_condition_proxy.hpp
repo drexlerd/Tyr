@@ -53,6 +53,15 @@ public:
     {
         return Proxy<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C>(get().numeric_constraints, *context);
     }
+    template<formalism::IsStaticOrFluentTag T>
+    auto get_nullary_literals() const
+    {
+        return Proxy<IndexList<formalism::GroundLiteral<T>>, C>(get().template get_literals<T>(), *context);
+    }
+    auto get_nullary_numeric_constraints() const
+    {
+        return Proxy<DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>, C>(get().numeric_constraints, *context);
+    }
     auto get_arity() const { return get().variables.size(); }
 };
 }

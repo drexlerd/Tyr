@@ -50,6 +50,18 @@ public:
         }
     }
 
+    decltype(auto) front() const
+    {
+        if constexpr (IsProxyable<T, Context>)
+        {
+            return Proxy<T, Context>(data().front(), context());
+        }
+        else
+        {
+            return data().front();
+        }
+    }
+
     struct const_iterator
     {
         const Context* ctx;

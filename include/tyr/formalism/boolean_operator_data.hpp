@@ -45,7 +45,7 @@ struct Data<formalism::BooleanOperator<T>>
     friend bool operator<(const Data& lhs, const Data& rhs) { return lhs.value < rhs.value; }
 
     auto cista_members() const noexcept { return std::tie(value, arity); }
-    auto identifying_members() const noexcept { return std::tie(value, arity); }
+    auto identifying_members() const noexcept { return std::tie(value); }
 };
 }
 
