@@ -20,6 +20,7 @@
 
 #include "tyr/formalism/arithmetic_operator_data.hpp"
 #include "tyr/formalism/arithmetic_operator_proxy.hpp"
+#include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/atom_data.hpp"
 #include "tyr/formalism/atom_index.hpp"
 #include "tyr/formalism/atom_proxy.hpp"

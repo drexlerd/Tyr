@@ -24,11 +24,69 @@
 
 namespace tyr::formalism
 {
-template<IsBooleanOp O, IsFloatingPoint A>
-inline bool evaluate_existential(const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<IsFloatingPoint A>
+inline bool apply_existential(OpEq, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {
-    static_assert(dependent_false<O>::value, "evaluate_existential is not defined for this operator type.");
-};
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    // ∃ x ∈ lhs, ∃ y ∈ rhs : x = y.
+    return lower(lhs) <= upper(rhs) && upper(lhs) >= lower(rhs);
+}
+
+template<IsFloatingPoint A>
+inline bool apply_existential(OpNe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+{
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    // ∃ x ∈ lhs, ∃ y ∈ rhs : x ≠ y.
+    const bool lhs_is_point = lower(lhs) == upper(lhs);
+    const bool rhs_is_point = lower(rhs) == upper(rhs);
+    if (lhs_is_point && rhs_is_point)
+        return lower(lhs) != lower(rhs);
+    return true;
+}
+
+template<IsFloatingPoint A>
+inline bool apply_existential(OpGe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+{
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    // ∃ x ∈ lhs, ∃ y ∈ rhs : x >= y.
+    return upper(lhs) >= lower(rhs);
+}
+
+template<IsFloatingPoint A>
+inline bool apply_existential(OpGt, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+{
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    // ∃ x ∈ lhs, ∃ y ∈ rhs : x > y.
+    return upper(lhs) > lower(rhs);
+}
+
+template<IsFloatingPoint A>
+inline bool apply_existential(OpLe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+{
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    // ∃ x ∈ lhs, ∃ y ∈ rhs : x <= y.
+    return lower(lhs) <= upper(rhs);
+}
+
+template<IsFloatingPoint A>
+inline bool apply_existential(OpLt, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+{
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    // ∃ x ∈ lhs, ∃ y ∈ rhs : x < y.
+    return lower(lhs) < upper(rhs);
+}
 }
 
 #endif

@@ -46,6 +46,9 @@ concept IsStaticOrFluentTag = std::same_as<T, StaticTag> || std::same_as<T, Flue
 struct OpEq
 {
 };
+struct OpNe
+{
+};
 struct OpLe
 {
 };
@@ -72,7 +75,8 @@ struct OpDiv
 };
 
 template<typename T>
-concept IsBooleanOp = std::same_as<T, OpEq> || std::same_as<T, OpLe> || std::same_as<T, OpLt> || std::same_as<T, OpGe> || std::same_as<T, OpGt>;
+concept IsBooleanOp =
+    std::same_as<T, OpEq> || std::same_as<T, OpNe> || std::same_as<T, OpLe> || std::same_as<T, OpLt> || std::same_as<T, OpGe> || std::same_as<T, OpGt>;
 
 template<typename T>
 concept IsArithmeticOp = std::same_as<T, OpAdd> || std::same_as<T, OpMul> || std::same_as<T, OpDiv> || std::same_as<T, OpSub>;

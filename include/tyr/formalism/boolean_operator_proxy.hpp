@@ -37,6 +37,8 @@ public:
 
     auto get() const { return Proxy<typename Data<formalism::BooleanOperator<T>>::Variant, C>(op.value, *context); }
 
+    auto get_arity() const { return op.arity; }
+
     Proxy(Data<formalism::BooleanOperator<T>> op, const C& context) : context(&context), op(op) {}
 };
 }

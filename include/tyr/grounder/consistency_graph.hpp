@@ -248,6 +248,91 @@ public:
     auto end() const noexcept { return EdgeAssignmentIterator<C>(m_terms, m_edge, false); }
 };
 
+template<IsFloatingPoint A, std::ranges::forward_range Range, formalism::IsStaticOrFluentTag T>
+ClosedInterval<A> compute_tightest_closed_interval_helper(ClosedInterval<A> bounds, const FunctionAssignmentSet<T>& sets, const Range& range) noexcept;
+
+template<IsFloatingPoint A, formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+ClosedInterval<A> compute_tightest_closed_interval(Proxy<Index<formalism::FunctionTerm<T>>, C> function_term,
+                                                   const Vertex& element,
+                                                   const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+ClosedInterval<A> compute_tightest_closed_interval(Proxy<Index<formalism::FunctionTerm<T>>, C> function,
+                                                   const Edge& element,
+                                                   const FunctionAssignmentSets<T>& function_skeleton_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpEq, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpNe, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpGe, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpGt, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpLe, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpLt, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpAdd, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpSub, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpMul, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpDiv, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(float_t number,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool is_satisfiable(Proxy<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> numeric_constraint,
+                    const StructureType& element,
+                    const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                    const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept;
+
 /**
  * Vertex
  */
@@ -313,12 +398,26 @@ public:
         return true;
     }
 
-    template<typename T, formalism::IsContext C>
-    bool consistent_numeric_constraints(Proxy<DataList<formalism::BooleanOperator<T>>, C> numeric_constraints,
-                                        const FunctionAssignmentSets<formalism::StaticTag>& static_function_assignment_sets,
-                                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_function_assignment_sets) const noexcept
+    template<formalism::IsContext C>
+    bool consistent_numeric_constraints(Proxy<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> numeric_constraints,
+                                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) const noexcept
     {
-        // TODO
+        for (const auto numeric_constraint : numeric_constraints)
+        {
+            const auto arity = numeric_constraint.get_arity();
+
+            if (arity < 1)
+            {
+                continue;  ///< We test nullary constraints separately.
+            }
+
+            if (!is_satisfiable<float_t, Vertex, C>(numeric_constraint, *this, static_assignment_sets, fluent_assignment_sets))
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -670,6 +769,199 @@ private:
 
     std::vector<std::vector<uint_t>> m_partitions;
 };
+
+namespace details
+{
+template<IsFloatingPoint A, std::ranges::forward_range Range, formalism::IsStaticOrFluentTag T>
+ClosedInterval<A> compute_tightest_closed_interval_helper(ClosedInterval<A> bounds, const FunctionAssignmentSet<T>& sets, const Range& range) noexcept
+{
+    if (empty(bounds))
+        return bounds;
+
+    for (const auto& assignment : range)
+    {
+        assert(assignment.is_valid());
+
+        bounds = intersect(bounds, sets[assignment]);
+        if (empty(bounds))
+            break;  // early exit
+    }
+    return bounds;
+}
+
+template<IsFloatingPoint A, formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+ClosedInterval<A> compute_tightest_closed_interval(Proxy<Index<formalism::FunctionTerm<T>>, C> function_term,
+                                                   const Vertex& element,
+                                                   const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
+{
+    const auto& function_set = function_assignment_sets.get_set(function_term->get_function().get_index());
+    const auto terms = function_term->get_terms();
+
+    auto bounds = function_set[EmptyAssignment()];
+
+    bounds = compute_tightest_closed_interval_helper(bounds, function_assignment_sets, VertexAssignmentRange(terms, element));
+
+    return bounds;
+}
+
+template<IsFloatingPoint A, formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+ClosedInterval<A> compute_tightest_closed_interval(Proxy<Index<formalism::FunctionTerm<T>>, C> function,
+                                                   const Edge& element,
+                                                   const FunctionAssignmentSets<T>& function_skeleton_assignment_sets) noexcept
+{
+    const auto& function_skeleton_assignment_set = function_skeleton_assignment_sets.get_set(function->get_function_skeleton());
+    const auto& terms = function->get_terms();
+
+    auto bounds = function_skeleton_assignment_set[EmptyAssignment()];
+
+    bounds = compute_tightest_closed_interval_helper(bounds, function_skeleton_assignment_set, VertexAssignmentRange(terms, element.get_src()));
+    bounds = compute_tightest_closed_interval_helper(bounds, function_skeleton_assignment_set, VertexAssignmentRange(terms, element.get_dst()));
+    bounds = compute_tightest_closed_interval_helper(bounds, function_skeleton_assignment_set, EdgeAssignmentRange(terms, element));
+
+    return bounds;
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Data<formalism::FunctionExpression>, C> fexpr,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return visit([&](auto&& arg) -> ClosedInterval<A>
+                 { return evaluate_partially<A, StructureType, C>(arg, element, static_assignment_sets, fluent_assignment_sets); },
+                 fexpr.get());
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpEq, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply_existential(formalism::OpGe {},
+                                        evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                                        evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpNe, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply_existential(formalism::OpNe {},
+                                        evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                                        evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpGe, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply_existential(formalism::OpGe {},
+                                        evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                                        evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpGt, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply_existential(formalism::OpGt {},
+                                        evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                                        evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpLe, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply_existential(formalism::OpLe {},
+                                        evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                                        evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpLt, Data<formalism::FunctionExpression>>>, C> op,
+                        const StructureType& element,
+                        const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                        const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply_existential(formalism::OpLt {},
+                                        evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                                        evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpAdd, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply(formalism::OpAdd {},
+                            evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                            evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpSub, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply(formalism::OpSub {},
+                            evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                            evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpMul, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply(formalism::OpMul {},
+                            evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                            evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(Proxy<Index<formalism::BinaryOperator<formalism::OpDiv, Data<formalism::FunctionExpression>>>, C> op,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return formalism::apply(formalism::OpDiv {},
+                            evaluate_partially<A, StructureType, C>(op.get_lhs(), element, static_assignment_sets, fluent_assignment_sets),
+                            evaluate_partially<A, StructureType, C>(op.get_rhs(), element, static_assignment_sets, fluent_assignment_sets));
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+ClosedInterval<A> evaluate_partially(float_t number,
+                                     const StructureType& element,
+                                     const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                     const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return ClosedInterval<A>(number, number);
+}
+
+template<IsFloatingPoint A, typename StructureType, formalism::IsContext C>
+bool is_satisfiable(Proxy<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> op,
+                    const StructureType& element,
+                    const FunctionAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                    const FunctionAssignmentSets<formalism::FluentTag>& fluent_assignment_sets) noexcept
+{
+    return visit([&](auto&& arg) -> bool { return evaluate_partially<A, StructureType, C>(arg, element, static_assignment_sets, fluent_assignment_sets); },
+                 op.get());
+}
+
+}
 }
 
 #endif
