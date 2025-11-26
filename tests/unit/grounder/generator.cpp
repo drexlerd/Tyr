@@ -35,13 +35,13 @@ TEST(TyrTests, TyrGrounderGenerator)
     // Once: Analyze variable domains to compress assignment sets
     auto domains = analysis::compute_variable_domains(program);
 
-    // Per fact set: Create fact set.
+    // One: Allocate and create mutable sets of facts.
     auto fact_sets = grounder::FactSets<Repository>(program);
 
     // Once: Allocate reusable memory for AssignmentSets
     auto assignment_sets = grounder::AssignmentSets(program, domains);
 
-    // Once: Insert static facts
+    // Once: Insert facts into AssignmentSets
     assignment_sets.insert(fact_sets);
 
     // Once: Instantiate the static consistency graph for each rule
