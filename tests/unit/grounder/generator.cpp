@@ -42,12 +42,7 @@ TEST(TyrTests, TyrGrounderGenerator)
     auto assignment_sets = grounder::AssignmentSets(program, domains);
 
     // Once: Insert static facts
-    assignment_sets.static_sets.predicate.insert(fact_sets.static_sets.predicate.get_facts());
-    assignment_sets.static_sets.function.insert(fact_sets.static_sets.function.get_facts());
-
-    // Per fact set: Insert fluent facts; Call reset first for a new fact set
-    assignment_sets.fluent_sets.predicate.insert(fact_sets.fluent_sets.predicate.get_facts());
-    assignment_sets.fluent_sets.function.insert(fact_sets.fluent_sets.function.get_facts());
+    assignment_sets.insert(fact_sets);
 
     // Once: Instantiate the static consistency graph for each rule
     auto static_consistency_graphs = std::vector<grounder::StaticConsistencyGraph<Repository>> {};

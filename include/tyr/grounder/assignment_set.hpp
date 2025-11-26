@@ -324,45 +324,29 @@ public:
 };
 
 template<formalism::IsStaticOrFluentTag T>
-struct TaggedAssignmentSets;
-
-template<>
-struct TaggedAssignmentSets<formalism::StaticTag>
+struct TaggedAssignmentSets
 {
-    PredicateAssignmentSets<formalism::StaticTag> predicate;
-    FunctionAssignmentSets<formalism::StaticTag> function;
+    PredicateAssignmentSets<T> predicate;
+    FunctionAssignmentSets<T> function;
 
     TaggedAssignmentSets() = default;
 
     template<formalism::IsContext C>
-    TaggedAssignmentSets(Proxy<IndexList<formalism::Predicate<formalism::StaticTag>>, C> static_predicates,
-                         Proxy<IndexList<formalism::Function<formalism::StaticTag>>, C> static_functions,
-                         const analysis::DomainListListList& static_predicate_domains,
-                         const analysis::DomainListListList& static_function_domains,
+    TaggedAssignmentSets(Proxy<IndexList<formalism::Predicate<T>>, C> predicates,
+                         Proxy<IndexList<formalism::Function<T>>, C> functions,
+                         const analysis::DomainListListList& predicate_domains,
+                         const analysis::DomainListListList& function_domains,
                          size_t num_objects) :
-        predicate(static_predicates, static_predicate_domains, num_objects),
-        function(static_functions, static_function_domains, num_objects)
+        predicate(predicates, predicate_domains, num_objects),
+        function(functions, function_domains, num_objects)
     {
     }
-};
-
-template<>
-struct TaggedAssignmentSets<formalism::FluentTag>
-{
-    PredicateAssignmentSets<formalism::FluentTag> predicate;
-    FunctionAssignmentSets<formalism::FluentTag> function;
-
-    TaggedAssignmentSets() = default;
 
     template<formalism::IsContext C>
-    TaggedAssignmentSets(Proxy<IndexList<formalism::Predicate<formalism::FluentTag>>, C> fluent_predicates,
-                         Proxy<IndexList<formalism::Function<formalism::FluentTag>>, C> fluent_functions,
-                         const analysis::DomainListListList& fluent_predicate_domains,
-                         const analysis::DomainListListList& fluent_function_domains,
-                         size_t num_objects) :
-        predicate(fluent_predicates, fluent_predicate_domains, num_objects),
-        function(fluent_functions, fluent_function_domains, num_objects)
+    void insert(const TaggedFactSets<T, C>& fact_sets)
     {
+        predicate.insert(fact_sets.predicate.get_facts());
+        function.insert(fact_sets.function.get_facts());
     }
 
     void reset()
@@ -397,8 +381,8 @@ struct AssignmentSets
     template<formalism::IsContext C>
     void insert(const FactSets<C>& fact_sets)
     {
-        fluent_sets.predicate.insert(fact_sets.predicate);
-        fluent_sets.function.insert(fact_sets.function);
+        static_sets.insert(fact_sets.static_sets);
+        fluent_sets.insert(fact_sets.fluent_sets);
     }
 };
 
