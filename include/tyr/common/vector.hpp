@@ -19,10 +19,11 @@
 #define TYR_COMMON_VECTOR_HPP_
 
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/types.hpp"
 
+#include <cista/containers/vector.h>
 #include <cstddef>
 #include <iterator>
-#include <span>
 
 namespace tyr
 {
@@ -180,6 +181,20 @@ public:
 private:
     const Context* m_context;
     const Container* m_data;
+};
+
+template<typename T>
+class FlatVector
+{
+public:
+private:
+};
+
+template<typename T>
+class GroupVector
+{
+public:
+private:
 };
 }
 

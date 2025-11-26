@@ -19,12 +19,9 @@
 #define TYR_COMMON_VARIANT_HPP_
 
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/types.hpp"
 
 #include <cista/containers/variant.h>
-#include <cstddef>
-#include <iterator>
-#include <span>
-#include <variant>
 
 namespace tyr
 {

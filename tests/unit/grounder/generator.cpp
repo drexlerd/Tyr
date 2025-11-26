@@ -36,21 +36,18 @@ TEST(TyrTests, TyrGrounderGenerator)
     auto domains = analysis::compute_variable_domains(program);
 
     // Per fact set: Create fact set.
-    auto fact_sets = grounder::FactSets<Repository> { program.get_atoms<formalism::StaticTag>(),
-                                                      program.get_atoms<formalism::FluentTag>(),
-                                                      program.get_function_values<formalism::StaticTag>(),
-                                                      program.get_function_values<formalism::FluentTag>() };
+    auto fact_sets = grounder::FactSets<Repository>(program);
 
     // Once: Allocate reusable memory for AssignmentSets
     auto assignment_sets = grounder::AssignmentSets(program, domains);
 
     // Once: Insert static facts
-    assignment_sets.static_sets.predicate.insert(fact_sets.static_atoms);
-    assignment_sets.static_sets.function.insert(fact_sets.static_function_values);
+    assignment_sets.static_sets.predicate.insert(fact_sets.static_sets.predicate.get_facts());
+    assignment_sets.static_sets.function.insert(fact_sets.static_sets.function.get_facts());
 
     // Per fact set: Insert fluent facts; Call reset first for a new fact set
-    assignment_sets.fluent_sets.predicate.insert(fact_sets.fluent_atoms);
-    assignment_sets.fluent_sets.function.insert(fact_sets.fluent_function_values);
+    assignment_sets.fluent_sets.predicate.insert(fact_sets.fluent_sets.predicate.get_facts());
+    assignment_sets.fluent_sets.function.insert(fact_sets.fluent_sets.function.get_facts());
 
     // Once: Instantiate the static consistency graph for each rule
     auto static_consistency_graphs = std::vector<grounder::StaticConsistencyGraph<Repository>> {};
