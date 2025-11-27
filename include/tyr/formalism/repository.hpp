@@ -241,7 +241,8 @@ public:
 
         const auto i = index.get_group().get_value();
 
-        assert(i < list.size());
+        if (i >= list.size())
+            return size_t { 0 };
 
         const auto& repository = list[i];
 

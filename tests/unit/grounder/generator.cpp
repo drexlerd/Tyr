@@ -95,6 +95,8 @@ TEST(TyrTests, TyrGrounderGenerator)
     auto bindings = std::vector<IndexList<formalism::Object>>(program.get_rules().size());
     // Once: Create builders
     auto builders = std::vector<formalism::Builder>(program.get_rules().size());
+    // Once: Create buffers
+    auto buffers = std::vector<cista::Buffer>(program.get_rules().size());
     // Once: Create container for applicable ground rules
     auto ground_rules = std::vector<IndexList<formalism::GroundRule>>(program.get_rules().size());
 
@@ -105,9 +107,14 @@ TEST(TyrTests, TyrGrounderGenerator)
         std::cout << "r: " << program.get_rules()[i] << std::endl;
 
         // Combine all the data dependencies into workspaces.
-        auto immutable_workspace = grounder::ImmutableRuleWorkspace<Repository> { fact_sets, assignment_sets, program.get_rules()[i], consistency_graphs[i] };
-        auto mutable_workspace =
-            grounder::MutableRuleWorkspace<Repository> { rule_scoped_repositories[i], kpkc_workspaces[i], bindings[i], builders[i], ground_rules[i] };
+        auto immutable_workspace = grounder::ImmutableRuleWorkspace<Repository> { fact_sets,
+                                                                                  assignment_sets,
+                                                                                  program.get_rules()[i],
+                                                                                  static_consistency_graphs[i],
+                                                                                  consistency_graphs[i] };
+        auto mutable_workspace = grounder::MutableRuleWorkspace<Repository> {
+            rule_scoped_repositories[i], kpkc_workspaces[i], bindings[i], builders[i], buffers[i], ground_rules[i]
+        };
 
         grounder::ground(immutable_workspace, mutable_workspace);
     }

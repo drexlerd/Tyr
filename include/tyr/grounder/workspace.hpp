@@ -33,6 +33,7 @@ struct ImmutableRuleWorkspace
 
     // Rule infos
     const View<Index<formalism::Rule>, C> rule;
+    const StaticConsistencyGraph<C> static_consistency_graph;
     const kpkc::DenseKPartiteGraph& consistency_graph;
 };
 
@@ -44,6 +45,7 @@ struct MutableRuleWorkspace
 
     IndexList<formalism::Object>& binding;
     formalism::Builder& builder;
+    cista::Buffer& buffer;
 
     IndexList<formalism::GroundRule>& ground_rules;
 };

@@ -647,6 +647,8 @@ public:
 
     auto get_edges() const noexcept { return std::ranges::subrange(EdgeIterator(*this, true), EdgeIterator(*this, false)); }
 
+    const details::Vertex& get_vertex(uint_t index) const noexcept { return m_vertices[index]; }
+
     size_t get_num_vertices() const noexcept { return m_vertices.size(); }
     size_t get_num_edges() const noexcept { return m_targets.size(); }
 

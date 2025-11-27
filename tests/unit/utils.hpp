@@ -264,10 +264,10 @@ inline IndexList<formalism::GroundAtom<formalism::StaticTag>> add_static_ground_
         ground_atom_builder.index.group = convert(predicate);
         for (const auto& atom : atoms)
         {
-            ground_atom_builder.terms.clear();
+            ground_atom_builder.objects.clear();
             for (const auto& term : atom)
             {
-                ground_atom_builder.terms.push_back(convert(term));
+                ground_atom_builder.objects.push_back(convert(term));
             }
             canonicalize(ground_atom_builder);
             result.push_back(repository.get_or_create(ground_atom_builder, buffer).first.get_index());
@@ -299,10 +299,10 @@ inline IndexList<formalism::GroundAtom<formalism::FluentTag>> add_fluent_ground_
         ground_atom_builder.index.group = convert(predicate);
         for (const auto& atom : atoms)
         {
-            ground_atom_builder.terms.clear();
+            ground_atom_builder.objects.clear();
             for (const auto& term : atom)
             {
-                ground_atom_builder.terms.push_back(convert(term));
+                ground_atom_builder.objects.push_back(convert(term));
             }
             canonicalize(ground_atom_builder);
             result.push_back(repository.get_or_create(ground_atom_builder, buffer).first.get_index());

@@ -45,7 +45,7 @@ public:
 
     auto get_index() const { return m_data; }
     auto get_function() const { return View<Index<formalism::Function<T>>, C>(m_data.group, *m_context); }
-    auto get_terms() const { return View<IndexList<formalism::Object>, C>(get().terms, *m_context); }
+    auto get_objects() const { return View<IndexList<formalism::Object>, C>(get().objects, *m_context); }
 };
 }
 

@@ -76,7 +76,7 @@ inline DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::
     {
         const auto predicate = atom.get_predicate();
         auto pos = size_t { 0 };
-        for (const auto object : atom.get_terms())
+        for (const auto object : atom.get_objects())
             predicate_domain_sets[predicate.get_index().value][pos++].insert(object.get_index());
     }
 
@@ -97,7 +97,7 @@ inline DomainSetListList initialize_function_domain_sets(View<Index<formalism::P
         const auto fterm = term_value.get_fterm();
         const auto function = fterm.get_function();
         auto pos = size_t { 0 };
-        for (const auto object : fterm.get_terms())
+        for (const auto object : fterm.get_objects())
             function_domain_sets[function.get_index().value][pos++].insert(object.get_index());
     }
 

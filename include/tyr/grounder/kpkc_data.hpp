@@ -50,6 +50,7 @@ struct Workspace
     boost::dynamic_bitset<> partition_bits;                                 ///< Dimensions K
     std::vector<uint_t> partial_solution;                                   ///< Dimensions K
     boost::dynamic_bitset<> consistent_vertices;
+    std::vector<uint_t> consistent_vertices_vec;
     size_t num_vertices;
     size_t k;
 };

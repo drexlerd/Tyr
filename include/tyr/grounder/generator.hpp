@@ -28,17 +28,19 @@ namespace tyr::grounder
 {
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
-View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Atom<T>>, C> element,
-                                                                             const IndexList<formalism::Object>& binding,
-                                                                             formalism::Builder& builder,
-                                                                             formalism::ScopedRepository<C>& repository)
+View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Atom<T>>, C> element, MutableRuleWorkspace<C>& workspace)
 {
-    auto& ground_atom = builder.get_ground_atom<T>();
-    auto& objects = ground_atom.get_terms();
+    // Fetch and clear
+    auto& binding = workspace.binding;
+    auto& builder = workspace.builder;
+    auto& repository = workspace.repository;
+    auto& buffer = workspace.buffer;
+    auto& ground_atom = builder.template get_ground_atom<T>();
+    auto& objects = ground_atom.objects;
     objects.clear();
 
+    // Fill data
     ground_atom.index.group = element.get_index().get_group();
-
     for (const auto term : element.get_terms())
     {
         visit(
@@ -61,40 +63,110 @@ View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(Vie
             },
             term.get());
     }
+
+    // Canonicalize and Serialize
+    canonicalize(ground_atom);
+    return repository.get_or_create(ground_atom, buffer).first;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 View<Index<formalism::GroundLiteral<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Literal<T>>, C> element,
-                                                                                const IndexList<formalism::Object>& binding,
-                                                                                formalism::Builder& builder,
-                                                                                formalism::ScopedRepository<C>& repository)
+                                                                                MutableRuleWorkspace<C>& workspace)
 {
+    // Fetch and clear
+    auto& builder = workspace.builder;
+    auto& repository = workspace.repository;
+    auto& buffer = workspace.buffer;
+    auto& ground_literal = builder.template get_ground_literal<T>();
+
+    // Fill data
+    ground_literal.index.group = element.get_index().get_group();
+    ground_literal.polarity = element.get_polarity();
+    ground_literal.atom = ground(element.get_atom(), workspace).get_index();
+
+    // Canonicalize and Serialize
+    canonicalize(ground_literal);
+    return repository.get_or_create(ground_literal, buffer).first;
 }
 
 template<formalism::IsContext C>
 View<Index<formalism::GroundConjunctiveCondition>, formalism::ScopedRepository<C>> ground(View<Index<formalism::ConjunctiveCondition>, C> element,
-                                                                                          const IndexList<formalism::Object>& binding,
-                                                                                          formalism::Builder& builder,
-                                                                                          formalism::ScopedRepository<C>& repository)
+                                                                                          MutableRuleWorkspace<C>& workspace)
 {
+    // Fetch and clear
+    auto& binding = workspace.binding;
+    auto& builder = workspace.builder;
+    auto& repository = workspace.repository;
+    auto& buffer = workspace.buffer;
+    auto& conj_cond = builder.ground_conj_cond;
+    auto& objects = conj_cond.objects;
+    auto& static_literals = conj_cond.static_literals;
+    auto& fluent_literals = conj_cond.fluent_literals;
+    auto& numeric_constraints = conj_cond.numeric_constraints;
+    objects.clear();
+    static_literals.clear();
+    fluent_literals.clear();
+    numeric_constraints.clear();
+
+    // Fill data
+    objects = binding;
+    for (const auto literal : element.template get_literals<formalism::StaticTag>())
+        static_literals.push_back(ground(literal, workspace).get_index());
+    for (const auto literal : element.template get_literals<formalism::FluentTag>())
+        fluent_literals.push_back(ground(literal, workspace).get_index());
+    // for (const auto numeric_constraint : element.get_numeric_constraints())
+    //     numeric_constraints.push_back(ground(numeric_constraint, workspace).get_index());
+
+    // Canonicalize and Serialize
+    canonicalize(conj_cond);
+    return repository.get_or_create(conj_cond, buffer).first;
 }
 
 template<formalism::IsContext C>
-View<Index<formalism::GroundRule>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Rule>, C> element,
-                                                                          const IndexList<formalism::Object>& binding,
-                                                                          formalism::Builder& builder,
-                                                                          formalism::ScopedRepository<C>& repository)
+View<Index<formalism::GroundRule>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Rule>, C> element, MutableRuleWorkspace<C>& workspace)
 {
+    // Fetch and clear
+    auto& builder = workspace.builder;
+    auto& repository = workspace.repository;
+    auto& buffer = workspace.buffer;
+    auto& rule = builder.ground_rule;
+    auto& body = rule.body;
+    auto& head = rule.head;
+
+    // Fill data
+    rule.index.group = element.get_index();
+    body = ground(element.get_body(), workspace).get_index();
+    head = ground(element.get_head(), workspace).get_index();
+
+    // Canonicalize and Serialize
+    canonicalize(rule);
+    return repository.get_or_create(rule, buffer).first;
 }
 
 template<formalism::IsContext C>
 void ground_nullary_case(const ImmutableRuleWorkspace<C>& immutable_workspace, MutableRuleWorkspace<C>& mutable_workspace)
 {
+    mutable_workspace.binding.clear();
+
+    auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
+
+    std::cout << ground_rule << std::endl;
 }
 
 template<formalism::IsContext C>
 void ground_unary_case(const ImmutableRuleWorkspace<C>& immutable_workspace, MutableRuleWorkspace<C>& mutable_workspace)
 {
+    mutable_workspace.binding.clear();
+
+    for (const auto vertex_index : mutable_workspace.kpkc_workspace.consistent_vertices_vec)
+    {
+        const auto& vertex = immutable_workspace.static_consistency_graph.get_vertex(vertex_index);
+        mutable_workspace.binding.push_back(vertex.get_object_index());
+
+        auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
+
+        std::cout << ground_rule << std::endl;
+    }
 }
 
 template<formalism::IsContext C>
@@ -102,12 +174,16 @@ void ground_general_case(const ImmutableRuleWorkspace<C>& immutable_workspace, M
 {
     kpkc::for_each_k_clique(immutable_workspace.consistency_graph,
                             mutable_workspace.kpkc_workspace,
-                            [](auto&& clique)
+                            [&](auto&& clique)
                             {
-                                // TODO: ground the conjunctive condition and check if it applicable
-                                std::cout << to_string(clique) << std::endl;
+                                mutable_workspace.binding.clear();
 
-                                // TODO: ground the final rule
+                                for (const auto integer : clique)
+                                    mutable_workspace.binding.push_back(Index<formalism::Object>(integer));
+
+                                auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
+
+                                std::cout << ground_rule << std::endl;
                             });
 }
 

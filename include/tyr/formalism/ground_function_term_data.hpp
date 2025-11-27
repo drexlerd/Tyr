@@ -31,17 +31,17 @@ struct Data<formalism::GroundFunctionTerm<T>>
     using Tag = formalism::GroundFunctionTerm<T>;
 
     Index<formalism::GroundFunctionTerm<T>> index;
-    IndexList<formalism::Object> terms;
+    IndexList<formalism::Object> objects;
 
     Data() = default;
-    Data(Index<formalism::GroundFunctionTerm<T>> index, IndexList<formalism::Object> terms) : index(index), terms(std::move(terms)) {}
+    Data(Index<formalism::GroundFunctionTerm<T>> index, IndexList<formalism::Object> objects) : index(index), objects(std::move(objects)) {}
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.group, terms); }
+    auto cista_members() const noexcept { return std::tie(index, objects); }
+    auto identifying_members() const noexcept { return std::tie(index.group, objects); }
 };
 }
 

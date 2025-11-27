@@ -123,7 +123,7 @@ public:
     void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom)
     {
         const auto arity = ground_atom.get_predicate().get_arity();
-        const auto objects = ground_atom.get_terms();
+        const auto objects = ground_atom.get_objects();
 
         assert(ground_atom.get_index().get_group() == m_predicate);
 
@@ -228,7 +228,7 @@ public:
     void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value)
     {
         const auto arity = function_term.get_function().get_arity();
-        const auto arguments = function_term.get_terms();
+        const auto arguments = function_term.get_objects();
 
         assert(function_term.get_index().get_group() == m_function);
 

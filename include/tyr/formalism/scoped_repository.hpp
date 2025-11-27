@@ -34,62 +34,76 @@ public:
     ScopedRepository(const C& global, C& local) : global(global), local(local) {}
 
     template<IsGroupType T>
-    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
+    std::optional<View<Index<T>, ScopedRepository<C>>> find(const Data<T>& builder) const
     {
         if (auto ptr = global.find(builder))
-            return ptr;
+            return View<Index<T>, ScopedRepository<C>>(ptr->get_data(), *this);
 
-        return local.find(builder);
+        if (auto ptr = local.find(builder))
+            return View<Index<T>, ScopedRepository<C>>(ptr->get_data(), *this);
+
+        return std::nullopt;
     }
 
     template<IsFlatType T>
-    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
+    std::optional<View<Index<T>, ScopedRepository<C>>> find(const Data<T>& builder) const
     {
         if (auto ptr = global.find(builder))
-            return ptr;
+            return View<Index<T>, ScopedRepository<C>>(ptr->get_data(), *this);
 
-        return local.find(builder);
+        if (auto ptr = local.find(builder))
+            return View<Index<T>, ScopedRepository<C>>(ptr->get_data(), *this);
+
+        return std::nullopt;
     }
 
     template<IsGroupType T, bool AssignIndex = true>
-    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
+    std::pair<View<Index<T>, ScopedRepository<C>>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
-            return std::make_pair(ptr, false);
+            return std::make_pair(View<Index<T>, ScopedRepository<C>>(ptr->get_data(), *this), false);
 
         // Manually assign index to continue indexing.
         builder.index.value = global.size(builder.index) + local.size(builder.index);
 
-        return local.template get_or_create<T, false>(builder, buf);
+        return std::make_pair(View<Index<T>, ScopedRepository<C>>(local.template get_or_create<T, false>(builder, buf).first.get_data(), *this), true);
     }
 
     template<IsFlatType T, bool AssignIndex = true>
-    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
+    std::pair<View<Index<T>, ScopedRepository<C>>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
-            return std::make_pair(ptr, false);
+            return std::make_pair(View<Index<T>, ScopedRepository<C>>(ptr->get_data(), *this), false);
 
         // Manually assign index to continue indexing.
         builder.index.value = global.template size<T>() + local.template size<T>();
 
-        return local.template get_or_create<T, false>(builder, buf);
+        return std::make_pair(View<Index<T>, ScopedRepository<C>>(local.template get_or_create<T, false>(builder, buf).first.get_data(), *this), true);
     }
 
     template<IsGroupType T>
     const Data<T>& operator[](Index<T> index) const
     {
-        if (index.value < global.size(index))
+        const auto global_size = global.size(index);
+
+        if (index.value < global_size)
             return global[index];
 
+        // Subtract global size to get position in local storage
+        index.value -= global_size;
         return local[index];
     }
 
     template<IsFlatType T>
     const Data<T>& operator[](Index<T> index) const
     {
-        if (index.value < global.template size<T>())
+        const auto global_size = global.template size<T>();
+
+        if (index.value < global_size)
             return global[index];
 
+        // Subtract global size to get position in local storage
+        index.value -= global_size;
         return local[index];
     }
 };

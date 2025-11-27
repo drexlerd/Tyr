@@ -106,11 +106,13 @@ inline void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<C>
                                                  Workspace& ref_workspace)
 {
     ref_workspace.consistent_vertices.reset();
+    ref_workspace.consistent_vertices_vec.clear();
 
     // Compute consistent vertices to speed up consistent edges computation
     for (const auto& vertex : sparse_graph.consistent_vertices(assignment_sets))
     {
         ref_workspace.consistent_vertices.set(vertex.get_index());
+        ref_workspace.consistent_vertices_vec.push_back(vertex.get_index());
     }
 
     // Clear the adj matrix
