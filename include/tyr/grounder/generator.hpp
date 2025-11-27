@@ -178,8 +178,11 @@ void ground_general_case(const ImmutableRuleWorkspace<C>& immutable_workspace, M
                             {
                                 mutable_workspace.binding.clear();
 
-                                for (const auto integer : clique)
-                                    mutable_workspace.binding.push_back(Index<formalism::Object>(integer));
+                                for (const auto vertex_index : clique)
+                                {
+                                    const auto& vertex = immutable_workspace.static_consistency_graph.get_vertex(vertex_index);
+                                    mutable_workspace.binding.push_back(Index<formalism::Object>(vertex.get_object_index()));
+                                }
 
                                 auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
 
