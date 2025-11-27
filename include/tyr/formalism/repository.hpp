@@ -147,35 +147,37 @@ private:
 public:
     Repository() = default;
 
-    // nullptr signals that the object does not exist.
     template<IsGroupType T>
-    const Data<T>* find(const Data<T>& builder) const
+    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
     {
         const auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
         const auto i = builder.index.get_group().get_value();
 
         if (i >= list.size())
-            return nullptr;
+            return std::nullopt;
 
         const auto& indexed_hash_set = list[i];
 
-        return indexed_hash_set.find(builder);
+        if (const auto ptr = indexed_hash_set.find(builder))
+            return View<Index<T>, Repository>(ptr->index, *this);
+
+        return std::nullopt;
     }
 
-    // nullptr signals that the object does not exist.
     template<IsFlatType T>
-    const Data<T>* find(const Data<T>& builder) const
+    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
     {
         const auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
-        return indexed_hash_set.find(builder);
+        if (const auto ptr = indexed_hash_set.find(builder))
+            return View<Index<T>, Repository>(ptr->index, *this);
+
+        return std::nullopt;
     }
 
-    // const T* always points to a valid instantiation of the class.
-    // We return const T* here to avoid bugs when using structured bindings.
     template<IsGroupType T, bool AssignIndex = true>
-    std::pair<const Data<T>*, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
+    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
     {
         auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
@@ -189,20 +191,22 @@ public:
         if constexpr (AssignIndex)
             builder.index.value = indexed_hash_set.size();
 
-        return indexed_hash_set.insert(builder, buf);
+        const auto [ptr, success] = indexed_hash_set.insert(builder, buf);
+
+        return std::make_pair(View<Index<T>, Repository>(ptr->index, *this), success);
     }
 
-    // const T* always points to a valid instantiation of the class.
-    // We return const T* here to avoid bugs when using structured bindings.
     template<IsFlatType T, bool AssignIndex = true>
-    std::pair<const Data<T>*, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
+    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
     {
         auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
         if constexpr (AssignIndex)
             builder.index.value = indexed_hash_set.size();
 
-        return indexed_hash_set.insert(builder, buf);
+        const auto [ptr, success] = indexed_hash_set.insert(builder, buf);
+
+        return std::make_pair(View<Index<T>, Repository>(ptr->index, *this), success);
     }
 
     /// @brief Access the element with the given index.

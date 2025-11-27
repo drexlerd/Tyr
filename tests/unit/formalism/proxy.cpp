@@ -47,14 +47,14 @@ TEST(TyrTests, TyrFormalismView)
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.group = predicate->index;
-    atom_builder.terms.push_back(Data<Term>(object->index));
+    atom_builder.index.group = predicate.get_index();
+    atom_builder.terms.push_back(Data<Term>(object.get_index()));
     atom_builder.terms.push_back(Data<Term>(ParameterIndex(0)));
     canonicalize(atom_builder);
     auto [atom, atom_success] = repository.get_or_create(atom_builder, buffer);
 
     // Recurse through proxy
-    auto atom_proxy = View<Index<Atom<FluentTag>>, Repository>(atom->index, repository);
+    auto atom_proxy = View<Index<Atom<FluentTag>>, Repository>(atom.get_index(), repository);
     auto atom_relation_proxy = atom_proxy.get_predicate();
     auto atom_terms_proxy = atom_proxy.get_terms();
 
@@ -67,7 +67,7 @@ TEST(TyrTests, TyrFormalismView)
 
             if constexpr (std::is_same_v<Alternative, View<Index<Object>, Repository>>)
             {
-                EXPECT_EQ(arg.get_index(), object->index);
+                EXPECT_EQ(arg.get_index(), object.get_index());
             }
             else
             {

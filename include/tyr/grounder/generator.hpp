@@ -28,34 +28,62 @@ namespace tyr::grounder
 {
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
-View<Index<formalism::GroundAtom<T>>, C> ground(View<Index<formalism::Atom<T>>, C> element,
-                                                const IndexList<formalism::Object>& binding,
-                                                formalism::Builder& builder,
-                                                formalism::ScopedRepository<C>& repository)
+View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Atom<T>>, C> element,
+                                                                             const IndexList<formalism::Object>& binding,
+                                                                             formalism::Builder& builder,
+                                                                             formalism::ScopedRepository<C>& repository)
 {
+    auto& ground_atom = builder.get_ground_atom<T>();
+    auto& objects = ground_atom.get_terms();
+    objects.clear();
+
+    ground_atom.index.group = element.get_index().get_group();
+
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, formalism::ParameterIndex>)
+                {
+                    objects.push_back(binding[uint_t(arg)]);
+                }
+                else if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, C>>)
+                {
+                    objects.push_back(arg.get_index());
+                }
+                else
+                {
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+                }
+            },
+            term.get());
+    }
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
-View<Index<formalism::GroundLiteral<T>>, C> ground(View<Index<formalism::Literal<T>>, C> element,
-                                                   const IndexList<formalism::Object>& binding,
-                                                   formalism::Builder& builder,
-                                                   formalism::ScopedRepository<C>& repository)
+View<Index<formalism::GroundLiteral<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Literal<T>>, C> element,
+                                                                                const IndexList<formalism::Object>& binding,
+                                                                                formalism::Builder& builder,
+                                                                                formalism::ScopedRepository<C>& repository)
 {
 }
 
 template<formalism::IsContext C>
-View<Index<formalism::GroundConjunctiveCondition>, C> ground(View<Index<formalism::ConjunctiveCondition>, C> element,
-                                                             const IndexList<formalism::Object>& binding,
-                                                             formalism::Builder& builder,
-                                                             formalism::ScopedRepository<C>& repository)
+View<Index<formalism::GroundConjunctiveCondition>, formalism::ScopedRepository<C>> ground(View<Index<formalism::ConjunctiveCondition>, C> element,
+                                                                                          const IndexList<formalism::Object>& binding,
+                                                                                          formalism::Builder& builder,
+                                                                                          formalism::ScopedRepository<C>& repository)
 {
 }
 
 template<formalism::IsContext C>
-View<Index<formalism::GroundRule>, C> ground(View<Index<formalism::Rule>, C> element,
-                                             const IndexList<formalism::Object>& binding,
-                                             formalism::Builder& builder,
-                                             formalism::ScopedRepository<C>& repository)
+View<Index<formalism::GroundRule>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Rule>, C> element,
+                                                                          const IndexList<formalism::Object>& binding,
+                                                                          formalism::Builder& builder,
+                                                                          formalism::ScopedRepository<C>& repository)
 {
 }
 

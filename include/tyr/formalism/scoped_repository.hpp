@@ -33,9 +33,8 @@ private:
 public:
     ScopedRepository(const C& global, C& local) : global(global), local(local) {}
 
-    // nullptr signals that the object does not exist.
     template<IsGroupType T>
-    const Data<T>* find(const Data<T>& builder) const
+    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
     {
         if (auto ptr = global.find(builder))
             return ptr;
@@ -43,9 +42,8 @@ public:
         return local.find(builder);
     }
 
-    // nullptr signals that the object does not exist.
     template<IsFlatType T>
-    const Data<T>* find(const Data<T>& builder) const
+    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
     {
         if (auto ptr = global.find(builder))
             return ptr;
@@ -53,10 +51,8 @@ public:
         return local.find(builder);
     }
 
-    // const T* always points to a valid instantiation of the class.
-    // We return const T* here to avoid bugs when using structured bindings.
     template<IsGroupType T, bool AssignIndex = true>
-    std::pair<const Data<T>*, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
+    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
             return std::make_pair(ptr, false);
@@ -67,10 +63,8 @@ public:
         return local.template get_or_create<T, false>(builder, buf);
     }
 
-    // const T* always points to a valid instantiation of the class.
-    // We return const T* here to avoid bugs when using structured bindings.
     template<IsFlatType T, bool AssignIndex = true>
-    std::pair<const Data<T>*, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
+    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, cista::Buffer& buf)
     {
         if (auto ptr = global.find(builder))
             return std::make_pair(ptr, false);

@@ -75,6 +75,7 @@ struct Builder
 {
     Builder() = default;
 
+    // ----- Operators over FunctionExpression -----
     Data<UnaryOperator<OpSub, Data<FunctionExpression>>> unary_sub;
     Data<BinaryOperator<OpAdd, Data<FunctionExpression>>> binary_add;
     Data<BinaryOperator<OpSub, Data<FunctionExpression>>> binary_sub;
@@ -107,10 +108,12 @@ struct Builder
     Data<BooleanOperator<Data<GroundFunctionExpression>>> ground_boolean;
     Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground_arithmetic;
 
+    // ----- Basic symbols -----
     Data<Variable> variable;
     Data<Object> object;
     Data<Term> term;
 
+    // ----- Predicates / Atoms / Literals -----
     Data<Predicate<StaticTag>> static_predicate;
     Data<Predicate<FluentTag>> fluent_predicate;
 
@@ -124,6 +127,7 @@ struct Builder
     Data<GroundLiteral<StaticTag>> ground_static_literal;
     Data<GroundLiteral<FluentTag>> ground_fluent_literal;
 
+    // ----- Functions / Function terms -----
     Data<Function<StaticTag>> static_function;
     Data<Function<FluentTag>> fluent_function;
 
@@ -132,12 +136,15 @@ struct Builder
     Data<GroundFunctionTerm<StaticTag>> ground_static_fterm;
     Data<GroundFunctionTerm<FluentTag>> ground_fluent_fterm;
 
+    // ----- Function expressions -----
     Data<FunctionExpression> fexpr;
     Data<GroundFunctionExpression> ground_fexpr;
 
+    // ----- Function term values -----
     Data<GroundFunctionTermValue<StaticTag>> ground_static_fterm_value;
     Data<GroundFunctionTermValue<FluentTag>> ground_fluent_fterm_value;
 
+    // ----- Conditions, rules, program -----
     Data<ConjunctiveCondition> conj_cond;
     Data<GroundConjunctiveCondition> ground_conj_cond;
 
@@ -145,6 +152,214 @@ struct Builder
     Data<GroundRule> ground_rule;
 
     Data<Program> program;
+
+    // ================== Operators ==================
+
+    template<IsOp O>
+    auto& get_unary() noexcept
+    {
+        if constexpr (std::is_same_v<O, OpSub>)
+            return unary_sub;
+        else
+            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsOp O>
+    auto& get_ground_unary() noexcept
+    {
+        if constexpr (std::is_same_v<O, OpSub>)
+            return ground_unary_sub;
+        else
+            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsOp O>
+    auto& get_binary() noexcept
+    {
+        if constexpr (std::is_same_v<O, OpAdd>)
+            return binary_add;
+        else if constexpr (std::is_same_v<O, OpSub>)
+            return binary_sub;
+        else if constexpr (std::is_same_v<O, OpMul>)
+            return binary_mul;
+        else if constexpr (std::is_same_v<O, OpDiv>)
+            return binary_div;
+        else if constexpr (std::is_same_v<O, OpEq>)
+            return binary_eq;
+        else if constexpr (std::is_same_v<O, OpNe>)
+            return binary_ne;
+        else if constexpr (std::is_same_v<O, OpLe>)
+            return binary_le;
+        else if constexpr (std::is_same_v<O, OpLt>)
+            return binary_lt;
+        else if constexpr (std::is_same_v<O, OpGe>)
+            return binary_ge;
+        else if constexpr (std::is_same_v<O, OpGt>)
+            return binary_gt;
+        else
+            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsOp O>
+    auto& get_ground_binary() noexcept
+    {
+        if constexpr (std::is_same_v<O, OpAdd>)
+            return ground_binary_add;
+        else if constexpr (std::is_same_v<O, OpSub>)
+            return ground_binary_sub;
+        else if constexpr (std::is_same_v<O, OpMul>)
+            return ground_binary_mul;
+        else if constexpr (std::is_same_v<O, OpDiv>)
+            return ground_binary_div;
+        else if constexpr (std::is_same_v<O, OpEq>)
+            return ground_binary_eq;
+        else if constexpr (std::is_same_v<O, OpNe>)
+            return ground_binary_ne;
+        else if constexpr (std::is_same_v<O, OpLe>)
+            return ground_binary_le;
+        else if constexpr (std::is_same_v<O, OpLt>)
+            return ground_binary_lt;
+        else if constexpr (std::is_same_v<O, OpGe>)
+            return ground_binary_ge;
+        else if constexpr (std::is_same_v<O, OpGt>)
+            return ground_binary_gt;
+        else
+            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
+    }
+
+    auto& get_boolean() noexcept { return boolean; }
+
+    auto& get_ground_boolean() noexcept { return ground_boolean; }
+
+    auto& get_arithmetic() noexcept { return arithmetic; }
+
+    auto& get_ground_arithmetic() noexcept { return ground_arithmetic; }
+
+    // ================== Basic symbols ==================
+
+    auto& get_variable() noexcept { return variable; }
+
+    auto& get_object() noexcept { return object; }
+
+    auto& get_term() noexcept { return term; }
+
+    // ================== Predicates / Atoms / Literals ==================
+
+    template<IsStaticOrFluentTag T>
+    auto& get_predicate() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return static_predicate;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return fluent_predicate;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_atom() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return static_atom;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return fluent_atom;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_ground_atom() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return ground_static_atom;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return ground_fluent_atom;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_literal() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return static_literal;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return fluent_literal;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_ground_literal() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return ground_static_literal;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return ground_fluent_literal;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
+    }
+
+    // ================== Functions / Terms / Values ==================
+
+    template<IsStaticOrFluentTag T>
+    auto& get_function() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return static_function;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return fluent_function;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder::get_function for this tag.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_function_term() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return static_fterm;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return fluent_fterm;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder::get_function_term for this tag.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_ground_function_term() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return ground_static_fterm;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return ground_fluent_fterm;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder::get_ground_function_term for this tag.");
+    }
+
+    template<IsStaticOrFluentTag T>
+    auto& get_ground_function_term_value() noexcept
+    {
+        if constexpr (std::is_same_v<T, StaticTag>)
+            return ground_static_fterm_value;
+        else if constexpr (std::is_same_v<T, FluentTag>)
+            return ground_fluent_fterm_value;
+        else
+            static_assert(dependent_false<T>::value, "Missing Builder::get_ground_function_term_value for this tag.");
+    }
+
+    // ================== Expressions ==================
+
+    auto& get_function_expression() noexcept { return fexpr; }
+    auto& get_ground_function_expression() noexcept { return ground_fexpr; }
+
+    // ================== Conditions / Rules / Program ==================
+
+    auto& get_conjunctive_condition() noexcept { return conj_cond; }
+    auto& get_ground_conjunctive_condition() noexcept { return ground_conj_cond; }
+
+    auto& get_rule() noexcept { return rule; }
+    auto& get_ground_rule() noexcept { return ground_rule; }
+
+    auto& get_program() noexcept { return program; }
 };
 
 }
