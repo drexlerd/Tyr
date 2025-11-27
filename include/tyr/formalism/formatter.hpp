@@ -17,7 +17,6 @@
 
 #ifndef TYR_FORMALISM_FORMATTER_HPP_
 #define TYR_FORMALISM_FORMATTER_HPP_
-
 #include "tyr/common/formatter.hpp"
 #include "tyr/formalism/arithmetic_operator_data.hpp"
 #include "tyr/formalism/arithmetic_operator_view.hpp"
@@ -92,13 +91,19 @@ namespace tyr
 {
 inline std::ostream& print(std::ostream& os, const formalism::ParameterIndex& el)
 {
-    fmt::print(os, "{}", uint_t(el));
+    fmt::print(os, "V{}", uint_t(el));
     return os;
 }
 
 inline std::ostream& print(std::ostream& os, formalism::OpEq el)
 {
     fmt::print(os, "=");
+    return os;
+}
+
+inline std::ostream& print(std::ostream& os, formalism::OpNe el)
+{
+    fmt::print(os, "!=");
     return os;
 }
 
@@ -181,40 +186,42 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::BinaryO
 template<formalism::IsOp Op, typename T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::MultiOperator<Op, T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(Op {}), to_strings(el.args));
+    fmt::print(os, "({} {})", to_string(Op {}), fmt::format("{}", fmt::join(to_strings(el.args), " ")));
     return os;
 }
 
 template<formalism::IsOp Op, typename T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::MultiOperator<Op, T>>, C>& el)
 {
-    fmt::print(os, "({} {})", to_string(Op {}), to_strings(el.get_args()));
+    fmt::print(os, "({} {})", to_string(Op {}), fmt::format("{}", fmt::join(to_strings(el.get_args()), " ")));
     return os;
 }
 
 template<typename T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::ArithmeticOperator<T>>& el)
 {
-    // fmt::print(os, "{}", to_string(el.value));
+    fmt::print(os, "{}", to_string(el.value));
     return os;
 }
 
 template<typename T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Data<formalism::ArithmeticOperator<T>>, C>& el)
 {
+    fmt::print(os, "{}", to_string(el.get()));
     return os;
 }
 
 template<typename T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::BooleanOperator<T>>& el)
 {
-    // fmt::print(os, "{}", to_string(el.value));
+    fmt::print(os, "{}", to_string(el.value));
     return os;
 }
 
 template<typename T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Data<formalism::BooleanOperator<T>>, C>& el)
 {
+    fmt::print(os, "{}", to_string(el.get()));
     return os;
 }
 
@@ -246,13 +253,14 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Object>
 
 inline std::ostream& print(std::ostream& os, const Data<formalism::Term>& el)
 {
-    // fmt::print(os, "{}", to_string(el.value));
+    fmt::print(os, "{}", to_string(el.value));
     return os;
 }
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Data<formalism::Term>, C>& el)
 {
+    fmt::print(os, "{}", to_string(el.get()));
     return os;
 }
 
@@ -273,167 +281,305 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Predica
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::Atom<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.index.group), to_strings(el.terms));
+    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::Atom<T>>, C>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.get_predicate().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_terms()), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::Literal<T>>& el)
 {
+    if (el.polarity)
+        print(os, to_string(el.atom));
+    else
+        fmt::print(os, "(not {})", to_string(el.atom));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::Literal<T>>, C>& el)
 {
+    if (el.get_polarity())
+        print(os, to_string(el.get_atom()));
+    else
+        fmt::print(os, "(not {})", to_string(el.get_atom()));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundAtom<T>>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::GroundAtom<T>>, C>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.get_predicate().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_terms()), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundLiteral<T>>& el)
 {
+    if (el.polarity)
+        print(os, to_string(el.atom));
+    else
+        fmt::print(os, "(not {})", to_string(el.atom));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::GroundLiteral<T>>, C>& el)
 {
+    if (el.get_polarity())
+        print(os, to_string(el.get_atom()));
+    else
+        fmt::print(os, "(not {})", to_string(el.get_atom()));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::Function<T>>& el)
 {
+    fmt::print(os, "{}/{}", to_string(el.name), to_string(el.arity));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::Function<T>>, C>& el)
 {
+    fmt::print(os, "{}/{}", to_string(el.get_name()), to_string(el.get_arity()));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::FunctionTerm<T>>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::FunctionTerm<T>>, C>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.get_function()), fmt::format("{}", fmt::join(to_strings(el.get_terms()), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundFunctionTerm<T>>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::GroundFunctionTerm<T>>, C>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.get_function().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_terms()), " ")));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundFunctionTermValue<T>>& el)
 {
+    fmt::print(os, "(= {} {})", to_string(el.fterm), to_string(el.value));
     return os;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::GroundFunctionTermValue<T>>, C>& el)
 {
+    fmt::print(os, "(= {} {})", to_string(el.get_fterm()), to_string(el.get_value()));
     return os;
 }
 
 inline std::ostream& print(std::ostream& os, const Data<formalism::FunctionExpression>& el)
 {
-    // fmt::print(os, "{}", to_string(el.value));
+    fmt::print(os, "{}", to_string(el.value));
     return os;
 }
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Data<formalism::FunctionExpression>, C>& el)
 {
+    fmt::print(os, "{}", to_string(el.get()));
     return os;
 }
 
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundFunctionExpression>& el)
 {
-    // fmt::print(os, "{}", to_string(el.value));
+    fmt::print(os, "{}", to_string(el.value));
     return os;
 }
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Data<formalism::GroundFunctionExpression>, C>& el)
 {
+    fmt::print(os, "{}", to_string(el.get()));
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::ConjunctiveCondition>& el) { return os; }
+inline std::ostream& print(std::ostream& os, const Data<formalism::ConjunctiveCondition>& el)
+{
+    fmt::print(os,
+               "{}{}{}",
+               (el.static_literals.empty() ? "" : fmt::format("{}", fmt::join(to_strings(el.static_literals), ", "))),
+               (el.fluent_literals.empty() ? "" : fmt::format(" {}", fmt::join(to_strings(el.fluent_literals), ", "))),
+               (el.numeric_constraints.empty() ? "" : fmt::format(" {}", fmt::join(to_strings(el.numeric_constraints), ", "))));
+    return os;
+}
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::ConjunctiveCondition>, C>& el)
 {
+    fmt::print(os,
+               "{}{}{}",
+               (el.template get_literals<formalism::StaticTag>().empty() ?
+                    "" :
+                    fmt::format("{}", fmt::join(to_strings(el.template get_literals<formalism::StaticTag>()), ", "))),
+               (el.template get_literals<formalism::FluentTag>().empty() ?
+                    "" :
+                    fmt::format(" {}", fmt::join(to_strings(el.template get_literals<formalism::FluentTag>()), ", "))),
+               (el.get_numeric_constraints().empty() ? "" : fmt::format(" {}", fmt::join(to_strings(el.get_numeric_constraints()), ", "))));
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::Rule>& el) { return os; }
+inline std::ostream& print(std::ostream& os, const Data<formalism::Rule>& el)
+{
+    fmt::print(os, "{} :- {}", to_string(el.head), to_string(el.body));
+    return os;
+}
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::Rule>, C>& el)
 {
+    fmt::print(os, "{} :- {}", to_string(el.get_head()), to_string(el.get_body()));
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::GroundConjunctiveCondition>& el) { return os; }
+inline std::ostream& print(std::ostream& os, const Data<formalism::GroundConjunctiveCondition>& el)
+{
+    fmt::print(os,
+               "{}{}{}",
+               (el.static_literals.empty() ? "" : fmt::format("{}", fmt::join(to_strings(el.static_literals), ", "))),
+               (el.fluent_literals.empty() ? "" : fmt::format(" {}", fmt::join(to_strings(el.fluent_literals), ", "))),
+               (el.numeric_constraints.empty() ? "" : fmt::format(" {}", fmt::join(to_strings(el.numeric_constraints), ", "))));
+    return os;
+}
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::GroundConjunctiveCondition>, C>& el)
 {
+    fmt::print(os,
+               "{}{}{}",
+               (el.template get_literals<formalism::StaticTag>().empty() ?
+                    "" :
+                    fmt::format("{}", fmt::join(to_strings(el.template get_literals<formalism::StaticTag>()), ", "))),
+               (el.template get_literals<formalism::FluentTag>().empty() ?
+                    "" :
+                    fmt::format(" {}", fmt::join(to_strings(el.template get_literals<formalism::FluentTag>()), ", "))),
+               (el.get_numeric_constraints().empty() ? "" : fmt::format(" {}", fmt::join(to_strings(el.get_numeric_constraints()), ", "))));
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::GroundRule>& el) { return os; }
+inline std::ostream& print(std::ostream& os, const Data<formalism::GroundRule>& el)
+{
+    fmt::print(os, "{} :- {}", to_string(el.head), to_string(el.body));
+    return os;
+}
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::GroundRule>, C>& el)
 {
+    fmt::print(os, "{} :- {}", to_string(el.get_head()), to_string(el.get_body()));
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::Program>& el) { return os; }
+inline std::ostream& print(std::ostream& os, const Data<formalism::Program>& el)
+{
+    fmt::print(os,
+               "% static predicates\n{}\n"
+               "% fluent predicates\n{}\n"
+               "% static functions\n{}\n"
+               "% fluent functions\n{}\n"
+               "% objects\n{}\n"
+               "% static atoms\n{}\n"
+               "% fluent atoms\n{}\n"
+               "% static fterms\n{}\n"
+               "% fluent fterms\n{}\n"
+               "% rules\n{}",
+               fmt::format("{}", fmt::join(to_strings(el.static_predicates), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.fluent_predicates), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.static_functions), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.fluent_functions), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.objects), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.static_atoms), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.fluent_atoms), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.static_fterm_values), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.fluent_fterm_values), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.rules), "\n")));
+    return os;
+}
 
 template<formalism::IsContext C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::Program>, C>& el)
 {
+    fmt::print(os,
+               "% static predicates\n{}\n"
+               "% fluent predicates\n{}\n"
+               "% static functions\n{}\n"
+               "% fluent functions\n{}\n"
+               "% objects\n{}\n"
+               "% static atoms\n{}\n"
+               "% fluent atoms\n{}\n"
+               "% static fterms\n{}\n"
+               "% fluent fterms\n{}\n"
+               "% rules\n{}",
+               fmt::format("{}", fmt::join(to_strings(el.template get_predicates<formalism::StaticTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_predicates<formalism::FluentTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_functions<formalism::StaticTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_functions<formalism::FluentTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.get_objects()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_atoms<formalism::StaticTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_atoms<formalism::FluentTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_fterm_values<formalism::StaticTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.template get_fterm_values<formalism::FluentTag>()), "\n")),
+               fmt::format("{}", fmt::join(to_strings(el.get_rules()), "\n")));
     return os;
 }
 
 namespace formalism
 {
 inline std::ostream& operator<<(std::ostream& os, const ParameterIndex& el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpEq el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpNe el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpLe el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpLt el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpGe el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpGt el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpAdd el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpSub el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpMul el) { return tyr::print(os, el); }
+
+inline std::ostream& operator<<(std::ostream& os, OpDiv el) { return tyr::print(os, el); }
 
 template<IsOp Op, typename T>
 inline std::ostream& operator<<(std::ostream& os, const Data<UnaryOperator<Op, T>>& el)

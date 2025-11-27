@@ -110,21 +110,21 @@ public:
         if (&m_context != &view.get_context())
             throw std::runtime_error("Incompatible contexts.");
 
-        const auto term_index = view.get_term().get_index();
+        const auto fterm_index = view.get_fterm().get_index();
 
-        if (m_unique.contains(term_index))
+        if (m_unique.contains(fterm_index))
             throw std::runtime_error("Multiple value assignments to a ground function term.");
 
         m_indices.push_back(view.get_index());
-        m_unique.insert(term_index);
-        m_vector.resize_to_fit(term_index, std::numeric_limits<float_t>::quiet_NaN());
-        m_vector[term_index] = view.get_value();
+        m_unique.insert(fterm_index);
+        m_vector.resize_to_fit(fterm_index, std::numeric_limits<float_t>::quiet_NaN());
+        m_vector[fterm_index] = view.get_value();
     }
 
     void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view)
     {
-        for (const auto function_value : view)
-            insert(function_value);
+        for (const auto fterm_value : view)
+            insert(fterm_value);
     }
 
     float_t operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept { return m_vector[index]; }
@@ -153,8 +153,8 @@ struct FactSets
 
     // Convenience constructor
     explicit FactSets(View<Index<formalism::Program>, C> program) :
-        static_sets(program.template get_atoms<formalism::StaticTag>(), program.template get_function_values<formalism::StaticTag>()),
-        fluent_sets(program.template get_atoms<formalism::FluentTag>(), program.template get_function_values<formalism::FluentTag>())
+        static_sets(program.template get_atoms<formalism::StaticTag>(), program.template get_fterm_values<formalism::StaticTag>()),
+        fluent_sets(program.template get_atoms<formalism::FluentTag>(), program.template get_fterm_values<formalism::FluentTag>())
     {
     }
 };

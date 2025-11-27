@@ -259,9 +259,9 @@ public:
     }
 
     template<formalism::IsContext C>
-    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> function_term_value)
+    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> fterm_value)
     {
-        insert(function_term_value.get_term(), function_term_value.get_value());
+        insert(fterm_value.get_fterm(), fterm_value.get_value());
     }
 
     ClosedInterval<float_t> operator[](const EmptyAssignment& assignment) const noexcept { return m_set[EmptyAssignment::rank]; }
@@ -307,10 +307,10 @@ public:
     }
 
     template<formalism::IsContext C>
-    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> function_term_values)
+    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> fterm_values)
     {
-        for (size_t i = 0; i < function_term_values.size(); ++i)
-            m_sets[function_term_values[i].get_index().get_group().get_value()].insert(function_term_values[i]);
+        for (size_t i = 0; i < fterm_values.size(); ++i)
+            m_sets[fterm_values[i].get_index().get_group().get_value()].insert(fterm_values[i]);
     }
 
     const FunctionAssignmentSet<T>& get_set(Index<formalism::Function<T>> index) const noexcept { return m_sets[index.get_value()]; }

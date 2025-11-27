@@ -32,13 +32,13 @@ struct Data<formalism::GroundFunctionTermValue<T>>
     using Tag = formalism::GroundFunctionTermValue<T>;
 
     Index<formalism::GroundFunctionTermValue<T>> index;
-    Index<formalism::GroundFunctionTerm<T>> term;
+    Index<formalism::GroundFunctionTerm<T>> fterm;
     float_t value;
 
     Data() = default;
-    Data(Index<formalism::GroundFunctionTermValue<T>> index, Index<formalism::GroundFunctionTerm<T>> term, float_t value) :
+    Data(Index<formalism::GroundFunctionTermValue<T>> index, Index<formalism::GroundFunctionTerm<T>> fterm, float_t value) :
         index(index),
-        term(term),
+        fterm(fterm),
         value(value)
     {
     }
@@ -47,8 +47,8 @@ struct Data<formalism::GroundFunctionTermValue<T>>
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    auto cista_members() const noexcept { return std::tie(index, term, value); }
-    auto identifying_members() const noexcept { return std::tie(index.group, term, value); }
+    auto cista_members() const noexcept { return std::tie(index, fterm, value); }
+    auto identifying_members() const noexcept { return std::tie(index.group, fterm, value); }
 };
 }
 

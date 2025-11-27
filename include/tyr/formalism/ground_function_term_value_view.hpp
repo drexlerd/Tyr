@@ -42,7 +42,7 @@ public:
     const auto& get_data() const noexcept { return m_data; }
 
     auto get_index() const { return m_data; }
-    auto get_term() const { return View<Index<formalism::GroundFunctionTerm<T>>, C>(get().term, *m_context); }
+    auto get_fterm() const { return View<Index<formalism::GroundFunctionTerm<T>>, C>(get().fterm, *m_context); }
     auto get_value() const { return get().value; }
 };
 }

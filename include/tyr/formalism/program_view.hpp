@@ -64,9 +64,9 @@ public:
         return View<IndexList<formalism::GroundAtom<T>>, C>(get().template get_atoms<T>(), *m_context);
     }
     template<formalism::IsStaticOrFluentTag T>
-    auto get_function_values() const
+    auto get_fterm_values() const
     {
-        return View<IndexList<formalism::GroundFunctionTermValue<T>>, C>(get().template get_function_values<T>(), *m_context);
+        return View<IndexList<formalism::GroundFunctionTermValue<T>>, C>(get().template get_fterm_values<T>(), *m_context);
     }
     auto get_rules() const { return View<IndexList<formalism::Rule>, C>(get().rules, *m_context); }
 };

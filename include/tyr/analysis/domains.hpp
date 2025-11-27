@@ -92,12 +92,12 @@ inline DomainSetListList initialize_function_domain_sets(View<Index<formalism::P
     for (const auto function : program.get_functions<T>())
         function_domain_sets[function.get_index().value].resize(function.get_arity());
 
-    for (const auto term_value : program.get_function_values<T>())
+    for (const auto term_value : program.get_fterm_values<T>())
     {
-        const auto term = term_value.get_term();
-        const auto function = term.get_function();
+        const auto fterm = term_value.get_fterm();
+        const auto function = fterm.get_function();
         auto pos = size_t { 0 };
-        for (const auto object : term.get_terms())
+        for (const auto object : fterm.get_terms())
             function_domain_sets[function.get_index().value][pos++].insert(object.get_index());
     }
 

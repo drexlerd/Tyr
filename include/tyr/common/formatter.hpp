@@ -68,17 +68,16 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_set<Key, Hash, K
 template<typename T, typename Allocator>
 std::ostream& operator<<(std::ostream& os, const std::vector<T, Allocator>& vec);
 
-template<typename T1>
-std::ostream& operator<<(std::ostream& os, const std::variant<T1>& variant);
-
-template<typename T1, typename T2>
-std::ostream& operator<<(std::ostream& os, const std::variant<T1, T2>& variant);
-
-template<typename T1, typename T2, typename T3>
-std::ostream& operator<<(std::ostream& os, const std::variant<T1, T2, T3>& variant);
+template<typename... Ts>
+    requires(sizeof...(Ts) > 0)
+std::ostream& operator<<(std::ostream& os, const std::variant<Ts...>& variant);
 
 template<IsHanaMap Map>
 std::ostream& operator<<(std::ostream& os, const Map& map);
+
+template<typename C, typename... Ts>
+    requires(sizeof...(Ts) > 0)
+inline std::ostream& operator<<(std::ostream& os, const View<::cista::offset::variant<Ts...>, C>& el);
 
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FlatIndexMixin<Derived>& mixin);
@@ -91,6 +90,10 @@ std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& mixin)
 
 template<typename T, template<typename> typename Ptr, bool IndexPointers, typename TemplateSizeType, class Allocator>
 std::ostream& print(std::ostream& os, const ::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>& vec);
+
+template<typename... Ts>
+    requires(sizeof...(Ts) > 0)
+std::ostream& print(std::ostream& os, const ::cista::offset::variant<Ts...>& variant);
 
 /**
  * ADL-enabled stream helper: finds operator<< in the type's namespace
@@ -203,22 +206,9 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T, Allocator>& vec)
     return os;
 }
 
-template<typename T1>
-std::ostream& operator<<(std::ostream& os, const std::variant<T1>& variant)
-{
-    std::visit([&](auto&& arg) { os << to_string(arg); }, variant);
-    return os;
-}
-
-template<typename T1, typename T2>
-std::ostream& operator<<(std::ostream& os, const std::variant<T1, T2>& variant)
-{
-    std::visit([&](auto&& arg) { os << to_string(arg); }, variant);
-    return os;
-}
-
-template<typename T1, typename T2, typename T3>
-std::ostream& operator<<(std::ostream& os, const std::variant<T1, T2, T3>& variant)
+template<typename... Ts>
+    requires(sizeof...(Ts) > 0)
+std::ostream& operator<<(std::ostream& os, const std::variant<Ts...>& variant)
 {
     std::visit([&](auto&& arg) { os << to_string(arg); }, variant);
     return os;
@@ -267,6 +257,22 @@ template<typename T, template<typename> typename Ptr, bool IndexPointers, typena
 std::ostream& print(std::ostream& os, const ::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>& vec)
 {
     fmt::print(os, "[{}]", fmt::join(to_strings(vec), ", "));
+    return os;
+}
+
+template<typename C, typename... Ts>
+    requires(sizeof...(Ts) > 0)
+inline std::ostream& operator<<(std::ostream& os, const View<::cista::offset::variant<Ts...>, C>& el)
+{
+    visit([&os](auto&& arg) { os << to_string(arg); }, el);
+    return os;
+}
+
+template<typename... Ts>
+    requires(sizeof...(Ts) > 0)
+std::ostream& print(std::ostream& os, const ::cista::offset::variant<Ts...>& variant)
+{
+    std::visit([&](auto&& arg) { os << to_string(arg); }, variant);
     return os;
 }
 

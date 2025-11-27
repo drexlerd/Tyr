@@ -32,6 +32,8 @@ TEST(TyrTests, TyrGrounderGenerator)
     auto [program_index, repository] = create_example_problem();
     auto program = View<Index<Program>, Repository>(program_index, repository);
 
+    std::cout << program << std::endl;
+
     // Once: Analyze variable domains to compress assignment sets
     auto domains = analysis::compute_variable_domains(program);
 
@@ -100,7 +102,7 @@ TEST(TyrTests, TyrGrounderGenerator)
     // TODO: we can use onetbb parallel for here later.
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
-        std::cout << "r: " << i << std::endl;
+        std::cout << "r: " << program.get_rules()[i] << std::endl;
 
         // Combine all the data dependencies into workspaces.
         auto immutable_workspace = grounder::ImmutableRuleWorkspace<Repository> { fact_sets, assignment_sets, program.get_rules()[i], consistency_graphs[i] };

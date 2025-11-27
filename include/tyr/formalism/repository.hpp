@@ -263,8 +263,6 @@ public:
 /// @return
 inline const Repository& get_repository(const Repository& context) noexcept { return context; }
 
-static_assert(IsFlatType<Variable>);
-
 static_assert(IsRepository<Repository>);
 
 static_assert(IsContext<Repository>);

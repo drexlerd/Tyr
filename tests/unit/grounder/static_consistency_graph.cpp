@@ -47,8 +47,8 @@ TEST(TyrTests, TyrGrounderStaticConsistencyGraph)
     // Insert for a given set of facts
     assignment_sets.static_sets.predicate.insert(program.get_atoms<formalism::StaticTag>());
     assignment_sets.fluent_sets.predicate.insert(program.get_atoms<formalism::FluentTag>());
-    assignment_sets.static_sets.function.insert(program.get_function_values<formalism::StaticTag>());
-    assignment_sets.fluent_sets.function.insert(program.get_function_values<formalism::FluentTag>());
+    assignment_sets.static_sets.function.insert(program.get_fterm_values<formalism::StaticTag>());
+    assignment_sets.fluent_sets.function.insert(program.get_fterm_values<formalism::FluentTag>());
 
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {

@@ -42,8 +42,8 @@ struct Data<formalism::Program>
     IndexList<formalism::Object> objects;
     IndexList<formalism::GroundAtom<formalism::StaticTag>> static_atoms;
     IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms;
-    IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>> static_function_values;
-    IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>> fluent_function_values;
+    IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values;
+    IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values;
     IndexList<formalism::Rule> rules;
 
     Data() = default;
@@ -55,8 +55,8 @@ struct Data<formalism::Program>
          IndexList<formalism::Object> objects,
          IndexList<formalism::GroundAtom<formalism::StaticTag>> static_atoms,
          IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms,
-         IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>> static_function_values,
-         IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>> fluent_function_values,
+         IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values,
+         IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values,
          IndexList<formalism::Rule> rules) :
         index(index),
         static_predicates(std::move(static_predicates)),
@@ -66,8 +66,8 @@ struct Data<formalism::Program>
         objects(std::move(objects)),
         static_atoms(std::move(static_atoms)),
         fluent_atoms(std::move(fluent_atoms)),
-        static_function_values(std::move(static_function_values)),
-        fluent_function_values(std::move(fluent_function_values)),
+        static_fterm_values(std::move(static_fterm_values)),
+        fluent_fterm_values(std::move(fluent_fterm_values)),
         rules(std::move(rules))
     {
     }
@@ -116,15 +116,15 @@ struct Data<formalism::Program>
     }
 
     template<formalism::IsStaticOrFluentTag T>
-    const auto& get_function_values() const
+    const auto& get_fterm_values() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)
         {
-            return static_function_values;
+            return static_fterm_values;
         }
         else if constexpr (std::same_as<T, formalism::FluentTag>)
         {
-            return fluent_function_values;
+            return fluent_fterm_values;
         }
     }
 
@@ -138,8 +138,8 @@ struct Data<formalism::Program>
                         objects,
                         static_atoms,
                         fluent_atoms,
-                        static_function_values,
-                        fluent_function_values,
+                        static_fterm_values,
+                        fluent_fterm_values,
                         rules);
     }
     auto identifying_members() const noexcept
@@ -151,8 +151,8 @@ struct Data<formalism::Program>
                         objects,
                         static_atoms,
                         fluent_atoms,
-                        static_function_values,
-                        fluent_function_values,
+                        static_fterm_values,
+                        fluent_fterm_values,
                         rules);
     }
 };
