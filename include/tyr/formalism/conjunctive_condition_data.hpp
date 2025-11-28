@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_CONJUNCTIVE_CONDITION_DATA_HPP_
 #define TYR_FORMALISM_CONJUNCTIVE_CONDITION_DATA_HPP_
 
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/boolean_operator_data.hpp"
 #include "tyr/formalism/conjunctive_condition_index.hpp"
 #include "tyr/formalism/declarations.hpp"

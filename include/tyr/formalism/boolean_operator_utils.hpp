@@ -20,6 +20,7 @@
 
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism

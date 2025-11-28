@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_PLANNING_AXIOM_INDEX_HPP_
-#define TYR_FORMALISM_PLANNING_AXIOM_INDEX_HPP_
+#ifndef TYR_FORMALISM_PLANNING_TASK_INDEX_HPP_
+#define TYR_FORMALISM_PLANNING_TASK_INDEX_HPP_
 
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
@@ -25,12 +25,12 @@
 namespace tyr
 {
 template<>
-struct Index<formalism::planning::Axiom> : IndexMixin<Index<formalism::planning::Axiom>>
+struct Index<formalism::planning::Task> : IndexMixin<Index<formalism::planning::Task>>
 {
-    using Tag = formalism::planning::Axiom;
+    using Tag = formalism::planning::Task;
 
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::planning::Axiom>>;
+    using Base = IndexMixin<Index<formalism::planning::Task>>;
     using Base::Base;
 };
 

@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_RULE_DATA_HPP_
 #define TYR_FORMALISM_RULE_DATA_HPP_
 
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/atom_index.hpp"
 #include "tyr/formalism/conjunctive_condition_index.hpp"
 #include "tyr/formalism/declarations.hpp"

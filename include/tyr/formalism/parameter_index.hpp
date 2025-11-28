@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_PARAMETER_INDEX_HPP_
 #define TYR_FORMALISM_PARAMETER_INDEX_HPP_
 
+#include "tyr/common/types.hpp"
 #include "tyr/common/uint_mixins.hpp"
 #include "tyr/formalism/declarations.hpp"
 

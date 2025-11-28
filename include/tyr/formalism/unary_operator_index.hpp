@@ -18,7 +18,6 @@
 #ifndef TYR_FORMALISM_UNARY_OPERATOR_INDEX_HPP_
 #define TYR_FORMALISM_UNARY_OPERATOR_INDEX_HPP_
 
-#include "tyr/common/equal_to.hpp"
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"

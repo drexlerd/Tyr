@@ -18,10 +18,9 @@
 #ifndef TYR_FORMALISM_GROUND_LITERAL_INDEX_HPP_
 #define TYR_FORMALISM_GROUND_LITERAL_INDEX_HPP_
 
-#include "tyr/common/equal_to.hpp"
 #include "tyr/common/index_mixins.hpp"
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/predicate_index.hpp"
 
 namespace tyr
 {

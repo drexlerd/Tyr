@@ -202,9 +202,31 @@ struct Program
 
 namespace planning
 {
+struct OpAssign
+{
+};
+struct OpIncrease
+{
+};
+struct OpDecrease
+{
+};
+struct OpScaleUp
+{
+};
+struct OpScaleDown
+{
+};
+
+template<typename T>
+concept IsNumericEffectOp =
+    std::same_as<T, OpAssign> || std::same_as<T, OpIncrease> || std::same_as<T, OpDecrease> || std::same_as<T, OpScaleUp> || std::same_as<T, OpScaleDown>;
+
+template<IsFactTag T>
 struct NumericEffect
 {
 };
+template<IsFactTag T>
 struct GroundNumericEffect
 {
 };

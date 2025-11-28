@@ -75,6 +75,7 @@
 #include "tyr/formalism/object_data.hpp"
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/object_view.hpp"
+#include "tyr/formalism/planning/planning.hpp"
 #include "tyr/formalism/predicate_data.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/predicate_view.hpp"

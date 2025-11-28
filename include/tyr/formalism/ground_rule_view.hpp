@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_GROUND_RULE_VIEW_HPP_
 #define TYR_FORMALISM_GROUND_RULE_VIEW_HPP_
 
+#include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_view.hpp"

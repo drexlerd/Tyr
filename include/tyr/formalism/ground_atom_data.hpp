@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_GROUND_ATOM_DATA_HPP_
 #define TYR_FORMALISM_GROUND_ATOM_DATA_HPP_
 
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
 #include "tyr/formalism/object_index.hpp"

@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_FUNCTION_DATA_HPP_
 #define TYR_FORMALISM_FUNCTION_DATA_HPP_
 
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_index.hpp"
 
