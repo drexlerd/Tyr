@@ -101,7 +101,7 @@ TEST(TyrTests, TyrGrounderGenerator)
     auto ground_rules = std::vector<IndexList<formalism::GroundRule>>(program.get_rules().size());
 
     // Per fact set: Create workspaces that wrap all the data for grounding, then call ground
-    // TODO: we can use onetbb parallel for here later.
+    // TODO: Use onetbb parallel for loop.
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
         std::cout << "r: " << program.get_rules()[i] << std::endl;
@@ -120,6 +120,7 @@ TEST(TyrTests, TyrGrounderGenerator)
     }
 
     // Merge the ScopeRepositories into the global one
+    // TODO: Use ontbb parallel for loop and merge in log_2(num rules) depth.
     auto buffer = buffer::Buffer {};
     auto merge_cache = formalism::MergeCache<formalism::ScopedRepository<Repository>, Repository> {};
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
