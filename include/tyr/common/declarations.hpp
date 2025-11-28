@@ -26,6 +26,7 @@
 #include <cista/containers/vector.h>
 #include <concepts>
 #include <functional>
+#include <gtl/phmap.hpp>
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
@@ -72,10 +73,10 @@ template<typename T>
 class ObserverPtr;
 
 template<typename T>
-using UnorderedSet = std::unordered_set<T, Hash<T>, EqualTo<T>>;
+using UnorderedSet = gtl::flat_hash_set<T, Hash<T>, EqualTo<T>>;
 
 template<typename T, typename V>
-using UnorderedMap = std::unordered_map<T, V, Hash<T>, EqualTo<T>>;
+using UnorderedMap = gtl::flat_hash_map<T, V, Hash<T>, EqualTo<T>>;
 }
 
 #endif

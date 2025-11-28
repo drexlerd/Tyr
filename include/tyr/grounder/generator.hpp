@@ -315,7 +315,11 @@ void ground_nullary_case(const ImmutableRuleWorkspace<C>& immutable_workspace, M
     auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
 
     if (is_applicable(ground_rule, immutable_workspace.fact_sets))
+    {
         std::cout << ground_rule << std::endl;
+
+        mutable_workspace.ground_rules.push_back(ground_rule.get_index());
+    }
 }
 
 template<formalism::IsContext C>
@@ -331,7 +335,11 @@ void ground_unary_case(const ImmutableRuleWorkspace<C>& immutable_workspace, Mut
         auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
 
         if (is_applicable(ground_rule, immutable_workspace.fact_sets))
+        {
             std::cout << ground_rule << std::endl;
+
+            mutable_workspace.ground_rules.push_back(ground_rule.get_index());
+        }
     }
 }
 
@@ -353,7 +361,11 @@ void ground_general_case(const ImmutableRuleWorkspace<C>& immutable_workspace, M
                                 auto ground_rule = ground(immutable_workspace.rule, mutable_workspace);
 
                                 if (is_applicable(ground_rule, immutable_workspace.fact_sets))
+                                {
                                     std::cout << ground_rule << std::endl;
+
+                                    mutable_workspace.ground_rules.push_back(ground_rule.get_index());
+                                }
                             });
 }
 
@@ -367,6 +379,8 @@ void ground(const ImmutableRuleWorkspace<C>& immutable_workspace, MutableRuleWor
         return;
 
     const auto arity = rule.get_body().get_arity();
+
+    mutable_workspace.ground_rules.clear();
 
     if (arity == 0)
         ground_nullary_case(immutable_workspace, mutable_workspace);

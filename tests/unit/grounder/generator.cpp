@@ -118,5 +118,7 @@ TEST(TyrTests, TyrGrounderGenerator)
 
         grounder::ground(immutable_workspace, mutable_workspace);
     }
+
+    // TODO: merge the ScopeRepositories into the global one
 }
 }

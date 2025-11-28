@@ -257,6 +257,16 @@ public:
 
         return repository.size();
     }
+
+    //    void clear() noexcept
+    //    {
+    //        boost::hana::for_each(m_repository,
+    //                              [](auto&& pair)
+    //                              {
+    //                                  auto& map = boost::hana::second(pair);
+    //                                  map.clear();
+    //                              });
+    //    }
 };
 
 /// @brief Make Repository a trivial context.

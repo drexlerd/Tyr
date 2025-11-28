@@ -24,8 +24,8 @@
 
 namespace tyr
 {
-template<typename T, typename H, typename E>
-void intersect_inplace(std::unordered_set<T, H, E>& target, const std::unordered_set<T, H, E>& other)
+template<typename T>
+void intersect_inplace(UnorderedSet<T>& target, const UnorderedSet<T>& other)
 {
     for (auto it = target.begin(); it != target.end();)
     {
@@ -36,8 +36,8 @@ void intersect_inplace(std::unordered_set<T, H, E>& target, const std::unordered
     }
 }
 
-template<typename T, typename H, typename E>
-void union_inplace(std::unordered_set<T, H, E>& target, const std::unordered_set<T, H, E>& other)
+template<typename T>
+void union_inplace(UnorderedSet<T>& target, const UnorderedSet<T>& other)
 {
     target.insert(other.begin(), other.end());
 }

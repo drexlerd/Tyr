@@ -62,8 +62,14 @@ std::ostream& operator<<(std::ostream& os, const std::tuple<Ts...>& tuple);
 template<typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
 std::ostream& operator<<(std::ostream& os, const std::unordered_map<Key, T, Hash, KeyEqual, Allocator>& map);
 
+template<typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
+std::ostream& operator<<(std::ostream& os, const gtl::flat_hash_map<Key, T, Hash, KeyEqual, Allocator>& map);
+
 template<typename Key, typename Hash, typename KeyEqual, typename Allocator>
 std::ostream& operator<<(std::ostream& os, const std::unordered_set<Key, Hash, KeyEqual, Allocator>& set);
+
+template<typename Key, typename Hash, typename KeyEqual, typename Allocator>
+std::ostream& operator<<(std::ostream& os, const gtl::flat_hash_set<Key, Hash, KeyEqual, Allocator>& set);
 
 template<typename T, typename Allocator>
 std::ostream& operator<<(std::ostream& os, const std::vector<T, Allocator>& vec);
@@ -192,8 +198,22 @@ std::ostream& operator<<(std::ostream& os, const std::unordered_map<Key, T, Hash
     return os;
 }
 
+template<typename Key, typename T, typename Hash, typename KeyEqual, typename Allocator>
+std::ostream& operator<<(std::ostream& os, const gtl::flat_hash_map<Key, T, Hash, KeyEqual, Allocator>& map)
+{
+    fmt::print(os, "{{{}}}", fmt::join(to_strings(map), ", "));
+    return os;
+}
+
 template<typename Key, typename Hash, typename KeyEqual, typename Allocator>
 std::ostream& operator<<(std::ostream& os, const std::unordered_set<Key, Hash, KeyEqual, Allocator>& set)
+{
+    fmt::print(os, "{{{}}}", fmt::join(to_strings(set), ", "));
+    return os;
+}
+
+template<typename Key, typename Hash, typename KeyEqual, typename Allocator>
+std::ostream& operator<<(std::ostream& os, const gtl::flat_hash_set<Key, Hash, KeyEqual, Allocator>& set)
 {
     fmt::print(os, "{{{}}}", fmt::join(to_strings(set), ", "));
     return os;

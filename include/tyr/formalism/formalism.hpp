@@ -68,6 +68,7 @@
 #include "tyr/formalism/literal_data.hpp"
 #include "tyr/formalism/literal_index.hpp"
 #include "tyr/formalism/literal_view.hpp"
+#include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/multi_operator_data.hpp"
 #include "tyr/formalism/multi_operator_index.hpp"
 #include "tyr/formalism/multi_operator_view.hpp"
