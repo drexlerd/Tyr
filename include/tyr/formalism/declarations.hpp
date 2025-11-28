@@ -261,19 +261,25 @@ concept IsRepository =
     && HasRepositoryAccessFor<T, FunctionTerm<StaticTag>> && HasRepositoryAccessFor<T, FunctionTerm<FluentTag>>
     && HasRepositoryAccessFor<T, GroundFunctionTerm<StaticTag>> && HasRepositoryAccessFor<T, GroundFunctionTerm<FluentTag>>
     && HasRepositoryAccessFor<T, GroundFunctionTermValue<StaticTag>> && HasRepositoryAccessFor<T, GroundFunctionTermValue<FluentTag>>
-    && HasRepositoryAccessFor<T, UnaryOperator<OpSub, FunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpAdd, FunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpSub, FunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpMul, FunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpDiv, FunctionExpression>> && HasRepositoryAccessFor<T, MultiOperator<OpAdd, FunctionExpression>>
-    && HasRepositoryAccessFor<T, MultiOperator<OpMul, FunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpEq, FunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpLe, FunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpLt, FunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpGe, FunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpGt, FunctionExpression>>
-    && HasRepositoryAccessFor<T, UnaryOperator<OpSub, GroundFunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpAdd, GroundFunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpSub, GroundFunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpMul, GroundFunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpDiv, GroundFunctionExpression>> && HasRepositoryAccessFor<T, MultiOperator<OpAdd, GroundFunctionExpression>>
-    && HasRepositoryAccessFor<T, MultiOperator<OpMul, GroundFunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpEq, GroundFunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpLe, GroundFunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpLt, GroundFunctionExpression>>
-    && HasRepositoryAccessFor<T, BinaryOperator<OpGe, GroundFunctionExpression>> && HasRepositoryAccessFor<T, BinaryOperator<OpGt, GroundFunctionExpression>>
-    && HasRepositoryAccessFor<T, Rule> && HasRepositoryAccessFor<T, GroundRule> && HasRepositoryAccessFor<T, Program>;
+    && HasRepositoryAccessFor<T, UnaryOperator<OpSub, Data<FunctionExpression>>> && HasRepositoryAccessFor<T, BinaryOperator<OpAdd, Data<FunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpSub, Data<FunctionExpression>>> && HasRepositoryAccessFor<T, BinaryOperator<OpMul, Data<FunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpDiv, Data<FunctionExpression>>> && HasRepositoryAccessFor<T, MultiOperator<OpAdd, Data<FunctionExpression>>>
+    && HasRepositoryAccessFor<T, MultiOperator<OpMul, Data<FunctionExpression>>> && HasRepositoryAccessFor<T, BinaryOperator<OpEq, Data<FunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpLe, Data<FunctionExpression>>> && HasRepositoryAccessFor<T, BinaryOperator<OpLt, Data<FunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpGe, Data<FunctionExpression>>> && HasRepositoryAccessFor<T, BinaryOperator<OpGt, Data<FunctionExpression>>>
+    && HasRepositoryAccessFor<T, UnaryOperator<OpSub, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpSub, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpMul, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, MultiOperator<OpAdd, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, MultiOperator<OpMul, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpEq, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpLe, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpLt, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpGe, Data<GroundFunctionExpression>>>
+    && HasRepositoryAccessFor<T, BinaryOperator<OpGt, Data<GroundFunctionExpression>>> && HasRepositoryAccessFor<T, Rule>
+    && HasRepositoryAccessFor<T, GroundRule> && HasRepositoryAccessFor<T, Program>;
 
 template<typename T>
 concept IsContext = requires(const T& a) {

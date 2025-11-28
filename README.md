@@ -1,6 +1,6 @@
 # Tyr
 
-Tyr aims to become a weighted, annotated, and parallelizable datalog solver based on k-clique enumeration in k-partite graphs (KPKC) with a focus on AI planning. It is currently unknown whether KPKC can efficiently support object creation, and hence, Tyr does not support arithmetic expressions in rule heads. However, it supports simple arithmetic expressions in rule bodies, which are sufficient for deciding whether a ground action in numeric planning is applicable.
+Tyr aims to become a weighted, annotated, and parallelizable datalog solver based on k-clique enumeration in k-partite graphs (KPKC) with a focus on AI planning. It is currently unknown whether KPKC can efficiently support object creation, and hence, Tyr does not support arithmetic expressions in rule heads. However, it supports simple arithmetic expressions in rule bodies, which are sufficient for deciding whether a ground action in numeric planning is applicable. Tyr also provides a PDDL interface, which allows the grounding of an *overapproximation* of the applicable ground actions and axioms in a task, or, in a state, *precisely* the ones applicable in that state.
 
 # Key Features
 
