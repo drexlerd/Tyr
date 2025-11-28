@@ -6,7 +6,7 @@ Tyr aims to become a weighted, annotated, and parallelizable datalog solver with
 
 - **Datalog Language Support**: relations over symbols, stratifiable programs
 - **Language Extensions**: weighted rule expansion, rule annotation, early termination 
-- **Parallelized Architecture**: rule parallelization, zero-copy serialization
+- **Parallelized Architecture**: lock-free rule parallelization, zero-copy data serialization
 - **Program Analysis**: variable domain analysis, stratification, listeners
 - **Grounder Technology**: k-clique enumeration in k-partite graph (KPKC)
 
