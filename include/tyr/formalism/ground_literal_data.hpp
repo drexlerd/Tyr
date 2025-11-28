@@ -42,7 +42,7 @@ struct Data<formalism::GroundLiteral<T>>
     Data& operator=(Data&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, atom, polarity); }
-    auto identifying_members() const noexcept { return std::tie(index.group, atom, polarity); }
+    auto identifying_members() const noexcept { return std::tie(atom, polarity); }
 };
 }
 

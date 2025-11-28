@@ -44,7 +44,7 @@ public:
     const auto& get_data() const noexcept { return m_data; }
 
     auto get_index() const { return m_data; }
-    auto get_function() const { return View<Index<formalism::Function<T>>, C>(m_data.group, *m_context); }
+    auto get_function() const { return View<Index<formalism::Function<T>>, C>(get().function, *m_context); }
     auto get_objects() const { return View<IndexList<formalism::Object>, C>(get().objects, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_data); }

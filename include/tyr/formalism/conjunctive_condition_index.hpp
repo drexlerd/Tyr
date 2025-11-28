@@ -25,12 +25,12 @@
 namespace tyr
 {
 template<>
-struct Index<formalism::ConjunctiveCondition> : FlatIndexMixin<Index<formalism::ConjunctiveCondition>>
+struct Index<formalism::ConjunctiveCondition> : IndexMixin<Index<formalism::ConjunctiveCondition>>
 {
     using Tag = formalism::ConjunctiveCondition;
 
     // Inherit constructors
-    using Base = FlatIndexMixin<Index<formalism::ConjunctiveCondition>>;
+    using Base = IndexMixin<Index<formalism::ConjunctiveCondition>>;
     using Base::Base;
 };
 

@@ -21,6 +21,7 @@
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/atom_index.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/term_data.hpp"
 
 namespace tyr
@@ -31,17 +32,23 @@ struct Data<formalism::Atom<T>>
     using Tag = formalism::Atom<T>;
 
     Index<formalism::Atom<T>> index;
+    Index<formalism::Predicate<T>> predicate;
     DataList<formalism::Term> terms;
 
     Data() = default;
-    Data(Index<formalism::Atom<T>> index, DataList<formalism::Term> terms) : index(index), terms(std::move(terms)) {}
+    Data(Index<formalism::Predicate<T>> predicate, Index<formalism::Atom<T>> index, DataList<formalism::Term> terms) :
+        index(index),
+        predicate(predicate),
+        terms(std::move(terms))
+    {
+    }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    auto cista_members() const noexcept { return std::tie(index, terms); }
-    auto identifying_members() const noexcept { return std::tie(index.group, terms); }
+    auto cista_members() const noexcept { return std::tie(index, predicate, terms); }
+    auto identifying_members() const noexcept { return std::tie(predicate, terms); }
 };
 }
 

@@ -261,7 +261,8 @@ inline IndexList<formalism::GroundAtom<formalism::StaticTag>> add_static_ground_
              { GripperStaticPredicate::Gripper, { { GripperObject::Left }, { GripperObject::Right } } },
              { GripperStaticPredicate::Ball, { { GripperObject::Ball1 }, { GripperObject::Ball2 } } } })
     {
-        ground_atom_builder.index.group = convert(predicate);
+        ground_atom_builder.predicate = convert(predicate);
+
         for (const auto& atom : atoms)
         {
             ground_atom_builder.objects.clear();
@@ -296,7 +297,7 @@ inline IndexList<formalism::GroundAtom<formalism::FluentTag>> add_fluent_ground_
              { GripperFluentPredicate::At, { { GripperObject::Ball1, GripperObject::RoomA }, { GripperObject::Ball2, GripperObject::RoomA } } },
              { GripperFluentPredicate::AtRobby, { { GripperObject::RoomA } } } })
     {
-        ground_atom_builder.index.group = convert(predicate);
+        ground_atom_builder.predicate = convert(predicate);
         for (const auto& atom : atoms)
         {
             ground_atom_builder.objects.clear();
@@ -345,8 +346,7 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
              { GripperStaticPredicate::Object, { { true, { 0 } }, { true, { 1 } } } },
              { GripperStaticPredicate::Room, { { true, { 0 } }, { true, { 1 } } } } })
     {
-        static_atom_builder.index.group = convert(predicate);
-        static_literal_builder.index.group = convert(predicate);
+        static_atom_builder.predicate = convert(predicate);
 
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
@@ -369,8 +369,7 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
          std::vector<std::pair<GripperFluentPredicate, std::vector<std::pair<bool, std::vector<size_t>>>>> {
              { GripperFluentPredicate::AtRobby, { { true, { 0 } } } } })
     {
-        fluent_atom_builder.index.group = convert(predicate);
-        fluent_literal_builder.index.group = convert(predicate);
+        fluent_atom_builder.predicate = convert(predicate);
 
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
@@ -393,7 +392,7 @@ inline Index<formalism::Rule> add_rule_move(formalism::Repository& repository)
     const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
     rule_builder.body = conjunctive_condition.get_index();
 
-    fluent_atom_builder.index.group = convert(GripperFluentPredicate::Move);
+    fluent_atom_builder.predicate = convert(GripperFluentPredicate::Move);
     fluent_atom_builder.terms.clear();
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
@@ -442,8 +441,7 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
              { GripperStaticPredicate::Room, { { true, { 1 } } } },
              { GripperStaticPredicate::Gripper, { { true, { 2 } } } } })
     {
-        static_atom_builder.index.group = convert(predicate);
-        static_literal_builder.index.group = convert(predicate);
+        static_atom_builder.predicate = convert(predicate);
 
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
@@ -468,8 +466,7 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
              { GripperFluentPredicate::AtRobby, { { true, { 1 } } } },
              { GripperFluentPredicate::Free, { { true, { 2 } } } } })
     {
-        fluent_atom_builder.index.group = convert(predicate);
-        fluent_literal_builder.index.group = convert(predicate);
+        fluent_atom_builder.predicate = convert(predicate);
 
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
@@ -492,7 +489,7 @@ inline Index<formalism::Rule> add_rule_pick(formalism::Repository& repository)
     const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
     rule_builder.body = conjunctive_condition.get_index();
 
-    fluent_atom_builder.index.group = convert(GripperFluentPredicate::Pick);
+    fluent_atom_builder.predicate = convert(GripperFluentPredicate::Pick);
     fluent_atom_builder.terms.clear();
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
@@ -542,8 +539,7 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
              { GripperStaticPredicate::Room, { { true, { 1 } } } },
              { GripperStaticPredicate::Gripper, { { true, { 2 } } } } })
     {
-        static_atom_builder.index.group = convert(predicate);
-        static_literal_builder.index.group = convert(predicate);
+        static_atom_builder.predicate = convert(predicate);
 
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
@@ -567,8 +563,7 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
              { GripperFluentPredicate::AtRobby, { { true, { 1 } } } },
              { GripperFluentPredicate::Carry, { { true, { 0, 2 } } } } })
     {
-        fluent_atom_builder.index.group = convert(predicate);
-        fluent_literal_builder.index.group = convert(predicate);
+        fluent_atom_builder.predicate = convert(predicate);
 
         for (const auto& [polarity, params] : polarity_and_params_per_atoms)
         {
@@ -591,7 +586,7 @@ inline Index<formalism::Rule> add_rule_drop(formalism::Repository& repository)
     const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
     rule_builder.body = conjunctive_condition.get_index();
 
-    fluent_atom_builder.index.group = convert(GripperFluentPredicate::Drop);
+    fluent_atom_builder.predicate = convert(GripperFluentPredicate::Drop);
     fluent_atom_builder.terms.clear();
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));

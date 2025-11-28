@@ -119,7 +119,6 @@ auto merge(View<Index<Object>, C_SRC> element, Builder& builder, C_DST& destinat
 
     auto& object = builder.get_object();
 
-    object.index = element.get_index();
     object.name = element.get_name();
 
     canonicalize(object);
@@ -150,7 +149,6 @@ auto merge(View<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, C_SRC> 
 
     auto& unary = builder.template get_ground_unary<O>();
 
-    unary.index = element.get_index();
     unary.arg = merge(element.get_arg(), builder, destination, buffer, cache).get_data();
 
     canonicalize(unary);
@@ -175,7 +173,6 @@ auto merge(View<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, C_SRC>
 
     auto& binary = builder.template get_ground_binary<O>();
 
-    binary.index = element.get_index();
     binary.lhs = merge(element.get_lhs(), builder, destination, buffer, cache).get_data();
     binary.rhs = merge(element.get_rhs(), builder, destination, buffer, cache).get_data();
 
@@ -201,7 +198,6 @@ auto merge(View<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, C_SRC> 
 
     auto& multi = builder.template get_ground_multi<O>();
 
-    multi.index = element.get_index();
     multi.args.clear();
     for (const auto arg : element.get_args())
         multi.args.push_back(merge(arg, builder, destination, buffer, cache).get_data());
@@ -224,7 +220,6 @@ auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& de
 
     auto& predicate = builder.template get_predicate<T>();
 
-    predicate.index = element.get_index();
     predicate.name = element.get_name();
 
     canonicalize(predicate);
@@ -245,7 +240,7 @@ auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& d
 
     auto& atom = builder.template get_ground_atom<T>();
 
-    atom.index = element.get_index();
+    atom.predicate = merge(element.get_predicate(), builder, destination, buffer, cache).get_data();
     atom.objects.clear();
     for (const auto object : element.get_objects())
         atom.objects.push_back(merge(object, builder, destination, buffer, cache).get_data());
@@ -268,12 +263,31 @@ auto merge(View<Index<GroundLiteral<T>>, C_SRC> element, Builder& builder, C_DST
 
     auto& literal = builder.template get_ground_literal<T>();
 
-    literal.index = element.get_index();
     literal.polarity = element.get_polarity();
     literal.atom = merge(element.get_atom(), builder, destination, buffer, cache).get_data();
 
     canonicalize(literal);
     auto result = destination.get_or_create(literal, buffer).first;
+
+    t_cache.emplace(element, result);
+
+    return result;
+}
+
+template<IsStaticOrFluentTag T, IsContext C_SRC, IsContext C_DST>
+auto merge(View<Index<Function<T>>, C_SRC> element, Builder& builder, C_DST& destination, buffer::Buffer& buffer, MergeCache<C_SRC, C_DST>& cache)
+{
+    auto& t_cache = cache.template get<Function<T>>();
+
+    if (auto it = t_cache.find(element); it != t_cache.end())
+        return it->second;
+
+    auto& function = builder.template get_function<T>();
+
+    function.name = element.get_name();
+
+    canonicalize(function);
+    auto result = destination.get_or_create(function, buffer).first;
 
     t_cache.emplace(element, result);
 
@@ -290,7 +304,7 @@ auto merge(View<Index<GroundFunctionTerm<T>>, C_SRC> element, Builder& builder, 
 
     auto& fterm = builder.template get_ground_fterm<T>();
 
-    fterm.index = element.get_index();
+    fterm.function = merge(element.get_function(), builder, destination, buffer, cache).get_data();
     fterm.objects.clear();
     for (const auto object : element.get_objects())
         fterm.objects.push_back(merge(object, builder, destination, buffer, cache).get_data());
@@ -378,7 +392,6 @@ auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element,
     conj_cond.fluent_literals.clear();
     conj_cond.numeric_constraints.clear();
 
-    conj_cond.index = element.get_index();
     for (const auto object : element.get_objects())
         conj_cond.objects.push_back(merge(object, builder, destination, buffer, cache).get_data());
     for (const auto literal : element.template get_literals<StaticTag>())
@@ -406,7 +419,6 @@ auto merge(View<Index<GroundRule>, C_SRC> element, Builder& builder, C_DST& dest
 
     auto& rule = builder.get_ground_rule();
 
-    rule.index = element.get_index();
     rule.body = merge(element.get_body(), builder, destination, buffer, cache).get_data();
     rule.head = merge(element.get_head(), builder, destination, buffer, cache).get_data();
 

@@ -18,8 +18,6 @@
 #ifndef TYR_GROUNDER_FACT_SET_HPP_
 #define TYR_GROUNDER_FACT_SET_HPP_
 
-#include "tyr/common/dynamic_bitset.hpp"
-#include "tyr/common/vector.hpp"
 #include "tyr/formalism/formalism.hpp"
 
 #include <boost/dynamic_bitset.hpp>
@@ -35,10 +33,7 @@ private:
     const C& m_context;
     IndexList<formalism::GroundAtom<T>> m_indices;
 
-    using BitsetType =
-        std::conditional_t<IsGroupType<formalism::GroundAtom<T>>, GroupDynamicBitset<formalism::GroundAtom<T>>, FlatDynamicBitset<formalism::GroundAtom<T>>>;
-
-    BitsetType m_bitset;
+    boost::dynamic_bitset<> m_bitset;
 
 public:
     explicit PredicateFactSet(View<IndexList<formalism::GroundAtom<T>>, C> view) : m_context(view.get_context()), m_indices() { insert(view); }
@@ -56,12 +51,13 @@ public:
 
         const auto index = view.get_index();
 
-        m_bitset.resize_to_fit(index);
+        if (index.get_value() >= m_bitset.size())
+            m_bitset.resize(index.get_value() + 1, false);
 
-        if (!m_bitset.test(index))
+        if (!m_bitset.test(index.get_value()))
             m_indices.push_back(index);
 
-        m_bitset.set(index);
+        m_bitset.set(index.get_value());
     }
 
     void insert(View<IndexList<formalism::GroundAtom<T>>, C> view)
@@ -70,7 +66,7 @@ public:
             insert(atom);
     }
 
-    bool contains(Index<formalism::GroundAtom<T>> index) const noexcept { return m_bitset.test(index); }
+    bool contains(Index<formalism::GroundAtom<T>> index) const noexcept { return m_bitset.test(index.get_value()); }
 
     auto get_facts() const noexcept { return View<IndexList<formalism::GroundAtom<T>>, C>(m_indices, m_context); }
 };
@@ -83,11 +79,7 @@ private:
     IndexList<formalism::GroundFunctionTermValue<T>> m_indices;
     UnorderedSet<Index<formalism::GroundFunctionTerm<T>>> m_unique;
 
-    using VectorType = std::conditional_t<IsGroupType<formalism::GroundFunctionTerm<T>>,
-                                          GroupVector<formalism::GroundFunctionTerm<T>, float_t>,
-                                          FlatVector<formalism::GroundFunctionTerm<T>, float_t>>;
-
-    VectorType m_vector;
+    std::vector<float_t> m_vector;
 
 public:
     explicit FunctionFactSet(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view) : m_context(view.get_context()), m_indices(), m_unique()
@@ -99,7 +91,7 @@ public:
     {
         m_indices.clear();
         m_unique.clear();
-        m_vector.reset(std::numeric_limits<float_t>::quiet_NaN());
+        std::fill(m_vector.begin(), m_vector.end(), std::numeric_limits<float_t>::quiet_NaN());
     }
 
     void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> view)
@@ -114,8 +106,9 @@ public:
 
         m_indices.push_back(view.get_index());
         m_unique.insert(fterm_index);
-        m_vector.resize_to_fit(fterm_index, std::numeric_limits<float_t>::quiet_NaN());
-        m_vector[fterm_index] = view.get_value();
+        if (fterm_index.get_value() >= m_vector.size())
+            m_vector.resize(fterm_index.get_value() + 1, std::numeric_limits<float_t>::quiet_NaN());
+        m_vector[fterm_index.get_value()] = view.get_value();
     }
 
     void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view)
@@ -126,7 +119,7 @@ public:
 
     bool contains(Index<formalism::GroundFunctionTerm<T>> index) const noexcept { return m_unique.contains(index); }
 
-    float_t operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept { return m_vector[index]; }
+    float_t operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept { return m_vector[index.get_value()]; }
 
     auto get_facts() const noexcept { return View<IndexList<formalism::GroundFunctionTermValue<T>>, C>(m_indices, m_context); }
 };

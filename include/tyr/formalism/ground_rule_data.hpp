@@ -49,7 +49,7 @@ struct Data<formalism::GroundRule>
     Data& operator=(Data&& other) = default;
 
     auto cista_members() const noexcept { return std::tie(index, head, head); }
-    auto identifying_members() const noexcept { return std::tie(index.group, head, head); }
+    auto identifying_members() const noexcept { return std::tie(head, head); }
 };
 
 }

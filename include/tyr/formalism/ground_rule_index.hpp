@@ -26,12 +26,12 @@
 namespace tyr
 {
 template<>
-struct Index<formalism::GroundRule> : GroupIndexMixin<Index<formalism::GroundRule>, Index<formalism::Rule>>
+struct Index<formalism::GroundRule> : IndexMixin<Index<formalism::GroundRule>>
 {
     using Tag = formalism::GroundRule;
 
     // Inherit constructors
-    using Base = GroupIndexMixin<Index<formalism::GroundRule>, Index<formalism::Rule>>;
+    using Base = IndexMixin<Index<formalism::GroundRule>>;
     using Base::Base;
 };
 

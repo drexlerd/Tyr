@@ -124,7 +124,7 @@ public:
         const auto arity = ground_atom.get_predicate().get_arity();
         const auto objects = ground_atom.get_objects();
 
-        assert(ground_atom.get_index().get_group() == m_predicate);
+        assert(ground_atom.get_predicate().get_index() == m_predicate);
 
         for (uint_t first_index = 0; first_index < arity; ++first_index)
         {
@@ -184,13 +184,13 @@ public:
     void insert(View<IndexList<formalism::GroundAtom<T>>, C> ground_atoms)
     {
         for (const auto ground_atom : ground_atoms)
-            m_sets[ground_atom.get_index().get_group().get_value()].insert(ground_atom);
+            m_sets[ground_atom.get_predicate().get_index().get_value()].insert(ground_atom);
     }
 
     template<formalism::IsContext C>
     void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom)
     {
-        m_sets[ground_atom.get_index().get_group().get_value()].insert(ground_atom);
+        m_sets[ground_atom.get_predicate().get_index().get_value()].insert(ground_atom);
     }
 
     const PredicateAssignmentSet<T>& get_set(Index<formalism::Predicate<T>> index) const noexcept { return m_sets[index.get_value()]; }
@@ -229,7 +229,7 @@ public:
         const auto arity = function_term.get_function().get_arity();
         const auto arguments = function_term.get_objects();
 
-        assert(function_term.get_index().get_group() == m_function);
+        assert(function_term.get_function().get_index() == m_function);
 
         auto& empty_assignment_bound = m_set[EmptyAssignment::rank];
         empty_assignment_bound = hull(empty_assignment_bound, ClosedInterval<float_t>(value, value));
@@ -302,14 +302,14 @@ public:
     void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, C> function_terms, const std::vector<float_t>& values)
     {
         for (size_t i = 0; i < function_terms.size(); ++i)
-            m_sets[function_terms[i].get_index().get_group().get_value()].insert(function_terms[i], values[i]);
+            m_sets[function_terms[i].get_fterm().get_function().get_index().get_value()].insert(function_terms[i], values[i]);
     }
 
     template<formalism::IsContext C>
     void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> fterm_values)
     {
         for (size_t i = 0; i < fterm_values.size(); ++i)
-            m_sets[fterm_values[i].get_index().get_group().get_value()].insert(fterm_values[i]);
+            m_sets[fterm_values[i].get_fterm().get_function().get_index().get_value()].insert(fterm_values[i]);
     }
 
     const FunctionAssignmentSet<T>& get_set(Index<formalism::Function<T>> index) const noexcept { return m_sets[index.get_value()]; }

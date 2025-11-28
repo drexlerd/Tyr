@@ -47,7 +47,7 @@ TEST(TyrTests, TyrFormalismView)
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.group = predicate.get_index();
+    atom_builder.predicate = predicate.get_index();
     atom_builder.terms.push_back(Data<Term>(object.get_index()));
     atom_builder.terms.push_back(Data<Term>(ParameterIndex(0)));
     canonicalize(atom_builder);

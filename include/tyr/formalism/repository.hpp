@@ -78,94 +78,65 @@ namespace tyr::formalism
 class Repository
 {
 private:
-    /// @brief `FlatRepositoryEntry` is the mapping from data type to an indexed hash set.
     template<typename T>
-    using FlatRepositoryEntry = boost::hana::pair<boost::hana::type<T>, buffer::IndexedHashSet<T>>;
+    using RepositoryEntry = boost::hana::pair<boost::hana::type<T>, buffer::IndexedHashSet<T>>;
 
-    /// @brief `GroupRepositoryEntry` is the mapping from data type to a list of indexed hash sets.
-    template<typename T>
-    using GroupRepositoryEntry = boost::hana::pair<boost::hana::type<T>, buffer::IndexedHashSetList<T>>;
-
-    template<typename T>
-    struct RepositoryTraits
-    {
-        using EntryType = std::conditional_t<IsGroupType<T>, GroupRepositoryEntry<T>, FlatRepositoryEntry<T>>;
-    };
-
-    using HanaRepository = boost::hana::map<RepositoryTraits<Variable>::EntryType,
-                                            RepositoryTraits<Object>::EntryType,
-                                            RepositoryTraits<Predicate<StaticTag>>::EntryType,
-                                            RepositoryTraits<Predicate<FluentTag>>::EntryType,
-                                            RepositoryTraits<Atom<StaticTag>>::EntryType,
-                                            RepositoryTraits<Atom<FluentTag>>::EntryType,
-                                            RepositoryTraits<GroundAtom<StaticTag>>::EntryType,
-                                            RepositoryTraits<GroundAtom<FluentTag>>::EntryType,
-                                            RepositoryTraits<Literal<StaticTag>>::EntryType,
-                                            RepositoryTraits<Literal<FluentTag>>::EntryType,
-                                            RepositoryTraits<GroundLiteral<StaticTag>>::EntryType,
-                                            RepositoryTraits<GroundLiteral<FluentTag>>::EntryType,
-                                            RepositoryTraits<Function<StaticTag>>::EntryType,
-                                            RepositoryTraits<Function<FluentTag>>::EntryType,
-                                            RepositoryTraits<FunctionTerm<StaticTag>>::EntryType,
-                                            RepositoryTraits<FunctionTerm<FluentTag>>::EntryType,
-                                            RepositoryTraits<GroundFunctionTerm<StaticTag>>::EntryType,
-                                            RepositoryTraits<GroundFunctionTerm<FluentTag>>::EntryType,
-                                            RepositoryTraits<GroundFunctionTermValue<StaticTag>>::EntryType,
-                                            RepositoryTraits<GroundFunctionTermValue<FluentTag>>::EntryType,
-                                            RepositoryTraits<UnaryOperator<OpSub, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpAdd, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpSub, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpMul, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpDiv, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<MultiOperator<OpAdd, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<MultiOperator<OpMul, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpEq, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpLe, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpLt, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpGe, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpGt, Data<FunctionExpression>>>::EntryType,
-                                            RepositoryTraits<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<MultiOperator<OpMul, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>::EntryType,
-                                            RepositoryTraits<ConjunctiveCondition>::EntryType,
-                                            RepositoryTraits<Rule>::EntryType,
-                                            RepositoryTraits<GroundConjunctiveCondition>::EntryType,
-                                            RepositoryTraits<GroundRule>::EntryType,
-                                            RepositoryTraits<Program>::EntryType>;
+    using HanaRepository = boost::hana::map<RepositoryEntry<Variable>,
+                                            RepositoryEntry<Object>,
+                                            RepositoryEntry<Predicate<StaticTag>>,
+                                            RepositoryEntry<Predicate<FluentTag>>,
+                                            RepositoryEntry<Atom<StaticTag>>,
+                                            RepositoryEntry<Atom<FluentTag>>,
+                                            RepositoryEntry<GroundAtom<StaticTag>>,
+                                            RepositoryEntry<GroundAtom<FluentTag>>,
+                                            RepositoryEntry<Literal<StaticTag>>,
+                                            RepositoryEntry<Literal<FluentTag>>,
+                                            RepositoryEntry<GroundLiteral<StaticTag>>,
+                                            RepositoryEntry<GroundLiteral<FluentTag>>,
+                                            RepositoryEntry<Function<StaticTag>>,
+                                            RepositoryEntry<Function<FluentTag>>,
+                                            RepositoryEntry<FunctionTerm<StaticTag>>,
+                                            RepositoryEntry<FunctionTerm<FluentTag>>,
+                                            RepositoryEntry<GroundFunctionTerm<StaticTag>>,
+                                            RepositoryEntry<GroundFunctionTerm<FluentTag>>,
+                                            RepositoryEntry<GroundFunctionTermValue<StaticTag>>,
+                                            RepositoryEntry<GroundFunctionTermValue<FluentTag>>,
+                                            RepositoryEntry<UnaryOperator<OpSub, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpSub, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpMul, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
+                                            RepositoryEntry<MultiOperator<OpAdd, Data<FunctionExpression>>>,
+                                            RepositoryEntry<MultiOperator<OpMul, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpEq, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpLe, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpLt, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpGe, Data<FunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpGt, Data<FunctionExpression>>>,
+                                            RepositoryEntry<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
+                                            RepositoryEntry<ConjunctiveCondition>,
+                                            RepositoryEntry<Rule>,
+                                            RepositoryEntry<GroundConjunctiveCondition>,
+                                            RepositoryEntry<GroundRule>,
+                                            RepositoryEntry<Program>>;
 
     HanaRepository m_repository;
 
 public:
     Repository() = default;
 
-    template<IsGroupType T>
-    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
-    {
-        const auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
-
-        const auto i = builder.index.get_group().get_value();
-
-        if (i >= list.size())
-            return std::nullopt;
-
-        const auto& indexed_hash_set = list[i];
-
-        if (const auto ptr = indexed_hash_set.find(builder))
-            return View<Index<T>, Repository>(ptr->index, *this);
-
-        return std::nullopt;
-    }
-
-    template<IsFlatType T>
+    template<typename T>
     std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
     {
         const auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -176,27 +147,7 @@ public:
         return std::nullopt;
     }
 
-    template<IsGroupType T, bool AssignIndex = true>
-    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
-    {
-        auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
-
-        const auto i = builder.index.get_group().get_value();
-
-        if (i >= list.size())
-            list.resize(i + 1);
-
-        auto& indexed_hash_set = list[i];
-
-        if constexpr (AssignIndex)
-            builder.index.value = indexed_hash_set.size();
-
-        const auto [ptr, success] = indexed_hash_set.insert(builder, buf);
-
-        return std::make_pair(View<Index<T>, Repository>(ptr->index, *this), success);
-    }
-
-    template<IsFlatType T, bool AssignIndex = true>
+    template<typename T, bool AssignIndex = true>
     std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -210,22 +161,7 @@ public:
     }
 
     /// @brief Access the element with the given index.
-    template<IsGroupType T>
-    const Data<T>& operator[](Index<T> index) const
-    {
-        const auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
-
-        const auto i = index.get_group().get_value();
-
-        assert(i < list.size());
-
-        const auto& repository = list[i];
-
-        return repository[index];
-    }
-
-    /// @brief Access the element with the given index.
-    template<IsFlatType T>
+    template<typename T>
     const Data<T>& operator[](Index<T> index) const
     {
         const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -234,23 +170,7 @@ public:
     }
 
     /// @brief Get the number of stored elements.
-    template<IsGroupType T>
-    size_t size(Index<T> index) const
-    {
-        const auto& list = boost::hana::at_key(m_repository, boost::hana::type<T> {});
-
-        const auto i = index.get_group().get_value();
-
-        if (i >= list.size())
-            return size_t { 0 };
-
-        const auto& repository = list[i];
-
-        return repository.size();
-    }
-
-    /// @brief Get the number of stored elements.
-    template<IsFlatType T>
+    template<typename T>
     size_t size() const
     {
         const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
@@ -264,18 +184,8 @@ public:
         boost::hana::for_each(m_repository,
                               [](auto&& pair)
                               {
-                                  using KeyType = typename decltype(+boost::hana::first(pair))::type;
-                                  auto& storage = boost::hana::second(pair);
-
-                                  if constexpr (IsGroupType<KeyType>)
-                                  {
-                                      for (auto& indexed_hash_set : storage)
-                                          indexed_hash_set.clear();
-                                  }
-                                  else
-                                  {
-                                      storage.clear();
-                                  }
+                                  auto& indexed_hash_set = boost::hana::second(pair);
+                                  indexed_hash_set.clear();
                               });
     }
 };

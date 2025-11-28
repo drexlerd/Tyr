@@ -25,12 +25,12 @@
 namespace tyr
 {
 template<formalism::IsStaticOrFluentTag T>
-struct Index<formalism::FunctionTerm<T>> : GroupIndexMixin<Index<formalism::FunctionTerm<T>>, Index<formalism::Function<T>>>
+struct Index<formalism::FunctionTerm<T>> : IndexMixin<Index<formalism::FunctionTerm<T>>>
 {
     using Tag = formalism::FunctionTerm<T>;
 
     // Inherit constructors
-    using Base = GroupIndexMixin<Index<formalism::FunctionTerm<T>>, Index<formalism::Function<T>>>;
+    using Base = IndexMixin<Index<formalism::FunctionTerm<T>>>;
     using Base::Base;
 };
 }

@@ -30,14 +30,14 @@ namespace tyr
 {
 
 template<typename Derived>
-struct FlatIndexMixin
+struct IndexMixin
 {
     uint_t value {};
 
     static constexpr uint_t MAX = std::numeric_limits<uint_t>::max();
 
-    FlatIndexMixin() noexcept : value(MAX) {}
-    explicit FlatIndexMixin(uint_t value) noexcept : value(value) {}
+    IndexMixin() noexcept : value(MAX) {}
+    explicit IndexMixin(uint_t value) noexcept : value(value) {}
 
     static constexpr Derived max() noexcept { return Derived(MAX); }
 
@@ -45,12 +45,12 @@ struct FlatIndexMixin
     // Comparisons
     // ----------------------------------------------------
 
-    friend constexpr bool operator==(const FlatIndexMixin& lhs, const FlatIndexMixin& rhs) noexcept { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
-    friend constexpr bool operator!=(const FlatIndexMixin& lhs, const FlatIndexMixin& rhs) noexcept { return !(lhs == rhs); }
-    friend constexpr bool operator<=(const FlatIndexMixin& lhs, const FlatIndexMixin& rhs) noexcept { return lhs.value <= rhs.value; }
-    friend constexpr bool operator<(const FlatIndexMixin& lhs, const FlatIndexMixin& rhs) noexcept { return lhs.value < rhs.value; }
-    friend constexpr bool operator>=(const FlatIndexMixin& lhs, const FlatIndexMixin& rhs) noexcept { return lhs.value >= rhs.value; }
-    friend constexpr bool operator>(const FlatIndexMixin& lhs, const FlatIndexMixin& rhs) noexcept { return lhs.value > rhs.value; }
+    friend constexpr bool operator==(const IndexMixin& lhs, const IndexMixin& rhs) noexcept { return EqualTo<uint_t> {}(lhs.value, rhs.value); }
+    friend constexpr bool operator!=(const IndexMixin& lhs, const IndexMixin& rhs) noexcept { return !(lhs == rhs); }
+    friend constexpr bool operator<=(const IndexMixin& lhs, const IndexMixin& rhs) noexcept { return lhs.value <= rhs.value; }
+    friend constexpr bool operator<(const IndexMixin& lhs, const IndexMixin& rhs) noexcept { return lhs.value < rhs.value; }
+    friend constexpr bool operator>=(const IndexMixin& lhs, const IndexMixin& rhs) noexcept { return lhs.value >= rhs.value; }
+    friend constexpr bool operator>(const IndexMixin& lhs, const IndexMixin& rhs) noexcept { return lhs.value > rhs.value; }
 
     explicit constexpr operator uint_t() const noexcept { return value; }
 
@@ -58,68 +58,6 @@ struct FlatIndexMixin
 
     auto cista_members() const noexcept { return std::tie(value); }
     auto identifying_members() const noexcept { return std::tie(value); }
-};
-
-template<typename Derived, HasValue Group>
-struct GroupIndexMixin
-{
-    Group group {};
-    uint_t value {};
-
-    static constexpr uint_t MAX = std::numeric_limits<uint_t>::max();
-
-    GroupIndexMixin() noexcept : group(), value(MAX) {}
-    GroupIndexMixin(Group group, uint_t value) noexcept : group(group), value(value) {}
-
-    static constexpr Derived max() noexcept { return Derived(Group::max(), MAX); }
-
-    // ----------------------------------------------------
-    // Comparisons
-    // ----------------------------------------------------
-
-    friend constexpr bool operator==(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
-    {
-        return EqualTo<Group> {}(lhs.group, rhs.group) && EqualTo<uint_t> {}(lhs.value, rhs.value);
-    }
-    friend constexpr bool operator!=(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept { return !(lhs == rhs); }
-    friend constexpr bool operator<=(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
-    {
-        if (lhs.group == rhs.group)
-        {
-            return lhs.value <= rhs.value;
-        }
-        return lhs.group <= rhs.group;
-    }
-    friend constexpr bool operator<(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
-    {
-        if (lhs.group == rhs.group)
-        {
-            return lhs.value < rhs.value;
-        }
-        return lhs.group < rhs.group;
-    }
-    friend constexpr bool operator>=(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
-    {
-        if (lhs.group == rhs.group)
-        {
-            return lhs.value >= rhs.value;
-        }
-        return lhs.group >= rhs.group;
-    }
-    friend constexpr bool operator>(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
-    {
-        if (lhs.group == rhs.group)
-        {
-            return lhs.value > rhs.value;
-        }
-        return lhs.group > rhs.group;
-    }
-
-    uint_t get_value() const noexcept { return value; }
-    Group get_group() const noexcept { return group; }
-
-    auto cista_members() const noexcept { return std::tie(group, value); }
-    auto identifying_members() const noexcept { return std::tie(group, value); }
 };
 
 }

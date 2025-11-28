@@ -281,7 +281,7 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Predica
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::Atom<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
+    fmt::print(os, "({} {})", to_string(el.predicate), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
     return os;
 }
 
@@ -315,7 +315,7 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Literal
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundAtom<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.objects), " ")));
+    fmt::print(os, "({} {})", to_string(el.predicate), fmt::format("{}", fmt::join(to_strings(el.objects), " ")));
     return os;
 }
 
@@ -363,7 +363,7 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Functio
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::FunctionTerm<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
+    fmt::print(os, "({} {})", to_string(el.function), fmt::format("{}", fmt::join(to_strings(el.terms), " ")));
     return os;
 }
 
@@ -377,7 +377,7 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Functio
 template<formalism::IsStaticOrFluentTag T>
 inline std::ostream& print(std::ostream& os, const Data<formalism::GroundFunctionTerm<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.index.group), fmt::format("{}", fmt::join(to_strings(el.objects), " ")));
+    fmt::print(os, "({} {})", to_string(el.function), fmt::format("{}", fmt::join(to_strings(el.objects), " ")));
     return os;
 }
 

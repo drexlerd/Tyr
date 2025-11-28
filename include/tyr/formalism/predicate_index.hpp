@@ -26,12 +26,12 @@
 namespace tyr
 {
 template<formalism::IsStaticOrFluentTag T>
-struct Index<formalism::Predicate<T>> : FlatIndexMixin<formalism::Predicate<T>>
+struct Index<formalism::Predicate<T>> : IndexMixin<formalism::Predicate<T>>
 {
     using Tag = formalism::Predicate<T>;
 
     // Inherit constructors
-    using Base = FlatIndexMixin<formalism::Predicate<T>>;
+    using Base = IndexMixin<formalism::Predicate<T>>;
     using Base::Base;
 };
 

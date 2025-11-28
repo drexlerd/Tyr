@@ -90,7 +90,7 @@ TEST(TyrTests, TyrFormalismRepository)
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.group = predicate_0.get_index();
+    atom_builder.predicate = predicate_0.get_index();
     atom_builder.terms.push_back(Data<Term>(object_0.get_index()));
     atom_builder.terms.push_back(Data<Term>(object_1.get_index()));
     canonicalize(atom_builder);
@@ -129,7 +129,7 @@ TEST(TyrTests, TyrFormalismView)
 
     // Create atom
     atom_builder.terms.clear();
-    atom_builder.index.group = predicate_0.get_index();
+    atom_builder.predicate = predicate_0.get_index();
     atom_builder.terms.push_back(Data<Term>(object_0.get_index()));
     atom_builder.terms.push_back(Data<Term>(object_1.get_index()));
     canonicalize(atom_builder);

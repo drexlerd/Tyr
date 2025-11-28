@@ -30,17 +30,23 @@ struct Data<formalism::GroundAtom<T>>
     using Tag = formalism::GroundAtom<T>;
 
     Index<formalism::GroundAtom<T>> index;
+    Index<formalism::Predicate<T>> predicate;
     IndexList<formalism::Object> objects;
 
     Data() = default;
-    Data(Index<formalism::GroundAtom<T>> index, IndexList<formalism::Object> objects) : index(index), objects(std::move(objects)) {}
+    Data(Index<formalism::GroundAtom<T>> index, Index<formalism::Predicate<T>> predicate, IndexList<formalism::Object> objects) :
+        index(index),
+        predicate(predicate),
+        objects(std::move(objects))
+    {
+    }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    auto cista_members() const noexcept { return std::tie(index, objects); }
-    auto identifying_members() const noexcept { return std::tie(index.group, objects); }
+    auto cista_members() const noexcept { return std::tie(index, predicate, objects); }
+    auto identifying_members() const noexcept { return std::tie(predicate, objects); }
 };
 
 }

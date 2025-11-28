@@ -34,12 +34,12 @@ View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(Vie
     auto& builder = workspace.builder;
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
-    auto& ground_atom = builder.template get_ground_atom<T>();
-    auto& objects = ground_atom.objects;
+    auto& atom = builder.template get_ground_atom<T>();
+    auto& objects = atom.objects;
     objects.clear();
 
     // Fill data
-    ground_atom.index.group = element.get_index().get_group();
+    atom.predicate = element.get_predicate().get_index();
     for (const auto term : element.get_terms())
     {
         visit(
@@ -64,8 +64,8 @@ View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(Vie
     }
 
     // Canonicalize and Serialize
-    canonicalize(ground_atom);
-    return repository.get_or_create(ground_atom, buffer).first;
+    canonicalize(atom);
+    return repository.get_or_create(atom, buffer).first;
 }
 
 template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
@@ -79,7 +79,6 @@ View<Index<formalism::GroundLiteral<T>>, formalism::ScopedRepository<C>> ground(
     auto& ground_literal = builder.template get_ground_literal<T>();
 
     // Fill data
-    ground_literal.index.group = element.get_index().get_group();
     ground_literal.polarity = element.get_polarity();
     ground_literal.atom = ground(element.get_atom(), workspace).get_index();
 
@@ -102,7 +101,7 @@ View<Index<formalism::GroundFunctionTerm<T>>, formalism::ScopedRepository<C>> gr
     objects.clear();
 
     // Fill data
-    fterm.index.group = element.get_index().get_group();
+    fterm.function = element.get_function().get_index();
     for (const auto term : element.get_terms())
     {
         visit(
@@ -298,7 +297,6 @@ View<Index<formalism::GroundRule>, formalism::ScopedRepository<C>> ground(View<I
     auto& head = rule.head;
 
     // Fill data
-    rule.index.group = element.get_index();
     body = ground(element.get_body(), workspace).get_index();
     head = ground(element.get_head(), workspace).get_index();
 

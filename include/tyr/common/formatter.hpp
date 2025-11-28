@@ -86,10 +86,7 @@ template<typename C, typename... Ts>
 inline std::ostream& operator<<(std::ostream& os, const View<::cista::offset::variant<Ts...>, C>& el);
 
 template<typename Derived>
-std::ostream& operator<<(std::ostream& os, const FlatIndexMixin<Derived>& mixin);
-
-template<typename Derived, HasValue Group>
-std::ostream& operator<<(std::ostream& os, const GroupIndexMixin<Derived, Group>& mixin);
+std::ostream& operator<<(std::ostream& os, const IndexMixin<Derived>& mixin);
 
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& mixin);
@@ -253,16 +250,9 @@ std::ostream& operator<<(std::ostream& os, const Map& map)
 }
 
 template<typename Derived>
-std::ostream& operator<<(std::ostream& os, const FlatIndexMixin<Derived>& mixin)
+std::ostream& operator<<(std::ostream& os, const IndexMixin<Derived>& mixin)
 {
     os << to_string(mixin.value);
-    return os;
-}
-
-template<typename Derived, HasValue Group>
-std::ostream& operator<<(std::ostream& os, const GroupIndexMixin<Derived, Group>& mixin)
-{
-    os << to_string(mixin.group.value) << ":" << to_string(mixin.value);
     return os;
 }
 
