@@ -273,7 +273,7 @@ public:
     {
     }
 
-    template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+    template<formalism::IsFactTag T, formalism::IsContext C>
     bool consistent_literals(View<IndexList<formalism::Literal<T>>, C> literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
     {
         for (const auto& literal : literals)
@@ -386,7 +386,7 @@ private:
 public:
     Edge(Vertex src, Vertex dst) noexcept : m_src(std::move(src)), m_dst(std::move(dst)) {}
 
-    template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+    template<formalism::IsFactTag T, formalism::IsContext C>
     bool consistent_literals(View<IndexList<formalism::Literal<T>>, C> literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
     {
         for (const auto& literal : literals)
@@ -702,7 +702,7 @@ private:
 
 namespace details
 {
-template<std::ranges::forward_range Range, formalism::IsStaticOrFluentTag T>
+template<std::ranges::forward_range Range, formalism::IsFactTag T>
 ClosedInterval<float_t>
 compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const FunctionAssignmentSet<T>& sets, const Range& range) noexcept
 {
@@ -720,7 +720,7 @@ compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const Fu
     return bounds;
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<formalism::IsFactTag T, formalism::IsContext C>
 ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, C> function_term,
                                                          const Vertex& element,
                                                          const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
@@ -734,7 +734,7 @@ ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::F
     return compute_tightest_closed_interval_helper(bounds, function_assignment_set, VertexAssignmentRange(terms, element));
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<formalism::IsFactTag T, formalism::IsContext C>
 ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, C> function_term,
                                                          const Edge& element,
                                                          const FunctionAssignmentSets<T>& function_skeleton_assignment_sets) noexcept
@@ -790,7 +790,7 @@ auto evaluate_partially(View<Index<formalism::MultiOperator<O, Data<formalism::F
                            { return formalism::apply(O {}, value, evaluate_partially(child_expr, graph_entity, assignment_sets)); });
 }
 
-template<typename StructureType, formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<typename StructureType, formalism::IsFactTag T, formalism::IsContext C>
 auto evaluate_partially(View<Index<formalism::FunctionTerm<T>>, C> element, const StructureType& graph_entity, const AssignmentSets& assignment_sets)
 {
     return compute_tightest_closed_interval(element, graph_entity, assignment_sets.template get<T>().function);

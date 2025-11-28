@@ -24,7 +24,7 @@
 
 namespace tyr
 {
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 struct Data<formalism::GroundAtom<T>>
 {
     using Tag = formalism::GroundAtom<T>;

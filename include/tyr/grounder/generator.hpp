@@ -26,7 +26,7 @@
 namespace tyr::grounder
 {
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<formalism::IsFactTag T, formalism::IsContext C>
 View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Atom<T>>, C> element, MutableRuleWorkspace<C>& workspace)
 {
     // Fetch and clear
@@ -68,7 +68,7 @@ View<Index<formalism::GroundAtom<T>>, formalism::ScopedRepository<C>> ground(Vie
     return repository.get_or_create(atom, buffer).first;
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<formalism::IsFactTag T, formalism::IsContext C>
 View<Index<formalism::GroundLiteral<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::Literal<T>>, C> element,
                                                                                 MutableRuleWorkspace<C>& workspace)
 {
@@ -87,7 +87,7 @@ View<Index<formalism::GroundLiteral<T>>, formalism::ScopedRepository<C>> ground(
     return repository.get_or_create(ground_literal, buffer).first;
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<formalism::IsFactTag T, formalism::IsContext C>
 View<Index<formalism::GroundFunctionTerm<T>>, formalism::ScopedRepository<C>> ground(View<Index<formalism::FunctionTerm<T>>, C> element,
                                                                                      MutableRuleWorkspace<C>& workspace)
 {

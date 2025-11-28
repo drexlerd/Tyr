@@ -47,23 +47,23 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     auto get_predicates() const
     {
         return View<IndexList<formalism::Predicate<T>>, C>(get_data().template get_predicates<T>(), *m_context);
     }
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     auto get_functions() const
     {
         return View<IndexList<formalism::Function<T>>, C>(get_data().template get_functions<T>(), *m_context);
     }
     auto get_objects() const { return View<IndexList<formalism::Object>, C>(get_data().objects, *m_context); }
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     auto get_atoms() const
     {
         return View<IndexList<formalism::GroundAtom<T>>, C>(get_data().template get_atoms<T>(), *m_context);
     }
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     auto get_fterm_values() const
     {
         return View<IndexList<formalism::GroundFunctionTermValue<T>>, C>(get_data().template get_fterm_values<T>(), *m_context);

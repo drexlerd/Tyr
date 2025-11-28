@@ -46,7 +46,7 @@ public:
 
     auto get_index() const noexcept { return m_handle; }
     auto get_objects() const { return View<IndexList<formalism::Object>, C>(get_data().objects, *m_context); }
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     auto get_literals() const
     {
         return View<IndexList<formalism::GroundLiteral<T>>, C>(get_data().template get_literals<T>(), *m_context);

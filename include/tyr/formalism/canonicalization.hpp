@@ -125,43 +125,43 @@ bool is_canonical(const Data<Object>& data) { return true; }
 
 bool is_canonical(const Data<Term>& data) { return true; }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<Predicate<T>>& data)
 {
     return true;
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<Atom<T>>& data)
 {
     return true;
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<Literal<T>>& data)
 {
     return true;
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<GroundAtom<T>>& data)
 {
     return true;
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<GroundLiteral<T>>& data)
 {
     return true;
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<Function<T>>& data)
 {
     return true;
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<FunctionTerm<T>>& data)
 {
     return true;
@@ -169,7 +169,7 @@ bool is_canonical(const Data<FunctionTerm<T>>& data)
 
 bool is_canonical(const Data<FunctionExpression>& data) { return true; }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<GroundFunctionTerm<T>>& data)
 {
     return true;
@@ -177,7 +177,7 @@ bool is_canonical(const Data<GroundFunctionTerm<T>>& data)
 
 bool is_canonical(const Data<GroundFunctionExpression>& data) { return true; }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 bool is_canonical(const Data<GroundFunctionTermValue<T>>& data)
 {
     return true;
@@ -292,43 +292,43 @@ void canonicalize(Data<Term>& data)
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<Predicate<T>>& data)
 {
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<Atom<T>>& data)
 {
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<Literal<T>>& data)
 {
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<GroundAtom<T>>& data)
 {
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<GroundLiteral<T>>& data)
 {
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<Function<T>>& data)
 {
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<FunctionTerm<T>>& data)
 {
     // Trivially canonical
@@ -339,7 +339,7 @@ void canonicalize(Data<FunctionExpression>& data)
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<GroundFunctionTerm<T>>& data)
 {
     // Trivially canonical
@@ -350,7 +350,7 @@ void canonicalize(Data<GroundFunctionExpression>& data)
     // Trivially canonical
 }
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 void canonicalize(Data<GroundFunctionTermValue<T>>& data)
 {
     // Trivially canonical

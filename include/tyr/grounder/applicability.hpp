@@ -53,7 +53,7 @@ auto evaluate(View<Index<formalism::MultiOperator<O, Data<formalism::GroundFunct
                            { return formalism::apply(formalism::OpMul {}, value, evaluate(child_expr, fact_sets)); });
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C1, formalism::IsContext C2>
+template<formalism::IsFactTag T, formalism::IsContext C1, formalism::IsContext C2>
 auto evaluate(View<Index<formalism::GroundFunctionTerm<T>>, C1> element, const FactSets<C2>& fact_sets)
 {
     const auto& fact_set = fact_sets.template get<T>().function;
@@ -83,13 +83,13 @@ auto evaluate(View<Data<formalism::BooleanOperator<Data<formalism::GroundFunctio
     return visit([&](auto&& arg) { return evaluate(arg, fact_sets); }, element.get_variant());
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C1, formalism::IsContext C2>
+template<formalism::IsFactTag T, formalism::IsContext C1, formalism::IsContext C2>
 bool is_applicable(View<Index<formalism::GroundLiteral<T>>, C1> element, const FactSets<C2>& fact_sets)
 {
     return fact_sets.template get<T>().predicate.contains(element.get_atom().get_index()) == element.get_polarity();
 }
 
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C1, formalism::IsContext C2>
+template<formalism::IsFactTag T, formalism::IsContext C1, formalism::IsContext C2>
 bool is_applicable(View<IndexList<formalism::GroundLiteral<T>>, C1> elements, const FactSets<C2>& fact_sets)
 {
     return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, fact_sets); });

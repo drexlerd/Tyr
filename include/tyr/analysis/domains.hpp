@@ -63,7 +63,7 @@ inline DomainListListList to_list(const DomainSetListList& set)
     return vec;
 }
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 inline DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
 {
     const auto num_predicates = program.get_predicates<T>().size();
@@ -83,7 +83,7 @@ inline DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::
     return predicate_domain_sets;
 }
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 inline DomainSetListList initialize_function_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
 {
     const auto num_functions = program.get_functions<T>().size();

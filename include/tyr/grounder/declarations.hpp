@@ -25,7 +25,7 @@ namespace tyr::grounder
 template<formalism::IsContext C>
 struct FactSets;
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 struct TaggedAssignmentSets;
 
 struct AssignmentSets;

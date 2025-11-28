@@ -66,7 +66,7 @@ struct Data<formalism::ConjunctiveCondition>
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_literals() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)
@@ -77,7 +77,7 @@ struct Data<formalism::ConjunctiveCondition>
             static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_nullary_literals() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)

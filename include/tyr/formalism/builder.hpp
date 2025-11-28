@@ -267,7 +267,7 @@ struct Builder
 
     // ================== Predicates / Atoms / Literals ==================
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_predicate() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -278,7 +278,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_atom() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -289,7 +289,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_ground_atom() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -300,7 +300,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_literal() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -311,7 +311,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_ground_literal() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -324,7 +324,7 @@ struct Builder
 
     // ================== Functions / Terms / Values ==================
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_function() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -335,7 +335,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_fterm() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -346,7 +346,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_ground_fterm() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)
@@ -357,7 +357,7 @@ struct Builder
             static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
     }
 
-    template<IsStaticOrFluentTag T>
+    template<IsFactTag T>
     auto& get_ground_fterm_value() noexcept
     {
         if constexpr (std::is_same_v<T, StaticTag>)

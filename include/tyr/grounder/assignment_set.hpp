@@ -98,7 +98,7 @@ struct PerfectAssignmentHash
     size_t size() const noexcept { return m_num_assignments * m_num_assignments; }
 };
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 class PredicateAssignmentSet
 {
 private:
@@ -152,7 +152,7 @@ public:
     size_t size() const noexcept { return m_set.size(); }
 };
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 class PredicateAssignmentSets
 {
 private:
@@ -201,7 +201,7 @@ public:
     }
 };
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 class FunctionAssignmentSet
 {
 private:
@@ -270,7 +270,7 @@ public:
     size_t size() const noexcept { return m_set.size(); }
 };
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 class FunctionAssignmentSets
 {
 private:
@@ -320,7 +320,7 @@ public:
     }
 };
 
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 struct TaggedAssignmentSets
 {
     PredicateAssignmentSets<T> predicate;
@@ -382,7 +382,7 @@ struct AssignmentSets
         fluent_sets.insert(fact_sets.fluent_sets);
     }
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     auto& get() const
     {
         if constexpr (std::is_same_v<T, formalism::StaticTag>)

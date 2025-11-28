@@ -25,7 +25,7 @@
 
 namespace tyr
 {
-template<formalism::IsStaticOrFluentTag T>
+template<formalism::IsFactTag T>
 struct Index<formalism::GroundLiteral<T>> : IndexMixin<Index<formalism::GroundLiteral<T>>>
 {
     using Tag = formalism::GroundLiteral<T>;

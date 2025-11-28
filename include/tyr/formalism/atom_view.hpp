@@ -28,7 +28,7 @@
 
 namespace tyr
 {
-template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
+template<formalism::IsFactTag T, formalism::IsContext C>
 class View<Index<formalism::Atom<T>>, C>
 {
 private:

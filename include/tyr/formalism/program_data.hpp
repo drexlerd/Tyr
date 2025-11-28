@@ -76,7 +76,7 @@ struct Data<formalism::Program>
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_predicates() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)
@@ -87,7 +87,7 @@ struct Data<formalism::Program>
             static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_functions() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)
@@ -98,7 +98,7 @@ struct Data<formalism::Program>
             static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_atoms() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)
@@ -109,7 +109,7 @@ struct Data<formalism::Program>
             static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_fterm_values() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)

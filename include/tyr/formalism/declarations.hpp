@@ -35,9 +35,12 @@ struct StaticTag
 struct FluentTag
 {
 };
+struct DerivedTag
+{
+};
 
 template<typename T>
-concept IsStaticOrFluentTag = std::same_as<T, StaticTag> || std::same_as<T, FluentTag>;
+concept IsFactTag = std::same_as<T, StaticTag> || std::same_as<T, FluentTag> || std::same_as<T, DerivedTag>;
 
 /**
  * Tags to dispatch operators
@@ -124,37 +127,37 @@ struct Term
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct Predicate
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct Atom
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct Literal
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct GroundAtom
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct GroundLiteral
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct Function
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct FunctionTerm
 {
 };
@@ -163,7 +166,7 @@ struct FunctionExpression
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct GroundFunctionTerm
 {
 };
@@ -172,7 +175,7 @@ struct GroundFunctionExpression
 {
 };
 
-template<IsStaticOrFluentTag T>
+template<IsFactTag T>
 struct GroundFunctionTermValue
 {
 };
@@ -196,6 +199,48 @@ struct GroundRule
 struct Program
 {
 };
+
+namespace planning
+{
+struct NumericEffect
+{
+};
+struct GroundNumericEffect
+{
+};
+
+struct ConditionalEffect
+{
+};
+struct GroundConditionalEffect
+{
+};
+
+struct ConjunctiveEffect
+{
+};
+struct GroundConjunctiveEffect
+{
+};
+
+struct Action
+{
+};
+struct GroundAction
+{
+};
+
+struct Axiom
+{
+};
+struct GroundAxiom
+{
+};
+
+struct Task
+{
+};
+}
 
 /**
  * Context

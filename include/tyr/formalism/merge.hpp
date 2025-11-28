@@ -213,7 +213,7 @@ auto merge(View<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, C_SRC> 
                                                                         });
 }
 
-template<IsStaticOrFluentTag T, IsContext C_SRC, IsContext C_DST>
+template<IsFactTag T, IsContext C_SRC, IsContext C_DST>
 auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& destination, buffer::Buffer& buffer, MergeCache<C_SRC, C_DST>& cache)
 {
     return with_cache<Predicate<T>>(element,
@@ -229,7 +229,7 @@ auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& de
                                     });
 }
 
-template<IsStaticOrFluentTag T, IsContext C_SRC, IsContext C_DST>
+template<IsFactTag T, IsContext C_SRC, IsContext C_DST>
 auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& destination, buffer::Buffer& buffer, MergeCache<C_SRC, C_DST>& cache)
 {
     return with_cache<GroundAtom<T>>(element,
@@ -248,7 +248,7 @@ auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& d
                                      });
 }
 
-template<IsStaticOrFluentTag T, IsContext C_SRC, IsContext C_DST>
+template<IsFactTag T, IsContext C_SRC, IsContext C_DST>
 auto merge(View<Index<GroundLiteral<T>>, C_SRC> element, Builder& builder, C_DST& destination, buffer::Buffer& buffer, MergeCache<C_SRC, C_DST>& cache)
 {
     return with_cache<GroundLiteral<T>>(element,
@@ -265,7 +265,7 @@ auto merge(View<Index<GroundLiteral<T>>, C_SRC> element, Builder& builder, C_DST
                                         });
 }
 
-template<IsStaticOrFluentTag T, IsContext C_SRC, IsContext C_DST>
+template<IsFactTag T, IsContext C_SRC, IsContext C_DST>
 auto merge(View<Index<Function<T>>, C_SRC> element, Builder& builder, C_DST& destination, buffer::Buffer& buffer, MergeCache<C_SRC, C_DST>& cache)
 {
     return with_cache<Function<T>>(element,
@@ -281,7 +281,7 @@ auto merge(View<Index<Function<T>>, C_SRC> element, Builder& builder, C_DST& des
                                    });
 }
 
-template<IsStaticOrFluentTag T, IsContext C_SRC, IsContext C_DST>
+template<IsFactTag T, IsContext C_SRC, IsContext C_DST>
 auto merge(View<Index<GroundFunctionTerm<T>>, C_SRC> element, Builder& builder, C_DST& destination, buffer::Buffer& buffer, MergeCache<C_SRC, C_DST>& cache)
 {
     return with_cache<GroundFunctionTerm<T>>(element,

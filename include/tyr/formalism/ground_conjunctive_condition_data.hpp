@@ -55,7 +55,7 @@ struct Data<formalism::GroundConjunctiveCondition>
     Data(Data&& other) = default;
     Data& operator=(Data&& other) = default;
 
-    template<formalism::IsStaticOrFluentTag T>
+    template<formalism::IsFactTag T>
     const auto& get_literals() const
     {
         if constexpr (std::same_as<T, formalism::StaticTag>)
