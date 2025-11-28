@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_BUFFER_UNORDERED_INDEXED_HASH_SET_HPP_
-#define TYR_BUFFER_UNORDERED_INDEXED_HASH_SET_HPP_
+#ifndef TYR_BUFFER_INDEXED_HASH_SET_HPP_
+#define TYR_BUFFER_INDEXED_HASH_SET_HPP_
 
 #include "cista/serialization.h"
 #include "tyr/buffer/declarations.hpp"
@@ -45,7 +45,7 @@ private:
     gtl::flat_hash_set<ObserverPtr<const Data<Tag>>, H, E> m_set;
 
     // Randomized access
-    SegmentedVector<const Data<Tag>*> m_vec;
+    std::vector<const Data<Tag>*> m_vec;
 
 public:
     explicit IndexedHashSet(size_t seg_size = 1024) : m_storage(seg_size), m_set(), m_vec() {}

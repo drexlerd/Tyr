@@ -45,6 +45,8 @@ public:
 
     auto get_index() const { return m_data; }
     auto get_args() const { return View<::cista::offset::vector<T>, C>(get().args, *m_context); }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 
 }

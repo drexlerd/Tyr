@@ -28,19 +28,23 @@ template<formalism::IsStaticOrFluentTag T, formalism::IsContext C>
 class View<Index<formalism::Function<T>>, C>
 {
 private:
-    const C* context;
-    Index<formalism::Function<T>> index;
+    const C* m_context;
+    Index<formalism::Function<T>> m_data;
 
 public:
     using Tag = formalism::Function<T>;
 
-    View(Index<formalism::Function<T>> index, const C& context) : context(&context), index(index) {}
+    View(Index<formalism::Function<T>> data, const C& context) : m_context(&context), m_data(data) {}
 
-    const auto& get() const { return get_repository(*context)[index]; }
+    const auto& get() const { return get_repository(*m_context)[m_data]; }
+    const auto& get_context() const noexcept { return *m_context; }
+    const auto& get_data() const noexcept { return m_data; }
 
-    auto get_index() const { return index; }
+    auto get_index() const { return m_data; }
     const auto& get_name() const { return get().name; }
     auto get_arity() const { return get().arity; }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

@@ -42,6 +42,8 @@ public:
     auto get_arity() const { return m_data.arity; }
 
     View(Data<formalism::BooleanOperator<T>> data, const C& context) : m_context(&context), m_data(data) {}
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

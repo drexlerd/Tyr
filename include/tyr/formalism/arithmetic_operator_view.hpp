@@ -40,6 +40,8 @@ public:
     const auto& get_data() const noexcept { return m_data; }
 
     View(Data<formalism::ArithmeticOperator<T>> data, const C& context) : m_context(&context), m_data(data) {}
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

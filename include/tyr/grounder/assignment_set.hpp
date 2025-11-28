@@ -36,9 +36,9 @@ namespace tyr::grounder
 
 struct PerfectAssignmentHash
 {
-    size_t m_num_assignments;                        ///< The number of type legal [i/o] including a sentinel for each i
-    std::vector<std::vector<uint32_t>> m_remapping;  ///< The remapping of o in O to index for each type legal [i/o]
-    std::vector<uint32_t> m_offsets;                 ///< The offsets of i
+    size_t m_num_assignments;                      ///< The number of type legal [i/o] including a sentinel for each i
+    std::vector<std::vector<uint_t>> m_remapping;  ///< The remapping of o in O to index for each type legal [i/o]
+    std::vector<uint_t> m_offsets;                 ///< The offsets of i
 
     PerfectAssignmentHash(const analysis::DomainListList& parameter_domains, size_t num_objects) : m_num_assignments(0), m_remapping(), m_offsets()
     {

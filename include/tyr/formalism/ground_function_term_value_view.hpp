@@ -44,6 +44,8 @@ public:
     auto get_index() const { return m_data; }
     auto get_fterm() const { return View<Index<formalism::GroundFunctionTerm<T>>, C>(get().fterm, *m_context); }
     auto get_value() const { return get().value; }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

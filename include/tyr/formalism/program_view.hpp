@@ -69,6 +69,8 @@ public:
         return View<IndexList<formalism::GroundFunctionTermValue<T>>, C>(get().template get_fterm_values<T>(), *m_context);
     }
     auto get_rules() const { return View<IndexList<formalism::Rule>, C>(get().rules, *m_context); }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

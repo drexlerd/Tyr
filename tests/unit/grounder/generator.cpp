@@ -119,6 +119,16 @@ TEST(TyrTests, TyrGrounderGenerator)
         grounder::ground(immutable_workspace, mutable_workspace);
     }
 
-    // TODO: merge the ScopeRepositories into the global one
+    // Merge the ScopeRepositories into the global one
+    auto buffer = buffer::Buffer {};
+    auto merge_cache = formalism::MergeCache<formalism::ScopedRepository<Repository>, Repository> {};
+    for (uint_t i = 0; i < program.get_rules().size(); ++i)
+    {
+        for (const auto ground_rule_index : ground_rules[i])
+        {
+            auto ground_rule = View<Index<formalism::GroundRule>, formalism::ScopedRepository<Repository>>(ground_rule_index, rule_scoped_repositories[i]);
+            formalism::merge(ground_rule, builders[i], repository, buffer, merge_cache);
+        }
+    }
 }
 }

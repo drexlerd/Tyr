@@ -44,6 +44,8 @@ public:
     auto get_index() const { return m_data; }
     const auto& get_name() const { return get().name; }
     auto get_arity() const { return get().arity; }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

@@ -45,6 +45,8 @@ public:
     auto get_predicate() const { return View<Index<formalism::Predicate<T>>, C>(m_data.group, *m_context); }
     auto get_atom() const { return View<Index<formalism::Atom<T>>, C>(get().atom_index, *m_context); }
     auto get_polarity() const { return get().polarity; }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

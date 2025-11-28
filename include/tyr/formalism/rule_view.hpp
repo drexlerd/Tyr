@@ -45,6 +45,8 @@ public:
     auto get_index() const { return m_data; }
     auto get_body() const { return View<Index<formalism::ConjunctiveCondition>, C>(get().body, *m_context); }
     auto get_head() const { return View<Index<formalism::Atom<formalism::FluentTag>>, C>(get().head, *m_context); }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

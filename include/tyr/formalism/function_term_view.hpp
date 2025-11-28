@@ -44,6 +44,8 @@ public:
     auto get_index() const { return m_data; }
     auto get_function() const { return View<Index<formalism::Function<T>>, C>(m_data.group, *m_context); }
     auto get_terms() const { return View<DataList<formalism::Term>, C>(get().terms, *m_context); }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 

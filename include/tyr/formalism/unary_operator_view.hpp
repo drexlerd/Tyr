@@ -54,6 +54,8 @@ public:
             return get().arg;
         }
     }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 
 }

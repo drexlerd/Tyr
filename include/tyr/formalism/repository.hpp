@@ -258,6 +258,7 @@ public:
         return repository.size();
     }
 
+    /// @brief Clear the repository but keep memory allocated.
     void clear() noexcept
     {
         boost::hana::for_each(m_repository,

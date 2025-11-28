@@ -56,6 +56,8 @@ public:
         return View<DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>, C>(get().numeric_constraints, *m_context);
     }
     auto get_arity() const { return get().objects.size(); }
+
+    auto identifying_members() const noexcept { return std::tie(m_context, m_data); }
 };
 }
 
