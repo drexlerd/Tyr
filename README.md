@@ -71,7 +71,31 @@ auto solution = solver.solve(fluent_facts, goal, annotated, weighted);
 
 ## 4 PDDL Interface
 
-The high level C++ planning interface aims to be as follows.
+The high level C++ planning interface aims to be as follows. 
+
+## 4.1 Grounded Planning
+
+```cpp
+#include <tyr/tyr.hpp>
+
+auto parser = tyr::formalism::planning::Parser("domain.pddl");
+auto task = parse.parse_task("problem.pddl");
+
+// Ground the task
+auto ground_task = task.get_ground_task();
+
+// Get the initial node (state + metric value)
+auto initial_node = ground_task.get_initial_node();
+
+// Get the applicable actions
+auto applicable_actions = initial_node.get_applicable_actions();
+
+// Get the successor nodes (states + metric values)
+auto successor_nodes = initial_node.get_successor_nodes();
+
+```
+
+## 4.2 Lifted Planning
 
 ```cpp
 #include <tyr/tyr.hpp>
@@ -87,4 +111,5 @@ auto applicable_actions = initial_node.get_applicable_actions();
 
 // Get the successor nodes (states + metric values)
 auto successor_nodes = initial_node.get_successor_nodes();
+
 ```
