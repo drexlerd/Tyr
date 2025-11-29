@@ -87,9 +87,6 @@ auto ground_task = task.get_ground_task();
 // Get the initial node (state + metric value)
 auto initial_node = ground_task.get_initial_node();
 
-// Get the applicable actions
-auto applicable_actions = initial_node.get_applicable_actions();
-
 // Get the successor nodes (states + metric values)
 auto successor_nodes = initial_node.get_successor_nodes();
 
@@ -105,9 +102,6 @@ auto task = parse.parse_task("problem.pddl");
 
 // Get the initial node (state + metric value)
 auto initial_node = task.get_initial_node();
-
-// Get the applicable actions
-auto applicable_actions = initial_node.get_applicable_actions();
 
 // Get the successor nodes (states + metric values)
 auto successor_nodes = initial_node.get_successor_nodes();

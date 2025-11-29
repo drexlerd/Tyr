@@ -24,19 +24,23 @@
 
 namespace tyr::planning
 {
+template<typename Task>
 class State
 {
 public:
-    State(Task& task, SharedObjectPoolPtr<UnpackedState> unpacked) noexcept;
+    State(Task& task, SharedObjectPoolPtr<UnpackedState> unpacked) noexcept : m_unpacked(unpacked), m_task(&task) {}
 
-    StateIndex get_index() const noexcept;
+    StateIndex get_index() const noexcept { return m_unpacked->get_index(); }
 
     template<formalism::IsFactTag T>
-    const boost::dynamic_bitset<>& get_atoms() const noexcept;
+    const boost::dynamic_bitset<>& get_atoms() const noexcept
+    {
+        return m_unpacked->get_atoms<T>();
+    }
 
-    const std::vector<float_t>& get_numeric_variables() const noexcept;
+    const std::vector<float_t>& get_numeric_variables() const noexcept { return m_unpacked->get_numeric_variables(); }
 
-    Task& get_task() noexcept;
+    Task& get_task() noexcept { return *m_task; }
 
 private:
     SharedObjectPoolPtr<UnpackedState> m_unpacked;

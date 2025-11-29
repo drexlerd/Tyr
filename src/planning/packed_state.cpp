@@ -42,6 +42,9 @@ valla::Slot<uint_t> PackedState::get_atoms() const noexcept
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
+template valla::Slot<uint_t> PackedState::get_atoms<formalism::FluentTag>() const noexcept;
+template valla::Slot<uint_t> PackedState::get_atoms<formalism::DerivedTag>() const noexcept;
+
 valla::Slot<uint_t> PackedState::get_numeric_variables() const noexcept { return m_numeric_variables; }
 
 }

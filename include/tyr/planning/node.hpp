@@ -24,24 +24,36 @@
 
 namespace tyr::planning
 {
+template<typename Task>
 class Node
 {
 public:
-    Node(StateIndex state_index, float_t state_metric, planning::Task& task) noexcept;
+    Node() noexcept : m_task(nullptr), m_state_metric(), m_state_index(StateIndex::max()) {}
+    Node(StateIndex state_index, float_t state_metric, Task& task) noexcept : m_task(&task), m_state_metric(state_metric), m_state_index(state_index) {}
 
-    State get_state() const;
-    Task& get_task() noexcept;
-    float_t get_state_metric() const noexcept;
-    StateIndex get_state_index() const noexcept;
+    State<Task> get_state() const { return m_task->get_state(m_state_index); }
+    Task& get_task() noexcept { return *m_task; }
+    float_t get_state_metric() const noexcept { return m_state_metric; }
+    StateIndex get_state_index() const noexcept { return m_state_index; }
 
-    // TODO: get_successor_states()
-    // TODO: get_applicable_actions()
+    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<Task>>> get_successor_nodes()
+    {
+        return m_task->get_successor_nodes(*this);
+    }
+
+    void get_successor_nodes(std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<Task>>>& out_nodes)
+    {
+        m_task->get_successor_nodes(*this, out_nodes);
+    }
 
 private:
-    planning::Task* m_task;
+    Task* m_task;
     float_t m_state_metric;
     StateIndex m_state_index;
 };
+
+template<typename Task>
+using NodeList = std::vector<Node<Task>>;
 }
 
 #endif

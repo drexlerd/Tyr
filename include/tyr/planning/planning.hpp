@@ -19,11 +19,12 @@
 #define TYR_PLANNING_PLANNING_HPP_
 
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/ground_task.hpp"
+#include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/node.hpp"
 #include "tyr/planning/packed_state.hpp"
 #include "tyr/planning/state.hpp"
 #include "tyr/planning/state_index.hpp"
-#include "tyr/planning/task.hpp"
 #include "tyr/planning/unpacked_state.hpp"
 
 #endif

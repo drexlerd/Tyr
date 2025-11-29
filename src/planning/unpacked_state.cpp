@@ -35,6 +35,9 @@ boost::dynamic_bitset<>& UnpackedState::get_atoms() noexcept
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
+template boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::FluentTag>() noexcept;
+template boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::DerivedTag>() noexcept;
+
 template<formalism::IsFactTag T>
 const boost::dynamic_bitset<>& UnpackedState::get_atoms() const noexcept
 {
@@ -45,6 +48,9 @@ const boost::dynamic_bitset<>& UnpackedState::get_atoms() const noexcept
     else
         static_assert(dependent_false<T>::value, "Missing case");
 }
+
+template const boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::FluentTag>() const noexcept;
+template const boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::DerivedTag>() const noexcept;
 
 std::vector<float_t>& UnpackedState::get_numeric_variables() noexcept { return m_numeric_variables; }
 

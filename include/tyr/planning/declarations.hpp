@@ -22,11 +22,13 @@ namespace tyr::planning
 {
 class PackedState;
 class UnpackedState;
+template<typename Task>
 class State;
-
+template<typename Task>
 class Node;
 
-class Task;
+class LiftedTask;
+class GroundTask;
 }
 
 #endif
