@@ -141,15 +141,16 @@ public:
 
     Node<Task> get_initial_node() { return m_initial_node; }
 
-    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<Task>>> get_successor_nodes(const Node<Task>& node)
+    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<Task>>>
+    get_labeled_successor_nodes(const Node<Task>& node)
     {
-        return self().get_successor_nodes_impl(node);
+        return self().get_labeled_successor_nodes_impl(node);
     }
 
-    void get_successor_nodes(const Node<Task>& node,
-                             std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<Task>>>& out_nodes)
+    void get_labeled_successor_nodes(const Node<Task>& node,
+                                     std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<Task>>>& out_nodes)
     {
-        self().get_successor_nodes_impl(node, out_nodes);
+        self().get_labeled_successor_nodes_impl(node, out_nodes);
     }
 
 protected:

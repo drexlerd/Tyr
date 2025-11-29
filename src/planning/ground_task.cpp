@@ -26,13 +26,13 @@ GroundTask::GroundTask(std::shared_ptr<formalism::Repository> repository, Index<
 }
 
 std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<GroundTask>>>
-GroundTask::get_successor_nodes_impl(const Node<GroundTask>& node)
+GroundTask::get_labeled_successor_nodes_impl(const Node<GroundTask>& node)
 {
     auto result = std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<GroundTask>>> {};
     return result;
 }
 
-void GroundTask::get_successor_nodes_impl(
+void GroundTask::get_labeled_successor_nodes_impl(
     const Node<GroundTask>& node,
     std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<GroundTask>>>& out_nodes)
 {

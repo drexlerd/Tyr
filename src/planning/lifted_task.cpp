@@ -26,13 +26,13 @@ LiftedTask::LiftedTask(std::shared_ptr<formalism::Repository> repository, Index<
 }
 
 std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<LiftedTask>>>
-LiftedTask::get_successor_nodes_impl(const Node<LiftedTask>& node)
+LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
 {
     auto result = std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<LiftedTask>>> {};
     return result;
 }
 
-void LiftedTask::get_successor_nodes_impl(
+void LiftedTask::get_labeled_successor_nodes_impl(
     const Node<LiftedTask>& node,
     std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<LiftedTask>>>& out_nodes)
 {

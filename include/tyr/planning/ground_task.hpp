@@ -32,10 +32,11 @@ public:
     GroundTask(std::shared_ptr<formalism::Repository> repository, Index<formalism::planning::Task> task_index);
 
     std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<GroundTask>>>
-    get_successor_nodes_impl(const Node<GroundTask>& node);
+    get_labeled_successor_nodes_impl(const Node<GroundTask>& node);
 
-    void get_successor_nodes_impl(const Node<GroundTask>& node,
-                                  std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<GroundTask>>>& out_nodes);
+    void get_labeled_successor_nodes_impl(
+        const Node<GroundTask>& node,
+        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::Repository>, Node<GroundTask>>>& out_nodes);
 };
 
 }
