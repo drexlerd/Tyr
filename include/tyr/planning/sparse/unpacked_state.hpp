@@ -15,12 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_UNPACKED_STATE_HPP_
-#define TYR_PLANNING_UNPACKED_STATE_HPP_
+#ifndef TYR_PLANNING_SPARSE_UNPACKED_STATE_HPP_
+#define TYR_PLANNING_SPARSE_UNPACKED_STATE_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/planning/packed_state.hpp"
 #include "tyr/planning/state_index.hpp"
 
 #include <boost/dynamic_bitset.hpp>
@@ -28,10 +27,10 @@
 
 namespace tyr::planning
 {
-class UnpackedState
+class SparseUnpackedState
 {
 public:
-    UnpackedState() = default;
+    SparseUnpackedState() = default;
 
     StateIndex& get_index() noexcept;
 

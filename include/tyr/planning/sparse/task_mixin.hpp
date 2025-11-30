@@ -15,17 +15,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_TASK_MIXIN_HPP_
-#define TYR_PLANNING_TASK_MIXIN_HPP_
+#ifndef TYR_PLANNING_SPARSE_TASK_MIXIN_HPP_
+#define TYR_PLANNING_SPARSE_TASK_MIXIN_HPP_
 
 #include "tyr/common/common.hpp"
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/planning/domain.hpp"
-#include "tyr/planning/node.hpp"
-#include "tyr/planning/packed_state.hpp"
-#include "tyr/planning/state.hpp"
+#include "tyr/planning/sparse/node.hpp"
+#include "tyr/planning/sparse/packed_state.hpp"
+#include "tyr/planning/sparse/state.hpp"
+#include "tyr/planning/sparse/unpacked_state.hpp"
 #include "tyr/planning/state_index.hpp"
-#include "tyr/planning/unpacked_state.hpp"
 
 #include <algorithm>
 #include <boost/dynamic_bitset.hpp>
@@ -97,7 +97,7 @@ static valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float
 }
 
 template<typename Task>
-class TaskMixin
+class SparseTaskMixin
 {
 private:
     /// @brief Helper to cast to Task.
@@ -105,10 +105,10 @@ private:
     constexpr auto& self() { return static_cast<Task&>(*this); }
 
 public:
-    TaskMixin(std::shared_ptr<Domain> domain,
-              std::shared_ptr<formalism::Repository> repository,
-              std::shared_ptr<formalism::ScopedRepository<formalism::Repository>> scoped_repository,
-              View<Index<formalism::planning::Task>, formalism::ScopedRepository<formalism::Repository>> task) :
+    SparseTaskMixin(std::shared_ptr<Domain> domain,
+                    std::shared_ptr<formalism::Repository> repository,
+                    std::shared_ptr<formalism::ScopedRepository<formalism::Repository>> scoped_repository,
+                    View<Index<formalism::planning::Task>, formalism::ScopedRepository<formalism::Repository>> task) :
         m_domain(std::move(domain)),
         m_repository(std::move(repository)),
         m_scoped_repository(std::move(scoped_repository)),
@@ -116,7 +116,7 @@ public:
     {
     }
 
-    State<Task> get_state(StateIndex state_index)
+    SparseState<Task> get_state(StateIndex state_index)
     {
         const auto& packed_state = m_packed_states[state_index];
 
@@ -130,10 +130,10 @@ public:
         fill_atoms(packed_state.get_atoms<formalism::DerivedTag>(), m_uint_nodes, buffer, unpacked_state->get_atoms<formalism::DerivedTag>());
         fill_numeric_variables(packed_state.get_numeric_variables(), m_uint_nodes, m_float_nodes, buffer, unpacked_state->get_numeric_variables());
 
-        return State(*this, std::move(unpacked_state));
+        return SparseState(*this, std::move(unpacked_state));
     }
 
-    StateIndex register_state(const UnpackedState& state)
+    StateIndex register_state(const SparseUnpackedState& state)
     {
         thread_local auto buffer = std::vector<uint_t> {};
 
@@ -141,22 +141,22 @@ public:
         auto derived_atoms = create_atoms_slot(state.get_atoms<formalism::DerivedTag>(), buffer, m_uint_nodes);
         auto numeric_variables = create_numeric_variables_slot(state.get_numeric_variables(), buffer, m_uint_nodes, m_float_nodes);
 
-        return m_packed_states.insert(PackedState(StateIndex(m_packed_states.size()), fluent_atoms, derived_atoms, numeric_variables));
+        return m_packed_states.insert(SparsePackedState(StateIndex(m_packed_states.size()), fluent_atoms, derived_atoms, numeric_variables));
     }
 
     View<Index<formalism::planning::Task>, formalism::ScopedRepository<formalism::Repository>> get_task() const;
 
-    Node<Task> get_initial_node() { return m_initial_node; }
+    SparseNode<Task> get_initial_node() { return m_initial_node; }
 
-    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<Task>>>
-    get_labeled_successor_nodes(const Node<Task>& node)
+    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<Task>>>
+    get_labeled_successor_nodes(const SparseNode<Task>& node)
     {
         return self().get_labeled_successor_nodes_impl(node);
     }
 
     void get_labeled_successor_nodes(
-        const Node<Task>& node,
-        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<Task>>>& out_nodes)
+        const SparseNode<Task>& node,
+        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<Task>>>& out_nodes)
     {
         self().get_labeled_successor_nodes_impl(node, out_nodes);
     }
@@ -170,11 +170,11 @@ protected:
     // States
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;
     valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
-    IndexedHashSet<PackedState, StateIndex> m_packed_states;
-    SharedObjectPool<UnpackedState> m_unpacked_state_pool;
+    IndexedHashSet<SparsePackedState, StateIndex> m_packed_states;
+    SharedObjectPool<SparseUnpackedState> m_unpacked_state_pool;
 
     // Initial node
-    Node<Task> m_initial_node;
+    SparseNode<Task> m_initial_node;
 };
 
 }

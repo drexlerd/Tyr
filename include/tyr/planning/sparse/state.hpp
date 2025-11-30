@@ -15,20 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_STATE_HPP_
-#define TYR_PLANNING_STATE_HPP_
+#ifndef TYR_PLANNING_SPARSE_STATE_HPP_
+#define TYR_PLANNING_SPARSE_STATE_HPP_
 
 #include "tyr/common/shared_object_pool.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/unpacked_state.hpp"
+#include "tyr/planning/sparse/unpacked_state.hpp"
 
 namespace tyr::planning
 {
 template<typename Task>
-class State
+class SparseState
 {
 public:
-    State(Task& task, SharedObjectPoolPtr<UnpackedState> unpacked) noexcept : m_unpacked(unpacked), m_task(&task) {}
+    SparseState(Task& task, SharedObjectPoolPtr<SparseUnpackedState> unpacked) noexcept : m_unpacked(unpacked), m_task(&task) {}
 
     StateIndex get_index() const noexcept { return m_unpacked->get_index(); }
 
@@ -43,7 +43,7 @@ public:
     Task& get_task() noexcept { return *m_task; }
 
 private:
-    SharedObjectPoolPtr<UnpackedState> m_unpacked;
+    SharedObjectPoolPtr<SparseUnpackedState> m_unpacked;
     Task* m_task;
 };
 }

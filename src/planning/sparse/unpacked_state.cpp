@@ -15,17 +15,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/unpacked_state.hpp"
+#include "tyr/planning/sparse/unpacked_state.hpp"
 
 namespace tyr::planning
 {
 
-StateIndex& UnpackedState::get_index() noexcept { return m_index; }
+StateIndex& SparseUnpackedState::get_index() noexcept { return m_index; }
 
-StateIndex UnpackedState::get_index() const noexcept { return m_index; }
+StateIndex SparseUnpackedState::get_index() const noexcept { return m_index; }
 
 template<formalism::IsFactTag T>
-boost::dynamic_bitset<>& UnpackedState::get_atoms() noexcept
+boost::dynamic_bitset<>& SparseUnpackedState::get_atoms() noexcept
 {
     if constexpr (std::same_as<T, formalism::FluentTag>)
         return m_fluent_atoms;
@@ -35,11 +35,11 @@ boost::dynamic_bitset<>& UnpackedState::get_atoms() noexcept
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
-template boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::FluentTag>() noexcept;
-template boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::DerivedTag>() noexcept;
+template boost::dynamic_bitset<>& SparseUnpackedState::get_atoms<formalism::FluentTag>() noexcept;
+template boost::dynamic_bitset<>& SparseUnpackedState::get_atoms<formalism::DerivedTag>() noexcept;
 
 template<formalism::IsFactTag T>
-const boost::dynamic_bitset<>& UnpackedState::get_atoms() const noexcept
+const boost::dynamic_bitset<>& SparseUnpackedState::get_atoms() const noexcept
 {
     if constexpr (std::same_as<T, formalism::FluentTag>)
         return m_fluent_atoms;
@@ -49,14 +49,14 @@ const boost::dynamic_bitset<>& UnpackedState::get_atoms() const noexcept
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
-template const boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::FluentTag>() const noexcept;
-template const boost::dynamic_bitset<>& UnpackedState::get_atoms<formalism::DerivedTag>() const noexcept;
+template const boost::dynamic_bitset<>& SparseUnpackedState::get_atoms<formalism::FluentTag>() const noexcept;
+template const boost::dynamic_bitset<>& SparseUnpackedState::get_atoms<formalism::DerivedTag>() const noexcept;
 
-std::vector<float_t>& UnpackedState::get_numeric_variables() noexcept { return m_numeric_variables; }
+std::vector<float_t>& SparseUnpackedState::get_numeric_variables() noexcept { return m_numeric_variables; }
 
-const std::vector<float_t>& UnpackedState::get_numeric_variables() const noexcept { return m_numeric_variables; }
+const std::vector<float_t>& SparseUnpackedState::get_numeric_variables() const noexcept { return m_numeric_variables; }
 
-void UnpackedState::clear()
+void SparseUnpackedState::clear()
 {
     m_fluent_atoms.clear();
     m_derived_atoms.clear();

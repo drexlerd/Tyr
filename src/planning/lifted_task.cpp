@@ -24,23 +24,24 @@ LiftedTask::LiftedTask(std::shared_ptr<Domain> domain,
                        std::shared_ptr<formalism::Repository> repository,
                        std::shared_ptr<formalism::ScopedRepository<formalism::Repository>> scoped_repository,
                        View<Index<formalism::planning::Task>, formalism::ScopedRepository<formalism::Repository>> task) :
-    TaskMixin(std::move(domain), std::move(repository), std::move(scoped_repository), task),
+    SparseTaskMixin(std::move(domain), std::move(repository), std::move(scoped_repository), task),
     m_delete_free_program_repository(std::make_shared<formalism::Repository>()),
     m_delete_free_program(View<Index<formalism::Program>, formalism::Repository>(Index<formalism::Program>(0), *m_delete_free_program_repository))
 {
 }
 
-std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<LiftedTask>>>
-LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
+std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<LiftedTask>>>
+LiftedTask::get_labeled_successor_nodes_impl(const SparseNode<LiftedTask>& node)
 {
     auto result =
-        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<LiftedTask>>> {};
+        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<LiftedTask>>> {};
     return result;
 }
 
 void LiftedTask::get_labeled_successor_nodes_impl(
-    const Node<LiftedTask>& node,
-    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<LiftedTask>>>& out_nodes)
+    const SparseNode<LiftedTask>& node,
+    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<LiftedTask>>>&
+        out_nodes)
 {
 }
 

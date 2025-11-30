@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_PACKED_STATE_HPP_
-#define TYR_PLANNING_PACKED_STATE_HPP_
+#ifndef TYR_PLANNING_SPARSE_PACKED_STATE_HPP_
+#define TYR_PLANNING_SPARSE_PACKED_STATE_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/common/equal_to.hpp"
@@ -28,10 +28,10 @@
 
 namespace tyr::planning
 {
-class PackedState
+class SparsePackedState
 {
 public:
-    PackedState(StateIndex index, valla::Slot<uint_t> fluent_atoms, valla::Slot<uint_t> derived_atoms, valla::Slot<uint_t> numeric_variables) noexcept;
+    SparsePackedState(StateIndex index, valla::Slot<uint_t> fluent_atoms, valla::Slot<uint_t> derived_atoms, valla::Slot<uint_t> numeric_variables) noexcept;
 
     StateIndex get_index() const noexcept;
 
