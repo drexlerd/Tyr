@@ -154,6 +154,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& function = builder.template get_function<Tag>();
+            function.clear();
             function.name = element->get_name();
             function.arity = element->get_parameters().size();
             formalism::canonicalize(function);
@@ -172,6 +173,7 @@ private:
     Index<formalism::Object> translate_common(loki::Object element, formalism::Builder& builder, C& context)
     {
         auto& object = builder.get_object();
+        object.clear();
         object.name = element->get_name();
         formalism::canonicalize(object);
         return context.get_or_create(object, builder.get_buffer());
@@ -191,6 +193,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& predicate = builder.template get_predicate<Tag>();
+            predicate.clear();
             predicate.name = element->get_name();
             predicate.arity = element->get_parameters().size();
             formalism::canonicalize(predicate);
@@ -209,6 +212,7 @@ private:
     Index<formalism::Variable> translate_common(loki::Variable element, formalism::Builder& builder, C& context)
     {
         auto& variable = builder.get_variable();
+        variable.clear();
         variable.name = element->get_name();
         formalism::canonicalize(variable);
         return context.get_or_create(variable, builder.get_buffer());
@@ -258,6 +262,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& atom = builder.template get_atom<Tag>();
+            atom.clear();
             atom.predicate = predicate_index;
             atom.terms = this->translate_lifted(element->get_terms(), builder, context);
             formalism::canonicalize(atom);
@@ -290,6 +295,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& literal = builder.template get_literal<Tag>();
+            literal.clear();
             literal.atom = atom_index;
             literal.polarity = element->get_polarity();
             formalism::canonicalize(literal);
@@ -326,6 +332,7 @@ private:
             using Tag = std::decay_t<decltype(op_tag)>;
 
             auto& binary = builder.template get_binary<Tag>();
+            binary.clear();
             auto lhs_result = translate_lifted(element->get_left_function_expression(), builder, context);
             auto rhs_result = translate_lifted(element->get_right_function_expression(), builder, context);
             binary.lhs = lhs_result;
@@ -357,6 +364,7 @@ private:
             using Tag = std::decay_t<decltype(op_tag)>;
 
             auto& multi = builder.template get_multi<Tag>();
+            multi.clear();
             multi.args = translate_lifted(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
             return context.get_or_create(multi, builder.get_buffer());
@@ -377,6 +385,7 @@ private:
     Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionMinus element, formalism::Builder& builder, C& context)
     {
         auto& minus = builder.template get_unary<formalism::OpSub>();
+        minus.clear();
         minus.arg = translate_lifted(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
         return context.get_or_create(minus, builder.get_buffer());
@@ -404,6 +413,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& fterm = builder.template get_fterm<Tag>();
+            fterm.clear();
             fterm.function = function_index;
             fterm.terms = this->translate_lifted(element->get_terms(), builder, context);
             formalism::canonicalize(fterm);
@@ -414,6 +424,7 @@ private:
             [&](auto&& arg) -> IndexFunctionTermVariant
             {
                 using T = std::decay_t<decltype(arg)>;
+
                 if constexpr (std::is_same_v<T, Index<formalism::Function<formalism::StaticTag>>>)
                     return build_function_term(formalism::StaticTag {}, arg);
                 else if constexpr (std::is_same_v<T, Index<formalism::Function<formalism::FluentTag>>>)
@@ -435,6 +446,7 @@ private:
             using Tag = std::decay_t<decltype(op_tag)>;
 
             auto& binary = builder.template get_binary<Tag>();
+            binary.clear();
             auto lhs_result = translate_lifted(element->get_left_function_expression(), builder, context);
             auto rhs_result = translate_lifted(element->get_right_function_expression(), builder, context);
             binary.lhs = lhs_result;
@@ -465,6 +477,81 @@ private:
     translate_lifted(loki::Condition element, const IndexList<formalism::Variable>& parameters, formalism::Builder& builder, C& context)
     {
         auto& conj_condition = builder.get_conj_cond();
+        conj_condition.clear();
+
+        conj_condition.variables = parameters;
+
+        const auto func_insert_literal = [](IndexLiteralVariant index_literal_variant,
+                                            IndexList<formalism::Literal<formalism::StaticTag>>& static_literals,
+                                            IndexList<formalism::Literal<formalism::FluentTag>>& fluent_literals,
+                                            IndexList<formalism::Literal<formalism::DerivedTag>>& derived_literals)
+        {
+            std::visit(
+                [&](auto&& arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::StaticTag>>>)
+                        static_literals.push_back(arg);
+                    else if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::FluentTag>>>)
+                        fluent_literals.push_back(arg);
+                    else if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::DerivedTag>>>)
+                        derived_literals.push_back(arg);
+                    else
+                        static_assert(dependent_false<T>::value, "Missing case for type");
+                },
+                index_literal_variant);
+        };
+
+        if (const auto condition_and = std::get_if<loki::ConditionAnd>(&element->get_condition()))
+        {
+            for (const auto& part : (*condition_and)->get_conditions())
+            {
+                if (const auto condition_literal = std::get_if<loki::ConditionLiteral>(&part->get_condition()))
+                {
+                    const auto index_literal_variant = translate_lifted((*condition_literal)->get_literal(), builder, context);
+
+                    func_insert_literal(index_literal_variant, conj_condition.static_literals, conj_condition.fluent_literals, conj_condition.derived_literals);
+                }
+                else if (const auto condition_numeric_constraint = std::get_if<loki::ConditionNumericConstraint>(&part->get_condition()))
+                {
+                    const auto numeric_constraint = translate_lifted((*condition_numeric_constraint), builder, context);
+
+                    conj_condition.numeric_constraints.push_back(numeric_constraint);
+                }
+                else
+                {
+                    // std::cout << std::visit([](auto&& arg) { return arg.str(); }, *part) << std::endl;
+
+                    throw std::logic_error("Expected literal in conjunctive condition.");
+                }
+            }
+
+            formalism::canonicalize(conj_condition);
+            return context.get_or_create(conj_condition, builder.get_buffer());
+        }
+        else if (const auto condition_literal = std::get_if<loki::ConditionLiteral>(&element->get_condition()))
+        {
+            const auto index_literal_variant = translate_lifted((*condition_literal)->get_literal(), builder, context);
+
+            func_insert_literal(index_literal_variant, conj_condition.static_literals, conj_condition.fluent_literals, conj_condition.derived_literals);
+
+            formalism::canonicalize(conj_condition);
+            return context.get_or_create(conj_condition, builder.get_buffer());
+        }
+        else if (const auto condition_numeric_constraint = std::get_if<loki::ConditionNumericConstraint>(&element->get_condition()))
+        {
+            const auto numeric_constraint = translate_lifted((*condition_numeric_constraint), builder, context);
+
+            conj_condition.numeric_constraints.push_back(numeric_constraint);
+
+            formalism::canonicalize(conj_condition);
+            return context.get_or_create(conj_condition, builder.get_buffer());
+        }
+
+        // std::cout << std::visit([](auto&& arg) { return arg.str(); }, *condition_ptr) << std::endl;
+
+        throw std::logic_error("Expected conjunctive condition.");
     }
 
     template<formalism::Context C>
@@ -518,6 +605,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& atom = builder.template get_ground_atom<Tag>();
+            atom.clear();
             atom.predicate = predicate_index;
             atom.terms = this->translate_grounded(element->get_terms(), builder, context);
             formalism::canonicalize(atom);
@@ -550,6 +638,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& literal = builder.template get_ground_literal<Tag>();
+            literal.clear();
             literal.atom = atom_index;
             literal.polarity = element->get_polarity();
             formalism::canonicalize(literal);
@@ -586,6 +675,7 @@ private:
             using Tag = std::decay_t<decltype(op_tag)>;
 
             auto& binary = builder.template get_ground_binary<Tag>();
+            binary.clear();
             auto lhs_result = translate_grounded(element->get_left_function_expression(), builder, context);
             auto rhs_result = translate_grounded(element->get_right_function_expression(), builder, context);
             binary.lhs = lhs_result;
@@ -617,6 +707,7 @@ private:
             using Tag = std::decay_t<decltype(op_tag)>;
 
             auto& multi = builder.template get_ground_multi<Tag>();
+            multi.clear();
             multi.args = translate_grounded(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
             return context.get_or_create(multi, builder.get_buffer());
@@ -637,6 +728,7 @@ private:
     Data<formalism::GroundFunctionExpression> translate_grounded(loki::FunctionExpressionMinus element, formalism::Builder& builder, C& context)
     {
         auto& minus = builder.template get_ground_unary<formalism::OpSub>();
+        minus.clear();
         minus.arg = translate_grounded(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
         return context.get_or_create(minus, builder.get_buffer());
@@ -664,6 +756,7 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
 
             auto& fterm = builder.template get_ground_fterm<Tag>();
+            fterm.clear();
             fterm.function = function_index;
             fterm.terms = this->translate_grounded(element->get_terms(), builder, context);
             formalism::canonicalize(fterm);
@@ -694,11 +787,83 @@ private:
     translate_grounded(loki::ConditionNumericConstraint element, formalism::Builder& builder, C& context);
 
     template<formalism::Context C>
-    std::tuple<IndexList<formalism::GroundLiteral<formalism::StaticTag>>,
-               IndexList<formalism::GroundLiteral<formalism::FluentTag>>,
-               IndexList<formalism::GroundLiteral<formalism::DerivedTag>>,
-               DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>>
-    translate_grounded(loki::Condition element, formalism::Builder& builder, C& context);
+    Index<formalism::GroundConjunctiveCondition> translate_grounded(loki::Condition element, formalism::Builder& builder, C& context)
+    {
+        auto& conj_condition = builder.get_ground_conj_cond();
+        conj_condition.clear();
+
+        const auto func_insert_literal = [](IndexLiteralVariant index_literal_variant,
+                                            IndexList<formalism::GroundLiteral<formalism::StaticTag>>& static_literals,
+                                            IndexList<formalism::GroundLiteral<formalism::FluentTag>>& fluent_literals,
+                                            IndexList<formalism::GroundLiteral<formalism::DerivedTag>>& derived_literals)
+        {
+            std::visit(
+                [&](auto&& arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::StaticTag>>>)
+                        static_literals.push_back(arg);
+                    else if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::FluentTag>>>)
+                        fluent_literals.push_back(arg);
+                    else if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::DerivedTag>>>)
+                        derived_literals.push_back(arg);
+                    else
+                        static_assert(dependent_false<T>::value, "Missing case for type");
+                },
+                index_literal_variant);
+        };
+
+        if (const auto condition_and = std::get_if<loki::ConditionAnd>(&element->get_condition()))
+        {
+            for (const auto& part : (*condition_and)->get_conditions())
+            {
+                if (const auto condition_literal = std::get_if<loki::ConditionLiteral>(&part->get_condition()))
+                {
+                    const auto index_literal_variant = translate_grounded((*condition_literal)->get_literal(), builder, context);
+
+                    func_insert_literal(index_literal_variant, conj_condition.static_literals, conj_condition.fluent_literals, conj_condition.derived_literals);
+                }
+                else if (const auto condition_numeric_constraint = std::get_if<loki::ConditionNumericConstraint>(&part->get_condition()))
+                {
+                    const auto numeric_constraint = translate_grounded((*condition_numeric_constraint), builder, context);
+
+                    conj_condition.numeric_constraints.push_back(numeric_constraint);
+                }
+                else
+                {
+                    // std::cout << std::visit([](auto&& arg) { return arg.str(); }, *part) << std::endl;
+
+                    throw std::logic_error("Expected literal in conjunctive condition.");
+                }
+            }
+
+            formalism::canonicalize(conj_condition);
+            return context.get_or_create(conj_condition, builder.get_buffer());
+        }
+        else if (const auto condition_literal = std::get_if<loki::ConditionLiteral>(&element->get_condition()))
+        {
+            const auto index_literal_variant = translate_grounded((*condition_literal)->get_literal(), builder, context);
+
+            func_insert_literal(index_literal_variant, conj_condition.static_literals, conj_condition.fluent_literals, conj_condition.derived_literals);
+
+            formalism::canonicalize(conj_condition);
+            return context.get_or_create(conj_condition, builder.get_buffer());
+        }
+        else if (const auto condition_numeric_constraint = std::get_if<loki::ConditionNumericConstraint>(&element->get_condition()))
+        {
+            const auto numeric_constraint = translate_grounded((*condition_numeric_constraint), builder, context);
+
+            conj_condition.numeric_constraints.push_back(numeric_constraint);
+
+            formalism::canonicalize(conj_condition);
+            return context.get_or_create(conj_condition, builder.get_buffer());
+        }
+
+        // std::cout << std::visit([](auto&& arg) { return arg.str(); }, *condition_ptr) << std::endl;
+
+        throw std::logic_error("Expected conjunctive condition.");
+    }
 
     template<formalism::Context C>
     Index<formalism::Metric> translate_grounded(loki::OptimizationMetric element, formalism::Builder& builder, C& context);

@@ -23,7 +23,6 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_conjunctive_condition_index.hpp"
 #include "tyr/formalism/ground_literal_index.hpp"
-#include "tyr/formalism/object_index.hpp"
 
 namespace tyr
 {
@@ -33,7 +32,6 @@ struct Data<formalism::GroundConjunctiveCondition>
     using Tag = formalism::GroundConjunctiveCondition;
 
     Index<formalism::GroundConjunctiveCondition> index;
-    IndexList<formalism::Object> objects;
     IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_literals;
     IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_literals;
     IndexList<formalism::GroundLiteral<formalism::DerivedTag>> derived_literals;  ///< ignored in datalog.
@@ -41,13 +39,11 @@ struct Data<formalism::GroundConjunctiveCondition>
 
     Data() = default;
     Data(Index<formalism::GroundConjunctiveCondition> index,
-         IndexList<formalism::Object> objects,
          IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_literals,
          IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_literals,
          IndexList<formalism::GroundLiteral<formalism::DerivedTag>> derived_literals,
          DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_constraints) :
         index(index),
-        objects(std::move(objects)),
         static_literals(std::move(static_literals)),
         fluent_literals(std::move(fluent_literals)),
         derived_literals(std::move(derived_literals)),
@@ -61,7 +57,6 @@ struct Data<formalism::GroundConjunctiveCondition>
 
     void clear() noexcept
     {
-        objects.clear();
         static_literals.clear();
         fluent_literals.clear();
         derived_literals.clear();
@@ -81,8 +76,8 @@ struct Data<formalism::GroundConjunctiveCondition>
             static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    auto cista_members() const noexcept { return std::tie(index, objects, static_literals, fluent_literals, derived_literals, numeric_constraints); }
-    auto identifying_members() const noexcept { return std::tie(objects, static_literals, fluent_literals, derived_literals, numeric_constraints); }
+    auto cista_members() const noexcept { return std::tie(index, static_literals, fluent_literals, derived_literals, numeric_constraints); }
+    auto identifying_members() const noexcept { return std::tie(static_literals, fluent_literals, derived_literals, numeric_constraints); }
 };
 }
 

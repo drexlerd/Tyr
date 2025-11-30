@@ -35,8 +35,9 @@ View<Index<formalism::GroundAtom<T>>, formalism::OverlayRepository<C>> ground(Vi
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
     auto& atom = builder.template get_ground_atom<T>();
+    atom.clear();
+
     auto& objects = atom.objects;
-    objects.clear();
 
     // Fill data
     atom.predicate = element.get_predicate().get_index();
@@ -77,6 +78,7 @@ View<Index<formalism::GroundLiteral<T>>, formalism::OverlayRepository<C>> ground
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
     auto& ground_literal = builder.template get_ground_literal<T>();
+    ground_literal.clear();
 
     // Fill data
     ground_literal.polarity = element.get_polarity();
@@ -97,8 +99,9 @@ View<Index<formalism::GroundFunctionTerm<T>>, formalism::OverlayRepository<C>> g
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
     auto& fterm = builder.template get_ground_fterm<T>();
+    fterm.clear();
+
     auto& objects = fterm.objects;
-    objects.clear();
 
     // Fill data
     fterm.function = element.get_function().get_index();
@@ -175,6 +178,7 @@ ground(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
     auto& unary = builder.template get_ground_unary<O>();
+    unary.clear();
 
     // Fill data
     unary.arg = ground(element.get_arg(), workspace).get_data();
@@ -193,6 +197,7 @@ ground(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpressio
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
     auto& binary = builder.template get_ground_binary<O>();
+    binary.clear();
 
     // Fill data
     binary.lhs = ground(element.get_lhs(), workspace).get_data();
@@ -212,8 +217,9 @@ ground(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
     auto& multi = builder.template get_ground_multi<O>();
+    multi.clear();
+
     auto& args = multi.args;
-    args.clear();
 
     // Fill data
     for (const auto arg : element.get_args())
@@ -261,18 +267,14 @@ View<Index<formalism::GroundConjunctiveCondition>, formalism::OverlayRepository<
     auto& builder = workspace.builder;
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
-    auto& conj_cond = builder.ground_conj_cond;
-    auto& objects = conj_cond.objects;
+    auto& conj_cond = builder.get_ground_conj_cond();
+    conj_cond.clear();
+
     auto& static_literals = conj_cond.static_literals;
     auto& fluent_literals = conj_cond.fluent_literals;
     auto& numeric_constraints = conj_cond.numeric_constraints;
-    objects.clear();
-    static_literals.clear();
-    fluent_literals.clear();
-    numeric_constraints.clear();
 
     // Fill data
-    objects = binding;
     for (const auto literal : element.template get_literals<formalism::StaticTag>())
         static_literals.push_back(ground(literal, workspace).get_index());
     for (const auto literal : element.template get_literals<formalism::FluentTag>())
@@ -292,7 +294,9 @@ View<Index<formalism::GroundRule>, formalism::OverlayRepository<C>> ground(View<
     auto& builder = workspace.builder;
     auto& repository = workspace.repository;
     auto& buffer = workspace.buffer;
-    auto& rule = builder.ground_rule;
+    auto& rule = builder.get_ground_rule();
+    rule.clear();
+
     auto& body = rule.body;
     auto& head = rule.head;
 

@@ -342,8 +342,6 @@ auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, Builder& buil
                                                       auto& conj_cond = builder.get_ground_conj_cond();
                                                       conj_cond.clear();
 
-                                                      for (const auto object : element.get_objects())
-                                                          conj_cond.objects.push_back(merge(object, builder, destination, cache).get_index());
                                                       for (const auto literal : element.template get_literals<StaticTag>())
                                                           conj_cond.static_literals.push_back(merge(literal, builder, destination, cache).get_index());
                                                       for (const auto literal : element.template get_literals<FluentTag>())

@@ -46,7 +46,6 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_objects() const { return View<IndexList<formalism::Object>, C>(get_data().objects, *m_context); }
     template<formalism::FactKind T>
     auto get_literals() const
     {
