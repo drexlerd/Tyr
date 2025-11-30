@@ -18,17 +18,25 @@
 #ifndef TYR_PLANNING_DECLARATIONS_HPP_
 #define TYR_PLANNING_DECLARATIONS_HPP_
 
+#include "tyr/common/declarations.hpp"
+
+#include <concepts>
+
 namespace tyr::planning
 {
-class PackedState;
-class UnpackedState;
-template<typename Task>
-class State;
-template<typename Task>
-class Node;
 
 class LiftedTask;
 class GroundTask;
+
+template<typename T>
+concept IsNode = requires(T a) {
+    { a.get_labeled_successor_nodes() };
+};
+
+template<typename T>
+concept IsTask = requires(T a) {
+    { a.get_initial_node() };
+};
 
 class Domain;
 }

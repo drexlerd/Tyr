@@ -22,10 +22,10 @@
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/lifted_task.hpp"
-#include "tyr/planning/sparse/node.hpp"
-#include "tyr/planning/sparse/packed_state.hpp"
-#include "tyr/planning/sparse/state.hpp"
-#include "tyr/planning/sparse/unpacked_state.hpp"
+#include "tyr/planning/node.hpp"
+#include "tyr/planning/packed_state.hpp"
+#include "tyr/planning/state.hpp"
 #include "tyr/planning/state_index.hpp"
+#include "tyr/planning/unpacked_state.hpp"
 
 #endif

@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_SPARSE_PACKED_STATE_HPP_
-#define TYR_PLANNING_SPARSE_PACKED_STATE_HPP_
+#ifndef TYR_PLANNING_PACKED_STATE_HPP_
+#define TYR_PLANNING_PACKED_STATE_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/common/equal_to.hpp"
@@ -28,17 +28,32 @@
 
 namespace tyr::planning
 {
-class SparsePackedState
+template<typename Task>
+class PackedState
 {
 public:
-    SparsePackedState(StateIndex index, valla::Slot<uint_t> fluent_atoms, valla::Slot<uint_t> derived_atoms, valla::Slot<uint_t> numeric_variables) noexcept;
+    PackedState(StateIndex index, valla::Slot<uint_t> fluent_atoms, valla::Slot<uint_t> derived_atoms, valla::Slot<uint_t> numeric_variables) noexcept :
+        m_index(index),
+        m_fluent_atoms(fluent_atoms),
+        m_derived_atoms(derived_atoms),
+        m_numeric_variables(numeric_variables)
+    {
+    }
 
-    StateIndex get_index() const noexcept;
+    StateIndex get_index() const noexcept { return m_index; }
 
     template<formalism::IsFactTag T>
-    valla::Slot<uint_t> get_atoms() const noexcept;
+    valla::Slot<uint_t> get_atoms() const noexcept
+    {
+        if constexpr (std::same_as<T, formalism::FluentTag>)
+            return m_fluent_atoms;
+        else if constexpr (std::same_as<T, formalism::DerivedTag>)
+            return m_derived_atoms;
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
 
-    valla::Slot<uint_t> get_numeric_variables() const noexcept;
+    valla::Slot<uint_t> get_numeric_variables() const noexcept { return m_numeric_variables; }
 
     auto identifying_members() const noexcept
     {

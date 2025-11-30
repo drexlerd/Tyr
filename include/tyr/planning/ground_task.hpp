@@ -20,12 +20,12 @@
 
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/planning/domain.hpp"
-#include "tyr/planning/sparse/task_mixin.hpp"
+#include "tyr/planning/task_mixin.hpp"
 
 namespace tyr::planning
 {
 
-class GroundTask : public SparseTaskMixin<GroundTask>
+class GroundTask : public TaskMixin<GroundTask>
 {
 public:
     // Eventually pass ground facts, actions, and axioms derived from delete relaxation in the constructor
@@ -35,12 +35,12 @@ public:
                std::shared_ptr<formalism::ScopedRepository<formalism::Repository>> scoped_repository,
                View<Index<formalism::planning::Task>, formalism::ScopedRepository<formalism::Repository>> task);
 
-    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<GroundTask>>>
-    get_labeled_successor_nodes_impl(const SparseNode<GroundTask>& node);
+    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<GroundTask>>>
+    get_labeled_successor_nodes_impl(const Node<GroundTask>& node);
 
     void get_labeled_successor_nodes_impl(
-        const SparseNode<GroundTask>& node,
-        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<GroundTask>>>&
+        const Node<GroundTask>& node,
+        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<GroundTask>>>&
             out_nodes);
 };
 

@@ -15,27 +15,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_SPARSE_STATE_HPP_
-#define TYR_PLANNING_SPARSE_STATE_HPP_
+#ifndef TYR_PLANNING_STATE_HPP_
+#define TYR_PLANNING_STATE_HPP_
 
 #include "tyr/common/shared_object_pool.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/sparse/unpacked_state.hpp"
+#include "tyr/planning/unpacked_state.hpp"
 
 namespace tyr::planning
 {
 template<typename Task>
-class SparseState
+class State
 {
 public:
-    SparseState(Task& task, SharedObjectPoolPtr<SparseUnpackedState> unpacked) noexcept : m_unpacked(unpacked), m_task(&task) {}
+    State(Task& task, SharedObjectPoolPtr<UnpackedState<Task>> unpacked) noexcept : m_unpacked(unpacked), m_task(&task) {}
 
     StateIndex get_index() const noexcept { return m_unpacked->get_index(); }
 
     template<formalism::IsFactTag T>
     const boost::dynamic_bitset<>& get_atoms() const noexcept
     {
-        return m_unpacked->get_atoms<T>();
+        return m_unpacked->template get_atoms<T>();
     }
 
     const std::vector<float_t>& get_numeric_variables() const noexcept { return m_unpacked->get_numeric_variables(); }
@@ -43,7 +43,7 @@ public:
     Task& get_task() noexcept { return *m_task; }
 
 private:
-    SharedObjectPoolPtr<SparseUnpackedState> m_unpacked;
+    SharedObjectPoolPtr<UnpackedState<Task>> m_unpacked;
     Task* m_task;
 };
 }

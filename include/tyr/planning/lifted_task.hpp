@@ -21,12 +21,12 @@
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
-#include "tyr/planning/sparse/task_mixin.hpp"
+#include "tyr/planning/task_mixin.hpp"
 
 namespace tyr::planning
 {
 
-class LiftedTask : public SparseTaskMixin<LiftedTask>
+class LiftedTask : public TaskMixin<LiftedTask>
 {
 public:
     LiftedTask(std::shared_ptr<Domain> domain,
@@ -34,12 +34,12 @@ public:
                std::shared_ptr<formalism::ScopedRepository<formalism::Repository>> scoped_repository,
                View<Index<formalism::planning::Task>, formalism::ScopedRepository<formalism::Repository>> task);
 
-    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<LiftedTask>>>
-    get_labeled_successor_nodes_impl(const SparseNode<LiftedTask>& node);
+    std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<LiftedTask>>>
+    get_labeled_successor_nodes_impl(const Node<LiftedTask>& node);
 
     void get_labeled_successor_nodes_impl(
-        const SparseNode<LiftedTask>& node,
-        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, SparseNode<LiftedTask>>>&
+        const Node<LiftedTask>& node,
+        std::vector<std::pair<View<Index<formalism::planning::GroundAction>, formalism::ScopedRepository<formalism::Repository>>, Node<LiftedTask>>>&
             out_nodes);
 
     GroundTask get_ground_task();
