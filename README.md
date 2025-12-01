@@ -53,10 +53,30 @@ auto solution = solver.solve(program, fluent_facts, goal_facts, annotated, weigh
 
 ## 4 PDDL Interface
 
-Tyr compiles the task grounding and lifted successor generation problem into datalog to efficiently address those problems in parallel. 
 The high level C++ planning interface aims to be as follows. 
 
+## 4.1 Lifted Planning
+
+We obtain a lifted task by parsing the PDDL. We can then iteratively expand the search space, starting from the initial node (or some arbitrary instantiated node), by computing their successor nodes each labeled with their ground action the generates it.
+
+```cpp
+#include <tyr/tyr.hpp>
+
+auto parser = tyr::formalism::Parser("domain.pddl");
+auto task = parser.parse_task("problem.pddl");
+
+// Get the initial node (state + metric value)
+auto initial_node = task.get_initial_node();
+
+// Get the labeled successor nodes (pairs of ground action and successor node)
+auto successor_nodes = initial_node.get_labeled_successor_nodes();
+
+```
+
 ## 4.1 Grounded Planning
+
+We can obtain a ground task from the lifted task using a delete free exploration of the task.
+An additional mutex generation phase, allows translating binary atoms into finite domain variables, resulting in the finite domain state representation (FDR).
 
 ```cpp
 #include <tyr/tyr.hpp>
@@ -69,22 +89,6 @@ auto ground_task = task.get_ground_task();
 
 // Get the initial node (state + metric value)
 auto initial_node = ground_task.get_initial_node();
-
-// Get the labeled successor nodes (pairs of ground action and successor node)
-auto successor_nodes = initial_node.get_labeled_successor_nodes();
-
-```
-
-## 4.2 Lifted Planning
-
-```cpp
-#include <tyr/tyr.hpp>
-
-auto parser = tyr::formalism::Parser("domain.pddl");
-auto task = parser.parse_task("problem.pddl");
-
-// Get the initial node (state + metric value)
-auto initial_node = task.get_initial_node();
 
 // Get the labeled successor nodes (pairs of ground action and successor node)
 auto successor_nodes = initial_node.get_labeled_successor_nodes();
