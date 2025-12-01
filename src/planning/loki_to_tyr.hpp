@@ -1143,7 +1143,7 @@ private:
                 else if constexpr (std::is_same_v<T, Index<formalism::GroundFunctionTerm<formalism::FluentTag>>>)
                     return Data<formalism::GroundFunctionExpression>(arg);
                 else if constexpr (std::is_same_v<T, Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>>)
-                    throw std::runtime_error("Cannot create GroundFunctionExpression over auxiliary function term.");
+                    return Data<formalism::GroundFunctionExpression>(arg);
                 else
                     static_assert(dependent_false<T>::value, "Missing case for type");
             },

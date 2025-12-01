@@ -38,7 +38,10 @@ LiftedTaskPtr Parser::parse_task(const fs::path& problem_filepath, const loki::P
     auto translator = LokiToTyrTranslator();
     auto builder = formalism::Builder();
 
-    return translator.translate(m_loki_parser.parse_problem(problem_filepath, options), builder, m_domain, m_domain_repository);
+    return translator.translate(loki::translate(m_loki_parser.parse_problem(problem_filepath, options), m_loki_domain_translation_result),
+                                builder,
+                                m_domain,
+                                m_domain_repository);
 }
 
 DomainPtr Parser::get_domain() const { return m_domain; }

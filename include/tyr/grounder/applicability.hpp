@@ -54,7 +54,8 @@ auto evaluate(View<Index<formalism::MultiOperator<O, Data<formalism::GroundFunct
 }
 
 template<formalism::FactKind T, formalism::Context C1, formalism::Context C2>
-auto evaluate(View<Index<formalism::GroundFunctionTerm<T>>, C1> element, const FactSets<C2>& fact_sets)
+    requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
+float_t evaluate(View<Index<formalism::GroundFunctionTerm<T>>, C1> element, const FactSets<C2>& fact_sets)
 {
     const auto& fact_set = fact_sets.template get<T>().function;
 
@@ -62,6 +63,12 @@ auto evaluate(View<Index<formalism::GroundFunctionTerm<T>>, C1> element, const F
         return std::numeric_limits<float_t>::quiet_NaN();
 
     return fact_set[element.get_index()];
+}
+
+template<formalism::Context C1, formalism::Context C2>
+float_t evaluate(View<Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>, C1> element, const FactSets<C2>& fact_sets)
+{
+    throw std::logic_error("Program should not contain auxiliary functions.");
 }
 
 template<formalism::Context C1, formalism::Context C2>

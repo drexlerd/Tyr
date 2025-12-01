@@ -21,6 +21,7 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/variant.hpp"
 #include "tyr/formalism/boolean_operator_data.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 
 namespace tyr

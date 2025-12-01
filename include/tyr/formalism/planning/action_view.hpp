@@ -22,6 +22,7 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/conjunctive_condition_view.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/action_index.hpp"
 #include "tyr/formalism/planning/conditional_effect_view.hpp"
 #include "tyr/formalism/repository.hpp"

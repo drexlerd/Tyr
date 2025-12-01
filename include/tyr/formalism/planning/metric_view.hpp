@@ -21,6 +21,7 @@
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_function_expression_data.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/metric_data.hpp"
 #include "tyr/formalism/planning/metric_index.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -46,7 +47,7 @@ public:
 
     auto get_index() const noexcept { return m_handle; }
     auto get_objective() const noexcept { return get_data().objective; }
-    auto get_fexpr() const noexcept { return View(get_data().fexpr, *m_context); }
+    auto get_fexpr() const noexcept { return View<Data<formalism::GroundFunctionExpression>, C>(get_data().fexpr, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

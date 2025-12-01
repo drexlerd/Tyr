@@ -24,6 +24,7 @@
 #include "tyr/formalism/function_view.hpp"
 #include "tyr/formalism/ground_function_term_index.hpp"
 #include "tyr/formalism/object_index.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 
 namespace tyr

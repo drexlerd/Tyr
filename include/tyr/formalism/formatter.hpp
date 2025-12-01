@@ -310,7 +310,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::FunctionTerm<
 template<formalism::FactKind T, formalism::Context C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::FunctionTerm<T>>, C>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.get_function()), fmt::format("{}", fmt::join(to_strings(el.get_terms()), " ")));
+    fmt::print(os, "({} {})", to_string(el.get_function().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_terms()), " ")));
     return os;
 }
 
@@ -706,6 +706,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::Metric>& el) 
 template<formalism::Context C>
 std::ostream& print(std::ostream& os, const View<Index<formalism::Metric>, C>& el)
 {
+    fmt::print(os, "({} {})", to_string(el.get_objective()), to_string(el.get_fexpr()));
     return os;
 }
 

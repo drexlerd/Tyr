@@ -24,6 +24,7 @@
 #include "tyr/formalism/function_index.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
 #include "tyr/formalism/ground_function_term_value_index.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 #include "tyr/formalism/program_index.hpp"
 #include "tyr/formalism/repository.hpp"

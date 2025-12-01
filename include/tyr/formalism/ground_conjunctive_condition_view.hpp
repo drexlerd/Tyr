@@ -25,6 +25,7 @@
 #include "tyr/formalism/ground_conjunctive_condition_index.hpp"
 #include "tyr/formalism/ground_literal_view.hpp"
 #include "tyr/formalism/object_view.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 
 namespace tyr

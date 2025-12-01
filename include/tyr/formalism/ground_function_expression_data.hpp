@@ -33,7 +33,8 @@ struct Data<formalism::GroundFunctionExpression>
     using Variant = ::cista::offset::variant<float_t,
                                              Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>,
                                              Index<formalism::GroundFunctionTerm<formalism::StaticTag>>,
-                                             Index<formalism::GroundFunctionTerm<formalism::FluentTag>>>;
+                                             Index<formalism::GroundFunctionTerm<formalism::FluentTag>>,
+                                             Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>>;
 
     Variant value;
 
