@@ -57,7 +57,7 @@ The high level C++ planning interface aims to be as follows.
 
 ## 4.1 Lifted Planning
 
-We obtain a lifted task by parsing the PDDL. We can then iteratively expand the search space, starting from the initial node (or some arbitrary instantiated node), by computing their successor nodes each labeled with their ground action the generates it.
+We obtain a lifted task by parsing the PDDL. We can then iteratively expand the search space, starting from the initial node (or some arbitrary instantiated node), by computing their successor nodes each labeled with their ground action that generates it.
 
 ```cpp
 #include <tyr/tyr.hpp>
@@ -75,7 +75,7 @@ auto successor_nodes = initial_node.get_labeled_successor_nodes();
 
 ## 4.1 Grounded Planning
 
-We can obtain a ground task from the lifted task using a delete free exploration of the task.
+We can obtain a ground task from the lifted task using a delete free exploration of the lifted task.
 An additional mutex generation phase, allows translating binary atoms into finite domain variables, resulting in the finite domain state representation (FDR).
 
 ```cpp
