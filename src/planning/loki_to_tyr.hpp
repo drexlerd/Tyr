@@ -75,6 +75,12 @@ using IndexNumericEffectVariant = std::variant<Index<formalism::NumericEffect<fo
                                                Index<formalism::NumericEffect<formalism::OpScaleDown, formalism::FluentTag>>,
                                                Index<formalism::NumericEffect<formalism::OpIncrease, formalism::AuxiliaryTag>>>;
 
+using IndexGroundNumericConstraintVariant = std::variant<Index<formalism::BinaryOperator<formalism::OpEq, Data<formalism::GroundFunctionExpression>>>,
+                                                         Index<formalism::BinaryOperator<formalism::OpLe, Data<formalism::GroundFunctionExpression>>>,
+                                                         Index<formalism::BinaryOperator<formalism::OpLt, Data<formalism::GroundFunctionExpression>>>,
+                                                         Index<formalism::BinaryOperator<formalism::OpGe, Data<formalism::GroundFunctionExpression>>>,
+                                                         Index<formalism::BinaryOperator<formalism::OpGt, Data<formalism::GroundFunctionExpression>>>>;
+
 struct ArityVisitor
 {
     loki::VariableSet variables;
@@ -167,6 +173,39 @@ struct ArityVisitor
         return variables.size();
     }
 };
+
+template<formalism::FactKind T, formalism::Context C>
+Index<formalism::GroundAtom<T>> ground_nullary(Index<formalism::Atom<T>> atom_index, formalism::Builder& builder, C& context)
+{
+    const auto& lifted_atom = context[atom_index];
+    assert(lifted_atom.terms.empty());
+
+    auto atom_ptr = builder.template get_builder<formalism::GroundAtom<T>>();
+    auto& atom = *atom_ptr;
+    atom.clear();
+
+    atom.predicate = lifted_atom.predicate;
+    // leave empty terms
+
+    formalism::canonicalize(atom);
+    return context.get_or_create(atom, builder.get_buffer()).first.get_index();
+}
+
+template<formalism::FactKind T, formalism::Context C>
+Index<formalism::GroundLiteral<T>> ground_nullary(Index<formalism::Literal<T>> literal_index, formalism::Builder& builder, C& context)
+{
+    const auto& lifted_literal = context[literal_index];
+
+    auto literal_ptr = builder.template get_builder<formalism::GroundLiteral<T>>();
+    auto& literal = *literal_ptr;
+    literal.clear();
+
+    literal.polarity = lifted_literal.polarity;
+    literal.atom = ground_nullary(lifted_literal.atom, builder, context);
+
+    formalism::canonicalize(literal);
+    return context.get_or_create(literal, builder.get_buffer()).first.get_index();
+}
 
 class LokiToTyrTranslator
 {
@@ -644,6 +683,28 @@ private:
                 index_literal_variant);
         };
 
+        const auto func_ground_and_insert_nullary_literal = [&](IndexLiteralVariant index_literal_variant,
+                                                                IndexList<formalism::GroundLiteral<formalism::StaticTag>>& static_literals,
+                                                                IndexList<formalism::GroundLiteral<formalism::FluentTag>>& fluent_literals,
+                                                                IndexList<formalism::GroundLiteral<formalism::DerivedTag>>& derived_literals)
+        {
+            std::visit(
+                [&](auto&& arg)
+                {
+                    using T = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::StaticTag>>>)
+                        static_literals.push_back(ground_nullary(arg, builder, context));
+                    else if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::FluentTag>>>)
+                        fluent_literals.push_back(ground_nullary(arg, builder, context));
+                    else if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::DerivedTag>>>)
+                        derived_literals.push_back(ground_nullary(arg, builder, context));
+                    else
+                        static_assert(dependent_false<T>::value, "Missing case for type");
+                },
+                index_literal_variant);
+        };
+
         return std::visit(
             [&](auto&& condition) -> Index<formalism::ConjunctiveCondition>
             {
@@ -669,11 +730,10 @@ private:
 
                                     if (ArityVisitor().get(part) == 0)
                                     {
-                                        // TODO: ground
-                                        // func_insert_ground_nullary_literal(index_literal_variant,
-                                        //                                    conj_condition.static_nullary_literals,
-                                        //                                    conj_condition.fluent_nullary_literals,
-                                        //                                    conj_condition.derived_nullary_literals);
+                                        func_ground_and_insert_nullary_literal(index_literal_variant,
+                                                                               conj_condition.static_nullary_literals,
+                                                                               conj_condition.fluent_nullary_literals,
+                                                                               conj_condition.derived_nullary_literals);
                                     }
                                 }
                                 else if constexpr (std::is_same_v<SubConditionT, loki::ConditionNumericConstraint>)
@@ -707,11 +767,10 @@ private:
 
                     if (ArityVisitor().get(element) == 0)
                     {
-                        // TODO: ground
-                        //    func_insert_ground_nullary_literal(index_literal_variant,
-                        //                                       conj_condition.static_nullary_literals,
-                        //                                       conj_condition.fluent_nullary_literals,
-                        //                                       conj_condition.derived_nullary_literals);
+                        func_ground_and_insert_nullary_literal(index_literal_variant,
+                                                               conj_condition.static_nullary_literals,
+                                                               conj_condition.fluent_nullary_literals,
+                                                               conj_condition.derived_nullary_literals);
                     }
 
                     formalism::canonicalize(conj_condition);
