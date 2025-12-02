@@ -38,7 +38,8 @@ ground(View<Index<formalism::Atom<T>>, formalism::Repository> element,
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& atom = builder.template get_ground_atom<T>();
+    auto atom_ptr = builder.template get_builder<formalism::GroundAtom<T>>();
+    auto& atom = *atom_ptr;
     atom.clear();
 
     auto& objects = atom.objects;
@@ -83,7 +84,8 @@ ground(View<Index<formalism::Literal<T>>, formalism::Repository> element,
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& ground_literal = builder.template get_ground_literal<T>();
+    auto ground_literal_ptr = builder.template get_builder<formalism::GroundLiteral<T>>();
+    auto& ground_literal = *ground_literal_ptr;
     ground_literal.clear();
 
     // Fill data
@@ -106,7 +108,8 @@ ground(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> element,
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& fterm = builder.template get_ground_fterm<T>();
+    auto fterm_ptr = builder.template get_builder<formalism::GroundFunctionTerm<T>>();
+    auto& fterm = *fterm_ptr;
     fterm.clear();
 
     auto& objects = fterm.objects;
@@ -184,7 +187,8 @@ ground(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& unary = builder.template get_ground_unary<O>();
+    auto unary_ptr = builder.template get_builder<formalism::UnaryOperator<O, Data<formalism::GroundFunctionExpression>>>();
+    auto& unary = *unary_ptr;
     unary.clear();
 
     // Fill data
@@ -205,7 +209,8 @@ ground(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpressio
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& binary = builder.template get_ground_binary<O>();
+    auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<O, Data<formalism::GroundFunctionExpression>>>();
+    auto& binary = *binary_ptr;
     binary.clear();
 
     // Fill data
@@ -227,7 +232,8 @@ ground(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& multi = builder.template get_ground_multi<O>();
+    auto multi_ptr = builder.template get_builder<formalism::MultiOperator<O, Data<formalism::GroundFunctionExpression>>>();
+    auto& multi = *multi_ptr;
     multi.clear();
 
     auto& args = multi.args;
@@ -282,7 +288,8 @@ ground(View<Index<formalism::ConjunctiveCondition>, formalism::Repository> eleme
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& conj_cond = builder.get_ground_conj_cond();
+    auto conj_cond_ptr = builder.get_builder<formalism::GroundConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     auto& static_literals = conj_cond.static_literals;
@@ -310,7 +317,8 @@ View<Index<formalism::GroundRule>, formalism::OverlayRepository<formalism::Repos
     auto& builder = thread_execution_context.builder;
     auto& repository = rule_execution_context.repository;
     auto& buffer = builder.buffer;
-    auto& rule = builder.get_ground_rule();
+    auto rule_ptr = builder.get_builder<formalism::GroundRule>();
+    auto& rule = *rule_ptr;
     rule.clear();
 
     auto& body = rule.body;

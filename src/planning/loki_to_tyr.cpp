@@ -239,7 +239,8 @@ DomainPtr LokiToTyrTranslator::translate(const loki::Domain& element, formalism:
     /* Perform static type analysis */
     prepare(element);
 
-    auto& domain = builder.get_domain();
+    auto domain_ptr = builder.get_builder<formalism::Domain>();
+    auto& domain = *domain_ptr;
     domain.clear();
 
     /* Name */
@@ -323,7 +324,8 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     /* Perform static type analysis */
     prepare(element);
 
-    auto& task = builder.get_task();
+    auto task_ptr = builder.get_builder<formalism::Task>();
+    auto& task = *task_ptr;
     task.clear();
 
     auto task_context = std::make_shared<formalism::Repository>();
@@ -437,7 +439,8 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     else
     {
         // Create empty conjunctive condition
-        auto& conj_cond = builder.get_ground_conj_cond();
+        auto conj_cond_ptr = builder.get_builder<formalism::GroundConjunctiveCondition>();
+        auto& conj_cond = *conj_cond_ptr;
         conj_cond.clear();
         canonicalize(conj_cond);
         task.goal = overlay_task_context->get_or_create(conj_cond, builder.get_buffer()).first.get_index();

@@ -161,6 +161,7 @@ public:
     }
 
     SharedObjectPoolPtr clone() const
+        requires std::is_copy_assignable_v<T>
     {
         if (m_pool && m_entry)
         {
@@ -203,12 +204,12 @@ private:
 
     std::vector<std::unique_ptr<Entry>> m_storage;
     std::stack<Entry*> m_stack;
-    std::mutex m_mutex;
+    mutable std::mutex m_mutex;
 
     template<typename... Args>
     void allocate(Args&&... args)
     {
-        m_storage.push_back(std::make_unique<Entry>(T(std::forward<Args>(args)...)));
+        m_storage.push_back(std::make_unique<Entry>(std::forward<Args>(args)...));
         m_stack.push(m_storage.back().get());
     }
 
@@ -224,8 +225,8 @@ private:
 public:
     // Non-copyable to prevent dangling memory pool pointers.
     SharedObjectPool() noexcept = default;
-    SharedObjectPool(const SharedObjectPool& other) noexcept = delete;
-    SharedObjectPool& operator=(const SharedObjectPool& other) noexcept = delete;
+    SharedObjectPool(const SharedObjectPool& other) = delete;
+    SharedObjectPool& operator=(const SharedObjectPool& other) = delete;
     SharedObjectPool(SharedObjectPool&& other) noexcept = delete;
     SharedObjectPool& operator=(SharedObjectPool&& other) noexcept = delete;
 
@@ -237,9 +238,7 @@ public:
         std::lock_guard<std::mutex> lg(m_mutex);
 
         if (m_stack.empty())
-        {
             allocate(std::forward<Args>(args)...);
-        }
         Entry* element = m_stack.top();
         m_stack.pop();
         return SharedObjectPoolPtr<T>(this, element);

@@ -174,7 +174,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& function = builder.template get_function<Tag>();
+            auto function_ptr = builder.template get_builder<formalism::Function<Tag>>();
+            auto& function = *function_ptr;
             function.clear();
             function.name = element->get_name();
             function.arity = element->get_parameters().size();
@@ -193,7 +194,8 @@ private:
     template<formalism::Context C>
     Index<formalism::Object> translate_common(loki::Object element, formalism::Builder& builder, C& context)
     {
-        auto& object = builder.get_object();
+        auto object_ptr = builder.template get_builder<formalism::Object>();
+        auto& object = *object_ptr;
         object.clear();
         object.name = element->get_name();
         formalism::canonicalize(object);
@@ -213,7 +215,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& predicate = builder.template get_predicate<Tag>();
+            auto predicate_ptr = builder.template get_builder<formalism::Predicate<Tag>>();
+            auto& predicate = *predicate_ptr;
             predicate.clear();
             predicate.name = element->get_name();
             predicate.arity = element->get_parameters().size();
@@ -232,7 +235,8 @@ private:
     template<formalism::Context C>
     Index<formalism::Variable> translate_common(loki::Variable element, formalism::Builder& builder, C& context)
     {
-        auto& variable = builder.get_variable();
+        auto variable_ptr = builder.template get_builder<formalism::Variable>();
+        auto& variable = *variable_ptr;
         variable.clear();
         variable.name = element->get_name();
         formalism::canonicalize(variable);
@@ -282,7 +286,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& atom = builder.template get_atom<Tag>();
+            auto atom_ptr = builder.template get_builder<formalism::Atom<Tag>>();
+            auto& atom = *atom_ptr;
             atom.clear();
             atom.predicate = predicate_index;
             atom.terms = this->translate_lifted(element->get_terms(), builder, context);
@@ -315,7 +320,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& literal = builder.template get_literal<Tag>();
+            auto literal_ptr = builder.template get_builder<formalism::Literal<Tag>>();
+            auto& literal = *literal_ptr;
             literal.clear();
             literal.atom = atom_index;
             literal.polarity = element->get_polarity();
@@ -352,12 +358,11 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto& binary = builder.template get_binary<Tag>();
+            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::FunctionExpression>>>();
+            auto& binary = *binary_ptr;
             binary.clear();
-            auto lhs_result = translate_lifted(element->get_left_function_expression(), builder, context);
-            auto rhs_result = translate_lifted(element->get_right_function_expression(), builder, context);
-            binary.lhs = lhs_result;
-            binary.rhs = rhs_result;
+            binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
+            binary.rhs = translate_lifted(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
             return Data<formalism::FunctionExpression>(Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(
                 context.get_or_create(binary, builder.get_buffer()).first.get_index()));
@@ -385,7 +390,8 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto& multi = builder.template get_multi<Tag>();
+            auto multi_ptr = builder.template get_builder<formalism::MultiOperator<Tag, Data<formalism::FunctionExpression>>>();
+            auto& multi = *multi_ptr;
             multi.clear();
             multi.args = translate_lifted(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
@@ -407,7 +413,8 @@ private:
     template<formalism::Context C>
     Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionMinus element, formalism::Builder& builder, C& context)
     {
-        auto& minus = builder.template get_unary<formalism::OpSub>();
+        auto minus_ptr = builder.template get_builder<formalism::UnaryOperator<formalism::OpSub, Data<formalism::FunctionExpression>>>();
+        auto& minus = *minus_ptr;
         minus.clear();
         minus.arg = translate_lifted(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
@@ -452,7 +459,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& fterm = builder.template get_fterm<Tag>();
+            auto fterm_ptr = builder.template get_builder<formalism::FunctionTerm<Tag>>();
+            auto& fterm = *fterm_ptr;
             fterm.clear();
             fterm.function = function_index;
             fterm.terms = this->translate_lifted(element->get_terms(), builder, context);
@@ -485,12 +493,11 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto& binary = builder.template get_binary<Tag>();
+            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::FunctionExpression>>>();
+            auto& binary = *binary_ptr;
             binary.clear();
-            auto lhs_result = translate_lifted(element->get_left_function_expression(), builder, context);
-            auto rhs_result = translate_lifted(element->get_right_function_expression(), builder, context);
-            binary.lhs = lhs_result;
-            binary.rhs = rhs_result;
+            binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
+            binary.rhs = translate_lifted(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
             return Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first.get_index());
         };
@@ -516,7 +523,8 @@ private:
     Index<formalism::ConjunctiveCondition>
     translate_lifted(loki::Condition element, const IndexList<formalism::Variable>& parameters, formalism::Builder& builder, C& context)
     {
-        auto& conj_condition = builder.get_conj_cond();
+        auto conj_condition_ptr = builder.template get_builder<formalism::ConjunctiveCondition>();
+        auto& conj_condition = *conj_condition_ptr;
         conj_condition.clear();
 
         conj_condition.variables = parameters;
@@ -621,7 +629,8 @@ private:
             using Tag = std::decay_t<decltype(fact_tag)>;
             using Op = std::decay_t<decltype(op_tag)>;
 
-            auto& numeric_effect = builder.get_numeric_effect<Op, Tag>();
+            auto numeric_effect_ptr = builder.template get_builder<formalism::NumericEffect<Op, Tag>>();
+            auto& numeric_effect = *numeric_effect_ptr;
             numeric_effect.clear();
 
             numeric_effect.fterm = fterm_index;
@@ -739,7 +748,8 @@ private:
                         else
                         {
                             // Create empty conjunctive condition for unconditional effects
-                            auto& conj_cond = builder.get_conj_cond();
+                            auto conj_cond_ptr = builder.template get_builder<formalism::ConjunctiveCondition>();
+                            auto& conj_cond = *conj_cond_ptr;
                             conj_cond.clear();
                             formalism::canonicalize(conj_cond);
                             return context.get_or_create(conj_cond, builder.get_buffer()).first.get_index();
@@ -853,7 +863,8 @@ private:
         {
             const auto& [cond_effect_fluent_literals, cond_effect_fluent_numeric_effects, cond_effect_auxiliary_numeric_effects] = value;
 
-            auto& conj_effect = builder.get_conj_effect();
+            auto conj_effect_ptr = builder.template get_builder<formalism::ConjunctiveEffect>();
+            auto& conj_effect = *conj_effect_ptr;
             conj_effect.clear();
             conj_effect.literals = cond_effect_fluent_literals;
             conj_effect.numeric_effects = cond_effect_fluent_numeric_effects;
@@ -861,7 +872,8 @@ private:
             formalism::canonicalize(conj_effect);
             const auto conj_effect_index = context.get_or_create(conj_effect, builder.get_buffer()).first.get_index();
 
-            auto& cond_effect = builder.get_cond_effect();
+            auto cond_effect_ptr = builder.template get_builder<formalism::ConditionalEffect>();
+            auto& cond_effect = *cond_effect_ptr;
             cond_effect.clear();
             cond_effect.condition = cond_conjunctive_condition;
             cond_effect.effect = conj_effect_index;
@@ -877,7 +889,9 @@ private:
     template<formalism::Context C>
     Index<formalism::Action> translate_lifted(loki::Action element, formalism::Builder& builder, C& context)
     {
-        auto& action = builder.get_action();
+        auto action_ptr = builder.template get_builder<formalism::Action>();
+        auto& action = *action_ptr;
+        action.clear();
         action.original_arity = element->get_original_arity();
 
         // 1. Translate conditions
@@ -893,7 +907,8 @@ private:
             else
             {
                 // Create empty one
-                auto& conj_cond = builder.get_conj_cond();
+                auto conj_cond_ptr = builder.template get_builder<formalism::ConjunctiveCondition>();
+                auto& conj_cond = *conj_cond_ptr;
                 conj_cond.clear();
                 formalism::canonicalize(conj_cond);
                 conjunctive_condition = context.get_or_create(conj_cond, builder.get_buffer()).first.get_index();
@@ -919,7 +934,8 @@ private:
     template<formalism::Context C>
     Index<formalism::Axiom> translate_lifted(loki::Axiom element, formalism::Builder& builder, C& context)
     {
-        auto& axiom = builder.get_axiom();
+        auto axiom_ptr = builder.template get_builder<formalism::Axiom>();
+        auto& axiom = *axiom_ptr;
         axiom.clear();
 
         auto parameters = translate_common(element->get_parameters(), builder, context);
@@ -995,7 +1011,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& atom = builder.template get_ground_atom<Tag>();
+            auto atom_ptr = builder.template get_builder<formalism::GroundAtom<Tag>>();
+            auto& atom = *atom_ptr;
             atom.clear();
             atom.predicate = predicate_index;
             atom.objects = this->translate_grounded(element->get_terms(), builder, context);
@@ -1028,7 +1045,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& literal = builder.template get_ground_literal<Tag>();
+            auto literal_ptr = builder.template get_builder<formalism::GroundLiteral<Tag>>();
+            auto& literal = *literal_ptr;
             literal.clear();
             literal.atom = atom_index;
             literal.polarity = element->get_polarity();
@@ -1065,12 +1083,11 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto& binary = builder.template get_ground_binary<Tag>();
+            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::GroundFunctionExpression>>>();
+            auto& binary = *binary_ptr;
             binary.clear();
-            auto lhs_result = translate_grounded(element->get_left_function_expression(), builder, context);
-            auto rhs_result = translate_grounded(element->get_right_function_expression(), builder, context);
-            binary.lhs = lhs_result;
-            binary.rhs = rhs_result;
+            binary.lhs = translate_grounded(element->get_left_function_expression(), builder, context);
+            binary.rhs = translate_grounded(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
             return Data<formalism::GroundFunctionExpression>(Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(
                 context.get_or_create(binary, builder.get_buffer()).first.get_index()));
@@ -1098,7 +1115,8 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto& multi = builder.template get_ground_multi<Tag>();
+            auto multi_ptr = builder.template get_builder<formalism::MultiOperator<Tag, Data<formalism::GroundFunctionExpression>>>();
+            auto& multi = *multi_ptr;
             multi.clear();
             multi.args = translate_grounded(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
@@ -1120,7 +1138,8 @@ private:
     template<formalism::Context C>
     Data<formalism::GroundFunctionExpression> translate_grounded(loki::FunctionExpressionMinus element, formalism::Builder& builder, C& context)
     {
-        auto& minus = builder.template get_ground_unary<formalism::OpSub>();
+        auto minus_ptr = builder.template get_builder<formalism::UnaryOperator<formalism::OpSub, Data<formalism::GroundFunctionExpression>>>();
+        auto& minus = *minus_ptr;
         minus.clear();
         minus.arg = translate_grounded(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
@@ -1165,7 +1184,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& fterm = builder.template get_ground_fterm<Tag>();
+            auto fterm_ptr = builder.template get_builder<formalism::GroundFunctionTerm<Tag>>();
+            auto& fterm = *fterm_ptr;
             fterm.clear();
             fterm.function = function_index;
             fterm.objects = this->translate_grounded(element->get_terms(), builder, context);
@@ -1198,7 +1218,8 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto& fterm_value = builder.template get_ground_fterm_value<Tag>();
+            auto fterm_value_ptr = builder.template get_builder<formalism::GroundFunctionTermValue<Tag>>();
+            auto& fterm_value = *fterm_value_ptr;
             fterm_value.clear();
             fterm_value.fterm = fterm_index;
             fterm_value.value = element->get_number();
@@ -1230,12 +1251,11 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto& binary = builder.template get_ground_binary<Tag>();
+            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::GroundFunctionExpression>>>();
+            auto& binary = *binary_ptr;
             binary.clear();
-            auto lhs_result = translate_grounded(element->get_left_function_expression(), builder, context);
-            auto rhs_result = translate_grounded(element->get_right_function_expression(), builder, context);
-            binary.lhs = lhs_result;
-            binary.rhs = rhs_result;
+            binary.lhs = translate_grounded(element->get_left_function_expression(), builder, context);
+            binary.rhs = translate_grounded(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
             return Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>(
                 context.get_or_create(binary, builder.get_buffer()).first.get_index());
@@ -1261,7 +1281,8 @@ private:
     template<formalism::Context C>
     Index<formalism::GroundConjunctiveCondition> translate_grounded(loki::Condition element, formalism::Builder& builder, C& context)
     {
-        auto& conj_condition = builder.get_ground_conj_cond();
+        auto conj_condition_ptr = builder.template get_builder<formalism::GroundConjunctiveCondition>();
+        auto& conj_condition = *conj_condition_ptr;
         conj_condition.clear();
 
         const auto func_insert_literal = [](IndexGroundLiteralVariant index_literal_variant,
@@ -1357,7 +1378,8 @@ private:
     template<formalism::Context C>
     Index<formalism::Metric> translate_grounded(loki::OptimizationMetric element, formalism::Builder& builder, C& context)
     {
-        auto& metric = builder.get_metric();
+        auto metric_ptr = builder.template get_builder<formalism::Metric>();
+        auto& metric = *metric_ptr;
         metric.clear();
 
         metric.fexpr = translate_grounded(element->get_function_expression(), builder, context);

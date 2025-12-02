@@ -19,7 +19,6 @@
 #define TYR_FORMALISM_BUILDER_HPP_
 
 // Include specialization headers first
-#include "tyr/buffer/declarations.hpp"
 #include "tyr/formalism/arithmetic_operator_data.hpp"
 #include "tyr/formalism/arithmetic_operator_view.hpp"
 #include "tyr/formalism/atom_data.hpp"
@@ -107,6 +106,7 @@
 #include "tyr/formalism/variable_index.hpp"
 //
 #include "tyr/buffer/declarations.hpp"
+#include "tyr/common/unique_object_pool.hpp"
 #include "tyr/formalism/declarations.hpp"
 
 namespace tyr::formalism
@@ -119,452 +119,100 @@ struct Builder
      * Datalog
      */
 
-    // ----- Operators over FunctionExpression -----
-    Data<UnaryOperator<OpSub, Data<FunctionExpression>>> unary_sub;
-    Data<BinaryOperator<OpAdd, Data<FunctionExpression>>> binary_add;
-    Data<BinaryOperator<OpSub, Data<FunctionExpression>>> binary_sub;
-    Data<BinaryOperator<OpMul, Data<FunctionExpression>>> binary_mul;
-    Data<BinaryOperator<OpDiv, Data<FunctionExpression>>> binary_div;
-    Data<BinaryOperator<OpEq, Data<FunctionExpression>>> binary_eq;
-    Data<BinaryOperator<OpNe, Data<FunctionExpression>>> binary_ne;
-    Data<BinaryOperator<OpLe, Data<FunctionExpression>>> binary_le;
-    Data<BinaryOperator<OpLt, Data<FunctionExpression>>> binary_lt;
-    Data<BinaryOperator<OpGe, Data<FunctionExpression>>> binary_ge;
-    Data<BinaryOperator<OpGt, Data<FunctionExpression>>> binary_gt;
-    Data<MultiOperator<OpAdd, Data<FunctionExpression>>> multi_add;
-    Data<MultiOperator<OpMul, Data<FunctionExpression>>> multi_mul;
-    Data<BooleanOperator<Data<FunctionExpression>>> boolean;
-    Data<ArithmeticOperator<Data<FunctionExpression>>> arithmetic;
+    template<typename T>
+    using BuilderEntry = boost::hana::pair<boost::hana::type<T>, UniqueObjectPool<Data<T>>>;
 
-    Data<UnaryOperator<OpSub, Data<GroundFunctionExpression>>> ground_unary_sub;
-    Data<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>> ground_binary_add;
-    Data<BinaryOperator<OpSub, Data<GroundFunctionExpression>>> ground_binary_sub;
-    Data<BinaryOperator<OpMul, Data<GroundFunctionExpression>>> ground_binary_mul;
-    Data<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>> ground_binary_div;
-    Data<BinaryOperator<OpEq, Data<GroundFunctionExpression>>> ground_binary_eq;
-    Data<BinaryOperator<OpNe, Data<GroundFunctionExpression>>> ground_binary_ne;
-    Data<BinaryOperator<OpLe, Data<GroundFunctionExpression>>> ground_binary_le;
-    Data<BinaryOperator<OpLt, Data<GroundFunctionExpression>>> ground_binary_lt;
-    Data<BinaryOperator<OpGe, Data<GroundFunctionExpression>>> ground_binary_ge;
-    Data<BinaryOperator<OpGt, Data<GroundFunctionExpression>>> ground_binary_gt;
-    Data<MultiOperator<OpAdd, Data<GroundFunctionExpression>>> ground_multi_add;
-    Data<MultiOperator<OpMul, Data<GroundFunctionExpression>>> ground_multi_mul;
-    Data<BooleanOperator<Data<GroundFunctionExpression>>> ground_boolean;
-    Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground_arithmetic;
+    using HanaBuilder = boost::hana::map<BuilderEntry<Variable>,
+                                         BuilderEntry<Object>,
+                                         BuilderEntry<Predicate<StaticTag>>,
+                                         BuilderEntry<Predicate<FluentTag>>,
+                                         BuilderEntry<Predicate<DerivedTag>>,
+                                         BuilderEntry<Atom<StaticTag>>,
+                                         BuilderEntry<Atom<FluentTag>>,
+                                         BuilderEntry<Atom<DerivedTag>>,
+                                         BuilderEntry<GroundAtom<StaticTag>>,
+                                         BuilderEntry<GroundAtom<FluentTag>>,
+                                         BuilderEntry<GroundAtom<DerivedTag>>,
+                                         BuilderEntry<Literal<StaticTag>>,
+                                         BuilderEntry<Literal<FluentTag>>,
+                                         BuilderEntry<Literal<DerivedTag>>,
+                                         BuilderEntry<GroundLiteral<StaticTag>>,
+                                         BuilderEntry<GroundLiteral<FluentTag>>,
+                                         BuilderEntry<GroundLiteral<DerivedTag>>,
+                                         BuilderEntry<Function<StaticTag>>,
+                                         BuilderEntry<Function<FluentTag>>,
+                                         BuilderEntry<Function<AuxiliaryTag>>,
+                                         BuilderEntry<FunctionTerm<StaticTag>>,
+                                         BuilderEntry<FunctionTerm<FluentTag>>,
+                                         BuilderEntry<FunctionTerm<AuxiliaryTag>>,
+                                         BuilderEntry<GroundFunctionTerm<StaticTag>>,
+                                         BuilderEntry<GroundFunctionTerm<FluentTag>>,
+                                         BuilderEntry<GroundFunctionTerm<AuxiliaryTag>>,
+                                         BuilderEntry<GroundFunctionTermValue<StaticTag>>,
+                                         BuilderEntry<GroundFunctionTermValue<FluentTag>>,
+                                         BuilderEntry<GroundFunctionTermValue<AuxiliaryTag>>,
+                                         BuilderEntry<UnaryOperator<OpSub, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpSub, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpMul, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
+                                         BuilderEntry<MultiOperator<OpAdd, Data<FunctionExpression>>>,
+                                         BuilderEntry<MultiOperator<OpMul, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpEq, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpLe, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpLt, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpGe, Data<FunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpGt, Data<FunctionExpression>>>,
+                                         BuilderEntry<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
+                                         BuilderEntry<ConjunctiveCondition>,
+                                         BuilderEntry<Rule>,
+                                         BuilderEntry<GroundConjunctiveCondition>,
+                                         BuilderEntry<GroundRule>,
+                                         BuilderEntry<Program>,
+                                         BuilderEntry<NumericEffect<OpAssign, FluentTag>>,
+                                         BuilderEntry<NumericEffect<OpIncrease, FluentTag>>,
+                                         BuilderEntry<NumericEffect<OpDecrease, FluentTag>>,
+                                         BuilderEntry<NumericEffect<OpScaleUp, FluentTag>>,
+                                         BuilderEntry<NumericEffect<OpScaleDown, FluentTag>>,
+                                         BuilderEntry<NumericEffect<OpIncrease, AuxiliaryTag>>,
+                                         BuilderEntry<GroundNumericEffect<OpAssign, FluentTag>>,
+                                         BuilderEntry<GroundNumericEffect<OpIncrease, FluentTag>>,
+                                         BuilderEntry<GroundNumericEffect<OpDecrease, FluentTag>>,
+                                         BuilderEntry<GroundNumericEffect<OpScaleUp, FluentTag>>,
+                                         BuilderEntry<GroundNumericEffect<OpScaleDown, FluentTag>>,
+                                         BuilderEntry<GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
+                                         BuilderEntry<ConditionalEffect>,
+                                         BuilderEntry<GroundConditionalEffect>,
+                                         BuilderEntry<ConjunctiveEffect>,
+                                         BuilderEntry<GroundConjunctiveEffect>,
+                                         BuilderEntry<Action>,
+                                         BuilderEntry<GroundAction>,
+                                         BuilderEntry<Axiom>,
+                                         BuilderEntry<GroundAxiom>,
+                                         BuilderEntry<Metric>,
+                                         BuilderEntry<Domain>,
+                                         BuilderEntry<Task>>;
 
-    // ----- Basic symbols -----
-    Data<Variable> variable;
-    Data<Object> object;
-    Data<Term> term;
+    HanaBuilder m_builder;
 
-    // ----- Predicates / Atoms / Literals -----
-    Data<Predicate<StaticTag>> static_predicate;
-    Data<Predicate<FluentTag>> fluent_predicate;
-    Data<Predicate<DerivedTag>> derived_predicate;
-
-    Data<Atom<StaticTag>> static_atom;
-    Data<Atom<FluentTag>> fluent_atom;
-    Data<Atom<DerivedTag>> derived_atom;
-    Data<Literal<StaticTag>> static_literal;
-    Data<Literal<FluentTag>> fluent_literal;
-    Data<Literal<DerivedTag>> derived_literal;
-
-    Data<GroundAtom<StaticTag>> ground_static_atom;
-    Data<GroundAtom<FluentTag>> ground_fluent_atom;
-    Data<GroundAtom<DerivedTag>> ground_derived_atom;
-    Data<GroundLiteral<StaticTag>> ground_static_literal;
-    Data<GroundLiteral<FluentTag>> ground_fluent_literal;
-    Data<GroundLiteral<DerivedTag>> ground_derived_literal;
-
-    // ----- Functions / Function terms -----
-    Data<Function<StaticTag>> static_function;
-    Data<Function<FluentTag>> fluent_function;
-    Data<Function<AuxiliaryTag>> auxiliary_function;
-
-    Data<FunctionTerm<StaticTag>> static_fterm;
-    Data<FunctionTerm<FluentTag>> fluent_fterm;
-    Data<FunctionTerm<AuxiliaryTag>> auxiliary_fterm;
-    Data<GroundFunctionTerm<StaticTag>> ground_static_fterm;
-    Data<GroundFunctionTerm<FluentTag>> ground_fluent_fterm;
-    Data<GroundFunctionTerm<AuxiliaryTag>> ground_auxiliary_fterm;
-
-    // ----- Function expressions -----
-    Data<FunctionExpression> fexpr;
-    Data<GroundFunctionExpression> ground_fexpr;
-
-    // ----- Function term values -----
-    Data<GroundFunctionTermValue<StaticTag>> ground_static_fterm_value;
-    Data<GroundFunctionTermValue<FluentTag>> ground_fluent_fterm_value;
-    Data<GroundFunctionTermValue<AuxiliaryTag>> ground_auxiliary_fterm_value;
-
-    // ----- Conditions, rules, program -----
-    Data<ConjunctiveCondition> conj_cond;
-    Data<GroundConjunctiveCondition> ground_conj_cond;
-
-    Data<Rule> rule;
-    Data<GroundRule> ground_rule;
-
-    Data<Program> program;
+    template<typename T>
+    [[nodiscard]] auto get_builder()
+    {
+        return boost::hana::at_key(m_builder, boost::hana::type<T> {}).get_or_allocate();
+    }
 
     buffer::Buffer buffer;
-
-    /**
-     * Planning
-     */
-
-    Data<NumericEffect<OpAssign, FluentTag>> fluent_assign_numeric_effect;
-    Data<NumericEffect<OpIncrease, FluentTag>> fluent_increase_numeric_effect;
-    Data<NumericEffect<OpDecrease, FluentTag>> fluent_decrease_numeric_effect;
-    Data<NumericEffect<OpScaleUp, FluentTag>> fluent_scale_up_numeric_effect;
-    Data<NumericEffect<OpScaleDown, FluentTag>> fluent_scale_down_numeric_effect;
-    Data<NumericEffect<OpIncrease, AuxiliaryTag>> auxiliary_numeric_effect;
-
-    Data<GroundNumericEffect<OpAssign, FluentTag>> ground_fluent_assign_numeric_effect;
-    Data<GroundNumericEffect<OpIncrease, FluentTag>> ground_fluent_increase_numeric_effect;
-    Data<GroundNumericEffect<OpDecrease, FluentTag>> ground_fluent_decrease_numeric_effect;
-    Data<GroundNumericEffect<OpScaleUp, FluentTag>> ground_fluent_scale_up_numeric_effect;
-    Data<GroundNumericEffect<OpScaleDown, FluentTag>> ground_fluent_scale_down_numeric_effect;
-    Data<GroundNumericEffect<OpIncrease, AuxiliaryTag>> ground_auxiliary_numeric_effect;
-
-    Data<ConditionalEffect> cond_effect;
-    Data<GroundConditionalEffect> ground_cond_effect;
-
-    Data<ConjunctiveEffect> conj_effect;
-    Data<GroundConjunctiveEffect> ground_conj_effect;
-
-    Data<Action> action;
-    Data<GroundAction> ground_action;
-
-    Data<Axiom> axiom;
-    Data<GroundAxiom> ground_axiom;
-
-    Data<Metric> metric;
-
-    Data<Task> task;
-    Data<Domain> domain;
-
-    /**
-     * Datalog
-     */
-
-    // ================== Operators ==================
-
-    template<OpKind O>
-    auto& get_unary() noexcept
-    {
-        if constexpr (std::is_same_v<O, OpSub>)
-            return unary_sub;
-        else
-            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
-    }
-
-    template<OpKind O>
-    auto& get_ground_unary() noexcept
-    {
-        if constexpr (std::is_same_v<O, OpSub>)
-            return ground_unary_sub;
-        else
-            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
-    }
-
-    template<OpKind O>
-    auto& get_binary() noexcept
-    {
-        if constexpr (std::is_same_v<O, OpAdd>)
-            return binary_add;
-        else if constexpr (std::is_same_v<O, OpSub>)
-            return binary_sub;
-        else if constexpr (std::is_same_v<O, OpMul>)
-            return binary_mul;
-        else if constexpr (std::is_same_v<O, OpDiv>)
-            return binary_div;
-        else if constexpr (std::is_same_v<O, OpEq>)
-            return binary_eq;
-        else if constexpr (std::is_same_v<O, OpNe>)
-            return binary_ne;
-        else if constexpr (std::is_same_v<O, OpLe>)
-            return binary_le;
-        else if constexpr (std::is_same_v<O, OpLt>)
-            return binary_lt;
-        else if constexpr (std::is_same_v<O, OpGe>)
-            return binary_ge;
-        else if constexpr (std::is_same_v<O, OpGt>)
-            return binary_gt;
-        else
-            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
-    }
-
-    template<OpKind O>
-    auto& get_ground_binary() noexcept
-    {
-        if constexpr (std::is_same_v<O, OpAdd>)
-            return ground_binary_add;
-        else if constexpr (std::is_same_v<O, OpSub>)
-            return ground_binary_sub;
-        else if constexpr (std::is_same_v<O, OpMul>)
-            return ground_binary_mul;
-        else if constexpr (std::is_same_v<O, OpDiv>)
-            return ground_binary_div;
-        else if constexpr (std::is_same_v<O, OpEq>)
-            return ground_binary_eq;
-        else if constexpr (std::is_same_v<O, OpNe>)
-            return ground_binary_ne;
-        else if constexpr (std::is_same_v<O, OpLe>)
-            return ground_binary_le;
-        else if constexpr (std::is_same_v<O, OpLt>)
-            return ground_binary_lt;
-        else if constexpr (std::is_same_v<O, OpGe>)
-            return ground_binary_ge;
-        else if constexpr (std::is_same_v<O, OpGt>)
-            return ground_binary_gt;
-        else
-            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
-    }
-
-    template<OpKind O>
-    auto& get_multi() noexcept
-    {
-        if constexpr (std::is_same_v<O, OpAdd>)
-            return multi_add;
-        else if constexpr (std::is_same_v<O, OpMul>)
-            return multi_mul;
-        else
-            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
-    }
-
-    template<OpKind O>
-    auto& get_ground_multi() noexcept
-    {
-        if constexpr (std::is_same_v<O, OpAdd>)
-            return ground_multi_add;
-        else if constexpr (std::is_same_v<O, OpMul>)
-            return ground_multi_mul;
-        else
-            static_assert(dependent_false<O>::value, "Missing Builder for the given types.");
-    }
-
-    auto& get_boolean() noexcept { return boolean; }
-
-    auto& get_ground_boolean() noexcept { return ground_boolean; }
-
-    auto& get_arithmetic() noexcept { return arithmetic; }
-
-    auto& get_ground_arithmetic() noexcept { return ground_arithmetic; }
-
-    // ================== Basic symbols ==================
-
-    auto& get_variable() noexcept { return variable; }
-
-    auto& get_object() noexcept { return object; }
-
-    auto& get_term() noexcept { return term; }
-
-    // ================== Predicates / Atoms / Literals ==================
-
-    template<FactKind T>
-    auto& get_predicate() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return static_predicate;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return fluent_predicate;
-        else if constexpr (std::is_same_v<T, DerivedTag>)
-            return derived_predicate;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_atom() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return static_atom;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return fluent_atom;
-        else if constexpr (std::is_same_v<T, DerivedTag>)
-            return derived_atom;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_ground_atom() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return ground_static_atom;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return ground_fluent_atom;
-        else if constexpr (std::is_same_v<T, DerivedTag>)
-            return ground_derived_atom;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_literal() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return static_literal;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return fluent_literal;
-        else if constexpr (std::is_same_v<T, DerivedTag>)
-            return derived_literal;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_ground_literal() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return ground_static_literal;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return ground_fluent_literal;
-        else if constexpr (std::is_same_v<T, DerivedTag>)
-            return ground_derived_literal;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    // ================== Functions / Terms / Values ==================
-
-    template<FactKind T>
-    auto& get_function() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return static_function;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return fluent_function;
-        else if constexpr (std::is_same_v<T, AuxiliaryTag>)
-            return auxiliary_function;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_fterm() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return static_fterm;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return fluent_fterm;
-        else if constexpr (std::is_same_v<T, AuxiliaryTag>)
-            return auxiliary_fterm;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_ground_fterm() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return ground_static_fterm;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return ground_fluent_fterm;
-        else if constexpr (std::is_same_v<T, AuxiliaryTag>)
-            return ground_auxiliary_fterm;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<FactKind T>
-    auto& get_ground_fterm_value() noexcept
-    {
-        if constexpr (std::is_same_v<T, StaticTag>)
-            return ground_static_fterm_value;
-        else if constexpr (std::is_same_v<T, FluentTag>)
-            return ground_fluent_fterm_value;
-        else if constexpr (std::is_same_v<T, AuxiliaryTag>)
-            return ground_auxiliary_fterm_value;
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    // ================== Expressions ==================
-
-    auto& get_fexpr() noexcept { return fexpr; }
-    auto& get_ground_fexpr() noexcept { return ground_fexpr; }
-
-    // ================== Conditions / Rules / Program ==================
-
-    auto& get_conj_cond() noexcept { return conj_cond; }
-    auto& get_ground_conj_cond() noexcept { return ground_conj_cond; }
-
-    auto& get_rule() noexcept { return rule; }
-    auto& get_ground_rule() noexcept { return ground_rule; }
-
-    auto& get_program() noexcept { return program; }
-
-    /**
-     * Planning
-     */
-
-    template<NumericEffectOpKind Op, FactKind T>
-    auto& get_numeric_effect() noexcept
-    {
-        if constexpr (std::is_same_v<T, FluentTag>)
-            if constexpr (std::is_same_v<Op, OpAssign>)
-                return fluent_assign_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpIncrease>)
-                return fluent_increase_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpDecrease>)
-                return fluent_decrease_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpScaleUp>)
-                return fluent_scale_up_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpScaleDown>)
-                return fluent_scale_down_numeric_effect;
-            else
-                static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-        else if constexpr (std::is_same_v<T, AuxiliaryTag>)
-            if constexpr (std::is_same_v<Op, OpIncrease>)
-                return auxiliary_numeric_effect;
-            else
-                static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    template<NumericEffectOpKind Op, FactKind T>
-    auto& get_ground_numeric_effect() noexcept
-    {
-        if constexpr (std::is_same_v<T, FluentTag>)
-            if constexpr (std::is_same_v<Op, OpAssign>)
-                return ground_fluent_assign_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpIncrease>)
-                return ground_fluent_increase_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpDecrease>)
-                return ground_fluent_decrease_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpScaleUp>)
-                return ground_fluent_scale_up_numeric_effect;
-            else if constexpr (std::is_same_v<Op, OpScaleDown>)
-                return ground_fluent_scale_down_numeric_effect;
-            else
-                static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-        else if constexpr (std::is_same_v<T, AuxiliaryTag>)
-            if constexpr (std::is_same_v<Op, OpIncrease>)
-                return ground_auxiliary_numeric_effect;
-            else
-                static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-        else
-            static_assert(dependent_false<T>::value, "Missing Builder for the given types.");
-    }
-
-    auto& get_cond_effect() noexcept { return cond_effect; }
-    auto& get_ground_cond_effect() noexcept { return ground_cond_effect; }
-
-    auto& get_conj_effect() noexcept { return conj_effect; }
-    auto& get_ground_conj_effect() noexcept { return ground_conj_effect; }
-
-    auto& get_action() noexcept { return action; }
-    auto& get_ground_action() noexcept { return ground_action; }
-
-    auto& get_axiom() noexcept { return axiom; }
-    auto& get_ground_axiom() noexcept { return ground_axiom; }
-
-    auto& get_metric() noexcept { return metric; }
-
-    auto& get_task() noexcept { return task; }
-    auto& get_domain() noexcept { return domain; }
 
     auto& get_buffer() noexcept { return buffer; }
 };

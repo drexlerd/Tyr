@@ -164,7 +164,8 @@ auto merge(View<Index<Object>, C_SRC> element, Builder& builder, C_DST& destinat
                               cache,
                               [&]()
                               {
-                                  auto& object = builder.get_object();
+                                  auto object_ptr = builder.template get_builder<formalism::Object>();
+                                  auto& object = *object_ptr;
                                   object.clear();
 
                                   object.name = element.get_name();
@@ -180,57 +181,60 @@ auto merge(float_t element, Builder&, C_DST&, MergeCache<C_SRC, C_DST>&)
     return element;
 }
 
-template<OpKind O, Context C_SRC, Context C_DST>
-auto merge(View<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+template<OpKind O, typename T, Context C_SRC, Context C_DST>
+auto merge(View<Index<UnaryOperator<O, T>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
 {
-    return with_cache<UnaryOperator<O, Data<GroundFunctionExpression>>>(element,
-                                                                        cache,
-                                                                        [&]()
-                                                                        {
-                                                                            auto& unary = builder.template get_ground_unary<O>();
-                                                                            unary.clear();
+    return with_cache<UnaryOperator<O, T>>(element,
+                                           cache,
+                                           [&]()
+                                           {
+                                               auto unary_ptr = builder.template get_builder<formalism::UnaryOperator<O, T>>();
+                                               auto& unary = *unary_ptr;
+                                               unary.clear();
 
-                                                                            unary.arg = merge(element.get_arg(), builder, destination, cache).get_data();
+                                               unary.arg = merge(element.get_arg(), builder, destination, cache).get_data();
 
-                                                                            canonicalize(unary);
-                                                                            return destination.get_or_create(unary, builder.get_buffer()).first;
-                                                                        });
+                                               canonicalize(unary);
+                                               return destination.get_or_create(unary, builder.get_buffer()).first;
+                                           });
 }
 
-template<OpKind O, Context C_SRC, Context C_DST>
-auto merge(View<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+template<OpKind O, typename T, Context C_SRC, Context C_DST>
+auto merge(View<Index<BinaryOperator<O, T>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
 {
-    return with_cache<BinaryOperator<O, Data<GroundFunctionExpression>>>(element,
-                                                                         cache,
-                                                                         [&]()
-                                                                         {
-                                                                             auto& binary = builder.template get_ground_binary<O>();
-                                                                             binary.clear();
+    return with_cache<BinaryOperator<O, T>>(element,
+                                            cache,
+                                            [&]()
+                                            {
+                                                auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<O, T>>();
+                                                auto& binary = *binary_ptr;
+                                                binary.clear();
 
-                                                                             binary.lhs = merge(element.get_lhs(), builder, destination, cache).get_data();
-                                                                             binary.rhs = merge(element.get_rhs(), builder, destination, cache).get_data();
+                                                binary.lhs = merge(element.get_lhs(), builder, destination, cache).get_data();
+                                                binary.rhs = merge(element.get_rhs(), builder, destination, cache).get_data();
 
-                                                                             canonicalize(binary);
-                                                                             return destination.get_or_create(binary, builder.get_buffer()).first;
-                                                                         });
+                                                canonicalize(binary);
+                                                return destination.get_or_create(binary, builder.get_buffer()).first;
+                                            });
 }
 
-template<OpKind O, Context C_SRC, Context C_DST>
-auto merge(View<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+template<OpKind O, typename T, Context C_SRC, Context C_DST>
+auto merge(View<Index<MultiOperator<O, T>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
 {
-    return with_cache<MultiOperator<O, Data<GroundFunctionExpression>>>(element,
-                                                                        cache,
-                                                                        [&]()
-                                                                        {
-                                                                            auto& multi = builder.template get_ground_multi<O>();
-                                                                            multi.clear();
+    return with_cache<MultiOperator<O, T>>(element,
+                                           cache,
+                                           [&]()
+                                           {
+                                               auto multi_ptr = builder.template get_builder<formalism::MultiOperator<O, T>>();
+                                               auto& multi = *multi_ptr;
+                                               multi.clear();
 
-                                                                            for (const auto arg : element.get_args())
-                                                                                multi.args.push_back(merge(arg, builder, destination, cache).get_data());
+                                               for (const auto arg : element.get_args())
+                                                   multi.args.push_back(merge(arg, builder, destination, cache).get_data());
 
-                                                                            canonicalize(multi);
-                                                                            return destination.get_or_create(multi, builder.get_buffer()).first;
-                                                                        });
+                                               canonicalize(multi);
+                                               return destination.get_or_create(multi, builder.get_buffer()).first;
+                                           });
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
@@ -240,7 +244,8 @@ auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& de
                                     cache,
                                     [&]()
                                     {
-                                        auto& predicate = builder.template get_predicate<T>();
+                                        auto predicate_ptr = builder.template get_builder<formalism::Predicate<T>>();
+                                        auto& predicate = *predicate_ptr;
                                         predicate.clear();
 
                                         predicate.name = element.get_name();
@@ -258,7 +263,8 @@ auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& d
                                      cache,
                                      [&]()
                                      {
-                                         auto& atom = builder.template get_ground_atom<T>();
+                                         auto atom_ptr = builder.template get_builder<formalism::GroundAtom<T>>();
+                                         auto& atom = *atom_ptr;
                                          atom.clear();
 
                                          atom.predicate = merge(element.get_predicate(), builder, destination, cache).get_index();
@@ -277,7 +283,8 @@ auto merge(View<Index<GroundLiteral<T>>, C_SRC> element, Builder& builder, C_DST
                                         cache,
                                         [&]()
                                         {
-                                            auto& literal = builder.template get_ground_literal<T>();
+                                            auto literal_ptr = builder.template get_builder<formalism::GroundLiteral<T>>();
+                                            auto& literal = *literal_ptr;
                                             literal.clear();
 
                                             literal.polarity = element.get_polarity();
@@ -295,7 +302,8 @@ auto merge(View<Index<Function<T>>, C_SRC> element, Builder& builder, C_DST& des
                                    cache,
                                    [&]()
                                    {
-                                       auto& function = builder.template get_function<T>();
+                                       auto function_ptr = builder.template get_builder<formalism::Function<T>>();
+                                       auto& function = *function_ptr;
                                        function.clear();
 
                                        function.name = element.get_name();
@@ -313,7 +321,8 @@ auto merge(View<Index<GroundFunctionTerm<T>>, C_SRC> element, Builder& builder, 
                                              cache,
                                              [&]()
                                              {
-                                                 auto& fterm = builder.template get_ground_fterm<T>();
+                                                 auto fterm_ptr = builder.template get_builder<formalism::GroundFunctionTerm<T>>();
+                                                 auto& fterm = *fterm_ptr;
                                                  fterm.clear();
 
                                                  fterm.function = merge(element.get_function(), builder, destination, cache).get_index();
@@ -351,30 +360,21 @@ auto merge(View<Data<GroundFunctionExpression>, C_SRC> element, Builder& builder
         element.get_variant());
 }
 
-template<Context C_SRC, Context C_DST>
-auto merge(View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+template<typename T, Context C_SRC, Context C_DST>
+auto merge(View<Data<ArithmeticOperator<T>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
 {
     return visit(
         [&](auto&& arg)
-        {
-            return View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, C_DST>(
-                Data<ArithmeticOperator<Data<GroundFunctionExpression>>>(merge(arg, builder, destination, cache).get_index()),
-                destination);
-        },
+        { return View<Data<ArithmeticOperator<T>>, C_DST>(Data<ArithmeticOperator<T>>(merge(arg, builder, destination, cache).get_index()), destination); },
         element.get_variant());
 }
 
-template<Context C_SRC, Context C_DST>
-auto merge(View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+template<typename T, Context C_SRC, Context C_DST>
+auto merge(View<Data<BooleanOperator<T>>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
 {
-    return visit(
-        [&](auto&& arg)
-        {
-            return View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, C_DST>(
-                Data<BooleanOperator<Data<GroundFunctionExpression>>>(merge(arg, builder, destination, cache).get_index()),
-                destination);
-        },
-        element.get_variant());
+    return visit([&](auto&& arg)
+                 { return View<Data<BooleanOperator<T>>, C_DST>(Data<BooleanOperator<T>>(merge(arg, builder, destination, cache).get_index()), destination); },
+                 element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST>
@@ -384,7 +384,8 @@ auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, Builder& buil
                                                   cache,
                                                   [&]()
                                                   {
-                                                      auto& conj_cond = builder.get_ground_conj_cond();
+                                                      auto conj_cond_ptr = builder.template get_builder<formalism::GroundConjunctiveCondition>();
+                                                      auto& conj_cond = *conj_cond_ptr;
                                                       conj_cond.clear();
 
                                                       for (const auto literal : element.template get_literals<StaticTag>())
@@ -409,7 +410,8 @@ auto merge(View<Index<GroundRule>, C_SRC> element, Builder& builder, C_DST& dest
                                   cache,
                                   [&]()
                                   {
-                                      auto& rule = builder.get_ground_rule();
+                                      auto rule_ptr = builder.template get_builder<formalism::GroundRule>();
+                                      auto& rule = *rule_ptr;
                                       rule.clear();
 
                                       rule.body = merge(element.get_body(), builder, destination, cache).get_index();
