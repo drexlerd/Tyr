@@ -337,7 +337,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
     {
         std::cout << ground_rule << std::endl;
 
-        rule_execution_context.ground_rules.push_back(ground_rule.get_index());
+        rule_execution_context.ground_rules.push_back(ground_rule);
     }
 }
 
@@ -358,7 +358,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
         {
             std::cout << ground_rule << std::endl;
 
-            rule_execution_context.ground_rules.push_back(ground_rule.get_index());
+            rule_execution_context.ground_rules.push_back(ground_rule);
         }
     }
 }
@@ -385,7 +385,7 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                                 {
                                     std::cout << ground_rule << std::endl;
 
-                                    rule_execution_context.ground_rules.push_back(ground_rule.get_index());
+                                    rule_execution_context.ground_rules.push_back(ground_rule);
                                 }
                             });
 }

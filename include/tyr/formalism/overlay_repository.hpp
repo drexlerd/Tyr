@@ -62,6 +62,9 @@ public:
     {
         const auto parent_scope_size = parent_scope.template size<T>();
 
+        // Guard against accidental overlap from incorrect merging.
+        assert(local_scope.template size<T>() == 0 || local_scope.template front<T>().index.get_value() >= parent_scope.template size<T>());
+
         if (index.value < parent_scope_size)
             return parent_scope[index];
 

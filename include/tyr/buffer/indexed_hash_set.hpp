@@ -120,7 +120,17 @@ public:
      * Lookup
      */
 
-    const Data<Tag>& operator[](Index<Tag> index) const { return *m_vec[index.get_value()]; }
+    const Data<Tag>& operator[](Index<Tag> index) const
+    {
+        assert(index.get_value() < m_vec.size());
+        return *m_vec[index.get_value()];
+    }
+
+    const Data<Tag>& front() const
+    {
+        assert(!m_vec.empty());
+        return *m_vec.front();
+    }
 };
 
 }

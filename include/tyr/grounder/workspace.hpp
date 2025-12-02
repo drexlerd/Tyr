@@ -81,7 +81,7 @@ struct RuleExecutionContext
     kpkc::Workspace kpkc_workspace;
     std::shared_ptr<formalism::Repository> local;
     formalism::OverlayRepository<formalism::Repository> repository;
-    IndexList<formalism::GroundRule> ground_rules;
+    std::vector<View<Index<formalism::GroundRule>, formalism::OverlayRepository<formalism::Repository>>> ground_rules;
 
     RuleExecutionContext(View<Index<formalism::Rule>, formalism::Repository> rule,
                          const analysis::DomainListList& parameter_domains,
@@ -91,6 +91,7 @@ struct RuleExecutionContext
         static_consistency_graph(rule.get_body(), parameter_domains, static_assignment_sets),
         consistency_graph(grounder::kpkc::allocate_dense_graph(static_consistency_graph)),
         kpkc_workspace(grounder::kpkc::allocate_workspace(static_consistency_graph)),
+        local(std::make_shared<formalism::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
         repository(parent, *local),
         ground_rules()
     {

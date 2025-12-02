@@ -44,7 +44,7 @@ TEST(TyrTests, TyrGrounderGenerator)
     auto domains = analysis::compute_variable_domains(program);
 
     /**
-     * Initialization 1: Execution contexts
+     * Allocation 1: Execution contexts
      */
 
     // Per fact set
@@ -64,10 +64,20 @@ TEST(TyrTests, TyrGrounderGenerator)
     oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
 
     /**
+     * Initialization 1: Execution contexts
+     */
+    for (uint_t i = 0; i < program.get_rules().size(); ++i)
+    {
+        rule_execution_contexts[i].initialize(facts_execution_context.assignment_sets);
+    }
+
+    /**
      * Parallelization 1: Lock-free rule grounding
      */
 
     const uint_t num_rules = program.get_rules().size();
+
+    // oneapi::tbb::global_control control(oneapi::tbb::global_control::max_allowed_parallelism, 1);
 
     tbb::parallel_for(uint_t { 0 },
                       num_rules,
@@ -75,96 +85,42 @@ TEST(TyrTests, TyrGrounderGenerator)
                       {
                           auto& rule_execution_context = rule_execution_contexts[i];
                           auto& thread_execution_context = thread_execution_contexts.local();  // thread-local
-
                           thread_execution_context.clear();
 
                           grounder::ground(facts_execution_context, rule_execution_context, thread_execution_context);
                       });
 
     /**
-     * Parallelization 2: Lock-free hierarchical merging into global
+     * Sequential merge.
      */
 
-    auto hierarchical_merge_to_global_parallel = [&](std::vector<grounder::RuleExecutionContext>& recs, formalism::Repository& global_repo)
+    auto builder = formalism::Builder();
+
+    auto merge_cache = formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> {};
+    auto merge_repository = formalism::Repository();
+    auto merge_ground_rules = std::vector<View<Index<formalism::GroundRule>, formalism::Repository>> {};
+
+    for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
-        namespace tbb = oneapi::tbb;
+        auto& rule_execution_context = rule_execution_contexts[i];
 
-        if (recs.empty())
-            return;
-
-        // Active indices into recs: start with all rules.
-        std::vector<std::size_t> active(recs.size());
-        std::iota(active.begin(), active.end(), std::size_t { 0 });
-
-        // Helper: merge repo of recs[src_idx] into recs[dst_idx].
-        auto merge_two = [&](std::size_t src_idx, std::size_t dst_idx)
+        for (const auto ground_rule : rule_execution_context.ground_rules)
         {
-            auto& src = recs[src_idx];
-            auto& dst = recs[dst_idx];
-
-            auto& thread_execution_context = thread_execution_contexts.local();
-            thread_execution_context.clear();
-
-            for (const auto ground_rule_index : src.ground_rules)
-            {
-                auto ground_rule = View<Index<formalism::GroundRule>, formalism::OverlayRepository<Repository>>(ground_rule_index, src.repository);
-
-                // Merge into dst.repository (hierarchical local repo)
-                formalism::merge(ground_rule, thread_execution_context.builder, dst.repository, thread_execution_context.local_merge_cache);
-            }
-
-            // Optionally mark src as consumed
-            src.ground_rules.clear();
-        };
-
-        // Tree-like reduction: repeatedly merge pairs in parallel until one survives.
-        while (active.size() > 1)
-        {
-            const std::size_t n = active.size();
-            const std::size_t num_pairs = n / 2;
-
-            // Merge pairs (active[2k] -> active[2k+1]) in parallel
-            tbb::parallel_for(std::size_t { 0 },
-                              num_pairs,
-                              [&](std::size_t k)
-                              {
-                                  auto i = active[2 * k];
-                                  auto j = active[2 * k + 1];
-                                  merge_two(i, j);
-                              });
-
-            // Build next active list: only the "right" side of each pair survives.
-            std::vector<std::size_t> next;
-            next.reserve((n + 1) / 2);
-
-            for (std::size_t k = 0; k < num_pairs; ++k)
-                next.push_back(active[2 * k + 1]);
-
-            // If we had an odd number, the last one just carries over unchanged.
-            if (n % 2 == 1)
-                next.push_back(active.back());
-
-            active.swap(next);
+            merge_ground_rules.push_back(formalism::merge(ground_rule, builder, merge_repository, merge_cache));
         }
+    }
 
-        // Now we have a single "winner" repository left.
-        auto winner_idx = active.front();
-        auto& winner = recs[winner_idx];
+    // Now everything is moved from an OverlayRepository to a top-level Repository and we can perform the final merge step
+    auto global_cache = formalism::MergeCache<formalism::Repository, formalism::Repository> {};
+    auto global_ground_rules = std::vector<View<Index<formalism::GroundRule>, formalism::Repository>> {};
 
-        // Final merge: winner → global_repo (sequential)
-        {
-            auto& thread_execution_context = thread_execution_contexts.local();
-            thread_execution_context.clear();
+    for (const auto ground_rule : merge_ground_rules)
+    {
+        const auto global_ground_rule = formalism::merge(ground_rule, builder, repository, global_cache);
 
-            for (const auto ground_rule_index : winner.ground_rules)
-            {
-                auto ground_rule = View<Index<formalism::GroundRule>, formalism::OverlayRepository<Repository>>(ground_rule_index, winner.repository);
+        std::cout << global_ground_rule << std::endl;
 
-                formalism::merge(ground_rule, thread_execution_context.builder, global_repo, thread_execution_context.global_merge_cache);
-            }
-        }
-    };
-
-    hierarchical_merge_to_global_parallel(rule_execution_contexts, repository);
+        global_ground_rules.push_back(global_ground_rule);
+    }
 }
 }

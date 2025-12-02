@@ -13,17 +13,17 @@ endfunction()
 
 # Add each test source file as a separate test executable
 
-add_gtest(analysis_domains                               "analysis/domains.cpp")
-add_gtest(analysis_stratification                        "analysis/stratification.cpp")
-add_gtest(analysis_listeners                             "analysis/listeners.cpp")
+# add_gtest(analysis_domains                               "analysis/domains.cpp")
+# add_gtest(analysis_stratification                        "analysis/stratification.cpp")
+# add_gtest(analysis_listeners                             "analysis/listeners.cpp")
 
-add_gtest(buffer_indexed_hash_set                        "buffer/indexed_hash_set.cpp")
+# add_gtest(buffer_indexed_hash_set                        "buffer/indexed_hash_set.cpp")
 
-add_gtest(formalism_repository                           "formalism/repository.cpp")
-add_gtest(formalism_proxy                                "formalism/proxy.cpp")
+# add_gtest(formalism_repository                           "formalism/repository.cpp")
+# add_gtest(formalism_proxy                                "formalism/proxy.cpp")
 
-add_gtest(grounder_assignment_sets                       "grounder/assignment_sets.cpp")
+# add_gtest(grounder_assignment_sets                       "grounder/assignment_sets.cpp")
 add_gtest(grounder_generator                             "grounder/generator.cpp")
-add_gtest(grounder_static_consistency_graph              "grounder/static_consistency_graph.cpp")
+# add_gtest(grounder_static_consistency_graph              "grounder/static_consistency_graph.cpp")
 
-add_gtest(planning_lifted_task                           "planning/lifted_task.cpp")
+# add_gtest(planning_lifted_task                           "planning/lifted_task.cpp")

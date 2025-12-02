@@ -157,6 +157,14 @@ public:
         return repository[index];
     }
 
+    template<typename T>
+    const Data<T>& front() const
+    {
+        const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
+
+        return repository.front();
+    }
+
     /// @brief Get the number of stored elements.
     template<typename T>
     size_t size() const
