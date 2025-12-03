@@ -36,7 +36,7 @@
 namespace tyr::planning
 {
 
-static void fill_atoms(valla::Slot<uint_t> slot,
+inline void fill_atoms(valla::Slot<uint_t> slot,
                        const valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
                        std::vector<uint_t>& buffer,
                        boost::dynamic_bitset<>& atoms)
@@ -54,7 +54,7 @@ static void fill_atoms(valla::Slot<uint_t> slot,
     }
 }
 
-static void fill_numeric_variables(valla::Slot<uint_t> slot,
+inline void fill_numeric_variables(valla::Slot<uint_t> slot,
                                    const valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
                                    const valla::IndexedHashSet<float_t, uint_t>& float_nodes,
                                    std::vector<uint_t>& buffer,
@@ -65,26 +65,22 @@ static void fill_numeric_variables(valla::Slot<uint_t> slot,
     valla::read_sequence(slot, uint_nodes, std::back_inserter(buffer));
 
     if (!buffer.empty())
-    {
         valla::decode_from_unsigned_integrals(buffer, float_nodes, std::back_inserter(numeric_variables));
-    }
 }
 
-static valla::Slot<uint_t>
+inline valla::Slot<uint_t>
 create_atoms_slot(const boost::dynamic_bitset<>& atoms, std::vector<uint_t>& buffer, valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes)
 {
     buffer.clear();
 
     const auto& bits = atoms;
     for (uint_t i = bits.find_first(); i != boost::dynamic_bitset<>::npos; i = bits.find_next(i))
-    {
         buffer.push_back(i);
-    }
 
     return valla::insert_sequence(buffer, uint_nodes);
 }
 
-static valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float_t>& numeric_variables,
+inline valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float_t>& numeric_variables,
                                                          std::vector<uint_t>& buffer,
                                                          valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
                                                          valla::IndexedHashSet<float_t, uint_t>& float_nodes)
@@ -146,7 +142,33 @@ public:
 
     View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> get_task() const { return m_task; }
 
-    Node<Task> get_initial_node() { return m_initial_node; }
+    Node<Task> get_initial_node()
+    {
+        auto unpacked_state_ptr = m_unpacked_state_pool.get_or_allocate();
+        auto& unpacked_state = *unpacked_state_ptr;
+        unpacked_state.clear();
+
+        auto& fluent_atoms = unpacked_state.template get_atoms<formalism::FluentTag>();
+        auto& derived_atoms = unpacked_state.template get_atoms<formalism::DerivedTag>();
+        auto& numeric_variables = unpacked_state.get_numeric_variables();
+
+        for (const auto atom : m_task.get_atoms<formalism::FluentTag>())
+            fluent_atoms.push_back(atom.get_index().get_value());
+        std::sort(fluent_atoms.begin(), fluent_atoms.end());
+
+        for (const auto fterm_value : m_task.get_fterm_values<formalism::FluentTag>())
+        {
+            const auto fterm_index = fterm_value.get_fterm().get_index().get_value();
+            if (fterm_index >= numeric_variables.size())
+                numeric_variables.resize(fterm_index + 1, std::numeric_limits<float_t>::quiet_NaN());
+            numeric_variables[fterm_index] = fterm_value.get_value();
+        }
+
+        const auto state_index = register_state(unpacked_state);
+        const auto state_metric = float_t(0);  // TODO: evaluate metric
+
+        return Node<Task>(state_index, state_metric, *this);
+    }
 
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<Task>>>
     get_labeled_successor_nodes(const Node<Task>& node)

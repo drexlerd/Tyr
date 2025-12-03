@@ -15,10 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_DOMAIN_HPP_
-#define TYR_PLANNING_DOMAIN_HPP_
+#ifndef TYR_PLANNING_PROGRAMS_ACTION_HPP_
+#define TYR_PLANNING_PROGRAMS_ACTION_HPP_
 
 #include "tyr/formalism/formalism.hpp"
+#include "tyr/planning/declarations.hpp"
 
 namespace tyr::planning
 {
@@ -29,14 +30,15 @@ struct ApplicableActionProgram
     View<Index<formalism::Program>, formalism::Repository> program;
 
     // Mapping from program predicate to task rule
-    UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
-                 View<Index<formalism::Rule>, formalism::OverlayRepository<formalism::Repository>>>
-        prediate_to_action;
+    using PredicateToActionMapping = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
+                                                  View<Index<formalism::Rule>, formalism::OverlayRepository<formalism::Repository>>>;
 
-    ApplicableActionProgram() = default;
+    PredicateToActionMapping prediate_to_action;
+
+    ApplicableActionProgram(View<Index<formalism::Program>, formalism::Repository> program, std::shared_ptr<formalism::Repository> repository);
 };
 
-ApplicableActionProgram create_applicable_action_program() { return ApplicableActionProgram(); }
+extern ApplicableActionProgram create_applicable_action_program(const LiftedTask& task);
 }
 
 #endif
