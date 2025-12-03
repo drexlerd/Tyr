@@ -15,11 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/programs/action.hpp"
+#include "tyr/planning/programs/ground.hpp"
 
 namespace tyr::planning
 {
 
-ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) {}
+GroundTaskProgram::GroundTaskProgram(const LiftedTask& task) {}
 
 }

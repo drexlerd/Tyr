@@ -26,19 +26,15 @@ namespace tyr::planning
 
 struct ApplicableActionProgram
 {
-    std::shared_ptr<formalism::Repository> repository;
-    View<Index<formalism::Program>, formalism::Repository> program;
-
     // Mapping from program predicate to task rule
     using PredicateToActionMapping = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
                                                   View<Index<formalism::Rule>, formalism::OverlayRepository<formalism::Repository>>>;
 
-    PredicateToActionMapping prediate_to_action;
+    PredicateToActionMapping predicate_to_action;
 
-    ApplicableActionProgram(View<Index<formalism::Program>, formalism::Repository> program, std::shared_ptr<formalism::Repository> repository);
+    explicit ApplicableActionProgram(const LiftedTask& task);
 };
 
-extern ApplicableActionProgram create_applicable_action_program(const LiftedTask& task);
 }
 
 #endif

@@ -15,11 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/programs/action.hpp"
+#include "tyr/planning/programs/axiom.hpp"
 
 namespace tyr::planning
 {
 
-ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) {}
+AxiomEvaluatorProgram::AxiomEvaluatorProgram(const LiftedTask& task) {}
 
 }

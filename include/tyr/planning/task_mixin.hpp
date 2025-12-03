@@ -103,11 +103,11 @@ private:
 public:
     TaskMixin(DomainPtr domain,
               formalism::RepositoryPtr repository,
-              formalism::OverlayRepositoryPtr<formalism::Repository> scoped_repository,
+              formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
               View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task) :
         m_domain(std::move(domain)),
         m_repository(std::move(repository)),
-        m_scoped_repository(std::move(scoped_repository)),
+        m_overlay_repository(std::move(overlay_repository)),
         m_task(task)
     {
     }
@@ -187,12 +187,12 @@ public:
         self().get_labeled_successor_nodes_impl(node, out_nodes);
     }
 
-    auto get_repository() const { return m_scoped_repository; }
+    auto get_repository() const { return m_overlay_repository; }
 
 protected:
     DomainPtr m_domain;
     formalism::RepositoryPtr m_repository;
-    formalism::OverlayRepositoryPtr<formalism::Repository> m_scoped_repository;
+    formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
     View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> m_task;
 
     // States

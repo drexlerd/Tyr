@@ -32,7 +32,7 @@ public:
     // and build a data structure to efficiently compute applicable actions.
     GroundTask(DomainPtr domain,
                formalism::RepositoryPtr repository,
-               formalism::OverlayRepositoryPtr<formalism::Repository> scoped_repository,
+               formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
 
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<GroundTask>>>

@@ -21,6 +21,9 @@
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
+#include "tyr/planning/programs/action.hpp"
+#include "tyr/planning/programs/axiom.hpp"
+#include "tyr/planning/programs/ground.hpp"
 #include "tyr/planning/task_mixin.hpp"
 
 namespace tyr::planning
@@ -31,7 +34,7 @@ class LiftedTask : public TaskMixin<LiftedTask>
 public:
     LiftedTask(DomainPtr domain,
                formalism::RepositoryPtr repository,
-               formalism::OverlayRepositoryPtr<formalism::Repository> scoped_repository,
+               formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
 
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<LiftedTask>>>
@@ -44,8 +47,9 @@ public:
     GroundTask get_ground_task();
 
 private:
-    formalism::RepositoryPtr m_delete_free_program_repository;
-    View<Index<formalism::Program>, formalism::Repository> m_delete_free_program;
+    ApplicableActionProgram m_action_program;
+    AxiomEvaluatorProgram m_axiom_program;
+    GroundTaskProgram m_ground_program;
 };
 
 }

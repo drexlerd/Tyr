@@ -22,11 +22,12 @@ namespace tyr::planning
 
 LiftedTask::LiftedTask(DomainPtr domain,
                        formalism::RepositoryPtr repository,
-                       formalism::OverlayRepositoryPtr<formalism::Repository> scoped_repository,
+                       formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                        View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task) :
-    TaskMixin(std::move(domain), std::move(repository), std::move(scoped_repository), task),
-    m_delete_free_program_repository(std::make_shared<formalism::Repository>()),
-    m_delete_free_program(View<Index<formalism::Program>, formalism::Repository>(Index<formalism::Program>(0), *m_delete_free_program_repository))
+    TaskMixin(std::move(domain), std::move(repository), std::move(overlay_repository), task),
+    m_action_program(*this),
+    m_axiom_program(*this),
+    m_ground_program(*this)
 {
 }
 
@@ -43,6 +44,6 @@ void LiftedTask::get_labeled_successor_nodes_impl(
 {
 }
 
-GroundTask LiftedTask::get_ground_task() { return GroundTask(m_domain, m_repository, m_scoped_repository, m_task); }
+GroundTask LiftedTask::get_ground_task() { return GroundTask(this->m_domain, this->m_repository, this->m_overlay_repository, this->m_task); }
 
 }

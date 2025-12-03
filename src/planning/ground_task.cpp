@@ -22,9 +22,9 @@ namespace tyr::planning
 
 GroundTask::GroundTask(DomainPtr domain,
                        formalism::RepositoryPtr repository,
-                       formalism::OverlayRepositoryPtr<formalism::Repository> scoped_repository,
+                       formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                        View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task) :
-    TaskMixin(std::move(domain), std::move(repository), std::move(scoped_repository), task)
+    TaskMixin(std::move(domain), std::move(repository), std::move(overlay_repository), task)
 {
 }
 
