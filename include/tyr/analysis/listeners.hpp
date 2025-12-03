@@ -34,27 +34,7 @@ struct Listeners
     std::vector<ListenersPerStratum> positive_listeners_per_stratum;
 };
 
-inline Listeners compute_listeners(const RuleStrata& strata)
-{
-    auto listeners = Listeners();
-
-    for (const auto& stratum : strata.strata)
-    {
-        auto listeners_in_stratum = ListenersPerStratum {};
-
-        for (const auto rule : stratum)
-        {
-            for (const auto literal : rule.get_body().get_literals<formalism::FluentTag>())
-            {
-                listeners_in_stratum[literal.get_atom().get_predicate()].push_back(rule);
-            }
-        }
-
-        listeners.positive_listeners_per_stratum.push_back(std::move(listeners_in_stratum));
-    }
-
-    return listeners;
-}
+extern Listeners compute_listeners(const RuleStrata& strata);
 }
 
 #endif

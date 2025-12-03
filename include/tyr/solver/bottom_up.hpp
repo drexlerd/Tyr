@@ -15,27 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
-#define TYR_ANALYSIS_STRATIFICATION_HPP_
+#ifndef TYR_SOLVER_BOTTOM_UP_HPP_
+#define TYR_SOLVER_BOTTOM_UP_HPP_
 
+#include "tyr/analysis/analysis.hpp"
 #include "tyr/formalism/formalism.hpp"
+#include "tyr/grounder/grounder.hpp"
 
-#include <vector>
-
-namespace tyr::analysis
+namespace tyr::solver
 {
+void solve_bottom_up(View<Index<formalism::Program>, formalism::Repository> program,
+                     formalism::Repository& repository,
+                     grounder::FactSets<formalism::Repository>& fact_sets,
+                     const analysis::Listeners& listeners,
+                     const analysis::RuleStrata& strata,
+                     std::vector<View<formalism::GroundAtom<formalism::FluentTag>, formalism::Repository>>& out_facts);
 
-struct RuleStrata
-{
-    std::vector<std::vector<View<Index<formalism::Rule>, formalism::Repository>>> strata;
-};
-
-/// @brief Compute the rule stratification for the rules in the given program.
-/// An implementation of Algorithm 1 by Thiébaux-et-al-ijcai2003
-/// Source: https://users.cecs.anu.edu.au/~thiebaux/papers/ijcai03.pdf
-/// @param program is the program
-/// @return is the RuleStrata
-extern RuleStrata compute_rule_stratification(View<Index<formalism::Program>, formalism::Repository> program);
 }
 
 #endif

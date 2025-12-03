@@ -36,4 +36,7 @@
 // Planning
 #include "tyr/planning/planning.hpp"
 
+// Solver
+#include "tyr/solver/solver.hpp"
+
 #endif

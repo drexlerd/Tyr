@@ -15,27 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
-#define TYR_ANALYSIS_STRATIFICATION_HPP_
+#ifndef TYR_SOLVER_SOLVER_HPP_
+#define TYR_SOLVER_SOLVER_HPP_
 
-#include "tyr/formalism/formalism.hpp"
-
-#include <vector>
-
-namespace tyr::analysis
-{
-
-struct RuleStrata
-{
-    std::vector<std::vector<View<Index<formalism::Rule>, formalism::Repository>>> strata;
-};
-
-/// @brief Compute the rule stratification for the rules in the given program.
-/// An implementation of Algorithm 1 by Thiébaux-et-al-ijcai2003
-/// Source: https://users.cecs.anu.edu.au/~thiebaux/papers/ijcai03.pdf
-/// @param program is the program
-/// @return is the RuleStrata
-extern RuleStrata compute_rule_stratification(View<Index<formalism::Program>, formalism::Repository> program);
-}
+#include "tyr/solver/bottom_up.hpp"
+#include "tyr/solver/declarations.hpp"
 
 #endif

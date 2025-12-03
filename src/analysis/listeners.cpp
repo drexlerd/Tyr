@@ -15,27 +15,32 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
-#define TYR_ANALYSIS_STRATIFICATION_HPP_
+#include "tyr/analysis/listeners.hpp"
 
-#include "tyr/formalism/formalism.hpp"
-
-#include <vector>
+#include "tyr/analysis/stratification.hpp"
 
 namespace tyr::analysis
 {
 
-struct RuleStrata
+Listeners compute_listeners(const RuleStrata& strata)
 {
-    std::vector<std::vector<View<Index<formalism::Rule>, formalism::Repository>>> strata;
-};
+    auto listeners = Listeners();
 
-/// @brief Compute the rule stratification for the rules in the given program.
-/// An implementation of Algorithm 1 by Thiébaux-et-al-ijcai2003
-/// Source: https://users.cecs.anu.edu.au/~thiebaux/papers/ijcai03.pdf
-/// @param program is the program
-/// @return is the RuleStrata
-extern RuleStrata compute_rule_stratification(View<Index<formalism::Program>, formalism::Repository> program);
+    for (const auto& stratum : strata.strata)
+    {
+        auto listeners_in_stratum = ListenersPerStratum {};
+
+        for (const auto rule : stratum)
+        {
+            for (const auto literal : rule.get_body().get_literals<formalism::FluentTag>())
+            {
+                listeners_in_stratum[literal.get_atom().get_predicate()].push_back(rule);
+            }
+        }
+
+        listeners.positive_listeners_per_stratum.push_back(std::move(listeners_in_stratum));
+    }
+
+    return listeners;
 }
-
-#endif
+}
