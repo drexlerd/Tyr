@@ -608,9 +608,10 @@ enum class GripperRule : uint_t
 
 inline Index<formalism::Rule> convert(GripperRule e) noexcept { return Index<formalism::Rule>(static_cast<uint_t>(e)); }
 
-inline std::pair<Index<formalism::Program>, formalism::Repository> create_example_problem()
+inline std::pair<View<Index<formalism::Program>, formalism::Repository>, formalism::RepositoryPtr> create_example_problem()
 {
-    auto repository = formalism::Repository();
+    auto repository_ptr = std::make_shared<formalism::Repository>();
+    auto& repository = *repository_ptr;
     auto program_builder = Data<formalism::Program> {};
     auto buffer = buffer::Buffer {};
 
@@ -626,10 +627,10 @@ inline std::pair<Index<formalism::Program>, formalism::Repository> create_exampl
     program_builder.rules.push_back(add_rule_drop(repository));
 
     canonicalize(program_builder);
-    auto program = repository.get_or_create(program_builder, buffer).first.get_index();
+    auto program = repository.get_or_create(program_builder, buffer).first;
 
     // We cannot return view because repository hasnt find a stable location yet.
-    return { program, std::move(repository) };
+    return { program, repository_ptr };
 }
 }
 

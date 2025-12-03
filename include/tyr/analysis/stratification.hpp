@@ -25,9 +25,11 @@
 namespace tyr::analysis
 {
 
+using RuleStratum = std::vector<View<Index<formalism::Rule>, formalism::Repository>>;
+
 struct RuleStrata
 {
-    std::vector<std::vector<View<Index<formalism::Rule>, formalism::Repository>>> strata;
+    std::vector<RuleStratum> strata;
 };
 
 /// @brief Compute the rule stratification for the rules in the given program.

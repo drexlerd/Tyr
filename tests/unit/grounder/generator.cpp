@@ -32,44 +32,17 @@ namespace tyr::tests
 
 TEST(TyrTests, TyrGrounderGenerator)
 {
-    auto [program_index, repository] = create_example_problem();
-    auto program = View<Index<Program>, Repository>(program_index, repository);
+    auto [program, repository] = create_example_problem();
 
     std::cout << program << std::endl;
-
-    /**
-     * Preprocessing 1: Analyze variable domains
-     */
-
-    auto domains = analysis::compute_variable_domains(program);
 
     /**
      * Allocation 1: Execution contexts
      */
 
-    // Per fact set
-    auto facts_execution_context = grounder::FactsExecutionContext(program, domains);
+    auto program_execution_context = grounder::ProgramExecutionContext(program, repository);
 
-    // Per rule
-    auto rule_execution_contexts = std::vector<grounder::RuleExecutionContext> {};
-    for (uint_t i = 0; i < program.get_rules().size(); ++i)
-    {
-        const auto rule = program.get_rules()[i];
-        const auto& parameter_domains = domains.rule_domains[i];
-
-        rule_execution_contexts.emplace_back(rule, parameter_domains, facts_execution_context.assignment_sets.get<formalism::StaticTag>(), repository);
-    }
-
-    // Per thread
     oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
-
-    /**
-     * Initialization 1: Execution contexts
-     */
-    for (uint_t i = 0; i < program.get_rules().size(); ++i)
-    {
-        rule_execution_contexts[i].initialize(facts_execution_context.assignment_sets);
-    }
 
     /**
      * Parallelization 1: Lock-free rule grounding
@@ -83,11 +56,11 @@ TEST(TyrTests, TyrGrounderGenerator)
                       num_rules,
                       [&](uint_t i)
                       {
-                          auto& rule_execution_context = rule_execution_contexts[i];
+                          auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
                           auto& thread_execution_context = thread_execution_contexts.local();  // thread-local
                           thread_execution_context.clear();
 
-                          grounder::ground(facts_execution_context, rule_execution_context, thread_execution_context);
+                          grounder::ground(program_execution_context.facts_execution_context, rule_execution_context, thread_execution_context);
                       });
 
     /**
@@ -102,7 +75,7 @@ TEST(TyrTests, TyrGrounderGenerator)
 
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
-        auto& rule_execution_context = rule_execution_contexts[i];
+        auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
 
         for (const auto ground_rule : rule_execution_context.ground_rules)
         {
@@ -116,7 +89,7 @@ TEST(TyrTests, TyrGrounderGenerator)
 
     for (const auto ground_rule : merge_ground_rules)
     {
-        const auto global_ground_rule = formalism::merge(ground_rule, builder, repository, global_cache);
+        const auto global_ground_rule = formalism::merge(ground_rule, builder, *repository, global_cache);
 
         std::cout << global_ground_rule << std::endl;
 

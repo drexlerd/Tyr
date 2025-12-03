@@ -18,6 +18,7 @@
 #ifndef TYR_GROUNDER_EXECUTION_CONTEXTS_HPP_
 #define TYR_GROUNDER_EXECUTION_CONTEXTS_HPP_
 
+#include "tyr/analysis/analysis.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/declarations.hpp"
@@ -100,6 +101,39 @@ struct RuleExecutionContext
     void initialize(const AssignmentSets& assignment_sets)
     {
         grounder::kpkc::initialize_dense_graph_and_workspace(static_consistency_graph, assignment_sets, consistency_graph, kpkc_workspace);
+    }
+};
+
+struct ProgramExecutionContext
+{
+    const View<Index<formalism::Program>, formalism::Repository> program;
+    const formalism::RepositoryPtr repository;
+
+    analysis::VariableDomains domains;
+    analysis::RuleStrata strata;
+    analysis::Listeners listeners;
+
+    FactsExecutionContext facts_execution_context;
+
+    std::vector<RuleExecutionContext> rule_execution_contexts;
+
+    ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, formalism::RepositoryPtr repository) :
+        program(program),
+        repository(repository),
+        domains(analysis::compute_variable_domains(program)),
+        strata(analysis::compute_rule_stratification(program)),
+        listeners(analysis::compute_listeners(strata)),
+        facts_execution_context(program, domains),
+        rule_execution_contexts()
+    {
+        for (uint_t i = 0; i < program.get_rules().size(); ++i)
+        {
+            rule_execution_contexts.emplace_back(program.get_rules()[i],
+                                                 domains.rule_domains[i],
+                                                 facts_execution_context.assignment_sets.static_sets,
+                                                 *repository);
+            rule_execution_contexts.back().initialize(facts_execution_context.assignment_sets);
+        }
     }
 };
 

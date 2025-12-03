@@ -15,20 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_SOLVER_BOTTOM_UP_HPP_
-#define TYR_SOLVER_BOTTOM_UP_HPP_
-
-#include "tyr/analysis/analysis.hpp"
-#include "tyr/formalism/formalism.hpp"
-#include "tyr/grounder/grounder.hpp"
+#include "tyr/solver/bottom_up.hpp"
 
 namespace tyr::solver
 {
-using GroundAtomsPerPredicate = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
-                                             std::vector<View<formalism::GroundAtom<formalism::FluentTag>, formalism::Repository>>>;
+static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& context, const analysis::RuleStratum& stratum, GroundAtomsPerPredicate& out_facts) {}
 
-extern void solve_bottom_up(grounder::ProgramExecutionContext& context, GroundAtomsPerPredicate& out_facts);
+void solve_bottom_up(grounder::ProgramExecutionContext& context, GroundAtomsPerPredicate& out_facts) {}
 
 }
-
-#endif
