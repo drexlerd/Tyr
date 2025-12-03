@@ -26,14 +26,15 @@
 namespace tyr::analysis
 {
 
-using ListenersPerStratum = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, IndexList<formalism::Rule>>;
+using ListenersPerStratum = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
+                                         std::vector<View<Index<formalism::Rule>, formalism::Repository>>>;
 
 struct Listeners
 {
     std::vector<ListenersPerStratum> positive_listeners_per_stratum;
 };
 
-Listeners compute_listeners(const RuleStrata& strata, const formalism::Repository& repository)
+inline Listeners compute_listeners(const RuleStrata& strata)
 {
     auto listeners = Listeners();
 
@@ -41,13 +42,11 @@ Listeners compute_listeners(const RuleStrata& strata, const formalism::Repositor
     {
         auto listeners_in_stratum = ListenersPerStratum {};
 
-        for (const auto rule_index : stratum)
+        for (const auto rule : stratum)
         {
-            const auto rule = View<Index<formalism::Rule>, formalism::Repository>(rule_index, repository);
-
             for (const auto literal : rule.get_body().get_literals<formalism::FluentTag>())
             {
-                listeners_in_stratum[literal.get_atom().get_predicate().get_index()].push_back(rule_index);
+                listeners_in_stratum[literal.get_atom().get_predicate()].push_back(rule);
             }
         }
 

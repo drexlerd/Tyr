@@ -64,7 +64,7 @@ inline DomainListListList to_list(const DomainSetListList& set)
 }
 
 template<formalism::FactKind T>
-inline DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
+DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
 {
     const auto num_predicates = program.get_predicates<T>().size();
     auto predicate_domain_sets = DomainSetListList(num_predicates);
@@ -84,7 +84,7 @@ inline DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::
 }
 
 template<formalism::FactKind T>
-inline DomainSetListList initialize_function_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
+DomainSetListList initialize_function_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
 {
     const auto num_functions = program.get_functions<T>().size();
     auto function_domain_sets = DomainSetListList(num_functions);
@@ -104,9 +104,9 @@ inline DomainSetListList initialize_function_domain_sets(View<Index<formalism::P
     return function_domain_sets;
 }
 
-void restrict_parameter_domain_from_static_atom(View<Index<formalism::Atom<formalism::StaticTag>>, formalism::Repository> atom,
-                                                DomainSetList& parameter_domains,
-                                                const DomainSetListList& static_predicate_domain_sets)
+inline void restrict_parameter_domain_from_static_atom(View<Index<formalism::Atom<formalism::StaticTag>>, formalism::Repository> atom,
+                                                       DomainSetList& parameter_domains,
+                                                       const DomainSetListList& static_predicate_domain_sets)
 {
     const auto predicate = atom.get_predicate();
 
@@ -146,7 +146,7 @@ void restrict_parameter_domain(View<Data<formalism::FunctionExpression>, C> elem
                                DomainSetList& parameter_domains,
                                const DomainSetListList& static_function_domain_sets);
 
-void restrict_parameter_domain(float_t, DomainSetList&, const DomainSetListList&) {}
+inline void restrict_parameter_domain(float_t, DomainSetList&, const DomainSetListList&) {}
 
 template<formalism::OpKind O, formalism::Context C>
 void restrict_parameter_domain(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
@@ -282,7 +282,7 @@ void lift_parameter_domain(View<Data<formalism::FunctionExpression>, C> element,
                            const DomainSetList& parameter_domains,
                            DomainSetListList& fluent_function_domain_sets);
 
-void lift_parameter_domain(float_t, const DomainSetList&, DomainSetListList&) {}
+inline void lift_parameter_domain(float_t, const DomainSetList&, DomainSetListList&) {}
 
 template<formalism::OpKind O, formalism::Context C>
 void lift_parameter_domain(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
@@ -409,7 +409,7 @@ void lift_parameter_domain(View<Data<formalism::BooleanOperator<Data<formalism::
     visit([&](auto&& arg) { lift_parameter_domain(arg, parameter_domains, fluent_function_domain_sets); }, element.get_variant());
 }
 
-VariableDomains compute_variable_domains(View<Index<formalism::Program>, formalism::Repository> program)
+inline VariableDomains compute_variable_domains(View<Index<formalism::Program>, formalism::Repository> program)
 {
     auto objects = std::vector<Index<formalism::Object>> {};
     for (const auto object : program.get_objects())

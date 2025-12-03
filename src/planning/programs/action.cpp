@@ -171,7 +171,9 @@ create(const LiftedTask& task, ApplicableActionProgram::PredicateToActionsMappin
 ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :
     m_predicate_to_actions(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_predicate_to_actions, *m_repository))
+    m_program(create(task, m_predicate_to_actions, *m_repository)),
+    m_strata(analysis::compute_rule_stratification(m_program)),
+    m_listeners(analysis::compute_listeners(m_strata))
 {
     std::cout << m_program << std::endl;
 }

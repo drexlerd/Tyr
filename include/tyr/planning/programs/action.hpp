@@ -18,6 +18,7 @@
 #ifndef TYR_PLANNING_PROGRAMS_ACTION_HPP_
 #define TYR_PLANNING_PROGRAMS_ACTION_HPP_
 
+#include "tyr/analysis/analysis.hpp"
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/planning/declarations.hpp"
 
@@ -38,6 +39,8 @@ private:
 
     formalism::RepositoryPtr m_repository;
     View<Index<formalism::Program>, formalism::Repository> m_program;
+    analysis::RuleStrata m_strata;
+    analysis::Listeners m_listeners;
 };
 
 }
