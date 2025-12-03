@@ -334,6 +334,9 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     /* Name */
     task.name = element->get_name();
 
+    /* Domain */
+    task.domain = domain->get_domain().get_index();
+
     /* Requirements section */
 
     /* Objects section */

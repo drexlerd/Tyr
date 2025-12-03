@@ -152,6 +152,8 @@ public:
     template<typename T>
     const Data<T>& operator[](Index<T> index) const
     {
+        assert(index != Index<T>::max() && "Unassigned index.");
+
         const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
 
         return repository[index];

@@ -1046,6 +1046,7 @@ private:
         auto& action = *action_ptr;
         action.clear();
         action.original_arity = element->get_original_arity();
+        action.name = element->get_name();
 
         // 1. Translate conditions
         auto parameters = translate_common(element->get_parameters(), builder, context);

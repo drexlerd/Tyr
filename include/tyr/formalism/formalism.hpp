@@ -32,6 +32,7 @@
 #include "tyr/formalism/boolean_operator_view.hpp"
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
+#include "tyr/formalism/compiler.hpp"
 #include "tyr/formalism/conjunctive_condition_data.hpp"
 #include "tyr/formalism/conjunctive_condition_index.hpp"
 #include "tyr/formalism/conjunctive_condition_view.hpp"

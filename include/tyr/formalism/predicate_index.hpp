@@ -25,12 +25,12 @@
 namespace tyr
 {
 template<formalism::FactKind T>
-struct Index<formalism::Predicate<T>> : IndexMixin<formalism::Predicate<T>>
+struct Index<formalism::Predicate<T>> : IndexMixin<Index<formalism::Predicate<T>>>
 {
     using Tag = formalism::Predicate<T>;
 
     // Inherit constructors
-    using Base = IndexMixin<formalism::Predicate<T>>;
+    using Base = IndexMixin<Index<formalism::Predicate<T>>>;
     using Base::Base;
 };
 

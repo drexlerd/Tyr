@@ -60,6 +60,8 @@ public:
     template<typename T>
     const Data<T>& operator[](Index<T> index) const
     {
+        assert(index != Index<T>::max() && "Unassigned index.");
+
         const auto parent_scope_size = parent_scope.template size<T>();
 
         // Guard against accidental overlap from incorrect merging.

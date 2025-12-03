@@ -140,7 +140,9 @@ public:
         return m_packed_states.insert(PackedState<Task>(StateIndex(m_packed_states.size()), fluent_atoms, derived_atoms, numeric_variables));
     }
 
-    View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> get_task() const { return m_task; }
+    const DomainPtr& get_domain() const noexcept { return m_domain; }
+
+    View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> get_task() const noexcept { return m_task; }
 
     Node<Task> get_initial_node()
     {
@@ -187,7 +189,7 @@ public:
         self().get_labeled_successor_nodes_impl(node, out_nodes);
     }
 
-    auto get_repository() const { return m_overlay_repository; }
+    const auto& get_repository() const { return m_overlay_repository; }
 
 protected:
     DomainPtr m_domain;

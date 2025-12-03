@@ -49,6 +49,8 @@ public:
     auto get_index() const noexcept { return m_handle; }
     const auto& get_name() const noexcept { return get_data().name; }
     auto get_original_arity() const noexcept { return get_data().original_arity; }
+    auto get_arity() const noexcept { return get_condition().get_arity(); }
+    auto get_variables() const noexcept { return get_condition().get_variables(); }
     auto get_condition() const noexcept { return View<Index<formalism::ConjunctiveCondition>, C>(get_data().condition, *m_context); }
     auto get_effects() const noexcept { return View<IndexList<formalism::ConditionalEffect>, C>(get_data().effects, *m_context); }
 
