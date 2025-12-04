@@ -62,11 +62,13 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
         const auto binding = View<IndexList<formalism::Object>, formalism::OverlayRepository<formalism::Repository>>(thread_execution_context.binding,
                                                                                                                      rule_execution_context.repository);
 
+        std::cout << thread_execution_context.binding << std::endl;
+
         auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
         if (is_applicable(ground_rule, fact_execution_context.fact_sets))
         {
-            // std::cout << ground_rule << std::endl;
+            std::cout << ground_rule << std::endl;
 
             rule_execution_context.ground_rules.push_back(ground_rule);
         }

@@ -43,20 +43,16 @@ View<Index<GroundAtom<T>>, C_DST> ground(View<Index<Atom<T>>, C_SRC> element, Vi
                 using Alternative = std::decay_t<decltype(arg)>;
 
                 if constexpr (std::is_same_v<Alternative, ParameterIndex>)
-                {
                     atom.objects.push_back(binding[uint_t(arg)].get_index());
-                }
                 else if constexpr (std::is_same_v<Alternative, View<Index<Object>, C_SRC>>)
-                {
                     atom.objects.push_back(arg.get_index());
-                }
                 else
-                {
                     static_assert(dependent_false<Alternative>::value, "Missing case");
-                }
             },
             term.get_variant());
     }
+
+    std::cout << to_string(atom.objects) << std::endl;
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -100,17 +96,11 @@ ground(View<Index<FunctionTerm<T>>, C_SRC> element, View<IndexList<Object>, C_DS
                 using Alternative = std::decay_t<decltype(arg)>;
 
                 if constexpr (std::is_same_v<Alternative, ParameterIndex>)
-                {
                     fterm.objects.push_back(binding[uint_t(arg)].get_index());
-                }
                 else if constexpr (std::is_same_v<Alternative, View<Index<Object>, C_SRC>>)
-                {
                     fterm.objects.push_back(arg.get_index());
-                }
                 else
-                {
                     static_assert(dependent_false<Alternative>::value, "Missing case");
-                }
             },
             term.get_variant());
     }
@@ -242,6 +232,8 @@ ground(View<Index<ConjunctiveCondition>, C_SRC> element, View<IndexList<Object>,
         conj_cond.static_literals.push_back(ground(literal, binding, builder, destination).get_index());
     for (const auto literal : element.template get_literals<FluentTag>())
         conj_cond.fluent_literals.push_back(ground(literal, binding, builder, destination).get_index());
+    for (const auto literal : element.template get_literals<DerivedTag>())
+        conj_cond.derived_literals.push_back(ground(literal, binding, builder, destination).get_index());
     for (const auto numeric_constraint : element.get_numeric_constraints())
         conj_cond.numeric_constraints.push_back(ground(numeric_constraint, binding, builder, destination).get_data());
 

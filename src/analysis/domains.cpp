@@ -415,11 +415,11 @@ VariableDomains compute_variable_domains(View<Index<formalism::Program>, formali
     auto fluent_function_domains = to_list(fluent_function_domain_sets);
     auto rule_domains = to_list(rule_domain_sets);
 
-    std::cout << static_predicate_domains << std::endl;
-    std::cout << fluent_predicate_domains << std::endl;
-    std::cout << static_function_domains << std::endl;
-    std::cout << fluent_function_domains << std::endl;
-    std::cout << rule_domains << std::endl;
+    // std::cout << static_predicate_domains << std::endl;
+    // std::cout << fluent_predicate_domains << std::endl;
+    // std::cout << static_function_domains << std::endl;
+    // std::cout << fluent_function_domains << std::endl;
+    // std::cout << rule_domains << std::endl;
 
     return VariableDomains { std::move(static_predicate_domains),
                              std::move(fluent_predicate_domains),

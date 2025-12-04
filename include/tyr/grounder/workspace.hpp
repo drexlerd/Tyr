@@ -33,6 +33,10 @@ struct FactsExecutionContext
     FactSets fact_sets;
     AssignmentSets assignment_sets;
 
+    formalism::Builder builder;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> local_merge_cache;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> global_merge_cache;
+
     FactsExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, const analysis::VariableDomains& domains);
 
     FactsExecutionContext(View<Index<formalism::Program>, formalism::Repository> program,
@@ -73,6 +77,7 @@ struct RuleExecutionContext
 struct ThreadExecutionContext
 {
     IndexList<formalism::Object> binding;
+
     formalism::Builder builder;
     formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> local_merge_cache;
     formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> global_merge_cache;
@@ -80,6 +85,10 @@ struct ThreadExecutionContext
     ThreadExecutionContext() = default;
 
     void clear() noexcept;
+};
+
+struct FixedPointContext
+{
 };
 
 struct ProgramExecutionContext
@@ -96,6 +105,19 @@ struct ProgramExecutionContext
     std::vector<RuleExecutionContext> rule_execution_contexts;
 
     oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
+
+    // Merge
+    formalism::RepositoryPtr merge_repository;
+    formalism::Builder builder;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> local_merge_cache;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> global_merge_cache;
+    formalism::MergeCache<formalism::Repository, formalism::Repository> merge_cache;
+    UnorderedSet<View<Index<formalism::GroundRule>, formalism::Repository>> tmp_merge_rules;
+    UnorderedSet<View<Index<formalism::GroundAtom<formalism::FluentTag>>, formalism::Repository>> tmp_merge_atoms;
+
+    // Results
+    UnorderedSet<View<Index<formalism::GroundRule>, formalism::Repository>> merge_rules;
+    UnorderedSet<View<Index<formalism::GroundAtom<formalism::FluentTag>>, formalism::Repository>> merge_atoms;
 
     ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, formalism::RepositoryPtr repository);
 };

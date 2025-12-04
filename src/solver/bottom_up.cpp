@@ -32,56 +32,51 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                                         const analysis::RuleStratum& stratum,
                                         GroundAtomsPerPredicate& out_facts)
 {
-    std::vector<View<Index<formalism::Rule>, formalism::Repository>> expand(stratum.begin(), stratum.end());
-    auto expand_next = UnorderedSet<View<Index<formalism::Rule>, formalism::Repository>> {};
-
-    oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
-
     while (true)
     {
-        tbb::parallel_for(size_t { 0 },
-                          expand.size(),
-                          [&](size_t i)
+        /**
+         * Parallel evaluation.
+         */
+
+        const uint_t num_rules = program_execution_context.program.get_rules().size();
+
+        tbb::parallel_for(uint_t { 0 },
+                          num_rules,
+                          [&](uint_t i)
                           {
-                              i = expand[i].get_index().get_value();
+                              auto& facts_execution_context = program_execution_context.facts_execution_context;
                               auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
-                              auto& thread_execution_context = thread_execution_contexts.local();
+                              auto& thread_execution_context = program_execution_context.thread_execution_contexts.local();  // thread-local
                               thread_execution_context.clear();
 
-                              grounder::ground(program_execution_context.facts_execution_context, rule_execution_context, thread_execution_context);
+                              ground(facts_execution_context, rule_execution_context, thread_execution_context);
                           });
 
-        auto builder = formalism::Builder();
+        /**
+         * Sequential merge.
+         */
 
-        auto merge_cache = formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> {};
-        auto merge_repository = formalism::Repository();
-        auto merge_ground_rules = std::vector<View<Index<formalism::GroundRule>, formalism::Repository>> {};
+        /// --- Sequentially combine results into a temporary top-level repository to prevent modying the program's repository
+        auto& builder = program_execution_context.builder;
+        auto& global_merge_cache = program_execution_context.global_merge_cache;
+        auto& merge_repository = *program_execution_context.merge_repository;
+        auto& tmp_merge_rules = program_execution_context.tmp_merge_rules;
+        merge_repository.clear();
+        global_merge_cache.clear();
+        tmp_merge_rules.clear();
 
-        for (const auto rule : expand)
-        {
-            const auto i = rule.get_index().get_value();
-            auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
+        for (const auto& rule_execution_context : program_execution_context.rule_execution_contexts)
+            for (const auto rule : rule_execution_context.ground_rules)
+                tmp_merge_rules.insert(merge(rule, builder, merge_repository, global_merge_cache));
 
-            for (const auto ground_rule : rule_execution_context.ground_rules)
-            {
-                merge_ground_rules.push_back(formalism::merge(ground_rule, builder, merge_repository, merge_cache));
-            }
-        }
+        /// --- Copy the result into the program's repository
+        auto& merge_cache = program_execution_context.merge_cache;
+        auto& merge_rules = program_execution_context.merge_rules;
+        merge_cache.clear();
+        merge_rules.clear();
 
-        // Now everything is moved from an OverlayRepository to a top-level Repository and we can perform the final merge step
-        auto global_cache = formalism::MergeCache<formalism::Repository, formalism::Repository> {};
-        auto global_ground_rules = std::vector<View<Index<formalism::GroundRule>, formalism::Repository>> {};
-
-        for (const auto ground_rule : merge_ground_rules)
-        {
-            const auto global_ground_rule = formalism::merge(ground_rule, builder, *program_execution_context.repository, global_cache);
-
-            std::cout << global_ground_rule << std::endl;
-
-            global_ground_rules.push_back(global_ground_rule);
-        }
-
-        break;  // just for testing
+        for (const auto rule : tmp_merge_rules)
+            merge_rules.insert(merge(rule, builder, *program_execution_context.repository, merge_cache));
     }
 }
 

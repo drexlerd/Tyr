@@ -43,7 +43,7 @@ Listeners compute_listeners(const RuleStrata& strata)
         listeners.positive_listeners_per_stratum.push_back(std::move(listeners_in_stratum));
     }
 
-    std::cout << listeners.positive_listeners_per_stratum << std::endl;
+    // std::cout << listeners.positive_listeners_per_stratum << std::endl;
 
     return listeners;
 }

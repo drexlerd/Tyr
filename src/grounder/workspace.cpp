@@ -27,7 +27,10 @@ namespace tyr::grounder
 
 FactsExecutionContext::FactsExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, const analysis::VariableDomains& domains) :
     fact_sets(program),
-    assignment_sets(program, domains, fact_sets)
+    assignment_sets(program, domains, fact_sets),
+    builder(),
+    local_merge_cache(),
+    global_merge_cache()
 {
 }
 
@@ -35,7 +38,10 @@ FactsExecutionContext::FactsExecutionContext(View<Index<formalism::Program>, for
                                              TaggedFactSets<formalism::FluentTag> fluent_facts,
                                              const analysis::VariableDomains& domains) :
     fact_sets(program, fluent_facts),
-    assignment_sets(program, domains, fact_sets)
+    assignment_sets(program, domains, fact_sets),
+    builder(),
+    local_merge_cache(),
+    global_merge_cache()
 {
 }
 
@@ -99,6 +105,17 @@ void RuleExecutionContext::initialize(const AssignmentSets& assignment_sets)
 }
 
 /**
+ * ThreadExecutionContext
+ */
+
+void ThreadExecutionContext::clear() noexcept
+{
+    binding.clear();
+    local_merge_cache.clear();
+    global_merge_cache.clear();
+}
+
+/**
  * ProgramExecutionContext
  */
 
@@ -109,7 +126,17 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
     strata(analysis::compute_rule_stratification(program)),
     listeners(analysis::compute_listeners(strata)),
     facts_execution_context(program, domains),
-    rule_execution_contexts()
+    rule_execution_contexts(),
+    thread_execution_contexts(),
+    merge_repository(std::make_shared<formalism::Repository>()),
+    builder(),
+    local_merge_cache(),
+    global_merge_cache(),
+    merge_cache(),
+    tmp_merge_rules(),
+    tmp_merge_atoms(),
+    merge_rules(),
+    merge_atoms()
 {
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
@@ -118,14 +145,4 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
     }
 }
 
-/**
- * ThreadExecutionContext
- */
-
-void ThreadExecutionContext::clear() noexcept
-{
-    binding.clear();
-    local_merge_cache.clear();
-    global_merge_cache.clear();
-}
 }

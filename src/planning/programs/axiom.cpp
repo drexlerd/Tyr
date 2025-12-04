@@ -246,7 +246,6 @@ AxiomEvaluatorProgram::AxiomEvaluatorProgram(const LiftedTask& task) :
     m_repository(std::make_shared<formalism::Repository>()),
     m_program(create(task, prediate_to_predicate, *m_repository))
 {
-    std::cout << m_program << std::endl;
 }
 
 View<Index<formalism::Program>, formalism::Repository> AxiomEvaluatorProgram::get_program() const { return m_program; }

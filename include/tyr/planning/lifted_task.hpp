@@ -19,6 +19,7 @@
 #define TYR_PLANNING_LIFTED_TASK_HPP_
 
 #include "tyr/formalism/views.hpp"
+#include "tyr/grounder/workspace.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/programs/action.hpp"
@@ -40,6 +41,8 @@ public:
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<LiftedTask>>>
     get_labeled_successor_nodes_impl(const Node<LiftedTask>& node);
 
+    Node<LiftedTask> get_initial_node_impl();
+
     void get_labeled_successor_nodes_impl(
         const Node<LiftedTask>& node,
         std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<LiftedTask>>>& out_nodes);
@@ -54,6 +57,9 @@ private:
     ApplicableActionProgram m_action_program;
     AxiomEvaluatorProgram m_axiom_program;
     GroundTaskProgram m_ground_program;
+
+    grounder::ProgramExecutionContext m_action_context;
+    grounder::ProgramExecutionContext m_axiom_context;
 };
 
 }

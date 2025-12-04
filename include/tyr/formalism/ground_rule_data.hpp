@@ -51,8 +51,8 @@ struct Data<formalism::GroundRule>
 
     void clear() noexcept {}
 
-    auto cista_members() const noexcept { return std::tie(index, head, head); }
-    auto identifying_members() const noexcept { return std::tie(head, head); }
+    auto cista_members() const noexcept { return std::tie(index, body, head); }
+    auto identifying_members() const noexcept { return std::tie(body, head); }
 };
 
 }

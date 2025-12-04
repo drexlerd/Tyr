@@ -158,7 +158,7 @@ RuleStrata compute_rule_stratification(View<Index<formalism::Program>, formalism
         rule_strata.strata.push_back(RuleStratum(stratum.begin(), stratum.end()));
     }
 
-    std::cout << rule_strata.strata << std::endl;
+    // std::cout << rule_strata.strata << std::endl;
 
     return rule_strata;
 }
