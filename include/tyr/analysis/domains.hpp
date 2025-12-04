@@ -18,9 +18,9 @@
 #ifndef TYR_ANALYSIS_DOMAINS_HPP_
 #define TYR_ANALYSIS_DOMAINS_HPP_
 
-#include "tyr/common/formatter.hpp"
-#include "tyr/common/unordered_set.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/declarations.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
 
 #include <unordered_set>
 #include <vector>

@@ -18,6 +18,7 @@
 #include "tyr/analysis/domains.hpp"
 
 #include "tyr/common/unordered_set.hpp"
+#include "tyr/formalism/views.hpp"
 
 namespace tyr::analysis
 {
@@ -80,39 +81,6 @@ DomainSetListList initialize_function_domain_sets(View<Index<formalism::Program>
     }
 
     return function_domain_sets;
-}
-
-static void restrict_parameter_domain_from_static_atom(View<Index<formalism::Atom<formalism::StaticTag>>, formalism::Repository> atom,
-                                                       DomainSetList& parameter_domains,
-                                                       const DomainSetListList& static_predicate_domain_sets)
-{
-    const auto predicate = atom.get_predicate();
-
-    auto pos = size_t { 0 };
-    for (const auto term : atom.get_terms())
-    {
-        visit(
-            [&](auto&& arg)
-            {
-                using Alternative = std::decay_t<decltype(arg)>;
-
-                if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, formalism::Repository>>) {}
-                else if constexpr (std::is_same_v<Alternative, formalism::ParameterIndex>)
-                {
-                    const auto parameter_index = uint_t(arg);
-                    auto& parameter_domain = parameter_domains[parameter_index];
-                    const auto& predicate_domain = static_predicate_domain_sets[predicate.get_index().value][pos];
-
-                    intersect_inplace(parameter_domain, predicate_domain);
-                }
-                else
-                {
-                    static_assert(dependent_false<Alternative>::value, "Missing case");
-                }
-            },
-            term.get_variant());
-        ++pos;
-    }
 }
 
 /**

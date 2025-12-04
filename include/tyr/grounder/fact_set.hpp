@@ -18,7 +18,7 @@
 #ifndef TYR_GROUNDER_FACT_SET_HPP_
 #define TYR_GROUNDER_FACT_SET_HPP_
 
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/views.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <limits>

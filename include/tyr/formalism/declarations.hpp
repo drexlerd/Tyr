@@ -362,6 +362,10 @@ concept Context = requires(const T& a) {
     { get_repository(a) } -> IsRepository;
 };
 
+class Repository;
+template<Context C>
+class OverlayRepository;
+
 }
 
 #endif

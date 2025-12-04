@@ -18,7 +18,9 @@
 #ifndef TYR_GROUNDER_APPLICABILITY_HPP_
 #define TYR_GROUNDER_APPLICABILITY_HPP_
 
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/arithmetic_operator_utils.hpp"
+#include "tyr/formalism/boolean_operator_utils.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/grounder/fact_set.hpp"
 
 namespace tyr::grounder

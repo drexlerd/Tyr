@@ -18,7 +18,9 @@
 #ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
 #define TYR_ANALYSIS_STRATIFICATION_HPP_
 
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/declarations.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
 
 #include <vector>
 

@@ -17,6 +17,9 @@
 
 #include "tyr/planning/programs/action.hpp"
 
+#include "tyr/formalism/compiler.hpp"
+#include "tyr/formalism/merge.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/planning/lifted_task.hpp"
 
 namespace tyr::planning

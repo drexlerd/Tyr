@@ -18,7 +18,7 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_HPP_
 #define TYR_PLANNING_LIFTED_TASK_HPP_
 
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/programs/action.hpp"

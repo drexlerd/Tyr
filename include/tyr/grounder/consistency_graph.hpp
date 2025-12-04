@@ -20,7 +20,9 @@
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/arithmetic_operator_utils.hpp"
+#include "tyr/formalism/boolean_operator_utils.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment_set.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>

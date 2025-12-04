@@ -18,7 +18,7 @@
 #ifndef TYR_PLANNING_PROGRAMS_ACTION_HPP_
 #define TYR_PLANNING_PROGRAMS_ACTION_HPP_
 
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"
 
 namespace tyr::planning

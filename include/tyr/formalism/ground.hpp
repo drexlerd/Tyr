@@ -19,6 +19,7 @@
 #define TYR_FORMALISM_GROUND_HPP_
 
 #include "tyr/formalism/builder.hpp"
+#include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/repository.hpp"
 

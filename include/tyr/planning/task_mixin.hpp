@@ -19,7 +19,7 @@
 #define TYR_PLANNING_TASK_MIXIN_HPP_
 
 #include "tyr/common/common.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/node.hpp"
 #include "tyr/planning/packed_state.hpp"

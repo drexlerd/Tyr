@@ -33,11 +33,10 @@ struct AssignmentSets;
 template<formalism::Context C>
 class StaticConsistencyGraph;
 
-template<formalism::Context C>
-struct ImmutableRuleWorkspace;
-
-template<formalism::Context C>
-struct MutableRuleWorkspace;
+struct FactsExecutionContext;
+struct RuleExecutionContext;
+struct ProgramExecutionContext;
+struct ThreadExecutionContext;
 
 namespace kpkc
 {

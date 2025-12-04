@@ -18,6 +18,7 @@
 #include "tyr/analysis/listeners.hpp"
 
 #include "tyr/analysis/stratification.hpp"
+#include "tyr/formalism/views.hpp"
 
 namespace tyr::analysis
 {

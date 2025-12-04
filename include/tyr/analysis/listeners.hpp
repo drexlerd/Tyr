@@ -20,8 +20,10 @@
 
 #include "tyr/analysis/declarations.hpp"
 #include "tyr/analysis/stratification.hpp"
+#include "tyr/common/declarations.hpp"
 #include "tyr/common/formatter.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
 
 namespace tyr::analysis
 {
