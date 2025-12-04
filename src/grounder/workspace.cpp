@@ -27,10 +27,7 @@ namespace tyr::grounder
 
 FactsExecutionContext::FactsExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, const analysis::VariableDomains& domains) :
     fact_sets(program),
-    assignment_sets(program, domains, fact_sets),
-    builder(),
-    local_merge_cache(),
-    global_merge_cache()
+    assignment_sets(program, domains, fact_sets)
 {
 }
 
@@ -38,10 +35,7 @@ FactsExecutionContext::FactsExecutionContext(View<Index<formalism::Program>, for
                                              TaggedFactSets<formalism::FluentTag> fluent_facts,
                                              const analysis::VariableDomains& domains) :
     fact_sets(program, fluent_facts),
-    assignment_sets(program, domains, fact_sets),
-    builder(),
-    local_merge_cache(),
-    global_merge_cache()
+    assignment_sets(program, domains, fact_sets)
 {
 }
 

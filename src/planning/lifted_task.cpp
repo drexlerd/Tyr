@@ -30,17 +30,17 @@ using namespace tyr::solver;
 namespace tyr::planning
 {
 
-static void insert_fluent_atoms_to_context(const boost::dynamic_bitset<>& fluent_atoms,
-                                           const OverlayRepository<Repository>& fluent_atoms_context,
-                                           ProgramExecutionContext& axiom_context)
+static void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
+                                            const OverlayRepository<Repository>& fluent_atoms_context,
+                                            ProgramExecutionContext& axiom_context)
 {
     auto& destination = *axiom_context.repository;
     auto& fact_context = axiom_context.facts_execution_context;
     auto& fluent_predicate_fact_sets = fact_context.fact_sets.get<FluentTag>().predicate;
     auto& fluent_predicate_assignment_sets = fact_context.assignment_sets.get<FluentTag>().predicate;
-    auto& merge_cache = fact_context.global_merge_cache;
-    auto& builder = fact_context.builder;
-    merge_cache.clear();
+    auto& task_to_program_merge_cache = axiom_context.task_to_program_merge_cache;
+    auto& builder = axiom_context.builder;
+    task_to_program_merge_cache.clear();
     fluent_predicate_fact_sets.reset();
     fluent_predicate_assignment_sets.reset();
 
@@ -50,18 +50,56 @@ static void insert_fluent_atoms_to_context(const boost::dynamic_bitset<>& fluent
             merge(View<Index<GroundAtom<FluentTag>>, OverlayRepository<Repository>>(Index<GroundAtom<FluentTag>>(i), fluent_atoms_context),
                   builder,
                   destination,
-                  merge_cache));
+                  task_to_program_merge_cache));
+}
+
+static void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
+                                             const OverlayRepository<Repository>& derived_atoms_context,
+                                             ProgramExecutionContext& axiom_context)
+{
+    auto& destination = *axiom_context.repository;
+    auto& fact_context = axiom_context.facts_execution_context;
+    auto& fluent_predicate_fact_sets = fact_context.fact_sets.get<FluentTag>().predicate;
+    auto& fluent_predicate_assignment_sets = fact_context.assignment_sets.get<FluentTag>().predicate;
+    auto& task_to_program_merge_cache = axiom_context.task_to_program_merge_cache;
+    auto& task_to_program_compile_cache = axiom_context.task_to_program_compile_cache;
+    auto& builder = axiom_context.builder;
+    task_to_program_merge_cache.clear();
+    task_to_program_compile_cache.clear();
+    fluent_predicate_fact_sets.reset();
+    fluent_predicate_assignment_sets.reset();
+
+    /// --- Initialize FactSets
+    for (auto i = derived_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms.find_next(i))
+        fluent_predicate_fact_sets.insert(compile<DerivedTag, FluentTag>(
+            View<Index<GroundAtom<DerivedTag>>, OverlayRepository<Repository>>(Index<GroundAtom<DerivedTag>>(i), derived_atoms_context),
+            builder,
+            destination,
+            task_to_program_compile_cache,
+            task_to_program_merge_cache));
+}
+
+static void insert_fact_sets_into_assignment_sets(ProgramExecutionContext& program_context)
+{
+    auto& fluent_predicate_fact_sets = program_context.facts_execution_context.fact_sets.get<FluentTag>().predicate;
+    auto& fluent_predicate_assignment_sets = program_context.facts_execution_context.assignment_sets.get<FluentTag>().predicate;
+
+    // TODO fix the functional part
+    // auto& fluent_function_fact_sets = program_context.facts_execution_context.fact_sets.get<FluentTag>().function;
+    // auto& fluent_function_assignment_sets = program_context.facts_execution_context.fact_sets.get<FluentTag>().function;
 
     /// --- Initialize AssignmentSets
     fluent_predicate_assignment_sets.insert(fluent_predicate_fact_sets.get_facts());
+    // fluent_function_assignment_sets.insert(fluent_function_fact_sets.get_facts());
 
     /// --- Initialize RuleExecutionContext
-    for (auto& rule_context : axiom_context.rule_execution_contexts)
-        rule_context.initialize(fact_context.assignment_sets);
+    for (auto& rule_context : program_context.rule_execution_contexts)
+        rule_context.initialize(program_context.facts_execution_context.assignment_sets);
 }
 
-static void
-read_derived_atoms_from_context(boost::dynamic_bitset<>& derived_atoms, OverlayRepository<Repository>& task_repository, ProgramExecutionContext& axiom_context)
+static void read_derived_atoms_from_program_context(boost::dynamic_bitset<>& derived_atoms,
+                                                    OverlayRepository<Repository>& task_repository,
+                                                    ProgramExecutionContext& axiom_context)
 {
     auto& program_to_task_merge_cache = axiom_context.program_to_task_merge_cache;
     auto& program_to_task_compile_cache = axiom_context.program_to_task_compile_cache;
@@ -121,9 +159,10 @@ Node<LiftedTask> LiftedTask::get_initial_node_impl()
         numeric_variables[fterm_index] = fterm_value.get_value();
     }
 
-    insert_fluent_atoms_to_context(fluent_atoms, *this->m_overlay_repository, m_axiom_context);
+    insert_fluent_atoms_to_fact_set(fluent_atoms, *this->m_overlay_repository, m_axiom_context);
+    insert_fact_sets_into_assignment_sets(m_axiom_context);
     solve_bottom_up(m_axiom_context);
-    read_derived_atoms_from_context(derived_atoms, *this->m_overlay_repository, m_axiom_context);
+    read_derived_atoms_from_program_context(derived_atoms, *this->m_overlay_repository, m_axiom_context);
 
     std::cout << to_string(m_axiom_context.program_merge_atoms) << std::endl;
 
@@ -137,6 +176,15 @@ std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, 
 LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
 {
     auto result = std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>> {};
+
+    const auto state = node.get_state();
+    const auto& fluent_atoms = state.get_atoms<FluentTag>();
+    const auto& derived_atoms = state.get_atoms<FluentTag>();
+    const auto& numeric_variables = state.get_numeric_variables();
+
+    insert_fluent_atoms_to_fact_set(fluent_atoms, *this->m_overlay_repository, m_action_context);
+    insert_derived_atoms_to_fact_set(fluent_atoms, *this->m_overlay_repository, m_action_context);
+    insert_fact_sets_into_assignment_sets(m_axiom_context);
 
     return result;
 }

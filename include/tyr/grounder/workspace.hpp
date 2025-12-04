@@ -33,10 +33,6 @@ struct FactsExecutionContext
     FactSets fact_sets;
     AssignmentSets assignment_sets;
 
-    formalism::Builder builder;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> local_merge_cache;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> global_merge_cache;
-
     FactsExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, const analysis::VariableDomains& domains);
 
     FactsExecutionContext(View<Index<formalism::Program>, formalism::Repository> program,
@@ -120,6 +116,10 @@ struct ProgramExecutionContext
     // Program to task
     formalism::MergeCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> program_to_task_merge_cache;
     formalism::CompileCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> program_to_task_compile_cache;
+
+    // Task to program
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> task_to_program_merge_cache;
+    formalism::CompileCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> task_to_program_compile_cache;
 
     // Results
     UnorderedSet<View<Index<formalism::GroundRule>, formalism::Repository>> program_merge_rules;
