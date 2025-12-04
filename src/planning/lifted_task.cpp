@@ -69,6 +69,7 @@ read_derived_atoms_from_context(boost::dynamic_bitset<>& derived_atoms, OverlayR
     program_to_task_merge_cache.clear();
     program_to_task_compile_cache.clear();
 
+    /// --- Initialized derived atoms in unpacked state
     for (const auto fluent_atom : axiom_context.program_merge_atoms)
     {
         const auto derived_atom =
