@@ -24,16 +24,24 @@
 namespace tyr::planning
 {
 
-struct AxiomEvaluatorProgram
+class AxiomEvaluatorProgram
 {
+public:
     // Mapping from program fluent predicate to task derived predicate
     using PredicateToPredicateMapping =
         UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
                      View<Index<formalism::Predicate<formalism::DerivedTag>>, formalism::OverlayRepository<formalism::Repository>>>;
 
-    PredicateToPredicateMapping prediate_to_action;
-
     explicit AxiomEvaluatorProgram(const LiftedTask& task);
+
+    View<Index<formalism::Program>, formalism::Repository> get_program() const;
+    const formalism::RepositoryPtr& get_repository() const;
+
+private:
+    PredicateToPredicateMapping prediate_to_predicate;
+
+    formalism::RepositoryPtr m_repository;
+    View<Index<formalism::Program>, formalism::Repository> m_program;
 };
 
 }

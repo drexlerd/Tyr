@@ -18,6 +18,7 @@
 #include "tyr/analysis/domains.hpp"
 
 #include "tyr/common/unordered_set.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::analysis
@@ -413,6 +414,12 @@ VariableDomains compute_variable_domains(View<Index<formalism::Program>, formali
     auto static_function_domains = to_list(static_function_domain_sets);
     auto fluent_function_domains = to_list(fluent_function_domain_sets);
     auto rule_domains = to_list(rule_domain_sets);
+
+    std::cout << static_predicate_domains << std::endl;
+    std::cout << fluent_predicate_domains << std::endl;
+    std::cout << static_function_domains << std::endl;
+    std::cout << fluent_function_domains << std::endl;
+    std::cout << rule_domains << std::endl;
 
     return VariableDomains { std::move(static_predicate_domains),
                              std::move(fluent_predicate_domains),

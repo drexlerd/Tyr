@@ -46,6 +46,10 @@ public:
 
     GroundTask get_ground_task();
 
+    const ApplicableActionProgram& get_action_program() const;
+    const AxiomEvaluatorProgram& get_axiom_program() const;
+    const GroundTaskProgram& get_ground_program() const;
+
 private:
     ApplicableActionProgram m_action_program;
     AxiomEvaluatorProgram m_axiom_program;

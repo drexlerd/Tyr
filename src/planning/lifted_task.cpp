@@ -17,6 +17,8 @@
 
 #include "tyr/planning/lifted_task.hpp"
 
+#include "tyr/formalism/formatter.hpp"
+
 namespace tyr::planning
 {
 
@@ -35,6 +37,7 @@ std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRep
 LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
 {
     auto result = std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<LiftedTask>>> {};
+
     return result;
 }
 
@@ -45,5 +48,11 @@ void LiftedTask::get_labeled_successor_nodes_impl(
 }
 
 GroundTask LiftedTask::get_ground_task() { return GroundTask(this->m_domain, this->m_repository, this->m_overlay_repository, this->m_task); }
+
+const ApplicableActionProgram& LiftedTask::get_action_program() const { return m_action_program; }
+
+const AxiomEvaluatorProgram& LiftedTask::get_axiom_program() const { return m_axiom_program; }
+
+const GroundTaskProgram& LiftedTask::get_ground_program() const { return m_ground_program; }
 
 }

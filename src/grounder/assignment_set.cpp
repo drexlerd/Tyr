@@ -20,6 +20,7 @@
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment.hpp"
 #include "tyr/grounder/fact_set.hpp"
@@ -167,7 +168,9 @@ PredicateAssignmentSets<T>::PredicateAssignmentSets(View<IndexList<formalism::Pr
 {
     /* Validate inputs. */
     for (uint_t i = 0; i < predicates.size(); ++i)
+    {
         assert(predicates[i].get_index().get_value() == i);
+    }
 
     /* Initialize sets. */
     for (const auto predicate : predicates)

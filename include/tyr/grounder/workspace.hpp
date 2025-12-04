@@ -24,6 +24,8 @@
 #include "tyr/grounder/declarations.hpp"
 #include "tyr/grounder/kpkc_utils.hpp"
 
+#include <oneapi/tbb/enumerable_thread_specific.h>
+
 namespace tyr::grounder
 {
 struct FactsExecutionContext
@@ -68,6 +70,18 @@ struct RuleExecutionContext
     void initialize(const AssignmentSets& assignment_sets);
 };
 
+struct ThreadExecutionContext
+{
+    IndexList<formalism::Object> binding;
+    formalism::Builder builder;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> local_merge_cache;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> global_merge_cache;
+
+    ThreadExecutionContext() = default;
+
+    void clear() noexcept;
+};
+
 struct ProgramExecutionContext
 {
     const View<Index<formalism::Program>, formalism::Repository> program;
@@ -81,19 +95,9 @@ struct ProgramExecutionContext
 
     std::vector<RuleExecutionContext> rule_execution_contexts;
 
+    oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
+
     ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, formalism::RepositoryPtr repository);
-};
-
-struct ThreadExecutionContext
-{
-    IndexList<formalism::Object> binding;
-    formalism::Builder builder;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> local_merge_cache;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> global_merge_cache;
-
-    ThreadExecutionContext() = default;
-
-    void clear() noexcept;
 };
 
 }

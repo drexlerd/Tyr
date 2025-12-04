@@ -42,25 +42,22 @@ TEST(TyrTests, TyrGrounderGenerator)
 
     auto program_execution_context = grounder::ProgramExecutionContext(program, repository);
 
-    oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
-
     /**
      * Parallelization 1: Lock-free rule grounding
      */
 
     const uint_t num_rules = program.get_rules().size();
 
-    // oneapi::tbb::global_control control(oneapi::tbb::global_control::max_allowed_parallelism, 1);
-
     tbb::parallel_for(uint_t { 0 },
                       num_rules,
                       [&](uint_t i)
                       {
+                          auto& facts_execution_context = program_execution_context.facts_execution_context;
                           auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
-                          auto& thread_execution_context = thread_execution_contexts.local();  // thread-local
+                          auto& thread_execution_context = program_execution_context.thread_execution_contexts.local();  // thread-local
                           thread_execution_context.clear();
 
-                          grounder::ground(program_execution_context.facts_execution_context, rule_execution_context, thread_execution_context);
+                          grounder::ground(facts_execution_context, rule_execution_context, thread_execution_context);
                       });
 
     /**

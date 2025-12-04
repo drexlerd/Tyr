@@ -17,6 +17,8 @@
 
 #include "tyr/grounder/workspace.hpp"
 
+#include "tyr/formalism/formatter.hpp"
+
 namespace tyr::grounder
 {
 /**

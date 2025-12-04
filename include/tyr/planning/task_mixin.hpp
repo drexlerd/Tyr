@@ -202,9 +202,6 @@ protected:
     valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
     IndexedHashSet<PackedState<Task>, StateIndex> m_packed_states;
     SharedObjectPool<UnpackedState<Task>> m_unpacked_state_pool;
-
-    // Initial node
-    Node<Task> m_initial_node;
 };
 
 }

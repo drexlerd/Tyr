@@ -43,7 +43,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
     if (is_applicable(ground_rule, fact_execution_context.fact_sets))
     {
-        std::cout << ground_rule << std::endl;
+        // std::cout << ground_rule << std::endl;
 
         rule_execution_context.ground_rules.push_back(ground_rule);
     }
@@ -53,12 +53,12 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
                        RuleExecutionContext& rule_execution_context,
                        ThreadExecutionContext& thread_execution_context)
 {
-    thread_execution_context.binding.clear();
-
     for (const auto vertex_index : rule_execution_context.kpkc_workspace.consistent_vertices_vec)
     {
+        thread_execution_context.binding.clear();
         const auto& vertex = rule_execution_context.static_consistency_graph.get_vertex(vertex_index);
         thread_execution_context.binding.push_back(vertex.get_object_index());
+
         const auto binding = View<IndexList<formalism::Object>, formalism::OverlayRepository<formalism::Repository>>(thread_execution_context.binding,
                                                                                                                      rule_execution_context.repository);
 
@@ -66,7 +66,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
         if (is_applicable(ground_rule, fact_execution_context.fact_sets))
         {
-            std::cout << ground_rule << std::endl;
+            // std::cout << ground_rule << std::endl;
 
             rule_execution_context.ground_rules.push_back(ground_rule);
         }
@@ -83,12 +83,12 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
         [&](auto&& clique)
         {
             thread_execution_context.binding.clear();
-
             for (const auto vertex_index : clique)
             {
                 const auto& vertex = rule_execution_context.static_consistency_graph.get_vertex(vertex_index);
                 thread_execution_context.binding.push_back(Index<formalism::Object>(vertex.get_object_index()));
             }
+
             const auto binding = View<IndexList<formalism::Object>, formalism::OverlayRepository<formalism::Repository>>(thread_execution_context.binding,
                                                                                                                          rule_execution_context.repository);
 
@@ -96,7 +96,7 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
             if (is_applicable(ground_rule, fact_execution_context.fact_sets))
             {
-                std::cout << ground_rule << std::endl;
+                // std::cout << ground_rule << std::endl;
 
                 rule_execution_context.ground_rules.push_back(ground_rule);
             }

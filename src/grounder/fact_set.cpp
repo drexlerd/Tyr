@@ -67,6 +67,8 @@ void PredicateFactSet<T>::insert(View<IndexList<formalism::GroundAtom<T>>, forma
 template<formalism::FactKind T>
 bool PredicateFactSet<T>::contains(Index<formalism::GroundAtom<T>> index) const noexcept
 {
+    if (index.get_value() >= m_bitset.size())
+        return false;
     return m_bitset.test(index.get_value());
 }
 

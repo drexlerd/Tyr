@@ -18,6 +18,7 @@
 #include "tyr/planning/programs/action.hpp"
 
 #include "tyr/formalism/compiler.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/lifted_task.hpp"
@@ -62,19 +63,28 @@ create(const LiftedTask& task, ApplicableActionProgram::PredicateToActionsMappin
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
+    for (const auto object : task.get_task().get_domain().get_constants())
+    {
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
+    }
     for (const auto object : task.get_task().get_objects())
     {
         program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
     }
 
-    for (const auto static_atom : task.get_task().get_atoms<formalism::StaticTag>())
+    for (const auto atom : task.get_task().get_atoms<formalism::StaticTag>())
     {
-        program.static_atoms.push_back(formalism::merge(static_atom, builder, repository, merge_cache).get_index());
+        program.static_atoms.push_back(formalism::merge(atom, builder, repository, merge_cache).get_index());
     }
 
-    for (const auto static_fterm_value : task.get_task().get_fterm_values<formalism::StaticTag>())
+    for (const auto atom : task.get_task().get_atoms<formalism::FluentTag>())
     {
-        program.static_fterm_values.push_back(formalism::merge(static_fterm_value, builder, repository, merge_cache).get_index());
+        program.fluent_atoms.push_back(formalism::merge(atom, builder, repository, merge_cache).get_index());
+    }
+
+    for (const auto fterm_value : task.get_task().get_fterm_values<formalism::StaticTag>())
+    {
+        program.static_fterm_values.push_back(formalism::merge(fterm_value, builder, repository, merge_cache).get_index());
     }
 
     for (const auto action : task.get_task().get_domain().get_actions())
@@ -89,6 +99,8 @@ create(const LiftedTask& task, ApplicableActionProgram::PredicateToActionsMappin
         formalism::canonicalize(predicate);
         const auto new_predicate = repository.get_or_create(predicate, builder.get_buffer()).first;
 
+        if (std::find(program.fluent_predicates.begin(), program.fluent_predicates.end(), new_predicate.get_index()) == program.fluent_predicates.end())
+            program.fluent_predicates.push_back(new_predicate.get_index());
         mapping[new_predicate].push_back(action);
 
         auto rule_ptr = builder.get_builder<formalism::Rule>();
@@ -177,5 +189,9 @@ ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :
     m_program(create(task, m_predicate_to_actions, *m_repository))
 {
 }
+
+View<Index<formalism::Program>, formalism::Repository> ApplicableActionProgram::get_program() const { return m_program; }
+
+const formalism::RepositoryPtr& ApplicableActionProgram::get_repository() const { return m_repository; }
 
 }

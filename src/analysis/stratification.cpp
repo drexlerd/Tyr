@@ -17,6 +17,7 @@
 
 #include "tyr/analysis/stratification.hpp"
 
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::analysis
@@ -156,6 +157,8 @@ RuleStrata compute_rule_stratification(View<Index<formalism::Program>, formalism
 
         rule_strata.strata.push_back(RuleStratum(stratum.begin(), stratum.end()));
     }
+
+    std::cout << rule_strata.strata << std::endl;
 
     return rule_strata;
 }

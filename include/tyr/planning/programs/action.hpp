@@ -33,6 +33,9 @@ public:
 
     explicit ApplicableActionProgram(const LiftedTask& task);
 
+    View<Index<formalism::Program>, formalism::Repository> get_program() const;
+    const formalism::RepositoryPtr& get_repository() const;
+
 private:
     PredicateToActionsMapping m_predicate_to_actions;
 
