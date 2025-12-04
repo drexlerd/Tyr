@@ -28,7 +28,7 @@ template<typename Task>
 class State
 {
 public:
-    State(Task& task, SharedObjectPoolPtr<UnpackedState<Task>> unpacked) noexcept : m_unpacked(unpacked), m_task(&task) {}
+    State(Task& task, SharedObjectPoolPtr<UnpackedState<Task>> unpacked) noexcept : m_unpacked(std::move(unpacked)), m_task(&task) {}
 
     StateIndex get_index() const noexcept { return m_unpacked->get_index(); }
 

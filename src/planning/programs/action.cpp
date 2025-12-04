@@ -51,6 +51,12 @@ create(const LiftedTask& task, ApplicableActionProgram::PredicateToActionsMappin
             formalism::compile<formalism::DerivedTag, formalism::FluentTag>(predicate, builder, repository, compile_cache, merge_cache).get_index());
     }
 
+    for (const auto predicate : task.get_task().get_derived_predicates())
+    {
+        program.fluent_predicates.push_back(
+            formalism::compile<formalism::DerivedTag, formalism::FluentTag>(predicate, builder, repository, compile_cache, merge_cache).get_index());
+    }
+
     for (const auto function : task.get_task().get_domain().get_functions<formalism::StaticTag>())
     {
         program.static_functions.push_back(formalism::merge(function, builder, repository, merge_cache).get_index());

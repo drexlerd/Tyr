@@ -124,10 +124,9 @@ static void read_derived_atoms_from_program_context(boost::dynamic_bitset<>& der
     program_to_task_compile_cache.clear();
 
     /// --- Initialized derived atoms in unpacked state
-    for (const auto fluent_atom : axiom_context.program_merge_atoms)
+    for (const auto atom : axiom_context.program_merge_atoms)
     {
-        const auto derived_atom =
-            compile<FluentTag, DerivedTag>(fluent_atom, builder, task_repository, program_to_task_compile_cache, program_to_task_merge_cache);
+        const auto derived_atom = compile<FluentTag, DerivedTag>(atom, builder, task_repository, program_to_task_compile_cache, program_to_task_merge_cache);
 
         const auto derived_atom_index = derived_atom.get_index().get_value();
         if (derived_atom_index >= derived_atoms.size())
@@ -199,7 +198,7 @@ LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
 
     const auto state = node.get_state();
     const auto& fluent_atoms = state.get_atoms<FluentTag>();
-    const auto& derived_atoms = state.get_atoms<FluentTag>();
+    const auto& derived_atoms = state.get_atoms<DerivedTag>();
     const auto& numeric_variables = state.get_numeric_variables();
 
     // TODO: add clear to execution contexts
