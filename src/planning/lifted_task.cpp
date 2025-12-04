@@ -87,7 +87,7 @@ static void insert_numeric_variables_to_fact_set(const std::vector<float_t>& num
     /// --- Initialize FactSets
     for (uint_t i = 0; i < numeric_variables.size(); ++i)
     {
-        if (numeric_variables[i] != std::numeric_limits<float_t>::quiet_NaN())
+        if (!std::isnan(numeric_variables[i]))
             fluent_function_fact_sets.insert(
                 merge(View<Index<GroundFunctionTerm<FluentTag>>, OverlayRepository<Repository>>(Index<GroundFunctionTerm<FluentTag>>(i),
                                                                                                 numeric_variables_context),

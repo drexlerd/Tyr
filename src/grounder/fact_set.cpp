@@ -73,6 +73,12 @@ bool PredicateFactSet<T>::contains(Index<formalism::GroundAtom<T>> index) const 
 }
 
 template<formalism::FactKind T>
+bool PredicateFactSet<T>::contains(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view) const noexcept
+{
+    return contains(view.get_index());
+}
+
+template<formalism::FactKind T>
 View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> PredicateFactSet<T>::get_facts() const noexcept
 {
     return View<IndexList<formalism::GroundAtom<T>>, formalism::Repository>(m_indices, m_context);
@@ -143,6 +149,12 @@ template<formalism::FactKind T>
 bool FunctionFactSet<T>::contains(Index<formalism::GroundFunctionTerm<T>> index) const noexcept
 {
     return m_unique.contains(index);
+}
+
+template<formalism::FactKind T>
+bool FunctionFactSet<T>::contains(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> view) const noexcept
+{
+    return contains(view.get_index());
 }
 
 template<formalism::FactKind T>

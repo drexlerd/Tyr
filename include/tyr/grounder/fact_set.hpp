@@ -45,6 +45,8 @@ public:
 
     bool contains(Index<formalism::GroundAtom<T>> index) const noexcept;
 
+    bool contains(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view) const noexcept;
+
     View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> get_facts() const noexcept;
 };
 
@@ -72,6 +74,8 @@ public:
     void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);
 
     bool contains(Index<formalism::GroundFunctionTerm<T>> index) const noexcept;
+
+    bool contains(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> view) const noexcept;
 
     float_t operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept;
 

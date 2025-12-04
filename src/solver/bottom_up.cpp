@@ -36,10 +36,9 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
     auto& stage_merge_rules = program_execution_context.stage_merge_rules;
     auto& stage_merge_atoms = program_execution_context.stage_merge_atoms;
     auto& stage_to_program_merge_cache = program_execution_context.stage_to_program_merge_cache;
+    auto& program_repository = *program_execution_context.repository;
     auto& program_merge_rules = program_execution_context.program_merge_rules;
     auto& program_merge_atoms = program_execution_context.program_merge_atoms;
-
-    auto num_atoms_before = size_t(0);
 
     while (true)
     {
@@ -67,7 +66,8 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
          * Sequential merge.
          */
 
-        /// --- Sequentially combine results into a temporary top-level repository to prevent modying the program's repository
+        /// --- Sequentially combine results into a temporary staging repository to prevent modying the program's repository
+
         stage_repository.clear();
         stage_merge_cache.clear();
         stage_merge_rules.clear();
@@ -95,27 +95,31 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
         program_merge_rules.clear();
         program_merge_atoms.clear();
 
+        auto discovered_new_fact = bool { false };
+
         for (const auto rule : stage_merge_rules)
         {
-            const auto merge_rule = merge(rule, builder, *program_execution_context.repository, stage_to_program_merge_cache);
+            const auto merge_rule = merge(rule, builder, program_repository, stage_to_program_merge_cache);
             const auto merge_head = merge_rule.get_head();
 
-            program_merge_rules.insert(merge_rule);
-            program_merge_atoms.insert(merge_head);
-
             // Re-insert fact
-            program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(merge_head);
-            program_execution_context.facts_execution_context.assignment_sets.fluent_sets.predicate.insert(merge_head);
+            if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(merge_head))
+            {
+                program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(merge_head);
+                program_execution_context.facts_execution_context.assignment_sets.fluent_sets.predicate.insert(merge_head);
+
+                program_merge_rules.insert(merge_rule);
+                program_merge_atoms.insert(merge_head);
+
+                discovered_new_fact = true;
+            }
         }
 
-        const auto num_atoms_after = program_merge_atoms.size();
+        if (!discovered_new_fact)
+            break;  ///< Reached fixed point
 
-        if (num_atoms_before == num_atoms_after)
-            break;  /// Reached fixed point for stratum
+        /// --- Re-initialize RuleExecutionContext with new fact set.
 
-        num_atoms_before = num_atoms_after;
-
-        // Re-initialize RuleExecutionContext with new fact set.
         for (uint_t j = 0; j < stratum.size(); ++j)
         {
             const auto i = stratum[j].get_index().get_value();
