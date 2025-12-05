@@ -25,8 +25,8 @@
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/fact_set.hpp"
-#include "tyr/grounder/fact_set_adapter.hpp"
+#include "tyr/grounder/fact_sets.hpp"
+#include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/kpkc.hpp"
 #include "tyr/grounder/workspace.hpp"
 
@@ -43,7 +43,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
     auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-    const auto fact_sets_adapter = FactSetsAdapter(fact_execution_context.fact_sets);
+    const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
 
     if (is_applicable(ground_rule, fact_sets_adapter))
     {
@@ -57,7 +57,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
                        RuleExecutionContext& rule_execution_context,
                        ThreadExecutionContext& thread_execution_context)
 {
-    const auto fact_sets_adapter = FactSetsAdapter(fact_execution_context.fact_sets);
+    const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
 
     for (const auto vertex_index : rule_execution_context.kpkc_workspace.consistent_vertices_vec)
     {
@@ -83,7 +83,7 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                          RuleExecutionContext& rule_execution_context,
                          ThreadExecutionContext& thread_execution_context)
 {
-    const auto fact_sets_adapter = FactSetsAdapter(fact_execution_context.fact_sets);
+    const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
 
     kpkc::for_each_k_clique(
         rule_execution_context.consistency_graph,

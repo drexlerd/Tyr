@@ -47,7 +47,7 @@ template<formalism::FactKind T>
 struct TaggedFactSets;
 
 struct FactSets;
-struct FactSetsAdapter;
+struct FactsView;
 
 class StaticConsistencyGraph;
 

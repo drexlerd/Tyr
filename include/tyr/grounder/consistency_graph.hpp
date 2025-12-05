@@ -20,7 +20,7 @@
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/formalism/formalism.hpp"
-#include "tyr/grounder/assignment_set.hpp"
+#include "tyr/grounder/assignment_sets.hpp"
 #include "tyr/grounder/declarations.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>

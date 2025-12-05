@@ -22,7 +22,7 @@
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/views.hpp"
-#include "tyr/grounder/assignment_set.hpp"
+#include "tyr/grounder/assignment_sets.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <optional>

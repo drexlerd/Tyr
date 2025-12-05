@@ -35,10 +35,24 @@ public:
     template<formalism::FactKind T>
     const boost::dynamic_bitset<>& get_atoms() const noexcept
     {
-        return m_unpacked->template get_atoms<T>();
+        if constexpr (std::is_same_v<T, formalism::StaticTag>)
+            return m_task->get_static_atoms_bitset();
+        else if constexpr (std::is_same_v<T, formalism::FluentTag> || std::is_same_v<T, formalism::DerivedTag>)
+            return m_unpacked->template get_atoms<T>();
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    const std::vector<float_t>& get_numeric_variables() const noexcept { return m_unpacked->get_numeric_variables(); }
+    template<formalism::FactKind T>
+    const std::vector<float_t>& get_numeric_variables() const noexcept
+    {
+        if constexpr (std::is_same_v<T, formalism::StaticTag>)
+            return m_task->get_static_numeric_variables();
+        else if constexpr (std::is_same_v<T, formalism::FluentTag>)
+            return m_unpacked->get_numeric_variables();
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
 
     Task& get_task() noexcept { return *m_task; }
 

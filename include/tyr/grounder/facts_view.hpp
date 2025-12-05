@@ -15,12 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_FACT_SET_ADAPTER_HPP_
-#define TYR_GROUNDER_FACT_SET_ADAPTER_HPP_
+#ifndef TYR_GROUNDER_FACTS_VIEW_HPP_
+#define TYR_GROUNDER_FACTS_VIEW_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/grounder/fact_set.hpp"
+#include "tyr/grounder/fact_sets.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <vector>
@@ -31,7 +31,7 @@ namespace tyr::grounder
 /// TODO: Find a better name
 /// Its job is to group the randomized access low level fact set or state information together,
 /// allowing us to check applicability on actions or rules on state or fact sets.
-struct FactSetsAdapter
+struct FactsView
 {
     const boost::dynamic_bitset<>& static_atoms;
     const boost::dynamic_bitset<>& fluent_atoms;
@@ -42,11 +42,11 @@ struct FactSetsAdapter
     // programs dont have derived atoms
     static const boost::dynamic_bitset<> empty_derived_atoms;
 
-    FactSetsAdapter(const boost::dynamic_bitset<>& static_atoms,
-                    const boost::dynamic_bitset<>& fluent_atoms,
-                    const boost::dynamic_bitset<>& derived_atoms,
-                    const std::vector<float_t>& static_numeric_variables,
-                    const std::vector<float_t>& fluent_numeric_variables) :
+    FactsView(const boost::dynamic_bitset<>& static_atoms,
+              const boost::dynamic_bitset<>& fluent_atoms,
+              const boost::dynamic_bitset<>& derived_atoms,
+              const std::vector<float_t>& static_numeric_variables,
+              const std::vector<float_t>& fluent_numeric_variables) :
         static_atoms(static_atoms),
         fluent_atoms(fluent_atoms),
         derived_atoms(derived_atoms),
@@ -55,12 +55,12 @@ struct FactSetsAdapter
     {
     }
 
-    FactSetsAdapter(const FactSets& fact_sets) :
-        FactSetsAdapter(fact_sets.static_sets.predicate.get_bitset(),
-                        fact_sets.fluent_sets.predicate.get_bitset(),
-                        empty_derived_atoms,
-                        fact_sets.static_sets.function.get_values(),
-                        fact_sets.fluent_sets.function.get_values())
+    FactsView(const FactSets& fact_sets) :
+        FactsView(fact_sets.static_sets.predicate.get_bitset(),
+                  fact_sets.fluent_sets.predicate.get_bitset(),
+                  empty_derived_atoms,
+                  fact_sets.static_sets.function.get_values(),
+                  fact_sets.fluent_sets.function.get_values())
     {
     }
 

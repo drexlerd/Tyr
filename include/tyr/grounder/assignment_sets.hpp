@@ -15,15 +15,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_ASSIGNMENT_SET_HPP_
-#define TYR_GROUNDER_ASSIGNMENT_SET_HPP_
+#ifndef TYR_GROUNDER_ASSIGNMENT_SETS_HPP_
+#define TYR_GROUNDER_ASSIGNMENT_SETS_HPP_
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/grounder/assignment.hpp"
-#include "tyr/grounder/fact_set.hpp"
+#include "tyr/grounder/fact_sets.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>

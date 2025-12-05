@@ -202,7 +202,7 @@ LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
     const auto state = node.get_state();
     const auto& fluent_atoms = state.get_atoms<FluentTag>();
     const auto& derived_atoms = state.get_atoms<DerivedTag>();
-    const auto& numeric_variables = state.get_numeric_variables();
+    const auto& numeric_variables = state.get_numeric_variables<FluentTag>();
 
     insert_extended_state(fluent_atoms, derived_atoms, numeric_variables, *this->m_overlay_repository, m_action_context);
 

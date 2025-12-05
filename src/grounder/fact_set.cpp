@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/fact_set.hpp"
+#include "tyr/grounder/fact_sets.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <limits>

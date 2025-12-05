@@ -19,7 +19,9 @@
 #define TYR_PLANNING_TRANSITION_HPP_
 
 #include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/declarations.hpp"
+#include "tyr/grounder/facts_view.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/node.hpp"
 
@@ -41,13 +43,15 @@ collect_positive_and_negative_propositional_effects(View<Index<formalism::Ground
 /// @param state_fact_sets
 /// @return
 template<typename Task>
-Node<Task> apply_action(Node<Task> node,
-                        View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
-                        const grounder::FactSets& state_fact_sets)
+Node<Task> apply_action(Node<Task> node, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action)
 {
     const auto state = node.get_state();
-
     auto& task = node.get_task();
+    const auto facts_view = grounder::FactsView(state.template get_atoms<formalism::StaticTag>(),
+                                                state.template get_atoms<formalism::FluentTag>(),
+                                                state.template get_atoms<formalism::DerivedTag>(),
+                                                state.template get_numeric_variables<formalism::StaticTag>(),
+                                                state.template get_numeric_variables<formalism::FluentTag>());
 
     /// --- Fetch a scratch buffer for creating the successor state.
     auto succ_unpacked_state_ptr = task.get_unpacked_state_pool().get_or_allocate();

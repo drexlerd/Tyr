@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_FACT_SET_HPP_
-#define TYR_GROUNDER_FACT_SET_HPP_
+#ifndef TYR_GROUNDER_FACT_SETS_HPP_
+#define TYR_GROUNDER_FACT_SETS_HPP_
 
 #include "tyr/formalism/formalism.hpp"
 

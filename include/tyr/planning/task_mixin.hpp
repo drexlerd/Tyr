@@ -108,8 +108,29 @@ public:
         m_domain(std::move(domain)),
         m_repository(std::move(repository)),
         m_overlay_repository(std::move(overlay_repository)),
-        m_task(task)
+        m_task(task),
+        m_uint_nodes(),
+        m_float_nodes(),
+        m_packed_states(),
+        m_unpacked_state_pool(),
+        m_static_atoms_bitset(),
+        m_static_numeric_variables()
     {
+        for (const auto atom : task.template get_atoms<formalism::StaticTag>())
+        {
+            const auto atom_index = atom.get_index().get_value();
+            if (atom_index >= m_static_atoms_bitset.size())
+                m_static_atoms_bitset.resize(atom_index + 1, false);
+            m_static_atoms_bitset.set(atom_index);
+        }
+
+        for (const auto fterm_value : task.template get_fterm_values<formalism::StaticTag>())
+        {
+            const auto fterm_index = fterm_value.get_fterm().get_index().get_value();
+            if (fterm_index >= m_static_numeric_variables.size())
+                m_static_numeric_variables.resize(fterm_index + 1, std::numeric_limits<float_t>::quiet_NaN());
+            m_static_numeric_variables[fterm_index] = fterm_value.get_value();
+        }
     }
 
     /**
@@ -180,6 +201,9 @@ public:
 
     auto& get_unpacked_state_pool() noexcept { return m_unpacked_state_pool; }
 
+    const auto& get_static_atoms_bitset() const noexcept { return m_static_atoms_bitset; }
+    const auto& get_static_numeric_variables() const noexcept { return m_static_numeric_variables; }
+
 protected:
     DomainPtr m_domain;
     formalism::RepositoryPtr m_repository;
@@ -191,6 +215,8 @@ protected:
     valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
     IndexedHashSet<PackedState<Task>, StateIndex> m_packed_states;
     SharedObjectPool<UnpackedState<Task>> m_unpacked_state_pool;
+    boost::dynamic_bitset<> m_static_atoms_bitset;
+    std::vector<float_t> m_static_numeric_variables;
 };
 
 }

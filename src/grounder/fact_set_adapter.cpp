@@ -15,10 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/fact_set_adapter.hpp"
+#include "tyr/grounder/facts_view.hpp"
 
 namespace tyr::grounder
 {
 
-const boost::dynamic_bitset<> FactSetsAdapter::empty_derived_atoms = boost::dynamic_bitset<>();
+const boost::dynamic_bitset<> FactsView::empty_derived_atoms = boost::dynamic_bitset<>();
 }
