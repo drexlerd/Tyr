@@ -15,21 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_GROUNDER_HPP_
-#define TYR_GROUNDER_GROUNDER_HPP_
-
-#include "tyr/grounder/applicability.hpp"
-#include "tyr/grounder/assignment.hpp"
-#include "tyr/grounder/assignment_set.hpp"
-#include "tyr/grounder/consistency_graph.hpp"
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/fact_set.hpp"
 #include "tyr/grounder/fact_set_adapter.hpp"
-#include "tyr/grounder/formatter.hpp"
-#include "tyr/grounder/generator.hpp"
-#include "tyr/grounder/kpkc.hpp"
-#include "tyr/grounder/kpkc_data.hpp"
-#include "tyr/grounder/kpkc_utils.hpp"
-#include "tyr/grounder/workspace.hpp"
 
-#endif
+namespace tyr::grounder
+{
+
+const boost::dynamic_bitset<> FactSetsAdapter::empty_derived_atoms = boost::dynamic_bitset<>();
+}

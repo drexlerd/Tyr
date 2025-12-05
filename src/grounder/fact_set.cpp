@@ -84,6 +84,12 @@ View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> PredicateFactSe
     return View<IndexList<formalism::GroundAtom<T>>, formalism::Repository>(m_indices, m_context);
 }
 
+template<formalism::FactKind T>
+const boost::dynamic_bitset<>& PredicateFactSet<T>::get_bitset() const noexcept
+{
+    return m_bitset;
+}
+
 template class PredicateFactSet<formalism::StaticTag>;
 template class PredicateFactSet<formalism::FluentTag>;
 
@@ -105,7 +111,7 @@ void FunctionFactSet<T>::reset()
 {
     m_indices.clear();
     m_unique.clear();
-    std::fill(m_vector.begin(), m_vector.end(), std::numeric_limits<float_t>::quiet_NaN());
+    std::fill(m_values.begin(), m_values.end(), std::numeric_limits<float_t>::quiet_NaN());
 }
 
 template<formalism::FactKind T>
@@ -118,9 +124,9 @@ void FunctionFactSet<T>::insert(View<Index<formalism::GroundFunctionTerm<T>>, fo
 
     m_indices.push_back(fterm_index);
     m_unique.insert(fterm_index);
-    if (fterm_index.get_value() >= m_vector.size())
-        m_vector.resize(fterm_index.get_value() + 1, std::numeric_limits<float_t>::quiet_NaN());
-    m_vector[fterm_index.get_value()] = value;
+    if (fterm_index.get_value() >= m_values.size())
+        m_values.resize(fterm_index.get_value() + 1, std::numeric_limits<float_t>::quiet_NaN());
+    m_values[fterm_index.get_value()] = value;
 }
 
 template<formalism::FactKind T>
@@ -160,7 +166,7 @@ bool FunctionFactSet<T>::contains(View<Index<formalism::GroundFunctionTerm<T>>, 
 template<formalism::FactKind T>
 float_t FunctionFactSet<T>::operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept
 {
-    return m_vector[index.get_value()];
+    return m_values[index.get_value()];
 }
 
 template<formalism::FactKind T>
@@ -172,7 +178,7 @@ View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository> Functio
 template<formalism::FactKind T>
 const std::vector<float_t>& FunctionFactSet<T>::get_values() const noexcept
 {
-    return m_vector;
+    return m_values;
 }
 
 template class FunctionFactSet<formalism::StaticTag>;

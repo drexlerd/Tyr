@@ -48,6 +48,8 @@ public:
     bool contains(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view) const noexcept;
 
     View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> get_facts() const noexcept;
+
+    const boost::dynamic_bitset<>& get_bitset() const noexcept;
 };
 
 template<formalism::FactKind T>
@@ -58,7 +60,7 @@ private:
     IndexList<formalism::GroundFunctionTerm<T>> m_indices;
     UnorderedSet<Index<formalism::GroundFunctionTerm<T>>> m_unique;
 
-    std::vector<float_t> m_vector;
+    std::vector<float_t> m_values;
 
 public:
     explicit FunctionFactSet(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);

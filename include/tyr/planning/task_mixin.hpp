@@ -112,6 +112,29 @@ public:
     {
     }
 
+    /**
+     * Core API
+     */
+
+    Node<Task> get_initial_node() { return self().get_initial_node_impl(); }
+
+    std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<Task>>>
+    get_labeled_successor_nodes(const Node<Task>& node)
+    {
+        return self().get_labeled_successor_nodes_impl(node);
+    }
+
+    void get_labeled_successor_nodes(
+        const Node<Task>& node,
+        std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<Task>>>& out_nodes)
+    {
+        self().get_labeled_successor_nodes_impl(node, out_nodes);
+    }
+
+    /**
+     * Lookup state
+     */
+
     State<Task> get_state(StateIndex state_index)
     {
         const auto& packed_state = m_packed_states[state_index];
@@ -129,6 +152,10 @@ public:
         return State<Task>(self(), std::move(unpacked_state));
     }
 
+    /**
+     * Register state
+     */
+
     StateIndex register_state(const UnpackedState<Task>& state)
     {
         thread_local auto buffer = std::vector<uint_t> {};
@@ -140,26 +167,18 @@ public:
         return m_packed_states.insert(PackedState<Task>(StateIndex(m_packed_states.size()), fluent_atoms, derived_atoms, numeric_variables));
     }
 
-    const DomainPtr& get_domain() const noexcept { return m_domain; }
+    /**
+     * Getters
+     */
 
-    View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> get_task() const noexcept { return m_task; }
+    const auto& get_domain() const noexcept { return m_domain; }
 
-    Node<Task> get_initial_node() { return self().get_initial_node_impl(); }
+    auto get_task() const noexcept { return m_task; }
 
-    std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<Task>>>
-    get_labeled_successor_nodes(const Node<Task>& node)
-    {
-        return self().get_labeled_successor_nodes_impl(node);
-    }
+    auto& get_repository() noexcept { return m_overlay_repository; }
+    const auto& get_repository() const noexcept { return m_overlay_repository; }
 
-    void get_labeled_successor_nodes(
-        const Node<Task>& node,
-        std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<Task>>>& out_nodes)
-    {
-        self().get_labeled_successor_nodes_impl(node, out_nodes);
-    }
-
-    const auto& get_repository() const { return m_overlay_repository; }
+    auto& get_unpacked_state_pool() noexcept { return m_unpacked_state_pool; }
 
 protected:
     DomainPtr m_domain;
