@@ -15,23 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_PLANNING_HPP_
-#define TYR_PLANNING_PLANNING_HPP_
-
-#include "tyr/planning/declarations.hpp"
-#include "tyr/planning/domain.hpp"
-#include "tyr/planning/formatter.hpp"
-#include "tyr/planning/ground_task.hpp"
-#include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_transition.hpp"
-#include "tyr/planning/node.hpp"
-#include "tyr/planning/packed_state.hpp"
-#include "tyr/planning/parser.hpp"
-#include "tyr/planning/programs/action.hpp"
-#include "tyr/planning/programs/axiom.hpp"
-#include "tyr/planning/programs/ground.hpp"
-#include "tyr/planning/state.hpp"
-#include "tyr/planning/state_index.hpp"
-#include "tyr/planning/unpacked_state.hpp"
 
-#endif
+namespace tyr::planning
+{
+
+Node<LiftedTask> apply_action(Node<LiftedTask> state, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action) {}
+}
