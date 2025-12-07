@@ -18,11 +18,19 @@
 #ifndef TYR_GROUNDER_APPLICABILITY_HPP_
 #define TYR_GROUNDER_APPLICABILITY_HPP_
 
+#include "tyr/formalism/arithmetic_operator_utils.hpp"
+#include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/facts_view.hpp"
 
+#include <algorithm>
 #include <concepts>
+#include <iterator>
+#include <limits>
+#include <numeric>
+#include <stdexcept>
+#include <vector>
 
 namespace tyr::grounder
 {

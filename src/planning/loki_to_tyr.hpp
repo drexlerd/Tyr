@@ -18,6 +18,8 @@
 #ifndef TYR_SRC_PLANNING_LOKI_TO_TYR_HPP_
 #define TYR_SRC_PLANNING_LOKI_TO_TYR_HPP_
 
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"

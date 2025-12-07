@@ -22,6 +22,8 @@
 
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/ground.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/declarations.hpp"

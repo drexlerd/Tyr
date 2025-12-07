@@ -23,8 +23,6 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_expression_view.hpp"
 #include "tyr/formalism/multi_operator_index.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr
 {

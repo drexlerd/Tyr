@@ -17,6 +17,8 @@
 
 #include "tyr/planning/formatter.hpp"
 
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/lifted_task.hpp"

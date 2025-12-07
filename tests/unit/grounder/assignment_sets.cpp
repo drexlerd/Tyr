@@ -19,6 +19,7 @@
 
 #include <gtest/gtest.h>
 #include <tyr/analysis/analysis.hpp>
+#include <tyr/formalism/formalism.hpp>
 #include <tyr/grounder/grounder.hpp>
 
 using namespace tyr::buffer;
@@ -29,8 +30,7 @@ namespace tyr::tests
 
 TEST(TyrTests, TyrGrounderAssignmentSets)
 {
-    auto [program_index, repository] = create_example_problem();
-    auto program = View<Index<Program>, Repository>(program_index, repository);
+    auto [program, repository] = create_example_problem();
 
     // Analyze variable domains to compress assignment sets
     auto domains = analysis::compute_variable_domains(program);

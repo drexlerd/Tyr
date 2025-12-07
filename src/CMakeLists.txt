@@ -1,5 +1,5 @@
 # List of subdirectory names
-set(SUBDIRECTORIES "analysis" "cista" "common" "formalism" "formalism" "grounder" "planning" "solver")
+set(SUBDIRECTORIES "analysis" "buffer" "common" "formalism" "grounder" "planning" "solver")
 
 # Initialize empty lists for source and header files
 set(TYR_SRC_FILES "")

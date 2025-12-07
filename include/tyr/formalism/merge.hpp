@@ -20,8 +20,7 @@
 
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::formalism

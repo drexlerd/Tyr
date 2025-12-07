@@ -17,7 +17,11 @@
 
 #include "tyr/analysis/stratification.hpp"
 
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
 #include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::analysis

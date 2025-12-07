@@ -357,14 +357,32 @@ concept IsRepository =
     && RepositoryAccess<T, BinaryOperator<OpGe, Data<GroundFunctionExpression>>> && RepositoryAccess<T, BinaryOperator<OpGt, Data<GroundFunctionExpression>>>
     && RepositoryAccess<T, Rule> && RepositoryAccess<T, GroundRule> && RepositoryAccess<T, Program>;
 
+class Repository;
+
+using RepositoryPtr = std::shared_ptr<Repository>;
+
+/// @brief Make Repository a trivial context.
+/// @param context
+/// @return
+inline const Repository& get_repository(const Repository& context) noexcept { return context; }
+
+template<typename C>
+class OverlayRepository;
+
+template<typename C>
+using OverlayRepositoryPtr = std::shared_ptr<OverlayRepository<C>>;
+
+/// @brief Make OverlayRepository a trivial context.
+template<typename C>
+inline const OverlayRepository<C>& get_repository(const OverlayRepository<C>& context) noexcept
+{
+    return context;
+}
+
 template<typename T>
 concept Context = requires(const T& a) {
     { get_repository(a) } -> IsRepository;
 };
-
-class Repository;
-template<Context C>
-class OverlayRepository;
 
 }
 

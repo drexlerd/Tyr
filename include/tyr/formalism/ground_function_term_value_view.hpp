@@ -22,7 +22,6 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_function_term_value_index.hpp"
 #include "tyr/formalism/ground_function_term_view.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr
 {

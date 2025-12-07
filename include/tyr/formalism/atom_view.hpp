@@ -22,9 +22,7 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/atom_index.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/predicate_view.hpp"
-#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/term_data.hpp"
 
 namespace tyr

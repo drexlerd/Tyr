@@ -21,7 +21,6 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/variant.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_data.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr
 {

@@ -22,8 +22,6 @@
 #include "tyr/common/variant.hpp"
 #include "tyr/formalism/binary_operator_index.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr
 {

@@ -188,13 +188,6 @@ public:
     }
 };
 
-using RepositoryPtr = std::shared_ptr<Repository>;
-
-/// @brief Make Repository a trivial context.
-/// @param context
-/// @return
-inline const Repository& get_repository(const Repository& context) noexcept { return context; }
-
 static_assert(IsRepository<Repository>);
 
 static_assert(Context<Repository>);

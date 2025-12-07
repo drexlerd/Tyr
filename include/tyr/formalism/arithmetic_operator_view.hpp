@@ -23,8 +23,6 @@
 #include "tyr/formalism/arithmetic_operator_data.hpp"
 #include "tyr/formalism/binary_operator_view.hpp"
 #include "tyr/formalism/multi_operator_view.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/unary_operator_view.hpp"
 
 namespace tyr

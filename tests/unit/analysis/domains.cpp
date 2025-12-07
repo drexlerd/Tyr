@@ -28,8 +28,7 @@ namespace tyr::tests
 
 TEST(TyrTests, TyrAnalysisDomains)
 {
-    auto [program_index, repository] = create_example_problem();
-    auto program = View<Index<Program>, Repository>(program_index, repository);
+    auto [program, repository] = create_example_problem();
 
     auto domains = analysis::compute_variable_domains(program);
 

@@ -28,11 +28,10 @@ namespace tyr::tests
 
 TEST(TyrTests, TyrAnalysisListeners)
 {
-    auto [program_index, repository] = create_example_problem();
-    auto program = View<Index<Program>, Repository>(program_index, repository);
+    auto [program, repository] = create_example_problem();
 
     auto rule_strata = analysis::compute_rule_stratification(program);
-    auto listeners = analysis::compute_listeners(rule_strata, repository);
+    auto listeners = analysis::compute_listeners(rule_strata);
 
     for (const auto& listeners_in_stratum : listeners.positive_listeners_per_stratum)
     {

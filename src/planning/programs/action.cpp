@@ -20,6 +20,8 @@
 #include "tyr/formalism/compiler.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/lifted_task.hpp"
 
@@ -203,13 +205,16 @@ ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :
     m_predicate_to_actions(),
     m_object_to_object(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_object_to_object_mapping, m_predicate_to_actions, *m_repository))
+    m_program(create(task, m_object_to_object, m_predicate_to_actions, *m_repository))
 {
 }
 
-const PredicateToActionsMapping& ApplicableActionProgram::get_predicate_to_actions_mapping() const noexcept { return m_predicate_to_actions; }
+const ApplicableActionProgram::PredicateToActionsMapping& ApplicableActionProgram::get_predicate_to_actions_mapping() const noexcept
+{
+    return m_predicate_to_actions;
+}
 
-const ObjectToObjectMapping& ApplicableActionProgram::get_object_to_object_mapping() const noexcept { return m_object_to_object; }
+const ApplicableActionProgram::ObjectToObjectMapping& ApplicableActionProgram::get_object_to_object_mapping() const noexcept { return m_object_to_object; }
 
 View<Index<formalism::Program>, formalism::Repository> ApplicableActionProgram::get_program() const noexcept { return m_program; }
 

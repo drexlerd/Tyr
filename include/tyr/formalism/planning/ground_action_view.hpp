@@ -22,11 +22,9 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_conjunctive_condition_view.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/action_view.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
 #include "tyr/formalism/planning/ground_conditional_effect_view.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr
 {

@@ -21,7 +21,9 @@
 #include "tyr/analysis/declarations.hpp"
 #include "tyr/analysis/stratification.hpp"
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/equal_to.hpp"
 #include "tyr/common/formatter.hpp"
+#include "tyr/common/hash.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 

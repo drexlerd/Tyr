@@ -23,9 +23,7 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
 #include "tyr/formalism/object_index.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/predicate_view.hpp"
-#include "tyr/formalism/repository.hpp"
 
 namespace tyr
 {

@@ -19,6 +19,8 @@
 
 #include "tyr/common/unordered_set.hpp"
 #include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::analysis
@@ -43,36 +45,44 @@ static DomainListListList to_list(const DomainSetListList& set)
     return vec;
 }
 
-template<formalism::FactKind T>
-DomainSetListList initialize_predicate_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
+template<formalism::FactKind T, formalism::Context C>
+DomainSetListList initialize_predicate_domain_sets(View<IndexList<formalism::Predicate<T>>, C> predicates)
 {
-    const auto num_predicates = program.get_predicates<T>().size();
-    auto predicate_domain_sets = DomainSetListList(num_predicates);
+    auto predicate_domain_sets = DomainSetListList(predicates.size());
 
-    for (const auto predicate : program.get_predicates<T>())
+    for (const auto predicate : predicates)
         predicate_domain_sets[predicate.get_index().value].resize(predicate.get_arity());
 
-    for (const auto atom : program.get_atoms<T>())
+    return predicate_domain_sets;
+}
+
+template<formalism::FactKind T, formalism::Context C>
+void insert_into_predicate_domain_sets(View<IndexList<formalism::GroundAtom<T>>, C> atoms, DomainSetListList& predicate_domain_sets)
+{
+    for (const auto atom : atoms)
     {
         const auto predicate = atom.get_predicate();
         auto pos = size_t { 0 };
         for (const auto object : atom.get_objects())
             predicate_domain_sets[predicate.get_index().value][pos++].insert(object.get_index());
     }
-
-    return predicate_domain_sets;
 }
 
-template<formalism::FactKind T>
-DomainSetListList initialize_function_domain_sets(View<Index<formalism::Program>, formalism::Repository> program)
+template<formalism::FactKind T, formalism::Context C>
+DomainSetListList initialize_function_domain_sets(View<IndexList<formalism::Function<T>>, C> functions)
 {
-    const auto num_functions = program.get_functions<T>().size();
-    auto function_domain_sets = DomainSetListList(num_functions);
+    auto function_domain_sets = DomainSetListList(functions.size());
 
-    for (const auto function : program.get_functions<T>())
+    for (const auto function : functions)
         function_domain_sets[function.get_index().value].resize(function.get_arity());
 
-    for (const auto term_value : program.get_fterm_values<T>())
+    return function_domain_sets;
+}
+
+template<formalism::FactKind T, formalism::Context C>
+void insert_into_function_domain_sets(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> fterm_values, DomainSetListList& function_domain_sets)
+{
+    for (const auto term_value : fterm_values)
     {
         const auto fterm = term_value.get_fterm();
         const auto function = fterm.get_function();
@@ -80,8 +90,6 @@ DomainSetListList initialize_function_domain_sets(View<Index<formalism::Program>
         for (const auto object : fterm.get_objects())
             function_domain_sets[function.get_index().value][pos++].insert(object.get_index());
     }
-
-    return function_domain_sets;
 }
 
 /**
@@ -365,13 +373,17 @@ ProgramVariableDomains compute_variable_domains(View<Index<formalism::Program>, 
 
     ///--- Step 1: Initialize static and fluent predicate parameter domains
 
-    auto static_predicate_domain_sets = initialize_predicate_domain_sets<formalism::StaticTag>(program);
-    auto fluent_predicate_domain_sets = initialize_predicate_domain_sets<formalism::FluentTag>(program);
+    auto static_predicate_domain_sets = initialize_predicate_domain_sets(program.get_predicates<formalism::StaticTag>());
+    auto fluent_predicate_domain_sets = initialize_predicate_domain_sets(program.get_predicates<formalism::FluentTag>());
+    insert_into_predicate_domain_sets(program.get_atoms<formalism::StaticTag>(), static_predicate_domain_sets);
+    insert_into_predicate_domain_sets(program.get_atoms<formalism::FluentTag>(), fluent_predicate_domain_sets);
 
     ///--- Step 2: Initialize static and fluent function parameter domains
 
-    auto static_function_domain_sets = initialize_function_domain_sets<formalism::StaticTag>(program);
-    auto fluent_function_domain_sets = initialize_function_domain_sets<formalism::FluentTag>(program);
+    auto static_function_domain_sets = initialize_function_domain_sets(program.get_functions<formalism::StaticTag>());
+    auto fluent_function_domain_sets = initialize_function_domain_sets(program.get_functions<formalism::FluentTag>());
+    insert_into_function_domain_sets(program.get_fterm_values<formalism::StaticTag>(), static_function_domain_sets);
+    insert_into_function_domain_sets(program.get_fterm_values<formalism::FluentTag>(), fluent_function_domain_sets);
 
     ///--- Step 3: Compute rule parameter domains as tightest bound from the previously computed domains of the static predicates.
 
@@ -428,6 +440,7 @@ ProgramVariableDomains compute_variable_domains(View<Index<formalism::Program>, 
                                     std::move(rule_domains) };
 }
 
+/*
 TaskVariableDomains compute_variable_domains(View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task)
 {
     auto objects = std::vector<Index<formalism::Object>> {};
@@ -524,4 +537,5 @@ TaskVariableDomains compute_variable_domains(View<Index<formalism::Task>, formal
                                  std::move(fluent_function_domains),
                                  std::move(rule_domains) };
 }
+                                 */
 }

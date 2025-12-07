@@ -18,6 +18,10 @@
 #ifndef TYR_PLANNING_PROGRAMS_ACTION_HPP_
 #define TYR_PLANNING_PROGRAMS_ACTION_HPP_
 
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"
 

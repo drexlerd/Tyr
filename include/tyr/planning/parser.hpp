@@ -18,7 +18,7 @@
 #ifndef TYR_PLANNING_PARSER_HPP_
 #define TYR_PLANNING_PARSER_HPP_
 
-#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/declarations.hpp"
 #include "tyr/planning/declarations.hpp"
 
 #include <loki/loki.hpp>

@@ -18,6 +18,8 @@
 #ifndef TYR_GROUNDER_FACT_SETS_HPP_
 #define TYR_GROUNDER_FACT_SETS_HPP_
 
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
 #include "tyr/formalism/formalism.hpp"
 
 #include <boost/dynamic_bitset.hpp>

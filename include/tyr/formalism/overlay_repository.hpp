@@ -23,9 +23,11 @@
 
 namespace tyr::formalism
 {
-template<Context C>
+template<typename C>
 class OverlayRepository
 {
+    static_assert(Context<C>, "OverlayRepository<C> requires C to model Context");
+
 private:
     const C& parent_scope;
     C& local_scope;
@@ -81,16 +83,6 @@ public:
         return parent_scope.template size<T>() + local_scope.template size<T>();
     }
 };
-
-template<Context C>
-using OverlayRepositoryPtr = std::shared_ptr<OverlayRepository<C>>;
-
-/// @brief Make OverlayRepository a trivial context.
-template<Context C>
-inline const OverlayRepository<C>& get_repository(const OverlayRepository<C>& context) noexcept
-{
-    return context;
-}
 
 // Domain + Task
 static_assert(IsRepository<OverlayRepository<Repository>>);

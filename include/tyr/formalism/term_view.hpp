@@ -20,8 +20,6 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/variant.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/term_data.hpp"
 
 namespace tyr

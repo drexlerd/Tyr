@@ -19,6 +19,8 @@
 #define TYR_PLANNING_TASK_MIXIN_HPP_
 
 #include "tyr/common/common.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/node.hpp"

@@ -20,6 +20,8 @@
 #include "tyr/formalism/compiler.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/lifted_task.hpp"
 

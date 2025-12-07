@@ -22,6 +22,7 @@
 #include <oneapi/tbb/global_control.h>
 #include <oneapi/tbb/parallel_for.h>
 #include <tyr/analysis/analysis.hpp>
+#include <tyr/formalism/formalism.hpp>
 #include <tyr/grounder/grounder.hpp>
 
 using namespace tyr::buffer;

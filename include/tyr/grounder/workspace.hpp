@@ -19,6 +19,8 @@
 #define TYR_GROUNDER_EXECUTION_CONTEXTS_HPP_
 
 #include "tyr/analysis/analysis.hpp"
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
 #include "tyr/formalism/formalism.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/declarations.hpp"
