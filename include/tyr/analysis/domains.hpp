@@ -46,20 +46,7 @@ struct ProgramVariableDomains
     DomainListListList rule_domains;
 };
 
-struct TaskVariableDomains
-{
-    DomainListListList static_predicate_domains;
-    DomainListListList fluent_predicate_domains;
-    DomainListListList derived_predicate_domains;
-    DomainListListList static_function_domains;
-    DomainListListList fluent_function_domains;
-    std::vector<std::pair<DomainListList, DomainListListList>> action_domains;
-    DomainListListList axiom_domains;
-};
-
 extern ProgramVariableDomains compute_variable_domains(View<Index<formalism::Program>, formalism::Repository> program);
-
-extern TaskVariableDomains compute_variable_domains(View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
 }
 
 #endif

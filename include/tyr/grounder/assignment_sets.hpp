@@ -49,7 +49,7 @@ struct PerfectAssignmentHash
     size_t size() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 class PredicateAssignmentSet
 {
 private:
@@ -59,13 +59,11 @@ private:
     boost::dynamic_bitset<> m_set;
 
 public:
-    PredicateAssignmentSet(View<Index<formalism::Predicate<T>>, formalism::Repository> predicate,
-                           const analysis::DomainListList& parameter_domains,
-                           size_t num_objects);
+    PredicateAssignmentSet(View<Index<formalism::Predicate<T>>, C> predicate, const analysis::DomainListList& parameter_domains, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert(View<Index<formalism::GroundAtom<T>>, formalism::Repository> ground_atom);
+    void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom);
 
     bool operator[](const VertexAssignment& assignment) const noexcept;
     bool operator[](const EdgeAssignment& assignment) const noexcept;
@@ -73,7 +71,7 @@ public:
     size_t size() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 class PredicateAssignmentSets
 {
 private:
@@ -82,22 +80,20 @@ private:
 public:
     PredicateAssignmentSets() = default;
 
-    PredicateAssignmentSets(View<IndexList<formalism::Predicate<T>>, formalism::Repository> predicates,
-                            const analysis::DomainListListList& predicate_domains,
-                            size_t num_objects);
+    PredicateAssignmentSets(View<IndexList<formalism::Predicate<T>>, C> predicates, const analysis::DomainListListList& predicate_domains, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> ground_atoms);
+    void insert(View<IndexList<formalism::GroundAtom<T>>, C> ground_atoms);
 
-    void insert(View<Index<formalism::GroundAtom<T>>, formalism::Repository> ground_atom);
+    void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom);
 
-    const PredicateAssignmentSet<T>& get_set(Index<formalism::Predicate<T>> index) const noexcept;
+    const PredicateAssignmentSet<T, C>& get_set(Index<formalism::Predicate<T>> index) const noexcept;
 
     size_t size() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 class FunctionAssignmentSet
 {
 private:
@@ -109,15 +105,13 @@ private:
 public:
     FunctionAssignmentSet() = default;
 
-    FunctionAssignmentSet(View<Index<formalism::Function<T>>, formalism::Repository> function,
-                          const analysis::DomainListList& parameter_domains,
-                          size_t num_objects);
+    FunctionAssignmentSet(View<Index<formalism::Function<T>>, C> function, const analysis::DomainListList& parameter_domains, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_term, float_t value);
+    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value);
 
-    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, formalism::Repository> fterm_value);
+    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> fterm_value);
 
     ClosedInterval<float_t> operator[](const EmptyAssignment& assignment) const noexcept;
     ClosedInterval<float_t> operator[](const VertexAssignment& assignment) const noexcept;
@@ -126,7 +120,7 @@ public:
     size_t size() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 class FunctionAssignmentSets
 {
 private:
@@ -135,24 +129,22 @@ private:
 public:
     FunctionAssignmentSets() = default;
 
-    FunctionAssignmentSets(View<IndexList<formalism::Function<T>>, formalism::Repository> functions,
-                           const analysis::DomainListListList& function_domains,
-                           size_t num_objects);
+    FunctionAssignmentSets(View<IndexList<formalism::Function<T>>, C> functions, const analysis::DomainListListList& function_domains, size_t num_objects);
 
     void reset() noexcept;
 
-    void insert(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_term, float_t value);
+    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value);
 
-    void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_terms, const std::vector<float_t>& values);
+    void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, C> function_terms, const std::vector<float_t>& values);
 
-    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> fterm_values);
+    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> fterm_values);
 
-    const FunctionAssignmentSet<T>& get_set(Index<formalism::Function<T>> index) const noexcept;
+    const FunctionAssignmentSet<T, C>& get_set(Index<formalism::Function<T>> index) const noexcept;
 
     size_t size() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 struct TaggedAssignmentSets
 {
     PredicateAssignmentSets<T> predicate;
@@ -160,25 +152,26 @@ struct TaggedAssignmentSets
 
     TaggedAssignmentSets() = default;
 
-    TaggedAssignmentSets(View<IndexList<formalism::Predicate<T>>, formalism::Repository> predicates,
-                         View<IndexList<formalism::Function<T>>, formalism::Repository> functions,
+    TaggedAssignmentSets(View<IndexList<formalism::Predicate<T>>, C> predicates,
+                         View<IndexList<formalism::Function<T>>, C> functions,
                          const analysis::DomainListListList& predicate_domains,
                          const analysis::DomainListListList& function_domains,
                          size_t num_objects);
 
-    void insert(const TaggedFactSets<T>& fact_sets);
+    void insert(const TaggedFactSets<T, C>& fact_sets);
 
     void reset();
 };
 
+template<formalism::Context C>
 struct AssignmentSets
 {
-    TaggedAssignmentSets<formalism::StaticTag> static_sets;
-    TaggedAssignmentSets<formalism::FluentTag> fluent_sets;
+    TaggedAssignmentSets<formalism::StaticTag, C> static_sets;
+    TaggedAssignmentSets<formalism::FluentTag, C> fluent_sets;
 
-    AssignmentSets(View<Index<formalism::Program>, formalism::Repository> program, const analysis::ProgramVariableDomains& domains);
+    AssignmentSets(View<Index<formalism::Program>, C> program, const analysis::ProgramVariableDomains& domains);
 
-    AssignmentSets(View<Index<formalism::Program>, formalism::Repository> program, const analysis::ProgramVariableDomains& domains, const FactSets& fact_sets);
+    AssignmentSets(View<Index<formalism::Program>, C> program, const analysis::ProgramVariableDomains& domains, const FactSets<C>& fact_sets);
 
     template<formalism::FactKind T>
     void reset() noexcept;
@@ -186,15 +179,15 @@ struct AssignmentSets
     void reset() noexcept;
 
     template<formalism::FactKind T>
-    void insert(const TaggedFactSets<T>& fact_set);
+    void insert(const TaggedFactSets<T, C>& fact_set);
 
-    void insert(const FactSets& fact_sets);
-
-    template<formalism::FactKind T>
-    TaggedAssignmentSets<T>& get();
+    void insert(const FactSets<C>& fact_sets);
 
     template<formalism::FactKind T>
-    const TaggedAssignmentSets<T>& get() const;
+    TaggedAssignmentSets<T, C>& get();
+
+    template<formalism::FactKind T>
+    const TaggedAssignmentSets<T, C>& get() const;
 };
 
 }

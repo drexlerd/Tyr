@@ -15,10 +15,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_ARITHMETIC_OPERATOR_UTILS_HPP_
-#define TYR_FORMALISM_ARITHMETIC_OPERATOR_UTILS_HPP_
+#ifndef TYR_FORMALISM_PLANNING_GROUND_NUMERIC_EFFECT_OPERATOR_UTILS_HPP_
+#define TYR_FORMALISM_PLANNING_GROUND_NUMERIC_EFFECT_OPERATOR_UTILS_HPP_
 
-#include "tyr/common/closed_interval.hpp"
 #include "tyr/common/declarations.hpp"
 #include "tyr/formalism/declarations.hpp"
 
@@ -29,35 +28,34 @@ namespace tyr::formalism
  */
 
 template<typename T>
-inline T apply(OpSub, T el)
+inline T apply(OpAssign, T el)
 {
-    return -el;
+    return el;
 }
 
 template<typename T>
-inline T apply(OpAdd, T lhs, T rhs)
+inline T apply(OpIncrease, T lhs, T rhs)
 {
     return lhs + rhs;
 }
 
 template<typename T>
-inline T apply(OpSub, T lhs, T rhs)
+inline T apply(OpDecrease, T lhs, T rhs)
 {
     return lhs - rhs;
 }
 
 template<typename T>
-inline T apply(OpMul, T lhs, T rhs)
+inline T apply(OpScaleUp, T lhs, T rhs)
 {
     return lhs * rhs;
 }
 
 template<typename T>
-inline T apply(OpDiv, T lhs, T rhs)
+inline T apply(OpScaleDown, T lhs, T rhs)
 {
     return lhs / rhs;
 }
-
 }
 
 #endif

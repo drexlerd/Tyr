@@ -21,6 +21,7 @@
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/grounder/applicability.hpp"
+#include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/generator.hpp"
 #include "tyr/solver/bottom_up.hpp"
@@ -161,8 +162,36 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_axiom_program(*this),
     m_ground_program(*this),
     m_action_context(m_action_program.get_program(), m_action_program.get_repository()),
-    m_axiom_context(m_axiom_program.get_program(), m_axiom_program.get_repository())
+    m_axiom_context(m_axiom_program.get_program(), m_axiom_program.get_repository()),
+    parameter_domains_per_cond_effect_per_action()
 {
+    auto static_fact_sets = TaggedFactSets<StaticTag>(task.get_atoms<StaticTag>(), task.get_fterm_values<StaticTag>());
+    auto static_assignment_sets = TaggedAssignmentSets<StaticTag>(static_fact_sets);
+
+    for (const auto action : task.get_domain().get_actions())
+    {
+        auto parameter_domains_per_cond_effect = DomainListList {};
+        for (const auto cond_effect : action.get_effects())
+        {
+            auto static_consistency_graph = StaticConsistencyGraph(cond_effect.get_condition(),
+                                                                   task.get_domain().get_constants().size() + task.get_objects().size(),
+                                                                   static_assignment_sets);
+
+            auto parameter_domains = DomainList {};
+            for (const auto& partition : static_consistency_graph.get_partitions())
+            {
+                auto domain = Domain {};
+                for (const auto vertex_index : partition)
+                {
+                    const auto& vertex = static_consistency_graph.get_vertex(vertex_index);
+                    domain.push_back(vertex.get_object_index());
+                }
+                parameter_domains.push_back(std::move(domain));
+            }
+            parameter_domains_per_cond_effect.push_back(std::move(parameter_domains));
+        }
+        parameter_domains_per_cond_effect_per_action.push_back(std::move(parameter_domains_per_cond_effect));
+    }
 }
 
 Node<LiftedTask> LiftedTask::get_initial_node_impl()

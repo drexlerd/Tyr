@@ -80,11 +80,11 @@ template void FactsExecutionContext::insert(View<IndexList<formalism::GroundFunc
  */
 
 RuleExecutionContext::RuleExecutionContext(View<Index<formalism::Rule>, formalism::Repository> rule,
-                                           const analysis::DomainListList& parameter_domains,
+                                           uint_t num_objects,
                                            const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
                                            const formalism::Repository& parent) :
     rule(rule),
-    static_consistency_graph(rule.get_body(), parameter_domains, static_assignment_sets),
+    static_consistency_graph(rule.get_body(), num_objects, static_assignment_sets),
     consistency_graph(grounder::kpkc::allocate_dense_graph(static_consistency_graph)),
     kpkc_workspace(grounder::kpkc::allocate_workspace(static_consistency_graph)),
     local(std::make_shared<formalism::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
@@ -137,7 +137,10 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
 {
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
-        rule_execution_contexts.emplace_back(program.get_rules()[i], domains.rule_domains[i], facts_execution_context.assignment_sets.static_sets, *repository);
+        rule_execution_contexts.emplace_back(program.get_rules()[i],
+                                             program.get_objects().size(),
+                                             facts_execution_context.assignment_sets.static_sets,
+                                             *repository);
         rule_execution_contexts.back().initialize(facts_execution_context.assignment_sets);
     }
 }

@@ -27,86 +27,86 @@
 namespace tyr::grounder
 {
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 class PredicateFactSet
 {
 private:
-    const formalism::Repository& m_context;
+    const C& m_context;
     IndexList<formalism::GroundAtom<T>> m_indices;
 
     boost::dynamic_bitset<> m_bitset;
 
 public:
-    explicit PredicateFactSet(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> view);
+    explicit PredicateFactSet(View<IndexList<formalism::GroundAtom<T>>, C> view);
 
     void reset();
 
-    void insert(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view);
+    void insert(View<Index<formalism::GroundAtom<T>>, C> view);
 
-    void insert(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> view);
+    void insert(View<IndexList<formalism::GroundAtom<T>>, C> view);
 
     bool contains(Index<formalism::GroundAtom<T>> index) const noexcept;
 
-    bool contains(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view) const noexcept;
+    bool contains(View<Index<formalism::GroundAtom<T>>, C> view) const noexcept;
 
-    View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> get_facts() const noexcept;
+    View<IndexList<formalism::GroundAtom<T>>, C> get_facts() const noexcept;
 
     const boost::dynamic_bitset<>& get_bitset() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 class FunctionFactSet
 {
 private:
-    const formalism::Repository& m_context;
+    const C& m_context;
     IndexList<formalism::GroundFunctionTerm<T>> m_indices;
     UnorderedSet<Index<formalism::GroundFunctionTerm<T>>> m_unique;
 
     std::vector<float_t> m_values;
 
 public:
-    explicit FunctionFactSet(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);
+    explicit FunctionFactSet(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view);
 
     void reset();
 
-    void insert(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_term, float_t value);
+    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value);
 
-    void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_terms, const std::vector<float_t>& values);
+    void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, C> function_terms, const std::vector<float_t>& values);
 
-    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);
+    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> view);
 
-    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);
+    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view);
 
     bool contains(Index<formalism::GroundFunctionTerm<T>> index) const noexcept;
 
-    bool contains(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> view) const noexcept;
+    bool contains(View<Index<formalism::GroundFunctionTerm<T>>, C> view) const noexcept;
 
     float_t operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept;
 
-    View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository> get_fterms() const noexcept;
+    View<IndexList<formalism::GroundFunctionTerm<T>>, C> get_fterms() const noexcept;
     const std::vector<float_t>& get_values() const noexcept;
 };
 
-template<formalism::FactKind T>
+template<formalism::FactKind T, formalism::Context C>
 struct TaggedFactSets
 {
-    PredicateFactSet<T> predicate;
-    FunctionFactSet<T> function;
+    PredicateFactSet<T, C> predicate;
+    FunctionFactSet<T, C> function;
 
-    TaggedFactSets(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> atoms,
-                   View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> function_terms);
+    TaggedFactSets(View<IndexList<formalism::GroundAtom<T>>, C> atoms, View<IndexList<formalism::GroundFunctionTermValue<T>>, C> function_terms);
 
     void reset() noexcept;
 };
 
+template<formalism::Context C>
 struct FactSets
 {
-    TaggedFactSets<formalism::StaticTag> static_sets;
-    TaggedFactSets<formalism::FluentTag> fluent_sets;
+    TaggedFactSets<formalism::StaticTag, C> static_sets;
+    TaggedFactSets<formalism::FluentTag, C> fluent_sets;
 
-    explicit FactSets(View<Index<formalism::Program>, formalism::Repository> program);
+    explicit FactSets(View<Index<formalism::Program>, C> program);
 
-    FactSets(View<Index<formalism::Program>, formalism::Repository> program, TaggedFactSets<formalism::FluentTag> fluent_facts);
+    FactSets(View<Index<formalism::Program>, C> program, TaggedFactSets<formalism::FluentTag, C> fluent_facts);
 
     template<formalism::FactKind T>
     void reset() noexcept;
@@ -114,16 +114,16 @@ struct FactSets
     void reset() noexcept;
 
     template<formalism::FactKind T>
-    void insert(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> view);
+    void insert(View<IndexList<formalism::GroundAtom<T>>, C> view);
 
     template<formalism::FactKind T>
-    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);
+    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view);
 
     template<formalism::FactKind T>
-    const TaggedFactSets<T>& get() const;
+    const TaggedFactSets<T, C>& get() const;
 
     template<formalism::FactKind T>
-    TaggedFactSets<T>& get();
+    TaggedFactSets<T, C>& get();
 };
 }
 

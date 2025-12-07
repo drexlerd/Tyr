@@ -23,6 +23,7 @@
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment_sets.hpp"
+#include "tyr/grounder/declarations.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <optional>
@@ -34,24 +35,80 @@ namespace tyr::grounder
 {
 namespace details
 {
-class Vertex;
-class Edge;
+
+/**
+ * Forward declarations
+ */
+
+template<std::ranges::forward_range Range, formalism::FactKind T, formalism::Context C>
+ClosedInterval<float_t>
+compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const FunctionAssignmentSet<T, C>& sets, const Range& range) noexcept;
+
+template<formalism::FactKind T, formalism::Context C>
+ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, C> function_term,
+                                                         const Vertex<C>& element,
+                                                         const FunctionAssignmentSets<T, C>& function_assignment_sets) noexcept;
+
+template<formalism::FactKind T, formalism::Context C>
+ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, C> function_term,
+                                                         const Edge<C>& element,
+                                                         const FunctionAssignmentSets<T, C>& function_skeleton_assignment_sets) noexcept;
+
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(float_t element, const StructureType&, const AssignmentSets<C>&);
+
+template<typename StructureType, formalism::ArithmeticOpKind O, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
+                        const StructureType& graph_entity,
+                        const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::OpKind O, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
+                        const StructureType& graph_entity,
+                        const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::ArithmeticOpKind O, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression>>>, C> element,
+                        const StructureType& graph_entity,
+                        const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::FactKind T, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::FunctionTerm<T>>, C> element, const StructureType& graph_entity, const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(View<Data<formalism::FunctionExpression>, C> element, const StructureType& graph_entity, const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(View<Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>, C> element,
+                        const StructureType& graph_entity,
+                        const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> element,
+                        const StructureType& graph_entity,
+                        const AssignmentSets<C>& assignment_sets);
+
+template<typename StructureType, formalism::Context C>
+bool is_satisfiable(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> element,
+                    const StructureType& graph_entity,
+                    const AssignmentSets<C>& assignment_sets) noexcept;
 
 /**
  * VertexIndexIterator
  */
 
+template<formalism::Context C>
 class VertexAssignmentIterator
 {
 private:
-    const View<DataList<formalism::Term>, formalism::Repository>* m_terms;
-    const Vertex* m_vertex;
+    const View<DataList<formalism::Term>, C>* m_terms;
+    const Vertex<C>* m_vertex;
     uint_t m_pos;
 
     VertexAssignment m_assignment;
 
-    const View<DataList<formalism::Term>, formalism::Repository>& get_terms() const noexcept { return *m_terms; }
-    const Vertex& get_vertex() const noexcept { return *m_vertex; }
+    const View<DataList<formalism::Term>, C>& get_terms() const noexcept { return *m_terms; }
+    const Vertex<C>& get_vertex() const noexcept { return *m_vertex; }
 
     void advance() noexcept
     {
@@ -82,7 +139,7 @@ public:
     using iterator_category = std::forward_iterator_tag;
 
     VertexAssignmentIterator() : m_terms(nullptr), m_vertex(nullptr), m_pos(0), m_assignment() {}
-    VertexAssignmentIterator(const View<DataList<formalism::Term>, formalism::Repository>& terms, const Vertex& vertex, bool begin) noexcept :
+    VertexAssignmentIterator(const View<DataList<formalism::Term>, C>& terms, const Vertex& vertex, bool begin) noexcept :
         m_terms(&terms),
         m_vertex(&vertex),
         m_pos(begin ? 0 : std::numeric_limits<uint_t>::max()),
@@ -109,14 +166,15 @@ public:
     bool operator!=(const VertexAssignmentIterator& other) const noexcept { return !(*this == other); }
 };
 
+template<formalism::Context C>
 class VertexAssignmentRange
 {
 private:
-    View<DataList<formalism::Term>, formalism::Repository> m_terms;
-    const Vertex& m_vertex;
+    View<DataList<formalism::Term>, C> m_terms;
+    const Vertex<C>& m_vertex;
 
 public:
-    VertexAssignmentRange(View<DataList<formalism::Term>, formalism::Repository> terms, const Vertex& vertex) noexcept : m_terms(terms), m_vertex(vertex) {}
+    VertexAssignmentRange(View<DataList<formalism::Term>, C> terms, const Vertex<C>& vertex) noexcept : m_terms(terms), m_vertex(vertex) {}
 
     auto begin() const noexcept { return VertexAssignmentIterator(m_terms, m_vertex, true); }
 
@@ -128,17 +186,18 @@ public:
 ///
 /// It simultaneously iterates over vertices [x/o] and edges [x/o],[y/o'] with o < o'
 /// to avoid having iterating over literals or numeric constraints twice.
+template<formalism::Context C>
 class EdgeAssignmentIterator
 {
 private:
-    const View<DataList<formalism::Term>, formalism::Repository>* m_terms;
-    const Edge* m_edge;
+    const View<DataList<formalism::Term>, C>* m_terms;
+    const Edge<C>* m_edge;
     uint_t m_pos;
 
     EdgeAssignment m_assignment;
 
-    const View<DataList<formalism::Term>, formalism::Repository>& get_terms() const noexcept { return *m_terms; }
-    const Edge& get_edge() const noexcept { return *m_edge; }
+    const View<DataList<formalism::Term>, C>& get_terms() const noexcept { return *m_terms; }
+    const Edge<C>& get_edge() const noexcept { return *m_edge; }
 
     void advance() noexcept
     {
@@ -205,7 +264,7 @@ public:
     using iterator_category = std::forward_iterator_tag;
 
     EdgeAssignmentIterator() : m_terms(nullptr), m_edge(nullptr), m_pos(0), m_assignment() {}
-    EdgeAssignmentIterator(const View<DataList<formalism::Term>, formalism::Repository>& terms, const Edge& edge, bool begin) noexcept :
+    EdgeAssignmentIterator(const View<DataList<formalism::Term>, C>& terms, const Edge<C>& edge, bool begin) noexcept :
         m_terms(&terms),
         m_edge(&edge),
         m_pos(begin ? 0 : std::numeric_limits<uint_t>::max()),
@@ -232,39 +291,37 @@ public:
     bool operator!=(const EdgeAssignmentIterator& other) const noexcept { return !(*this == other); }
 };
 
+template<formalism::Context C>
 class EdgeAssignmentRange
 {
 private:
-    View<DataList<formalism::Term>, formalism::Repository> m_terms;
-    const Edge& m_edge;
+    View<DataList<formalism::Term>, C> m_terms;
+    const Edge<C>& m_edge;
 
 public:
-    EdgeAssignmentRange(View<DataList<formalism::Term>, formalism::Repository> terms, const Edge& edge) noexcept : m_terms(terms), m_edge(edge) {}
+    EdgeAssignmentRange(View<DataList<formalism::Term>, C> terms, const Edge<C>& edge) noexcept : m_terms(terms), m_edge(edge) {}
 
     auto begin() const noexcept { return EdgeAssignmentIterator(m_terms, m_edge, true); }
 
     auto end() const noexcept { return EdgeAssignmentIterator(m_terms, m_edge, false); }
 };
 
-template<typename StructureType>
-bool is_satisfiable(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                    const StructureType& graph_entity,
-                    const AssignmentSets& assignment_sets) noexcept;
-
 /**
  * Vertex
  */
 
-Vertex::Vertex(uint_t index, formalism::ParameterIndex parameter_index, Index<formalism::Object> object_index) noexcept :
+template<formalism::Context C>
+Vertex<C>::Vertex(uint_t index, formalism::ParameterIndex parameter_index, Index<formalism::Object> object_index) noexcept :
     m_index(index),
     m_parameter_index(parameter_index),
     m_object_index(object_index)
 {
 }
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-bool Vertex::consistent_literals(View<IndexList<formalism::Literal<T>>, formalism::Repository> literals,
-                                 const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+bool Vertex<C>::consistent_literals(View<IndexList<formalism::Literal<T>>, C> literals,
+                                    const PredicateAssignmentSets<T, C>& predicate_assignment_sets) const noexcept
 {
     for (const auto& literal : literals)
     {
@@ -308,14 +365,22 @@ bool Vertex::consistent_literals(View<IndexList<formalism::Literal<T>>, formalis
     return true;
 }
 
-template bool Vertex::consistent_literals(View<IndexList<formalism::Literal<formalism::StaticTag>>, formalism::Repository> literals,
-                                          const PredicateAssignmentSets<formalism::StaticTag>& predicate_assignment_sets) const noexcept;
-template bool Vertex::consistent_literals(View<IndexList<formalism::Literal<formalism::FluentTag>>, formalism::Repository> literals,
-                                          const PredicateAssignmentSets<formalism::FluentTag>& predicate_assignment_sets) const noexcept;
+template bool Vertex<formalism::Repository>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::StaticTag>>, formalism::Repository> literals,
+    const PredicateAssignmentSets<formalism::StaticTag, formalism::Repository>& predicate_assignment_sets) const noexcept;
+template bool Vertex<formalism::Repository>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::FluentTag>>, formalism::Repository> literals,
+    const PredicateAssignmentSets<formalism::FluentTag, formalism::Repository>& predicate_assignment_sets) const noexcept;
+template bool Vertex<formalism::OverlayRepository<formalism::Repository>>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::StaticTag>>, formalism::OverlayRepository<formalism::Repository>> literals,
+    const PredicateAssignmentSets<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>& predicate_assignment_sets) const noexcept;
+template bool Vertex<formalism::OverlayRepository<formalism::Repository>>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>> literals,
+    const PredicateAssignmentSets<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>& predicate_assignment_sets) const noexcept;
 
-bool Vertex::consistent_numeric_constraints(
-    View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> numeric_constraints,
-    const AssignmentSets& assignment_sets) const noexcept
+template<formalism::Context C>
+bool Vertex<C>::consistent_numeric_constraints(View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> numeric_constraints,
+                                               const AssignmentSets<C>& assignment_sets) const noexcept
 {
     for (const auto numeric_constraint : numeric_constraints)
     {
@@ -335,7 +400,15 @@ bool Vertex::consistent_numeric_constraints(
     return true;
 }
 
-Index<formalism::Object> Vertex::get_object_if_overlap(View<Data<formalism::Term>, formalism::Repository> term) const noexcept
+template bool Vertex<formalism::Repository>::consistent_numeric_constraints(
+    View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> numeric_constraints,
+    const AssignmentSets<formalism::Repository>& assignment_sets) const noexcept;
+template bool Vertex<formalism::OverlayRepository<formalism::Repository>>::consistent_numeric_constraints(
+    View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::OverlayRepository<formalism::Repository>> numeric_constraints,
+    const AssignmentSets<formalism::OverlayRepository<formalism::Repository>>& assignment_sets) const noexcept;
+
+template<formalism::Context C>
+Index<formalism::Object> Vertex<C>::get_object_if_overlap(View<Data<formalism::Term>, C> term) const noexcept
 {
     return visit(
         [&](auto&& arg)
@@ -349,7 +422,7 @@ Index<formalism::Object> Vertex::get_object_if_overlap(View<Data<formalism::Term
                 else
                     return Index<formalism::Object>::max();
             }
-            else if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, formalism::Repository>>)
+            else if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, C>>)
             {
                 return arg.get_index();
             }
@@ -361,19 +434,40 @@ Index<formalism::Object> Vertex::get_object_if_overlap(View<Data<formalism::Term
         term.get_variant());
 }
 
-uint_t Vertex::get_index() const noexcept { return m_index; }
-formalism::ParameterIndex Vertex::get_parameter_index() const noexcept { return m_parameter_index; }
-Index<formalism::Object> Vertex::get_object_index() const noexcept { return m_object_index; }
+template<formalism::Context C>
+uint_t Vertex<C>::get_index() const noexcept
+{
+    return m_index;
+}
+
+template<formalism::Context C>
+formalism::ParameterIndex Vertex<C>::get_parameter_index() const noexcept
+{
+    return m_parameter_index;
+}
+
+template<formalism::Context C>
+Index<formalism::Object> Vertex<C>::get_object_index() const noexcept
+{
+    return m_object_index;
+}
+
+template class Vertex<formalism::Repository>;
+template class Vertex<formalism::OverlayRepository<formalism::Repository>>;
 
 /**
  * Edge
  */
 
-Edge::Edge(Vertex src, Vertex dst) noexcept : m_src(std::move(src)), m_dst(std::move(dst)) {}
+template<formalism::Context C>
+Edge<C>::Edge(Vertex<C> src, Vertex<C> dst) noexcept : m_src(std::move(src)), m_dst(std::move(dst))
+{
+}
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-bool Edge::consistent_literals(View<IndexList<formalism::Literal<T>>, formalism::Repository> literals,
-                               const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+bool Edge<C>::consistent_literals(View<IndexList<formalism::Literal<T>>, C> literals,
+                                  const PredicateAssignmentSets<T, C>& predicate_assignment_sets) const noexcept
 {
     for (const auto& literal : literals)
     {
@@ -419,14 +513,22 @@ bool Edge::consistent_literals(View<IndexList<formalism::Literal<T>>, formalism:
     return true;
 }
 
-template bool Edge::consistent_literals(View<IndexList<formalism::Literal<formalism::StaticTag>>, formalism::Repository> literals,
-                                        const PredicateAssignmentSets<formalism::StaticTag>& predicate_assignment_sets) const noexcept;
-template bool Edge::consistent_literals(View<IndexList<formalism::Literal<formalism::FluentTag>>, formalism::Repository> literals,
-                                        const PredicateAssignmentSets<formalism::FluentTag>& predicate_assignment_sets) const noexcept;
+template bool Edge<formalism::Repository>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::StaticTag>>, formalism::Repository> literals,
+    const PredicateAssignmentSets<formalism::StaticTag, formalism::Repository>& predicate_assignment_sets) const noexcept;
+template bool Edge<formalism::Repository>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::FluentTag>>, formalism::Repository> literals,
+    const PredicateAssignmentSets<formalism::FluentTag, formalism::Repository>& predicate_assignment_sets) const noexcept;
+template bool Edge<formalism::OverlayRepository<formalism::Repository>>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::StaticTag>>, formalism::OverlayRepository<formalism::Repository>> literals,
+    const PredicateAssignmentSets<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>& predicate_assignment_sets) const noexcept;
+template bool Edge<formalism::OverlayRepository<formalism::Repository>>::consistent_literals(
+    View<IndexList<formalism::Literal<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>> literals,
+    const PredicateAssignmentSets<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>& predicate_assignment_sets) const noexcept;
 
-bool Edge::consistent_numeric_constraints(
-    View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> numeric_constraints,
-    const AssignmentSets& assignment_sets) const noexcept
+template<formalism::Context C>
+bool Edge<C>::consistent_numeric_constraints(View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> numeric_constraints,
+                                             const AssignmentSets<C>& assignment_sets) const noexcept
 {
     for (const auto numeric_constraint : numeric_constraints)
     {
@@ -446,7 +548,15 @@ bool Edge::consistent_numeric_constraints(
     return true;
 }
 
-Index<formalism::Object> Edge::get_object_if_overlap(View<Data<formalism::Term>, formalism::Repository> term) const noexcept
+template bool Edge<formalism::Repository>::consistent_numeric_constraints(
+    View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> numeric_constraints,
+    const AssignmentSets<formalism::Repository>& assignment_sets) const noexcept;
+template bool Edge<formalism::OverlayRepository<formalism::Repository>>::consistent_numeric_constraints(
+    View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::OverlayRepository<formalism::Repository>> numeric_constraints,
+    const AssignmentSets<formalism::OverlayRepository<formalism::Repository>>& assignment_sets) const noexcept;
+
+template<formalism::Context C>
+Index<formalism::Object> Edge<C>::get_object_if_overlap(View<Data<formalism::Term>, C> term) const noexcept
 {
     return visit(
         [&](auto&& arg)
@@ -462,7 +572,7 @@ Index<formalism::Object> Edge::get_object_if_overlap(View<Data<formalism::Term>,
                 else
                     return Index<formalism::Object>::max();
             }
-            else if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, formalism::Repository>>)
+            else if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, C>>)
             {
                 return arg.get_index();
             }
@@ -474,36 +584,49 @@ Index<formalism::Object> Edge::get_object_if_overlap(View<Data<formalism::Term>,
         term.get_variant());
 }
 
-const Vertex& Edge::get_src() const noexcept { return m_src; }
-const Vertex& Edge::get_dst() const noexcept { return m_dst; }
+template Index<formalism::Object> Edge<formalism::Repository>::get_object_if_overlap(View<Data<formalism::Term>, formalism::Repository> term) const noexcept;
+template Index<formalism::Object> Edge<formalism::OverlayRepository<formalism::Repository>>::get_object_if_overlap(
+    View<Data<formalism::Term>, formalism::OverlayRepository<formalism::Repository>> term) const noexcept;
 
-using Vertices = std::vector<Vertex>;
+template<formalism::Context C>
+const Vertex<C>& Edge<C>::get_src() const noexcept
+{
+    return m_src;
+}
+
+template<formalism::Context C>
+const Vertex<C>& Edge<C>::get_dst() const noexcept
+{
+    return m_dst;
+}
+
+template class Edge<formalism::Repository>;
+template class Edge<formalism::OverlayRepository<formalism::Repository>>;
 }
 
 /**
  * StaticConsistencyGraph
  */
 
-std::pair<details::Vertices, std::vector<std::vector<uint_t>>>
-StaticConsistencyGraph::compute_vertices(View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
-                                         const analysis::DomainListList& parameter_domains,
-                                         const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets)
+template<formalism::Context C>
+std::pair<details::Vertices<C>, std::vector<std::vector<uint_t>>>
+StaticConsistencyGraph<C>::compute_vertices(View<Index<formalism::ConjunctiveCondition>, C> condition,
+                                            uint_t num_objects,
+                                            const TaggedAssignmentSets<formalism::StaticTag, C>& static_assignment_sets)
 {
-    auto vertices = details::Vertices {};
+    auto vertices = details::Vertices<C> {};
 
     auto partitions = std::vector<std::vector<uint_t>> {};
 
     for (uint_t parameter_index = 0; parameter_index < condition.get_arity(); ++parameter_index)
     {
-        auto& parameter_domain = parameter_domains[parameter_index];
-
         auto partition = std::vector<uint_t> {};
 
-        for (const auto object_index : parameter_domain)
+        for (uint_t object_index = 0; object_index < num_objects; ++object_index)
         {
             const auto vertex_index = static_cast<uint_t>(vertices.size());
 
-            auto vertex = details::Vertex(vertex_index, formalism::ParameterIndex(parameter_index), object_index);
+            auto vertex = details::Vertex<C>(vertex_index, formalism::ParameterIndex(parameter_index), Index<formalism::Object>(object_index));
 
             assert(vertex.get_index() == vertex_index);
 
@@ -520,11 +643,12 @@ StaticConsistencyGraph::compute_vertices(View<Index<formalism::ConjunctiveCondit
     return { std::move(vertices), std::move(partitions) };
 }
 
+template<formalism::Context C>
 std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>>
-StaticConsistencyGraph::compute_edges(View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
-                                      const analysis::DomainListList& parameter_domains,
-                                      const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
-                                      const details::Vertices& vertices)
+StaticConsistencyGraph<C>::compute_edges(View<Index<formalism::ConjunctiveCondition>, C> condition,
+                                         uint_t num_objects,
+                                         const TaggedAssignmentSets<formalism::StaticTag, C>& static_assignment_sets,
+                                         const details::Vertices<C>& vertices)
 {
     auto sources = std::vector<uint_t> {};
 
@@ -544,7 +668,7 @@ StaticConsistencyGraph::compute_edges(View<Index<formalism::ConjunctiveCondition
             assert(first_vertex.get_index() == first_vertex_index);
             assert(second_vertex.get_index() == second_vertex_index);
 
-            auto edge = details::Edge(first_vertex, second_vertex);
+            auto edge = details::Edge<C>(first_vertex, second_vertex);
 
             // Part 1 of definition of substitution consistency graph (Stahlberg-ecai2023): exclude I^\neq
             if (first_vertex.get_parameter_index() != second_vertex.get_parameter_index()
@@ -564,143 +688,131 @@ StaticConsistencyGraph::compute_edges(View<Index<formalism::ConjunctiveCondition
     return { std::move(sources), std::move(target_offsets), std::move(targets) };
 }
 
-StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
-                                               const analysis::DomainListList& parameter_domains,
-                                               const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets) :
-    m_condition(condition)
+template<formalism::Context C>
+StaticConsistencyGraph<C>::StaticConsistencyGraph(View<Index<formalism::ConjunctiveCondition>, C> condition,
+                                                  uint_t num_objects,
+                                                  const TaggedAssignmentSets<formalism::StaticTag, C>& static_assignment_sets) :
+    m_condition(condition),
+    m_num_objects(num_objects)
 {
-    auto [vertices_, partitions_] = compute_vertices(condition, parameter_domains, static_assignment_sets);
+    auto [vertices_, partitions_] = compute_vertices(condition, num_objects, static_assignment_sets);
     m_vertices = std::move(vertices_);
     m_partitions = std::move(partitions_);
 
-    auto [sources_, target_offsets_, targets_] = compute_edges(condition, parameter_domains, static_assignment_sets, m_vertices);
+    auto [sources_, target_offsets_, targets_] = compute_edges(condition, num_objects, static_assignment_sets, m_vertices);
 
     m_sources = std::move(sources_);
     m_target_offsets = std::move(target_offsets_);
     m_targets = std::move(targets_);
 }
 
-const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const noexcept { return m_vertices[index]; }
+template<formalism::Context C>
+const details::Vertex<C>& StaticConsistencyGraph<C>::get_vertex(uint_t index) const noexcept
+{
+    return m_vertices[index];
+}
 
-size_t StaticConsistencyGraph::get_num_vertices() const noexcept { return m_vertices.size(); }
-size_t StaticConsistencyGraph::get_num_edges() const noexcept { return m_targets.size(); }
+template<formalism::Context C>
+size_t StaticConsistencyGraph<C>::get_num_vertices() const noexcept
+{
+    return m_vertices.size();
+}
 
-View<Index<formalism::ConjunctiveCondition>, formalism::Repository> StaticConsistencyGraph::get_condition() const noexcept { return m_condition; }
+template<formalism::Context C>
+size_t StaticConsistencyGraph<C>::get_num_edges() const noexcept
+{
+    return m_targets.size();
+}
 
-const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_partitions() const noexcept { return m_partitions; }
+template<formalism::Context C>
+View<Index<formalism::ConjunctiveCondition>, C> StaticConsistencyGraph<C>::get_condition() const noexcept
+{
+    return m_condition;
+}
 
-const StaticConsistencyGraph& StaticConsistencyGraph::EdgeIterator::get_graph() const noexcept
+template<formalism::Context C>
+uint_t StaticConsistencyGraph<C>::get_num_objects() const noexcept
+{
+    return m_num_objects;
+}
+
+template<formalism::Context C>
+const std::vector<std::vector<uint_t>>& StaticConsistencyGraph<C>::get_partitions() const noexcept
+{
+    return m_partitions;
+}
+
+template<formalism::Context C>
+const StaticConsistencyGraph<C>& StaticConsistencyGraph<C>::EdgeIterator::get_graph() const noexcept
 {
     assert(m_graph);
     return *m_graph;
 }
 
-void StaticConsistencyGraph::EdgeIterator::advance() noexcept
+template<formalism::Context C>
+void StaticConsistencyGraph<C>::EdgeIterator::advance() noexcept
 {
     if (++m_targets_pos >= get_graph().m_target_offsets[m_sources_pos])
         ++m_sources_pos;
 }
 
-StaticConsistencyGraph::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_sources_pos(0), m_targets_pos(0) {}
-StaticConsistencyGraph::EdgeIterator::EdgeIterator(const StaticConsistencyGraph& graph, bool begin) noexcept :
+template<formalism::Context C>
+StaticConsistencyGraph<C>::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_sources_pos(0), m_targets_pos(0)
+{
+}
+
+template<formalism::Context C>
+StaticConsistencyGraph<C>::EdgeIterator::EdgeIterator(const StaticConsistencyGraph<C>& graph, bool begin) noexcept :
     m_graph(&graph),
     m_sources_pos(begin ? 0 : graph.m_sources.size()),
     m_targets_pos(begin ? 0 : graph.m_targets.size())
 {
 }
-StaticConsistencyGraph::EdgeIterator::value_type StaticConsistencyGraph::EdgeIterator::operator*() const noexcept
+
+template<formalism::Context C>
+StaticConsistencyGraph<C>::EdgeIterator::value_type StaticConsistencyGraph<C>::EdgeIterator::operator*() const noexcept
 {
     assert(m_sources_pos < get_graph().m_sources.size());
     assert(m_targets_pos < get_graph().m_targets.size());
     return details::Edge(get_graph().m_vertices[get_graph().m_sources[m_sources_pos]], get_graph().m_vertices[get_graph().m_targets[m_targets_pos]]);
 }
-StaticConsistencyGraph::EdgeIterator& StaticConsistencyGraph::EdgeIterator::operator++() noexcept
+
+template<formalism::Context C>
+StaticConsistencyGraph<C>::EdgeIterator& StaticConsistencyGraph<C>::EdgeIterator::operator++() noexcept
 {
     advance();
     return *this;
 }
-StaticConsistencyGraph::EdgeIterator StaticConsistencyGraph::EdgeIterator::operator++(int) noexcept
+
+template<formalism::Context C>
+StaticConsistencyGraph<C>::EdgeIterator StaticConsistencyGraph<C>::EdgeIterator::operator++(int) noexcept
 {
     EdgeIterator tmp = *this;
     ++(*this);
     return tmp;
 }
-bool StaticConsistencyGraph::EdgeIterator::operator==(const StaticConsistencyGraph::EdgeIterator& other) const noexcept
+
+template<formalism::Context C>
+bool StaticConsistencyGraph<C>::EdgeIterator::operator==(const StaticConsistencyGraph<C>::EdgeIterator& other) const noexcept
 {
     return m_targets_pos == other.m_targets_pos && m_sources_pos == other.m_sources_pos;
 }
-bool StaticConsistencyGraph::EdgeIterator::operator!=(const StaticConsistencyGraph::EdgeIterator& other) const noexcept { return !(*this == other); }
+
+template<formalism::Context C>
+bool StaticConsistencyGraph<C>::EdgeIterator::operator!=(const StaticConsistencyGraph<C>::EdgeIterator& other) const noexcept
+{
+    return !(*this == other);
+}
+
+template class StaticConsistencyGraph<formalism::Repository>;
+template class StaticConsistencyGraph<formalism::OverlayRepository<formalism::Repository>>;
 
 namespace details
 {
-/**
- * Forward declarations
- */
 
-template<std::ranges::forward_range Range, formalism::FactKind T>
+template<std::ranges::forward_range Range, formalism::FactKind T, formalism::Context C>
 ClosedInterval<float_t>
-compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const FunctionAssignmentSet<T>& sets, const Range& range) noexcept;
-
-template<formalism::FactKind T>
-ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> function_term,
-                                                         const Vertex& element,
-                                                         const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
-
-template<formalism::FactKind T>
-ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> function_term,
-                                                         const Edge& element,
-                                                         const FunctionAssignmentSets<T>& function_skeleton_assignment_sets) noexcept;
-
-template<typename StructureType>
-auto evaluate_partially(float_t element, const StructureType&, const AssignmentSets&);
-
-template<typename StructureType, formalism::ArithmeticOpKind O>
-auto evaluate_partially(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType, formalism::OpKind O>
-auto evaluate_partially(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType, formalism::ArithmeticOpKind O>
-auto evaluate_partially(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType, formalism::FactKind T>
-auto evaluate_partially(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType>
-auto evaluate_partially(View<Data<formalism::FunctionExpression>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType>
-auto evaluate_partially(View<Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType>
-auto evaluate_partially(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets);
-
-template<typename StructureType>
-bool is_satisfiable(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
-                    const StructureType& graph_entity,
-                    const AssignmentSets& assignment_sets) noexcept;
-
-/**
- * Implementations
- */
-
-template<std::ranges::forward_range Range, formalism::FactKind T>
-ClosedInterval<float_t>
-compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const FunctionAssignmentSet<T>& sets, const Range& range) noexcept
+compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const FunctionAssignmentSet<T, C>& sets, const Range& range) noexcept
 {
     if (empty(bounds))
         return bounds;
@@ -716,10 +828,10 @@ compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const Fu
     return bounds;
 }
 
-template<formalism::FactKind T>
-ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> function_term,
-                                                         const Vertex& element,
-                                                         const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
+template<formalism::FactKind T, formalism::Context C>
+ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, C> function_term,
+                                                         const Vertex<C>& element,
+                                                         const FunctionAssignmentSets<T, C>& function_assignment_sets) noexcept
 {
     const auto& function_assignment_set = function_assignment_sets.get_set(function_term.get_function().get_index());
 
@@ -730,10 +842,10 @@ ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::F
     return compute_tightest_closed_interval_helper(bounds, function_assignment_set, VertexAssignmentRange(terms, element));
 }
 
-template<formalism::FactKind T>
-ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> function_term,
-                                                         const Edge& element,
-                                                         const FunctionAssignmentSets<T>& function_skeleton_assignment_sets) noexcept
+template<formalism::FactKind T, formalism::Context C>
+ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::FunctionTerm<T>>, C> function_term,
+                                                         const Edge<C>& element,
+                                                         const FunctionAssignmentSets<T, C>& function_skeleton_assignment_sets) noexcept
 {
     const auto& function_skeleton_assignment_set = function_skeleton_assignment_sets.get_set(function_term.get_function().get_index());
 
@@ -748,34 +860,34 @@ ClosedInterval<float_t> compute_tightest_closed_interval(View<Index<formalism::F
     return bounds;
 }
 
-template<typename StructureType>
-auto evaluate_partially(float_t element, const StructureType&, const AssignmentSets&)
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(float_t element, const StructureType&, const AssignmentSets<C>&)
 {
     return ClosedInterval<float_t>(element, element);
 }
 
-template<typename StructureType, formalism::ArithmeticOpKind O>
-auto evaluate_partially(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, formalism::Repository> element,
+template<typename StructureType, formalism::ArithmeticOpKind O, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
                         const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+                        const AssignmentSets<C>& assignment_sets)
 {
     return formalism::apply(O {}, evaluate_partially(element.get_arg(), graph_entity, assignment_sets));
 }
 
-template<typename StructureType, formalism::OpKind O>
-auto evaluate_partially(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpression>>>, formalism::Repository> element,
+template<typename StructureType, formalism::OpKind O, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
                         const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+                        const AssignmentSets<C>& assignment_sets)
 {
     return formalism::apply(O {},
                             evaluate_partially(element.get_lhs(), graph_entity, assignment_sets),
                             evaluate_partially(element.get_rhs(), graph_entity, assignment_sets));
 }
 
-template<typename StructureType, formalism::ArithmeticOpKind O>
-auto evaluate_partially(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression>>>, formalism::Repository> element,
+template<typename StructureType, formalism::ArithmeticOpKind O, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression>>>, C> element,
                         const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+                        const AssignmentSets<C>& assignment_sets)
 {
     const auto child_fexprs = element.get_args();
 
@@ -786,42 +898,38 @@ auto evaluate_partially(View<Index<formalism::MultiOperator<O, Data<formalism::F
                            { return formalism::apply(O {}, value, evaluate_partially(child_expr, graph_entity, assignment_sets)); });
 }
 
-template<typename StructureType, formalism::FactKind T>
-auto evaluate_partially(View<Index<formalism::FunctionTerm<T>>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+template<typename StructureType, formalism::FactKind T, formalism::Context C>
+auto evaluate_partially(View<Index<formalism::FunctionTerm<T>>, C> element, const StructureType& graph_entity, const AssignmentSets<C>& assignment_sets)
 {
     return compute_tightest_closed_interval(element, graph_entity, assignment_sets.template get<T>().function);
 }
 
-template<typename StructureType>
-auto evaluate_partially(View<Data<formalism::FunctionExpression>, formalism::Repository> element,
-                        const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(View<Data<formalism::FunctionExpression>, C> element, const StructureType& graph_entity, const AssignmentSets<C>& assignment_sets)
 {
     return visit([&](auto&& arg) { return evaluate_partially(arg, graph_entity, assignment_sets); }, element.get_variant());
 }
 
-template<typename StructureType>
-auto evaluate_partially(View<Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(View<Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>, C> element,
                         const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+                        const AssignmentSets<C>& assignment_sets)
 {
     return visit([&](auto&& arg) { return evaluate_partially(arg, graph_entity, assignment_sets); }, element.get_variant());
 }
 
-template<typename StructureType>
-auto evaluate_partially(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
+template<typename StructureType, formalism::Context C>
+auto evaluate_partially(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> element,
                         const StructureType& graph_entity,
-                        const AssignmentSets& assignment_sets)
+                        const AssignmentSets<C>& assignment_sets)
 {
     return visit([&](auto&& arg) { return evaluate_partially(arg, graph_entity, assignment_sets); }, element.get_variant());
 }
 
-template<typename StructureType>
-bool is_satisfiable(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> element,
+template<typename StructureType, formalism::Context C>
+bool is_satisfiable(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> element,
                     const StructureType& graph_entity,
-                    const AssignmentSets& assignment_sets) noexcept
+                    const AssignmentSets<C>& assignment_sets) noexcept
 {
     return visit(
         [&](auto&& arg) -> bool

@@ -29,21 +29,21 @@ namespace tyr::grounder
  * PredicateFactSet
  */
 
-template<formalism::FactKind T>
-PredicateFactSet<T>::PredicateFactSet(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> view) : m_context(view.get_context()), m_indices()
+template<formalism::FactKind T, formalism::Context C>
+PredicateFactSet<T, C>::PredicateFactSet(View<IndexList<formalism::GroundAtom<T>>, C> view) : m_context(view.get_context()), m_indices()
 {
     insert(view);
 }
 
-template<formalism::FactKind T>
-void PredicateFactSet<T>::reset()
+template<formalism::FactKind T, formalism::Context C>
+void PredicateFactSet<T, C>::reset()
 {
     m_indices.clear();
     m_bitset.reset();
 }
 
-template<formalism::FactKind T>
-void PredicateFactSet<T>::insert(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view)
+template<formalism::FactKind T, formalism::Context C>
+void PredicateFactSet<T, C>::insert(View<Index<formalism::GroundAtom<T>>, C> view)
 {
     if (&m_context != &view.get_context())
         throw std::runtime_error("Incompatible contexts.");
@@ -59,65 +59,64 @@ void PredicateFactSet<T>::insert(View<Index<formalism::GroundAtom<T>>, formalism
     m_bitset.set(index.get_value());
 }
 
-template<formalism::FactKind T>
-void PredicateFactSet<T>::insert(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> view)
+template<formalism::FactKind T, formalism::Context C>
+void PredicateFactSet<T, C>::insert(View<IndexList<formalism::GroundAtom<T>>, C> view)
 {
     for (const auto atom : view)
         insert(atom);
 }
 
-template<formalism::FactKind T>
-bool PredicateFactSet<T>::contains(Index<formalism::GroundAtom<T>> index) const noexcept
+template<formalism::FactKind T, formalism::Context C>
+bool PredicateFactSet<T, C>::contains(Index<formalism::GroundAtom<T>> index) const noexcept
 {
     if (index.get_value() >= m_bitset.size())
         return false;
     return m_bitset.test(index.get_value());
 }
 
-template<formalism::FactKind T>
-bool PredicateFactSet<T>::contains(View<Index<formalism::GroundAtom<T>>, formalism::Repository> view) const noexcept
+template<formalism::FactKind T, formalism::Context C>
+bool PredicateFactSet<T, C>::contains(View<Index<formalism::GroundAtom<T>>, C> view) const noexcept
 {
     return contains(view.get_index());
 }
 
-template<formalism::FactKind T>
-View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> PredicateFactSet<T>::get_facts() const noexcept
+template<formalism::FactKind T, formalism::Context C>
+View<IndexList<formalism::GroundAtom<T>>, C> PredicateFactSet<T, C>::get_facts() const noexcept
 {
-    return View<IndexList<formalism::GroundAtom<T>>, formalism::Repository>(m_indices, m_context);
+    return View<IndexList<formalism::GroundAtom<T>>, C>(m_indices, m_context);
 }
 
-template<formalism::FactKind T>
-const boost::dynamic_bitset<>& PredicateFactSet<T>::get_bitset() const noexcept
+template<formalism::FactKind T, formalism::Context C>
+const boost::dynamic_bitset<>& PredicateFactSet<T, C>::get_bitset() const noexcept
 {
     return m_bitset;
 }
 
-template class PredicateFactSet<formalism::StaticTag>;
-template class PredicateFactSet<formalism::FluentTag>;
+template class PredicateFactSet<formalism::StaticTag, formalism::Repository>;
+template class PredicateFactSet<formalism::FluentTag, formalism::Repository>;
+template class PredicateFactSet<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>;
+template class PredicateFactSet<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>;
 
 /**
  * FunctionFactSet
  */
 
-template<formalism::FactKind T>
-FunctionFactSet<T>::FunctionFactSet(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view) :
-    m_context(view.get_context()),
-    m_indices(),
-    m_unique()
+template<formalism::FactKind T, formalism::Context C>
+FunctionFactSet<T, C>::FunctionFactSet(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view) : m_context(view.get_context()), m_indices(), m_unique()
 {
     insert(view);
 }
 
-template<formalism::FactKind T>
-void FunctionFactSet<T>::reset()
+template<formalism::FactKind T, formalism::Context C>
+void FunctionFactSet<T, C>::reset()
 {
     m_indices.clear();
     m_unique.clear();
     std::fill(m_values.begin(), m_values.end(), std::numeric_limits<float_t>::quiet_NaN());
 }
 
-template<formalism::FactKind T>
-void FunctionFactSet<T>::insert(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_term, float_t value)
+template<formalism::FactKind T, formalism::Context C>
+void FunctionFactSet<T, C>::insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value)
 {
     const auto fterm_index = function_term.get_index();
 
@@ -131,8 +130,8 @@ void FunctionFactSet<T>::insert(View<Index<formalism::GroundFunctionTerm<T>>, fo
     m_values[fterm_index.get_value()] = value;
 }
 
-template<formalism::FactKind T>
-void FunctionFactSet<T>::insert(View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository> function_terms, const std::vector<float_t>& values)
+template<formalism::FactKind T, formalism::Context C>
+void FunctionFactSet<T, C>::insert(View<IndexList<formalism::GroundFunctionTerm<T>>, C> function_terms, const std::vector<float_t>& values)
 {
     assert(function_terms.size() == values.size());
 
@@ -140,125 +139,146 @@ void FunctionFactSet<T>::insert(View<IndexList<formalism::GroundFunctionTerm<T>>
         insert(function_terms[i], values[i]);
 }
 
-template<formalism::FactKind T>
-void FunctionFactSet<T>::insert(View<Index<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view)
+template<formalism::FactKind T, formalism::Context C>
+void FunctionFactSet<T, C>::insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> view)
 {
     insert(view.get_fterm(), view.get_value());
 }
 
-template<formalism::FactKind T>
-void FunctionFactSet<T>::insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view)
+template<formalism::FactKind T, formalism::Context C>
+void FunctionFactSet<T, C>::insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view)
 {
     for (const auto fterm_value : view)
         insert(fterm_value);
 }
 
-template<formalism::FactKind T>
-bool FunctionFactSet<T>::contains(Index<formalism::GroundFunctionTerm<T>> index) const noexcept
+template<formalism::FactKind T, formalism::Context C>
+bool FunctionFactSet<T, C>::contains(Index<formalism::GroundFunctionTerm<T>> index) const noexcept
 {
     return m_unique.contains(index);
 }
 
-template<formalism::FactKind T>
-bool FunctionFactSet<T>::contains(View<Index<formalism::GroundFunctionTerm<T>>, formalism::Repository> view) const noexcept
+template<formalism::FactKind T, formalism::Context C>
+bool FunctionFactSet<T, C>::contains(View<Index<formalism::GroundFunctionTerm<T>>, C> view) const noexcept
 {
     return contains(view.get_index());
 }
 
-template<formalism::FactKind T>
-float_t FunctionFactSet<T>::operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept
+template<formalism::FactKind T, formalism::Context C>
+float_t FunctionFactSet<T, C>::operator[](Index<formalism::GroundFunctionTerm<T>> index) const noexcept
 {
     return m_values[index.get_value()];
 }
 
-template<formalism::FactKind T>
-View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository> FunctionFactSet<T>::get_fterms() const noexcept
+template<formalism::FactKind T, formalism::Context C>
+View<IndexList<formalism::GroundFunctionTerm<T>>, C> FunctionFactSet<T, C>::get_fterms() const noexcept
 {
-    return View<IndexList<formalism::GroundFunctionTerm<T>>, formalism::Repository>(m_indices, m_context);
+    return View<IndexList<formalism::GroundFunctionTerm<T>>, C>(m_indices, m_context);
 }
 
-template<formalism::FactKind T>
-const std::vector<float_t>& FunctionFactSet<T>::get_values() const noexcept
+template<formalism::FactKind T, formalism::Context C>
+const std::vector<float_t>& FunctionFactSet<T, C>::get_values() const noexcept
 {
     return m_values;
 }
 
-template class FunctionFactSet<formalism::StaticTag>;
-template class FunctionFactSet<formalism::FluentTag>;
+template class FunctionFactSet<formalism::StaticTag, formalism::Repository>;
+template class FunctionFactSet<formalism::FluentTag, formalism::Repository>;
+template class FunctionFactSet<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>;
+template class FunctionFactSet<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>;
 
 /**
  * TaggedFactSets
  */
 
-template<formalism::FactKind T>
-TaggedFactSets<T>::TaggedFactSets(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> atoms,
-                                  View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> function_terms) :
+template<formalism::FactKind T, formalism::Context C>
+TaggedFactSets<T, C>::TaggedFactSets(View<IndexList<formalism::GroundAtom<T>>, C> atoms,
+                                     View<IndexList<formalism::GroundFunctionTermValue<T>>, C> function_terms) :
     predicate(atoms),
     function(function_terms)
 {
 }
 
-template<formalism::FactKind T>
-void TaggedFactSets<T>::reset() noexcept
+template<formalism::FactKind T, formalism::Context C>
+void TaggedFactSets<T, C>::reset() noexcept
 {
     predicate.reset();
     function.reset();
 }
 
-template class TaggedFactSets<formalism::StaticTag>;
-template class TaggedFactSets<formalism::FluentTag>;
+template class TaggedFactSets<formalism::StaticTag, formalism::Repository>;
+template class TaggedFactSets<formalism::FluentTag, formalism::Repository>;
+template class TaggedFactSets<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>;
+template class TaggedFactSets<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>;
 
 /**
  * FactSets
  */
 
-FactSets::FactSets(View<Index<formalism::Program>, formalism::Repository> program) :
+template<formalism::Context C>
+FactSets<C>::FactSets(View<Index<formalism::Program>, C> program) :
     static_sets(program.template get_atoms<formalism::StaticTag>(), program.template get_fterm_values<formalism::StaticTag>()),
     fluent_sets(program.template get_atoms<formalism::FluentTag>(), program.template get_fterm_values<formalism::FluentTag>())
 {
 }
 
-FactSets::FactSets(View<Index<formalism::Program>, formalism::Repository> program, TaggedFactSets<formalism::FluentTag> fluent_facts) :
+template<formalism::Context C>
+FactSets<C>::FactSets(View<Index<formalism::Program>, C> program, TaggedFactSets<formalism::FluentTag, C> fluent_facts) :
     static_sets(program.template get_atoms<formalism::StaticTag>(), program.template get_fterm_values<formalism::StaticTag>()),
     fluent_sets(std::move(fluent_facts))
 {
 }
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-void FactSets::reset() noexcept
+void FactSets<C>::reset() noexcept
 {
     get<T>().template reset();
 }
 
-template void FactSets::reset<formalism::StaticTag>() noexcept;
-template void FactSets::reset<formalism::FluentTag>() noexcept;
+template void FactSets<formalism::Repository>::reset<formalism::StaticTag>() noexcept;
+template void FactSets<formalism::Repository>::reset<formalism::FluentTag>() noexcept;
+template void FactSets<formalism::OverlayRepository<formalism::Repository>>::reset<formalism::StaticTag>() noexcept;
+template void FactSets<formalism::OverlayRepository<formalism::Repository>>::reset<formalism::FluentTag>() noexcept;
 
-void FactSets::reset() noexcept
+template<formalism::Context C>
+void FactSets<C>::reset() noexcept
 {
     reset<formalism::StaticTag>();
     reset<formalism::FluentTag>();
 }
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-void FactSets::insert(View<IndexList<formalism::GroundAtom<T>>, formalism::Repository> view)
+void FactSets<C>::insert(View<IndexList<formalism::GroundAtom<T>>, C> view)
 {
     get<T>().predicate.insert(view);
 }
 
-template void FactSets::insert<formalism::StaticTag>(View<IndexList<formalism::GroundAtom<formalism::StaticTag>>, formalism::Repository> view);
-template void FactSets::insert<formalism::FluentTag>(View<IndexList<formalism::GroundAtom<formalism::FluentTag>>, formalism::Repository> view);
+template void FactSets<formalism::Repository>::insert(View<IndexList<formalism::GroundAtom<formalism::StaticTag>>, formalism::Repository> view);
+template void FactSets<formalism::Repository>::insert(View<IndexList<formalism::GroundAtom<formalism::FluentTag>>, formalism::Repository> view);
+template void FactSets<formalism::OverlayRepository<formalism::Repository>>::insert(
+    View<IndexList<formalism::GroundAtom<formalism::StaticTag>>, formalism::OverlayRepository<formalism::Repository>> view);
+template void FactSets<formalism::OverlayRepository<formalism::Repository>>::insert(
+    View<IndexList<formalism::GroundAtom<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>> view);
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-void FactSets::insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view)
+void FactSets<C>::insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> view)
 {
     get<T>().function.insert(view);
 }
 
-template void FactSets::insert<formalism::StaticTag>(View<IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>>, formalism::Repository> view);
-template void FactSets::insert<formalism::FluentTag>(View<IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>>, formalism::Repository> view);
+template void FactSets<formalism::Repository>::insert(View<IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>>, formalism::Repository> view);
+template void FactSets<formalism::Repository>::insert(View<IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>>, formalism::Repository> view);
+template void FactSets<formalism::OverlayRepository<formalism::Repository>>::insert(
+    View<IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>>, formalism::OverlayRepository<formalism::Repository>> view);
+template void FactSets<formalism::OverlayRepository<formalism::Repository>>::insert(
+    View<IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>> view);
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-const TaggedFactSets<T>& FactSets::get() const
+const TaggedFactSets<T, C>& FactSets<C>::get() const
 {
     if constexpr (std::is_same_v<T, formalism::StaticTag>)
         return static_sets;
@@ -268,11 +288,16 @@ const TaggedFactSets<T>& FactSets::get() const
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
-template const TaggedFactSets<formalism::StaticTag>& FactSets::get<formalism::StaticTag>() const;
-template const TaggedFactSets<formalism::FluentTag>& FactSets::get<formalism::FluentTag>() const;
+template const TaggedFactSets<formalism::StaticTag, formalism::Repository>& FactSets<formalism::Repository>::get<formalism::StaticTag>() const;
+template const TaggedFactSets<formalism::FluentTag, formalism::Repository>& FactSets<formalism::Repository>::get<formalism::FluentTag>() const;
+template const TaggedFactSets<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>&
+FactSets<formalism::OverlayRepository<formalism::Repository>>::get<formalism::StaticTag>() const;
+template const TaggedFactSets<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>&
+FactSets<formalism::OverlayRepository<formalism::Repository>>::get<formalism::FluentTag>() const;
 
+template<formalism::Context C>
 template<formalism::FactKind T>
-TaggedFactSets<T>& FactSets::get()
+TaggedFactSets<T, C>& FactSets<C>::get()
 {
     if constexpr (std::is_same_v<T, formalism::StaticTag>)
         return static_sets;
@@ -282,7 +307,11 @@ TaggedFactSets<T>& FactSets::get()
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
-template TaggedFactSets<formalism::StaticTag>& FactSets::get<formalism::StaticTag>();
-template TaggedFactSets<formalism::FluentTag>& FactSets::get<formalism::FluentTag>();
+template TaggedFactSets<formalism::StaticTag, formalism::Repository>& FactSets<formalism::Repository>::get<formalism::StaticTag>();
+template TaggedFactSets<formalism::FluentTag, formalism::Repository>& FactSets<formalism::Repository>::get<formalism::FluentTag>();
+template TaggedFactSets<formalism::StaticTag, formalism::OverlayRepository<formalism::Repository>>&
+FactSets<formalism::OverlayRepository<formalism::Repository>>::get<formalism::StaticTag>();
+template TaggedFactSets<formalism::FluentTag, formalism::OverlayRepository<formalism::Repository>>&
+FactSets<formalism::OverlayRepository<formalism::Repository>>::get<formalism::FluentTag>();
 
 }

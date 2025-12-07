@@ -60,6 +60,13 @@ private:
 
     grounder::ProgramExecutionContext m_action_context;
     grounder::ProgramExecutionContext m_axiom_context;
+
+    using Domain = std::vector<Index<formalism::Object>>;
+    using DomainList = std::vector<Domain>;
+    using DomainListList = std::vector<DomainList>;
+    using DomainListListList = std::vector<DomainListList>;
+
+    std::vector<DomainListListList> parameter_domains_per_cond_effect_per_action;
 };
 
 }

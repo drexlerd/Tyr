@@ -70,7 +70,7 @@ struct RuleExecutionContext
     std::vector<View<Index<formalism::GroundRule>, formalism::OverlayRepository<formalism::Repository>>> ground_rules;
 
     RuleExecutionContext(View<Index<formalism::Rule>, formalism::Repository> rule,
-                         const analysis::DomainListList& parameter_domains,
+                         uint_t num_objects,
                          const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
                          const formalism::Repository& parent);
 
