@@ -19,7 +19,9 @@
 #define TYR_GROUNDER_CONSISTENCY_GRAPH_HPP_
 
 #include "tyr/analysis/domains.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment_sets.hpp"
 #include "tyr/grounder/declarations.hpp"
 

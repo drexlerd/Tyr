@@ -20,6 +20,7 @@
 
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/grounder/fact_sets.hpp"
 
 #include <boost/dynamic_bitset.hpp>

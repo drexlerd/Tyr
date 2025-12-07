@@ -15,6 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/grounder/fact_sets.hpp"
 
 #include <boost/dynamic_bitset.hpp>

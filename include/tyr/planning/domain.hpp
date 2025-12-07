@@ -19,6 +19,7 @@
 #define TYR_PLANNING_DOMAIN_HPP_
 
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::planning

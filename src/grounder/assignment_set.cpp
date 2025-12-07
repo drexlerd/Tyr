@@ -19,11 +19,14 @@
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment.hpp"
 #include "tyr/grounder/assignment_sets.hpp"
 #include "tyr/grounder/fact_sets.hpp"
 
+#include <algorithm>
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>
 #include <limits>

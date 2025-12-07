@@ -27,6 +27,12 @@
 namespace tyr
 {
 
+namespace formalism
+{
+struct Domain;     // forward declaration
+class Repository;  // forward declaration
+}
+
 template<typename T>
 struct Data
 {
@@ -49,6 +55,12 @@ template<typename T, typename C>
 struct View
 {
     // View type is optional for recursing through data using the C.
+
+    // DEBUG guard: blow up if the *primary* template is instantiated for Domain
+    // static_assert(!(std::is_same_v<T, Index<formalism::Domain>>),
+    //              "Primary View<Index<formalism::Domain>, formalism::Repository> "
+    //              "is being instantiated here. You are missing #include <tyr/formalism/views.hpp> "
+    //              "before using this combination.");
 };
 
 template<typename T, typename C>

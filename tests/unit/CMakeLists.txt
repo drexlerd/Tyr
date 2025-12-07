@@ -26,4 +26,4 @@ add_gtest(grounder_assignment_sets                       "grounder/assignment_se
 add_gtest(grounder_generator                             "grounder/generator.cpp")
 add_gtest(grounder_static_consistency_graph              "grounder/static_consistency_graph.cpp")
 
-# add_gtest(planning_lifted_task                           "planning/lifted_task.cpp")
+add_gtest(planning_lifted_task                           "planning/lifted_task.cpp")

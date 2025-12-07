@@ -262,14 +262,14 @@ std::ostream& operator<<(std::ostream& os, const Map& map)
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const IndexMixin<Derived>& mixin)
 {
-    os << to_string(mixin.value);
+    os << to_string(mixin.get_value());
     return os;
 }
 
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& mixin)
 {
-    os << to_string(mixin.value);
+    os << to_string(mixin.value());
     return os;
 }
 

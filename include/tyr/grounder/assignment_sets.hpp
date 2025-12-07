@@ -21,7 +21,7 @@
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
-#include "tyr/formalism/formalism.hpp"
+#include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment.hpp"
 #include "tyr/grounder/fact_sets.hpp"
 
