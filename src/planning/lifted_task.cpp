@@ -17,6 +17,7 @@
 
 #include "tyr/planning/lifted_task.hpp"
 
+#include "tyr/analysis/domains.hpp"
 #include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
@@ -165,10 +166,9 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_axiom_context(m_axiom_program.get_program(), m_axiom_program.get_repository()),
     parameter_domains_per_cond_effect_per_action()
 {
-    /*
     const auto num_objects = task.get_domain().get_constants().size() + task.get_objects().size();
 
-    const auto variable_domains = analysis::compute_variable_domains(m_action_program.get_program());
+    const auto variable_domains = analysis::compute_variable_domains(task);
 
     const auto static_fact_sets = TaggedFactSets(task.get_atoms<StaticTag>(), task.get_fterm_values<StaticTag>());
     const auto static_assignment_sets = TaggedAssignmentSets(task.get_domain().get_predicates<StaticTag>(),
@@ -177,12 +177,19 @@ LiftedTask::LiftedTask(DomainPtr domain,
                                                              variable_domains.static_function_domains,
                                                              num_objects);
 
-    for (const auto action : task.get_domain().get_actions())
+    for (uint_t action_index = 0; action_index < task.get_domain().get_actions().size(); ++action_index)
     {
+        const auto action = task.get_domain().get_actions()[action_index];
+
         auto parameter_domains_per_cond_effect = DomainListList {};
-        for (const auto cond_effect : action.get_effects())
+
+        for (uint_t cond_effect_index = 0; cond_effect_index < action.get_effects().size(); ++cond_effect_index)
         {
-            auto static_consistency_graph = StaticConsistencyGraph(cond_effect.get_condition(), num_objects, static_assignment_sets);
+            const auto cond_effect = action.get_effects()[cond_effect_index];
+
+            auto static_consistency_graph = StaticConsistencyGraph(cond_effect.get_condition(),
+                                                                   variable_domains.action_domains[action_index].second[cond_effect_index],
+                                                                   static_assignment_sets);
 
             auto parameter_domains = DomainList {};
             for (const auto& partition : static_consistency_graph.get_partitions())
@@ -199,7 +206,6 @@ LiftedTask::LiftedTask(DomainPtr domain,
         }
         parameter_domains_per_cond_effect_per_action.push_back(std::move(parameter_domains_per_cond_effect));
     }
-        */
 }
 
 Node<LiftedTask> LiftedTask::get_initial_node_impl()
