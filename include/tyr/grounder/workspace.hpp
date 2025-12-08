@@ -22,7 +22,7 @@
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/formalism/builder.hpp"
-#include "tyr/formalism/compiler.hpp"
+#include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"

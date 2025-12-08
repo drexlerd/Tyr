@@ -24,9 +24,14 @@
 //
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
+#include "tyr/common/tuple.hpp"
 #include "tyr/formalism/declarations.hpp"
 
-#include <boost/hana.hpp>
+#include <cassert>
+#include <optional>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 
 namespace tyr::formalism
 {
@@ -35,91 +40,97 @@ class Repository
 {
 private:
     template<typename T>
-    using RepositoryEntry = boost::hana::pair<boost::hana::type<T>, buffer::IndexedHashSet<T>>;
+    struct RepositoryEntry
+    {
+        using value_type = T;
+        using container_type = buffer::IndexedHashSet<T>;
 
-    using HanaRepository = boost::hana::map<RepositoryEntry<Variable>,
-                                            RepositoryEntry<Object>,
-                                            RepositoryEntry<Predicate<StaticTag>>,
-                                            RepositoryEntry<Predicate<FluentTag>>,
-                                            RepositoryEntry<Predicate<DerivedTag>>,
-                                            RepositoryEntry<Atom<StaticTag>>,
-                                            RepositoryEntry<Atom<FluentTag>>,
-                                            RepositoryEntry<Atom<DerivedTag>>,
-                                            RepositoryEntry<GroundAtom<StaticTag>>,
-                                            RepositoryEntry<GroundAtom<FluentTag>>,
-                                            RepositoryEntry<GroundAtom<DerivedTag>>,
-                                            RepositoryEntry<Literal<StaticTag>>,
-                                            RepositoryEntry<Literal<FluentTag>>,
-                                            RepositoryEntry<Literal<DerivedTag>>,
-                                            RepositoryEntry<GroundLiteral<StaticTag>>,
-                                            RepositoryEntry<GroundLiteral<FluentTag>>,
-                                            RepositoryEntry<GroundLiteral<DerivedTag>>,
-                                            RepositoryEntry<Function<StaticTag>>,
-                                            RepositoryEntry<Function<FluentTag>>,
-                                            RepositoryEntry<Function<AuxiliaryTag>>,
-                                            RepositoryEntry<FunctionTerm<StaticTag>>,
-                                            RepositoryEntry<FunctionTerm<FluentTag>>,
-                                            RepositoryEntry<FunctionTerm<AuxiliaryTag>>,
-                                            RepositoryEntry<GroundFunctionTerm<StaticTag>>,
-                                            RepositoryEntry<GroundFunctionTerm<FluentTag>>,
-                                            RepositoryEntry<GroundFunctionTerm<AuxiliaryTag>>,
-                                            RepositoryEntry<GroundFunctionTermValue<StaticTag>>,
-                                            RepositoryEntry<GroundFunctionTermValue<FluentTag>>,
-                                            RepositoryEntry<GroundFunctionTermValue<AuxiliaryTag>>,
-                                            RepositoryEntry<UnaryOperator<OpSub, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpSub, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpMul, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
-                                            RepositoryEntry<MultiOperator<OpAdd, Data<FunctionExpression>>>,
-                                            RepositoryEntry<MultiOperator<OpMul, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpEq, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpLe, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpLt, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpGe, Data<FunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpGt, Data<FunctionExpression>>>,
-                                            RepositoryEntry<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
-                                            RepositoryEntry<ConjunctiveCondition>,
-                                            RepositoryEntry<Rule>,
-                                            RepositoryEntry<GroundConjunctiveCondition>,
-                                            RepositoryEntry<GroundRule>,
-                                            RepositoryEntry<Program>,
-                                            RepositoryEntry<NumericEffect<OpAssign, FluentTag>>,
-                                            RepositoryEntry<NumericEffect<OpIncrease, FluentTag>>,
-                                            RepositoryEntry<NumericEffect<OpDecrease, FluentTag>>,
-                                            RepositoryEntry<NumericEffect<OpScaleUp, FluentTag>>,
-                                            RepositoryEntry<NumericEffect<OpScaleDown, FluentTag>>,
-                                            RepositoryEntry<NumericEffect<OpIncrease, AuxiliaryTag>>,
-                                            RepositoryEntry<GroundNumericEffect<OpAssign, FluentTag>>,
-                                            RepositoryEntry<GroundNumericEffect<OpIncrease, FluentTag>>,
-                                            RepositoryEntry<GroundNumericEffect<OpDecrease, FluentTag>>,
-                                            RepositoryEntry<GroundNumericEffect<OpScaleUp, FluentTag>>,
-                                            RepositoryEntry<GroundNumericEffect<OpScaleDown, FluentTag>>,
-                                            RepositoryEntry<GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
-                                            RepositoryEntry<ConditionalEffect>,
-                                            RepositoryEntry<GroundConditionalEffect>,
-                                            RepositoryEntry<ConjunctiveEffect>,
-                                            RepositoryEntry<GroundConjunctiveEffect>,
-                                            RepositoryEntry<Action>,
-                                            RepositoryEntry<GroundAction>,
-                                            RepositoryEntry<Axiom>,
-                                            RepositoryEntry<GroundAxiom>,
-                                            RepositoryEntry<Metric>,
-                                            RepositoryEntry<Domain>,
-                                            RepositoryEntry<Task>>;
+        container_type container;
+    };
 
-    HanaRepository m_repository;
+    using RepositoryStorage = std::tuple<RepositoryEntry<Variable>,
+                                         RepositoryEntry<Object>,
+                                         RepositoryEntry<Predicate<StaticTag>>,
+                                         RepositoryEntry<Predicate<FluentTag>>,
+                                         RepositoryEntry<Predicate<DerivedTag>>,
+                                         RepositoryEntry<Atom<StaticTag>>,
+                                         RepositoryEntry<Atom<FluentTag>>,
+                                         RepositoryEntry<Atom<DerivedTag>>,
+                                         RepositoryEntry<GroundAtom<StaticTag>>,
+                                         RepositoryEntry<GroundAtom<FluentTag>>,
+                                         RepositoryEntry<GroundAtom<DerivedTag>>,
+                                         RepositoryEntry<Literal<StaticTag>>,
+                                         RepositoryEntry<Literal<FluentTag>>,
+                                         RepositoryEntry<Literal<DerivedTag>>,
+                                         RepositoryEntry<GroundLiteral<StaticTag>>,
+                                         RepositoryEntry<GroundLiteral<FluentTag>>,
+                                         RepositoryEntry<GroundLiteral<DerivedTag>>,
+                                         RepositoryEntry<Function<StaticTag>>,
+                                         RepositoryEntry<Function<FluentTag>>,
+                                         RepositoryEntry<Function<AuxiliaryTag>>,
+                                         RepositoryEntry<FunctionTerm<StaticTag>>,
+                                         RepositoryEntry<FunctionTerm<FluentTag>>,
+                                         RepositoryEntry<FunctionTerm<AuxiliaryTag>>,
+                                         RepositoryEntry<GroundFunctionTerm<StaticTag>>,
+                                         RepositoryEntry<GroundFunctionTerm<FluentTag>>,
+                                         RepositoryEntry<GroundFunctionTerm<AuxiliaryTag>>,
+                                         RepositoryEntry<GroundFunctionTermValue<StaticTag>>,
+                                         RepositoryEntry<GroundFunctionTermValue<FluentTag>>,
+                                         RepositoryEntry<GroundFunctionTermValue<AuxiliaryTag>>,
+                                         RepositoryEntry<UnaryOperator<OpSub, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpSub, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpMul, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
+                                         RepositoryEntry<MultiOperator<OpAdd, Data<FunctionExpression>>>,
+                                         RepositoryEntry<MultiOperator<OpMul, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpEq, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpLe, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpLt, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpGe, Data<FunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpGt, Data<FunctionExpression>>>,
+                                         RepositoryEntry<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
+                                         RepositoryEntry<ConjunctiveCondition>,
+                                         RepositoryEntry<Rule>,
+                                         RepositoryEntry<GroundConjunctiveCondition>,
+                                         RepositoryEntry<GroundRule>,
+                                         RepositoryEntry<Program>,
+                                         RepositoryEntry<NumericEffect<OpAssign, FluentTag>>,
+                                         RepositoryEntry<NumericEffect<OpIncrease, FluentTag>>,
+                                         RepositoryEntry<NumericEffect<OpDecrease, FluentTag>>,
+                                         RepositoryEntry<NumericEffect<OpScaleUp, FluentTag>>,
+                                         RepositoryEntry<NumericEffect<OpScaleDown, FluentTag>>,
+                                         RepositoryEntry<NumericEffect<OpIncrease, AuxiliaryTag>>,
+                                         RepositoryEntry<GroundNumericEffect<OpAssign, FluentTag>>,
+                                         RepositoryEntry<GroundNumericEffect<OpIncrease, FluentTag>>,
+                                         RepositoryEntry<GroundNumericEffect<OpDecrease, FluentTag>>,
+                                         RepositoryEntry<GroundNumericEffect<OpScaleUp, FluentTag>>,
+                                         RepositoryEntry<GroundNumericEffect<OpScaleDown, FluentTag>>,
+                                         RepositoryEntry<GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
+                                         RepositoryEntry<ConditionalEffect>,
+                                         RepositoryEntry<GroundConditionalEffect>,
+                                         RepositoryEntry<ConjunctiveEffect>,
+                                         RepositoryEntry<GroundConjunctiveEffect>,
+                                         RepositoryEntry<Action>,
+                                         RepositoryEntry<GroundAction>,
+                                         RepositoryEntry<Axiom>,
+                                         RepositoryEntry<GroundAxiom>,
+                                         RepositoryEntry<Metric>,
+                                         RepositoryEntry<Domain>,
+                                         RepositoryEntry<Task>>;
+
+    RepositoryStorage m_repository;
 
 public:
     Repository() = default;
@@ -127,7 +138,7 @@ public:
     template<typename T>
     std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const
     {
-        const auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
+        const auto& indexed_hash_set = get_container<T>(m_repository);
 
         if (const auto ptr = indexed_hash_set.find(builder))
             return View<Index<T>, Repository>(ptr->index, *this);
@@ -138,7 +149,7 @@ public:
     template<typename T, bool AssignIndex = true>
     std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
-        auto& indexed_hash_set = boost::hana::at_key(m_repository, boost::hana::type<T> {});
+        auto& indexed_hash_set = get_container<T>(m_repository);
 
         if constexpr (AssignIndex)
             builder.index.value = indexed_hash_set.size();
@@ -154,7 +165,7 @@ public:
     {
         assert(index != Index<T>::max() && "Unassigned index.");
 
-        const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
+        const auto& repository = get_container<T>(m_repository);
 
         return repository[index];
     }
@@ -162,7 +173,7 @@ public:
     template<typename T>
     const Data<T>& front() const
     {
-        const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
+        const auto& repository = get_container<T>(m_repository);
 
         return repository.front();
     }
@@ -171,7 +182,7 @@ public:
     template<typename T>
     size_t size() const
     {
-        const auto& repository = boost::hana::at_key(m_repository, boost::hana::type<T> {});
+        const auto& repository = get_container<T>(m_repository);
 
         return repository.size();
     }
@@ -179,12 +190,7 @@ public:
     /// @brief Clear the repository but keep memory allocated.
     void clear() noexcept
     {
-        boost::hana::for_each(m_repository,
-                              [](auto&& pair)
-                              {
-                                  auto& indexed_hash_set = boost::hana::second(pair);
-                                  indexed_hash_set.clear();
-                              });
+        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_repository);
     }
 };
 

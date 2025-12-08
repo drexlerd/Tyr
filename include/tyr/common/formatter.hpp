@@ -78,9 +78,6 @@ template<typename... Ts>
     requires(sizeof...(Ts) > 0)
 std::ostream& operator<<(std::ostream& os, const std::variant<Ts...>& variant);
 
-template<IsHanaMap Map>
-std::ostream& operator<<(std::ostream& os, const Map& map);
-
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const IndexMixin<Derived>& mixin);
 
@@ -238,24 +235,6 @@ template<typename... Ts>
 std::ostream& operator<<(std::ostream& os, const std::variant<Ts...>& variant)
 {
     std::visit([&](auto&& arg) { os << to_string(arg); }, variant);
-    return os;
-}
-
-template<IsHanaMap Map>
-std::ostream& operator<<(std::ostream& os, const Map& map)
-{
-    os << "{ ";
-    boost::hana::for_each(map,
-                          [&os](auto&& pair)
-                          {
-                              const auto& key = boost::hana::first(pair);
-                              const auto& value = boost::hana::second(pair);
-
-                              using KeyType = typename decltype(+key)::type;
-
-                              os << "{ " << KeyType::name << " : " << to_string(value) << " }, ";
-                          });
-    os << " }";
     return os;
 }
 

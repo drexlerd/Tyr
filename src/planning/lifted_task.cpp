@@ -17,7 +17,7 @@
 
 #include "tyr/planning/lifted_task.hpp"
 
-#include "tyr/formalism/compiler.hpp"
+#include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/grounder/applicability.hpp"

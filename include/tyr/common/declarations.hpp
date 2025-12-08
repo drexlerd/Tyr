@@ -15,12 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_COMMON_CONCEPTS_HPP_
-#define TYR_COMMON_CONCEPTS_HPP_
+#ifndef TYR_COMMON_DECLARATIONS_HPP_
+#define TYR_COMMON_DECLARATIONS_HPP_
 
 #include "tyr/common/config.hpp"
 
-#include <boost/hana.hpp>
 #include <cista/containers/optional.h>
 #include <cista/containers/string.h>
 #include <cista/containers/variant.h>
@@ -44,10 +43,6 @@ namespace tyr
 /// @brief Checks whether T is a floating point
 template<typename T>
 concept IsFloatingPoint = std::is_floating_point_v<T>;
-
-/// @brief Checks whether T is a hana map
-template<typename T>
-concept IsHanaMap = std::same_as<typename boost::hana::tag_of<T>::type, boost::hana::map_tag>;
 
 /// @brief Check whether T has a function that returns members that aims to identify the class.
 template<typename T>

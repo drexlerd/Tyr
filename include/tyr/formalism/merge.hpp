@@ -18,6 +18,7 @@
 #ifndef TYR_FORMALISM_MERGE_HPP_
 #define TYR_FORMALISM_MERGE_HPP_
 
+#include "tyr/common/tuple.hpp"
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"
@@ -30,91 +31,97 @@ class MergeCache
 {
 private:
     template<typename T>
-    using MapEntryType = boost::hana::pair<boost::hana::type<T>, UnorderedMap<View<Index<T>, C_SRC>, View<Index<T>, C_DST>>>;
+    struct MapEntryType
+    {
+        using value_type = T;
+        using container_type = UnorderedMap<View<Index<T>, C_SRC>, View<Index<T>, C_DST>>;
 
-    using HanaMap = boost::hana::map<MapEntryType<Variable>,
-                                     MapEntryType<Object>,
-                                     MapEntryType<Predicate<StaticTag>>,
-                                     MapEntryType<Predicate<FluentTag>>,
-                                     MapEntryType<Predicate<DerivedTag>>,
-                                     MapEntryType<Atom<StaticTag>>,
-                                     MapEntryType<Atom<FluentTag>>,
-                                     MapEntryType<Atom<DerivedTag>>,
-                                     MapEntryType<GroundAtom<StaticTag>>,
-                                     MapEntryType<GroundAtom<FluentTag>>,
-                                     MapEntryType<GroundAtom<DerivedTag>>,
-                                     MapEntryType<Literal<StaticTag>>,
-                                     MapEntryType<Literal<FluentTag>>,
-                                     MapEntryType<Literal<DerivedTag>>,
-                                     MapEntryType<GroundLiteral<StaticTag>>,
-                                     MapEntryType<GroundLiteral<FluentTag>>,
-                                     MapEntryType<GroundLiteral<DerivedTag>>,
-                                     MapEntryType<Function<StaticTag>>,
-                                     MapEntryType<Function<FluentTag>>,
-                                     MapEntryType<Function<AuxiliaryTag>>,
-                                     MapEntryType<FunctionTerm<StaticTag>>,
-                                     MapEntryType<FunctionTerm<FluentTag>>,
-                                     MapEntryType<FunctionTerm<AuxiliaryTag>>,
-                                     MapEntryType<GroundFunctionTerm<StaticTag>>,
-                                     MapEntryType<GroundFunctionTerm<FluentTag>>,
-                                     MapEntryType<GroundFunctionTerm<AuxiliaryTag>>,
-                                     MapEntryType<GroundFunctionTermValue<StaticTag>>,
-                                     MapEntryType<GroundFunctionTermValue<FluentTag>>,
-                                     MapEntryType<GroundFunctionTermValue<AuxiliaryTag>>,
-                                     MapEntryType<UnaryOperator<OpSub, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpSub, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpMul, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
-                                     MapEntryType<MultiOperator<OpAdd, Data<FunctionExpression>>>,
-                                     MapEntryType<MultiOperator<OpMul, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpEq, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpLe, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpLt, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpGe, Data<FunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpGt, Data<FunctionExpression>>>,
-                                     MapEntryType<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
-                                     MapEntryType<ConjunctiveCondition>,
-                                     MapEntryType<Rule>,
-                                     MapEntryType<GroundConjunctiveCondition>,
-                                     MapEntryType<GroundRule>,
-                                     MapEntryType<Program>,
-                                     MapEntryType<NumericEffect<OpAssign, FluentTag>>,
-                                     MapEntryType<NumericEffect<OpIncrease, FluentTag>>,
-                                     MapEntryType<NumericEffect<OpDecrease, FluentTag>>,
-                                     MapEntryType<NumericEffect<OpScaleUp, FluentTag>>,
-                                     MapEntryType<NumericEffect<OpScaleDown, FluentTag>>,
-                                     MapEntryType<NumericEffect<OpIncrease, AuxiliaryTag>>,
-                                     MapEntryType<GroundNumericEffect<OpAssign, FluentTag>>,
-                                     MapEntryType<GroundNumericEffect<OpIncrease, FluentTag>>,
-                                     MapEntryType<GroundNumericEffect<OpDecrease, FluentTag>>,
-                                     MapEntryType<GroundNumericEffect<OpScaleUp, FluentTag>>,
-                                     MapEntryType<GroundNumericEffect<OpScaleDown, FluentTag>>,
-                                     MapEntryType<GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
-                                     MapEntryType<ConditionalEffect>,
-                                     MapEntryType<GroundConditionalEffect>,
-                                     MapEntryType<ConjunctiveEffect>,
-                                     MapEntryType<GroundConjunctiveEffect>,
-                                     MapEntryType<Action>,
-                                     MapEntryType<GroundAction>,
-                                     MapEntryType<Axiom>,
-                                     MapEntryType<GroundAxiom>,
-                                     MapEntryType<Metric>,
-                                     MapEntryType<Domain>,
-                                     MapEntryType<Task>>;
+        container_type container;
+    };
 
-    HanaMap maps;
+    using MergeStorage = std::tuple<MapEntryType<Variable>,
+                                    MapEntryType<Object>,
+                                    MapEntryType<Predicate<StaticTag>>,
+                                    MapEntryType<Predicate<FluentTag>>,
+                                    MapEntryType<Predicate<DerivedTag>>,
+                                    MapEntryType<Atom<StaticTag>>,
+                                    MapEntryType<Atom<FluentTag>>,
+                                    MapEntryType<Atom<DerivedTag>>,
+                                    MapEntryType<GroundAtom<StaticTag>>,
+                                    MapEntryType<GroundAtom<FluentTag>>,
+                                    MapEntryType<GroundAtom<DerivedTag>>,
+                                    MapEntryType<Literal<StaticTag>>,
+                                    MapEntryType<Literal<FluentTag>>,
+                                    MapEntryType<Literal<DerivedTag>>,
+                                    MapEntryType<GroundLiteral<StaticTag>>,
+                                    MapEntryType<GroundLiteral<FluentTag>>,
+                                    MapEntryType<GroundLiteral<DerivedTag>>,
+                                    MapEntryType<Function<StaticTag>>,
+                                    MapEntryType<Function<FluentTag>>,
+                                    MapEntryType<Function<AuxiliaryTag>>,
+                                    MapEntryType<FunctionTerm<StaticTag>>,
+                                    MapEntryType<FunctionTerm<FluentTag>>,
+                                    MapEntryType<FunctionTerm<AuxiliaryTag>>,
+                                    MapEntryType<GroundFunctionTerm<StaticTag>>,
+                                    MapEntryType<GroundFunctionTerm<FluentTag>>,
+                                    MapEntryType<GroundFunctionTerm<AuxiliaryTag>>,
+                                    MapEntryType<GroundFunctionTermValue<StaticTag>>,
+                                    MapEntryType<GroundFunctionTermValue<FluentTag>>,
+                                    MapEntryType<GroundFunctionTermValue<AuxiliaryTag>>,
+                                    MapEntryType<UnaryOperator<OpSub, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpSub, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpMul, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
+                                    MapEntryType<MultiOperator<OpAdd, Data<FunctionExpression>>>,
+                                    MapEntryType<MultiOperator<OpMul, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpEq, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpLe, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpLt, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpGe, Data<FunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpGt, Data<FunctionExpression>>>,
+                                    MapEntryType<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
+                                    MapEntryType<ConjunctiveCondition>,
+                                    MapEntryType<Rule>,
+                                    MapEntryType<GroundConjunctiveCondition>,
+                                    MapEntryType<GroundRule>,
+                                    MapEntryType<Program>,
+                                    MapEntryType<NumericEffect<OpAssign, FluentTag>>,
+                                    MapEntryType<NumericEffect<OpIncrease, FluentTag>>,
+                                    MapEntryType<NumericEffect<OpDecrease, FluentTag>>,
+                                    MapEntryType<NumericEffect<OpScaleUp, FluentTag>>,
+                                    MapEntryType<NumericEffect<OpScaleDown, FluentTag>>,
+                                    MapEntryType<NumericEffect<OpIncrease, AuxiliaryTag>>,
+                                    MapEntryType<GroundNumericEffect<OpAssign, FluentTag>>,
+                                    MapEntryType<GroundNumericEffect<OpIncrease, FluentTag>>,
+                                    MapEntryType<GroundNumericEffect<OpDecrease, FluentTag>>,
+                                    MapEntryType<GroundNumericEffect<OpScaleUp, FluentTag>>,
+                                    MapEntryType<GroundNumericEffect<OpScaleDown, FluentTag>>,
+                                    MapEntryType<GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
+                                    MapEntryType<ConditionalEffect>,
+                                    MapEntryType<GroundConditionalEffect>,
+                                    MapEntryType<ConjunctiveEffect>,
+                                    MapEntryType<GroundConjunctiveEffect>,
+                                    MapEntryType<Action>,
+                                    MapEntryType<GroundAction>,
+                                    MapEntryType<Axiom>,
+                                    MapEntryType<GroundAxiom>,
+                                    MapEntryType<Metric>,
+                                    MapEntryType<Domain>,
+                                    MapEntryType<Task>>;
+
+    MergeStorage m_maps;
 
 public:
     MergeCache() = default;
@@ -122,22 +129,17 @@ public:
     template<typename T>
     auto& get() noexcept
     {
-        return boost::hana::at_key(maps, boost::hana::type<T> {});
+        return get_container<T>(m_maps);
     }
     template<typename T>
     const auto& get() const noexcept
     {
-        return boost::hana::at_key(maps, boost::hana::type<T> {});
+        return get_container<T>(m_maps);
     }
 
     void clear() noexcept
     {
-        boost::hana::for_each(maps,
-                              [](auto&& pair)
-                              {
-                                  auto& map = boost::hana::second(pair);
-                                  map.clear();
-                              });
+        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_maps);
     }
 };
 

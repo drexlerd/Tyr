@@ -17,7 +17,7 @@
 
 #include "tyr/planning/programs/axiom.hpp"
 
-#include "tyr/formalism/compiler.hpp"
+#include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/overlay_repository.hpp"

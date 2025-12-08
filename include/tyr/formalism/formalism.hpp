@@ -20,7 +20,7 @@
 
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
-#include "tyr/formalism/compiler.hpp"
+#include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/datas.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/formatter.hpp"

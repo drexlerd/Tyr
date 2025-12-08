@@ -15,9 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_COMPILER_HPP_
-#define TYR_FORMALISM_COMPILER_HPP_
+#ifndef TYR_FORMALISM_COMPILE_HPP_
+#define TYR_FORMALISM_COMPILE_HPP_
 
+#include "tyr/common/tuple.hpp"
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"
@@ -30,29 +31,34 @@ class CompileCache
 {
 private:
     template<typename T_SRC, typename T_DST>
-    using MapEntryType =
-        boost::hana::pair<boost::hana::type<boost::hana::pair<T_SRC, T_DST>>, UnorderedMap<View<Index<T_SRC>, C_SRC>, View<Index<T_DST>, C_DST>>>;
+    struct MapEntryType
+    {
+        using value_type = std::pair<T_SRC, T_DST>;
+        using container_type = UnorderedMap<View<Index<T_SRC>, C_SRC>, View<Index<T_DST>, C_DST>>;
 
-    using HanaMap = boost::hana::map<MapEntryType<Predicate<DerivedTag>, Predicate<FluentTag>>,
-                                     MapEntryType<Atom<DerivedTag>, Atom<FluentTag>>,
-                                     MapEntryType<GroundAtom<DerivedTag>, GroundAtom<FluentTag>>,
-                                     MapEntryType<Literal<DerivedTag>, Literal<FluentTag>>,
-                                     MapEntryType<GroundLiteral<DerivedTag>, GroundLiteral<FluentTag>>,
-                                     MapEntryType<Function<AuxiliaryTag>, Function<FluentTag>>,
-                                     MapEntryType<FunctionTerm<AuxiliaryTag>, FunctionTerm<FluentTag>>,
-                                     MapEntryType<GroundFunctionTerm<AuxiliaryTag>, GroundFunctionTerm<FluentTag>>,
-                                     MapEntryType<GroundFunctionTermValue<AuxiliaryTag>, GroundFunctionTermValue<FluentTag>>,
-                                     MapEntryType<Predicate<FluentTag>, Predicate<DerivedTag>>,
-                                     MapEntryType<Atom<FluentTag>, Atom<DerivedTag>>,
-                                     MapEntryType<GroundAtom<FluentTag>, GroundAtom<DerivedTag>>,
-                                     MapEntryType<Literal<FluentTag>, Literal<DerivedTag>>,
-                                     MapEntryType<GroundLiteral<FluentTag>, GroundLiteral<DerivedTag>>,
-                                     MapEntryType<Function<FluentTag>, Function<AuxiliaryTag>>,
-                                     MapEntryType<FunctionTerm<FluentTag>, FunctionTerm<AuxiliaryTag>>,
-                                     MapEntryType<GroundFunctionTerm<FluentTag>, GroundFunctionTerm<AuxiliaryTag>>,
-                                     MapEntryType<GroundFunctionTermValue<FluentTag>, GroundFunctionTermValue<AuxiliaryTag>>>;
+        container_type container;
+    };
 
-    HanaMap maps;
+    using CompileStorage = std::tuple<MapEntryType<Predicate<DerivedTag>, Predicate<FluentTag>>,
+                                      MapEntryType<Atom<DerivedTag>, Atom<FluentTag>>,
+                                      MapEntryType<GroundAtom<DerivedTag>, GroundAtom<FluentTag>>,
+                                      MapEntryType<Literal<DerivedTag>, Literal<FluentTag>>,
+                                      MapEntryType<GroundLiteral<DerivedTag>, GroundLiteral<FluentTag>>,
+                                      MapEntryType<Function<AuxiliaryTag>, Function<FluentTag>>,
+                                      MapEntryType<FunctionTerm<AuxiliaryTag>, FunctionTerm<FluentTag>>,
+                                      MapEntryType<GroundFunctionTerm<AuxiliaryTag>, GroundFunctionTerm<FluentTag>>,
+                                      MapEntryType<GroundFunctionTermValue<AuxiliaryTag>, GroundFunctionTermValue<FluentTag>>,
+                                      MapEntryType<Predicate<FluentTag>, Predicate<DerivedTag>>,
+                                      MapEntryType<Atom<FluentTag>, Atom<DerivedTag>>,
+                                      MapEntryType<GroundAtom<FluentTag>, GroundAtom<DerivedTag>>,
+                                      MapEntryType<Literal<FluentTag>, Literal<DerivedTag>>,
+                                      MapEntryType<GroundLiteral<FluentTag>, GroundLiteral<DerivedTag>>,
+                                      MapEntryType<Function<FluentTag>, Function<AuxiliaryTag>>,
+                                      MapEntryType<FunctionTerm<FluentTag>, FunctionTerm<AuxiliaryTag>>,
+                                      MapEntryType<GroundFunctionTerm<FluentTag>, GroundFunctionTerm<AuxiliaryTag>>,
+                                      MapEntryType<GroundFunctionTermValue<FluentTag>, GroundFunctionTermValue<AuxiliaryTag>>>;
+
+    CompileStorage m_maps;
 
 public:
     CompileCache() = default;
@@ -60,25 +66,20 @@ public:
     template<typename T_SRC, typename T_DST>
     auto& get() noexcept
     {
-        using Key = boost::hana::pair<T_SRC, T_DST>;
-        return boost::hana::at_key(maps, boost::hana::type<Key> {});
+        using Key = std::pair<T_SRC, T_DST>;
+        return get_container<Key>(m_maps);
     }
 
     template<typename T_SRC, typename T_DST>
     const auto& get() const noexcept
     {
-        using Key = boost::hana::pair<T_SRC, T_DST>;
-        return boost::hana::at_key(maps, boost::hana::type<Key> {});
+        using Key = std::pair<T_SRC, T_DST>;
+        return get_container<Key>(m_maps);
     }
 
     void clear() noexcept
     {
-        boost::hana::for_each(maps,
-                              [](auto&& pair)
-                              {
-                                  auto& map = boost::hana::second(pair);
-                                  map.clear();
-                              });
+        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_maps);
     }
 };
 
