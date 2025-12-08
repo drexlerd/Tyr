@@ -27,6 +27,7 @@
 #include "tyr/common/hash.hpp"
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/indexed_hash_set.hpp"
+#include "tyr/common/itertools.hpp"
 #include "tyr/common/observer_ptr.hpp"
 #include "tyr/common/segmented_vector.hpp"
 #include "tyr/common/types.hpp"

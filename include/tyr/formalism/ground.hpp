@@ -18,6 +18,8 @@
 #ifndef TYR_FORMALISM_GROUND_HPP_
 #define TYR_FORMALISM_GROUND_HPP_
 
+#include "tyr/analysis/domains.hpp"
+#include "tyr/common/itertools.hpp"
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"
@@ -118,19 +120,13 @@ ground(View<Data<FunctionExpression>, C_SRC> element, View<IndexList<Object>, C_
             using Alternative = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<Alternative, float_t>)
-            {
                 return View<Data<GroundFunctionExpression>, C_DST>(Data<GroundFunctionExpression>(arg), destination);
-            }
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC>>)
-            {
                 return View<Data<GroundFunctionExpression>, C_DST>(Data<GroundFunctionExpression>(ground(arg, binding, builder, destination).get_data()),
                                                                    destination);
-            }
             else
-            {
                 return View<Data<GroundFunctionExpression>, C_DST>(Data<GroundFunctionExpression>(ground(arg, binding, builder, destination).get_index()),
                                                                    destination);
-            }
         },
         element.get_variant());
 }
@@ -257,39 +253,139 @@ View<Index<GroundRule>, C_DST> ground(View<Index<Rule>, C_SRC> element, View<Ind
     return destination.get_or_create(rule, builder.get_buffer()).first;
 }
 
-template<formalism::NumericEffectOpKind Op, formalism::FactKind T, Context C_SRC, Context C_DST>
+template<NumericEffectOpKind Op, FactKind T, Context C_SRC, Context C_DST>
 View<Index<GroundNumericEffect<Op, T>>, C_DST>
 ground(View<Index<NumericEffect<Op, T>>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
 {
+    // Fetch and clear
+    auto numeric_effect_ptr = builder.template get_builder<GroundNumericEffect<Op, T>>();
+    auto& numeric_effect = *numeric_effect_ptr;
+    numeric_effect.clear();
+
+    // Fill data
+    numeric_effect.fterm = ground(element.get_fterm(), binding, builder, destination).get_index();
+    numeric_effect.fexpr = ground(element.get_fexpr(), binding, builder, destination).get_data();
+
+    // Canonicalize and Serialize
+    canonicalize(numeric_effect);
+    return destination.get_or_create(numeric_effect, builder.get_buffer()).first;
 }
 
-template<formalism::FactKind T, Context C_SRC, Context C_DST>
+template<FactKind T, Context C_SRC, Context C_DST>
 View<Data<GroundNumericEffectOperator<T>>, C_DST>
 ground(View<Data<NumericEffectOperator<T>>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
 {
+    return visit(
+        [&](auto&& arg)
+        {
+            return View<Data<GroundNumericEffectOperator<T>>, C_DST>(
+                Data<GroundNumericEffectOperator<T>>(ground(arg, binding, builder, destination).get_index()),
+                destination);
+        },
+        element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST>
 View<Index<GroundConjunctiveEffect>, C_DST>
 ground(View<Index<ConjunctiveEffect>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
 {
+    // Fetch and clear
+    auto conj_effect_ptr = builder.get_builder<GroundConjunctiveEffect>();
+    auto& conj_eff = *conj_effect_ptr;
+    conj_eff.clear();
+
+    // Fill data
+    for (const auto literal : element.template get_literals())
+        conj_eff.literals.push_back(ground(literal, binding, builder, destination).get_index());
+    for (const auto numeric_effect : element.get_numeric_effects())
+        conj_eff.numeric_effects.push_back(ground(numeric_effect, binding, builder, destination).get_data());
+    if (element.get_auxiliary_numeric_effect())
+        conj_eff.auxiliary_numeric_effect = ground(*element.get_auxiliary_numeric_effect(), binding, builder, destination).get_data();
+
+    // Canonicalize and Serialize
+    canonicalize(conj_eff);
+    return destination.get_or_create(conj_eff, builder.get_buffer()).first;
 }
 
 template<Context C_SRC, Context C_DST>
 View<Index<GroundConditionalEffect>, C_DST>
 ground(View<Index<ConditionalEffect>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
 {
-    // TODO: we need access to the domains of the universally-quantified variables
+    // Fetch and clear
+    auto cond_effect_ptr = builder.get_builder<GroundConditionalEffect>();
+    auto& cond_effect = *cond_effect_ptr;
+    cond_effect.clear();
+
+    // Fill data
+    cond_effect.condition = ground(element.get_condition(), binding, builder, destination).get_index();
+    cond_effect.effect = ground(element.get_effect(), binding, builder, destination).get_index();
+
+    // Canonicalize and Serialize
+    canonicalize(cond_effect);
+    return destination.get_or_create(cond_effect, builder.get_buffer()).first;
 }
 
 template<Context C_SRC, Context C_DST>
-View<Index<GroundAction>, C_DST> ground(View<Index<Action>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
+View<Index<GroundAction>, C_DST> ground(View<Index<Action>, C_SRC> element,
+                                        View<IndexList<Object>, C_DST> binding,
+                                        const analysis::DomainListListList& cond_effect_domains,
+                                        Builder& builder,
+                                        C_DST& destination)
 {
+    // Fetch and clear
+    auto action_ptr = builder.get_builder<GroundAction>();
+    auto& action = *action_ptr;
+    action.clear();
+
+    // Fill data
+    action.action = element.get_index();
+    action.condition = ground(element.get_condition(), binding, builder, destination).get_index();
+
+    thread_local IndexList<Object> full_binding;
+
+    for (uint_t cond_effect_index = 0; cond_effect_index < element.get_effects().size(); ++cond_effect_index)
+    {
+        const auto cond_effect = element.get_effects()[cond_effect_index];
+        const auto& parameter_domains = cond_effect_domains[cond_effect_index];
+
+        // Ensure that we stripped off the action precondition parameter domains.
+        assert(std::distance(parameter_domains.begin(), parameter_domains.end()) == static_cast<int>(cond_effect.get_condition().get_arity()));
+
+        for_element_in_cartesian_set(parameter_domains.begin(),
+                                     parameter_domains.end(),
+                                     [&](auto&& binding_ext)
+                                     {
+                                         std::cout << binding_ext << std::endl;
+                                         //                full_binding = binding.get_data();  // reset it
+                                         //                full_binding.insert(full_binding.end(), binding_ext.begin(), binding_ext.end());
+                                         //
+                                         //                action.effects.push_back(
+                                         //                    ground(cond_effect, View<IndexList<Object>, C_DST>(full_binding, binding.get_context()), builder,
+                                         //                    destination).get_index());
+                                     });
+    }
+
+    // Canonicalize and Serialize
+    canonicalize(action);
+    return destination.get_or_create(action, builder.get_buffer()).first;
 }
 
 template<Context C_SRC, Context C_DST>
 View<Index<GroundAxiom>, C_DST> ground(View<Index<Axiom>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
 {
+    // Fetch and clear
+    auto axiom_ptr = builder.get_builder<GroundAxiom>();
+    auto& axiom = *axiom_ptr;
+    axiom.clear();
+
+    // Fill data
+    axiom.axiom = element.get_axiom().get_index();
+    axiom.body = ground(element.get_body(), binding, builder, destination).get_index();
+    axiom.head = ground(element.get_head(), binding, builder, destination).get_index();
+
+    // Canonicalize and Serialize
+    canonicalize(axiom);
+    return destination.get_or_create(axiom, builder.get_buffer()).first;
 }
 
 }

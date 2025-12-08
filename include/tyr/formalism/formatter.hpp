@@ -658,10 +658,7 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::ConjunctiveEff
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::GroundConjunctiveEffect>& el) { return os; }
-
-template<formalism::Context C>
-std::ostream& print(std::ostream& os, const View<Index<formalism::GroundConjunctiveEffect>, C>& el)
+inline std::ostream& print(std::ostream& os, const Data<formalism::GroundConjunctiveEffect>& el)
 {
     fmt::print(os,
                "\nFluent literals: {}\n"
@@ -670,6 +667,12 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::GroundConjunct
                to_string(el.literals),
                to_string(el.numeric_effects),
                to_string(el.auxiliary_numeric_effect));
+    return os;
+}
+
+template<formalism::Context C>
+std::ostream& print(std::ostream& os, const View<Index<formalism::GroundConjunctiveEffect>, C>& el)
+{
     fmt::print(os,
                "\nFluent literals: {}\n"
                "Fluent numeric effects: {}\n"

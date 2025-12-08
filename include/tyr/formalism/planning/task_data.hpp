@@ -94,6 +94,8 @@ struct Data<formalism::Task>
         fluent_atoms.clear();
         static_fterm_values.clear();
         fluent_fterm_values.clear();
+        auxiliary_fterm_value = std::nullopt;
+        metric = std::nullopt;
         axioms.clear();
     }
 

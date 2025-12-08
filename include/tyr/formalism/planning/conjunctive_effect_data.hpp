@@ -57,6 +57,7 @@ struct Data<formalism::ConjunctiveEffect>
     {
         literals.clear();
         numeric_effects.clear();
+        auxiliary_numeric_effect = std::nullopt;
     }
 
     auto cista_members() const noexcept { return std::tie(index, literals, numeric_effects, auxiliary_numeric_effect); }

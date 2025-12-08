@@ -22,6 +22,7 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_view.hpp"
 #include "tyr/formalism/ground_conjunctive_condition_view.hpp"
+#include "tyr/formalism/planning/axiom_view.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
 
 namespace tyr
@@ -44,6 +45,7 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
+    auto get_axiom() const noexcept { return View<Index<formalism::Axiom>, C>(get_data().axiom, *m_context); }
     auto get_body() const noexcept { return View<Index<formalism::GroundConjunctiveCondition>, C>(get_data().body, *m_context); }
     auto get_head() const noexcept { return View<Index<formalism::GroundAtom<formalism::DerivedTag>>, C>(get_data().head, *m_context); }
 

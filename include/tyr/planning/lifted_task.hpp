@@ -18,6 +18,7 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_HPP_
 #define TYR_PLANNING_LIFTED_TASK_HPP_
 
+#include "tyr/analysis/domains.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/workspace.hpp"
 #include "tyr/planning/domain.hpp"
@@ -61,12 +62,7 @@ private:
     grounder::ProgramExecutionContext m_action_context;
     grounder::ProgramExecutionContext m_axiom_context;
 
-    using Domain = std::vector<Index<formalism::Object>>;
-    using DomainList = std::vector<Domain>;
-    using DomainListList = std::vector<DomainList>;
-    using DomainListListList = std::vector<DomainListList>;
-
-    DomainListListList parameter_domains_per_cond_effect_per_action;
+    std::vector<analysis::DomainListListList> m_parameter_domains_per_cond_effect_per_action;
 };
 
 }

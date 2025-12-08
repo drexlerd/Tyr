@@ -325,6 +325,8 @@ struct Domain
 {
 };
 
+class Builder;
+
 /**
  * Context
  */

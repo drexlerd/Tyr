@@ -33,12 +33,17 @@ struct Data<formalism::GroundAxiom>
     using Tag = formalism::GroundAxiom;
 
     Index<formalism::GroundAxiom> index;
+    Index<formalism::Axiom> axiom;
     Index<formalism::GroundConjunctiveCondition> body;
     Index<formalism::GroundAtom<formalism::DerivedTag>> head;
 
     Data() = default;
-    Data(Index<formalism::GroundAxiom> index, Index<formalism::GroundConjunctiveCondition> body, Index<formalism::GroundAtom<formalism::DerivedTag>> head) :
+    Data(Index<formalism::GroundAxiom> index,
+         Index<formalism::Axiom> axiom,
+         Index<formalism::GroundConjunctiveCondition> body,
+         Index<formalism::GroundAtom<formalism::DerivedTag>> head) :
         index(index),
+        axiom(axiom),
         body(body),
         head(head)
     {
@@ -50,8 +55,8 @@ struct Data<formalism::GroundAxiom>
 
     void clear() noexcept {}
 
-    auto cista_members() const noexcept { return std::tie(index, body, head); }
-    auto identifying_members() const noexcept { return std::tie(body, head); }
+    auto cista_members() const noexcept { return std::tie(index, axiom, body, head); }
+    auto identifying_members() const noexcept { return std::tie(axiom, body, head); }
 };
 }
 

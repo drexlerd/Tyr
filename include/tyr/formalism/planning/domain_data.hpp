@@ -85,6 +85,7 @@ struct Data<formalism::Domain>
         derived_predicates.clear();
         static_functions.clear();
         fluent_functions.clear();
+        auxiliary_function = std::nullopt;
         constants.clear();
         actions.clear();
         axioms.clear();

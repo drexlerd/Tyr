@@ -20,6 +20,7 @@
 #include "tyr/analysis/domains.hpp"
 #include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/ground.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
@@ -154,6 +155,38 @@ static void read_derived_atoms_from_program_context(boost::dynamic_bitset<>& der
     }
 }
 
+static void read_solution_and_instantiate_labeled_successor_nodes(
+    Node<LiftedTask> node,
+    OverlayRepository<Repository>& task_repository,
+    ProgramExecutionContext& action_context,
+    const ApplicableActionProgram& action_program,
+    const std::vector<analysis::DomainListListList>& parameter_domains_per_cond_effect_per_action,
+    std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>>& out_successors)
+{
+    out_successors.clear();
+
+    for (const auto atom : action_context.program_merge_atoms)
+    {
+        std::cout << to_string(atom) << std::endl;
+
+        auto binding = IndexList<Object> {};
+        for (const auto object : atom.get_objects())
+            binding.push_back(action_program.get_object_to_object_mapping().at(object).get_index());
+
+        auto binding_view = View<IndexList<Object>, OverlayRepository<Repository>>(binding, task_repository);
+
+        for (const auto action : action_program.get_predicate_to_actions_mapping().at(atom.get_predicate()))
+        {
+            const auto action_index = action.get_index().get_value();
+
+            const auto ground_action =
+                ground(action, binding_view, parameter_domains_per_cond_effect_per_action[action_index], action_context.builder, task_repository);
+
+            std::cout << to_string(ground_action) << std::endl;
+        }
+    }
+}
+
 LiftedTask::LiftedTask(DomainPtr domain,
                        RepositoryPtr repository,
                        OverlayRepositoryPtr<Repository> overlay_repository,
@@ -164,12 +197,10 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_ground_program(*this),
     m_action_context(m_action_program.get_program(), m_action_program.get_repository()),
     m_axiom_context(m_axiom_program.get_program(), m_axiom_program.get_repository()),
-    parameter_domains_per_cond_effect_per_action()
+    m_parameter_domains_per_cond_effect_per_action()
 {
     const auto num_objects = task.get_domain().get_constants().size() + task.get_objects().size();
-
     const auto variable_domains = analysis::compute_variable_domains(task);
-
     const auto static_fact_sets = TaggedFactSets(task.get_atoms<StaticTag>(), task.get_fterm_values<StaticTag>());
     const auto static_assignment_sets = TaggedAssignmentSets(task.get_domain().get_predicates<StaticTag>(),
                                                              task.get_domain().get_functions<StaticTag>(),
@@ -181,30 +212,32 @@ LiftedTask::LiftedTask(DomainPtr domain,
     {
         const auto action = task.get_domain().get_actions()[action_index];
 
-        auto parameter_domains_per_cond_effect = DomainListList {};
+        auto parameter_domains_per_cond_effect = analysis::DomainListListList {};
 
         for (uint_t cond_effect_index = 0; cond_effect_index < action.get_effects().size(); ++cond_effect_index)
         {
             const auto cond_effect = action.get_effects()[cond_effect_index];
 
-            auto static_consistency_graph = StaticConsistencyGraph(cond_effect.get_condition(),
-                                                                   variable_domains.action_domains[action_index].second[cond_effect_index],
-                                                                   static_assignment_sets);
+            // Fetch domains of cond effects
+            auto cond_effect_variable_domains = analysis::DomainListList {};
+            for (uint_t i = action.get_arity(); i < action.get_arity() + cond_effect.get_condition().get_arity(); ++i)
+                cond_effect_variable_domains.push_back(variable_domains.action_domains[action_index].second[cond_effect_index][i]);
 
-            auto parameter_domains = DomainList {};
+            // Compute static consistency graph to filter consistent vertices
+            auto static_consistency_graph = StaticConsistencyGraph(cond_effect.get_condition(), cond_effect_variable_domains, static_assignment_sets);
+
+            auto parameter_domains = analysis::DomainListList {};
             for (const auto& partition : static_consistency_graph.get_partitions())
             {
-                auto domain = Domain {};
+                auto domain = analysis::DomainList {};
                 for (const auto vertex_index : partition)
-                {
-                    const auto& vertex = static_consistency_graph.get_vertex(vertex_index);
-                    domain.push_back(vertex.get_object_index());
-                }
+                    domain.push_back(static_consistency_graph.get_vertex(vertex_index).get_object_index());
+
                 parameter_domains.push_back(std::move(domain));
             }
             parameter_domains_per_cond_effect.push_back(std::move(parameter_domains));
         }
-        parameter_domains_per_cond_effect_per_action.push_back(std::move(parameter_domains_per_cond_effect));
+        m_parameter_domains_per_cond_effect_per_action.push_back(std::move(parameter_domains_per_cond_effect));
     }
 }
 
@@ -265,11 +298,12 @@ LiftedTask::get_labeled_successor_nodes_impl(const Node<LiftedTask>& node)
 
     solve_bottom_up(m_action_context);
 
-    // TODO: read facts, ground corresponding actions
-
-    // TODO: compute successor state and its metric value
-
-    std::cout << to_string(m_action_context.program_merge_atoms) << std::endl;
+    read_solution_and_instantiate_labeled_successor_nodes(node,
+                                                          *this->m_overlay_repository,
+                                                          m_action_context,
+                                                          m_action_program,
+                                                          m_parameter_domains_per_cond_effect_per_action,
+                                                          result);
 
     return result;
 }

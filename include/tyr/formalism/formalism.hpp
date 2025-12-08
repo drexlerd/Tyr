@@ -24,6 +24,7 @@
 #include "tyr/formalism/datas.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/ground.hpp"
 #include "tyr/formalism/indices.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
