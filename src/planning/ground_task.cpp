@@ -28,6 +28,8 @@ GroundTask::GroundTask(DomainPtr domain,
 {
 }
 
+void GroundTask::compute_extended_state(UnpackedState<GroundTask>& unpacked_state) {}
+
 std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<GroundTask>>>
 GroundTask::get_labeled_successor_nodes_impl(const Node<GroundTask>& node)
 {

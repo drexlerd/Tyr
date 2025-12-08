@@ -54,5 +54,11 @@ int main(int argc, char** argv)
 
     auto initial_node = lifted_task->get_initial_node();
 
-    auto successor_nodes = initial_node.get_labeled_successor_nodes();
+    std::cout << to_string(initial_node) << std::endl;
+
+    for (const auto& [ground_action, succ_node] : initial_node.get_labeled_successor_nodes())
+    {
+        std::cout << to_string(ground_action) << "\n"  //
+                  << to_string(succ_node) << std::endl;
+    }
 }

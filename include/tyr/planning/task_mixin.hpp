@@ -19,6 +19,8 @@
 #define TYR_PLANNING_TASK_MIXIN_HPP_
 
 #include "tyr/common/common.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
+#include "tyr/common/vector.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
@@ -119,20 +121,13 @@ public:
         m_static_numeric_variables()
     {
         for (const auto atom : task.template get_atoms<formalism::StaticTag>())
-        {
-            const auto atom_index = atom.get_index().get_value();
-            if (atom_index >= m_static_atoms_bitset.size())
-                m_static_atoms_bitset.resize(atom_index + 1, false);
-            m_static_atoms_bitset.set(atom_index);
-        }
+            set(atom.get_index().get_value(), m_static_atoms_bitset);
 
         for (const auto fterm_value : task.template get_fterm_values<formalism::StaticTag>())
-        {
-            const auto fterm_index = fterm_value.get_fterm().get_index().get_value();
-            if (fterm_index >= m_static_numeric_variables.size())
-                m_static_numeric_variables.resize(fterm_index + 1, std::numeric_limits<float_t>::quiet_NaN());
-            m_static_numeric_variables[fterm_index] = fterm_value.get_value();
-        }
+            set(fterm_value.get_fterm().get_index().get_value(),
+                fterm_value.get_value(),
+                m_static_numeric_variables,
+                std::numeric_limits<float_t>::quiet_NaN());
     }
 
     /**

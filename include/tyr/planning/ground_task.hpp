@@ -35,6 +35,8 @@ public:
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
 
+    void compute_extended_state(UnpackedState<GroundTask>& unpacked_state);
+
     Node<GroundTask> get_initial_node_impl();
 
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<GroundTask>>>

@@ -33,6 +33,7 @@ public:
 
     State<Task> get_state() const { return m_task->get_state(m_state_index); }
     Task& get_task() noexcept { return *m_task; }
+    const Task& get_task() const noexcept { return *m_task; }
     float_t get_state_metric() const noexcept { return m_state_metric; }
     StateIndex get_state_index() const noexcept { return m_state_index; }
 

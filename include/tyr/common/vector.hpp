@@ -184,6 +184,14 @@ private:
     const Container* m_handle;
 };
 
+template<class T>
+void set(size_t pos, const T& value, std::vector<T>& vec, const T& default_value)
+{
+    if (pos >= vec.size())
+        vec.resize(pos + 1, default_value);
+    vec[pos] = value;
+}
+
 }
 
 #endif

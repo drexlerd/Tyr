@@ -295,7 +295,7 @@ ground(View<Index<ConjunctiveEffect>, C_SRC> element, View<IndexList<Object>, C_
     conj_eff.clear();
 
     // Fill data
-    for (const auto literal : element.template get_literals())
+    for (const auto literal : element.get_literals())
         conj_eff.literals.push_back(ground(literal, binding, builder, destination).get_index());
     for (const auto numeric_effect : element.get_numeric_effects())
         conj_eff.numeric_effects.push_back(ground(numeric_effect, binding, builder, destination).get_data());
@@ -351,18 +351,17 @@ View<Index<GroundAction>, C_DST> ground(View<Index<Action>, C_SRC> element,
         // Ensure that we stripped off the action precondition parameter domains.
         assert(std::distance(parameter_domains.begin(), parameter_domains.end()) == static_cast<int>(cond_effect.get_condition().get_arity()));
 
-        for_element_in_cartesian_set(parameter_domains.begin(),
-                                     parameter_domains.end(),
-                                     [&](auto&& binding_ext)
-                                     {
-                                         std::cout << binding_ext << std::endl;
-                                         //                full_binding = binding.get_data();  // reset it
-                                         //                full_binding.insert(full_binding.end(), binding_ext.begin(), binding_ext.end());
-                                         //
-                                         //                action.effects.push_back(
-                                         //                    ground(cond_effect, View<IndexList<Object>, C_DST>(full_binding, binding.get_context()), builder,
-                                         //                    destination).get_index());
-                                     });
+        for_element_in_cartesian_set(
+            parameter_domains.begin(),
+            parameter_domains.end(),
+            [&](auto&& binding_ext)
+            {
+                full_binding = binding.get_data();  // reset it
+                full_binding.insert(full_binding.end(), binding_ext.begin(), binding_ext.end());
+
+                action.effects.push_back(
+                    ground(cond_effect, View<IndexList<Object>, C_DST>(full_binding, binding.get_context()), builder, destination).get_index());
+            });
     }
 
     // Canonicalize and Serialize

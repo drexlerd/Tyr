@@ -22,6 +22,7 @@
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/formatter.hpp"
 #include "tyr/common/hash.hpp"

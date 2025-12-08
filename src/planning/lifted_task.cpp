@@ -18,6 +18,7 @@
 #include "tyr/planning/lifted_task.hpp"
 
 #include "tyr/analysis/domains.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/formalism/compile.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/ground.hpp"
@@ -26,6 +27,7 @@
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/generator.hpp"
+#include "tyr/planning/transition.hpp"
 #include "tyr/solver/bottom_up.hpp"
 
 using namespace tyr::formalism;
@@ -148,10 +150,7 @@ static void read_derived_atoms_from_program_context(boost::dynamic_bitset<>& der
                                                                  axiom_context.program_to_task_compile_cache,
                                                                  axiom_context.program_to_task_merge_cache);
 
-        const auto derived_atom_index = derived_atom.get_index().get_value();
-        if (derived_atom_index >= derived_atoms.size())
-            derived_atoms.resize(derived_atom_index + 1);
-        derived_atoms.set(derived_atom_index);
+        set(derived_atom.get_index().get_value(), derived_atoms);
     }
 }
 
@@ -167,8 +166,6 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
 
     for (const auto atom : action_context.program_merge_atoms)
     {
-        std::cout << to_string(atom) << std::endl;
-
         auto binding = IndexList<Object> {};
         for (const auto object : atom.get_objects())
             binding.push_back(action_program.get_object_to_object_mapping().at(object).get_index());
@@ -182,7 +179,7 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
             const auto ground_action =
                 ground(action, binding_view, parameter_domains_per_cond_effect_per_action[action_index], action_context.builder, task_repository);
 
-            std::cout << to_string(ground_action) << std::endl;
+            out_successors.emplace_back(ground_action, apply_action(node, ground_action));
         }
     }
 }
@@ -241,6 +238,20 @@ LiftedTask::LiftedTask(DomainPtr domain,
     }
 }
 
+void LiftedTask::compute_extended_state(UnpackedState<LiftedTask>& unpacked_state)
+{
+    auto& fluent_atoms = unpacked_state.template get_atoms<FluentTag>();
+    auto& derived_atoms = unpacked_state.template get_atoms<DerivedTag>();
+
+    insert_unextended_state(fluent_atoms, *this->m_overlay_repository, m_axiom_context);
+
+    solve_bottom_up(m_axiom_context);
+
+    read_derived_atoms_from_program_context(derived_atoms, *this->m_overlay_repository, m_axiom_context);
+
+    std::cout << to_string(m_axiom_context.program_merge_atoms) << std::endl;
+}
+
 Node<LiftedTask> LiftedTask::get_initial_node_impl()
 {
     auto unpacked_state_ptr = m_unpacked_state_pool.get_or_allocate();
@@ -252,28 +263,12 @@ Node<LiftedTask> LiftedTask::get_initial_node_impl()
     auto& numeric_variables = unpacked_state.get_numeric_variables();
 
     for (const auto atom : m_task.get_atoms<FluentTag>())
-    {
-        const auto atom_index = atom.get_index().get_value();
-        if (atom_index >= fluent_atoms.size())
-            fluent_atoms.resize(atom_index + 1, false);
-        fluent_atoms.set(atom_index);
-    }
+        set(atom.get_index().get_value(), fluent_atoms);
 
     for (const auto fterm_value : m_task.get_fterm_values<FluentTag>())
-    {
-        const auto fterm_index = fterm_value.get_fterm().get_index().get_value();
-        if (fterm_index >= numeric_variables.size())
-            numeric_variables.resize(fterm_index + 1, std::numeric_limits<float_t>::quiet_NaN());
-        numeric_variables[fterm_index] = fterm_value.get_value();
-    }
+        set(fterm_value.get_fterm().get_index().get_value(), fterm_value.get_value(), numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
 
-    insert_unextended_state(fluent_atoms, *this->m_overlay_repository, m_axiom_context);
-
-    solve_bottom_up(m_axiom_context);
-
-    read_derived_atoms_from_program_context(derived_atoms, *this->m_overlay_repository, m_axiom_context);
-
-    std::cout << to_string(m_axiom_context.program_merge_atoms) << std::endl;
+    compute_extended_state(unpacked_state);
 
     const auto state_index = register_state(unpacked_state);
 

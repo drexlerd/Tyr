@@ -39,6 +39,8 @@ public:
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
 
+    void compute_extended_state(UnpackedState<LiftedTask>& unpacked_state);
+
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<LiftedTask>>>
     get_labeled_successor_nodes_impl(const Node<LiftedTask>& node);
 

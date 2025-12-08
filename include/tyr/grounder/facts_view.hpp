@@ -39,6 +39,7 @@ struct FactsView
     const boost::dynamic_bitset<>& derived_atoms;
     const std::vector<float_t>& static_numeric_variables;
     const std::vector<float_t>& fluent_numeric_variables;
+    const std::optional<float_t> auxiliary_numeric_variable;
 
     // programs dont have derived atoms
     static const boost::dynamic_bitset<> empty_derived_atoms;
@@ -47,12 +48,14 @@ struct FactsView
               const boost::dynamic_bitset<>& fluent_atoms,
               const boost::dynamic_bitset<>& derived_atoms,
               const std::vector<float_t>& static_numeric_variables,
-              const std::vector<float_t>& fluent_numeric_variables) :
+              const std::vector<float_t>& fluent_numeric_variables,
+              const std::optional<float_t> auxiliary_numeric_variable = std::nullopt) :
         static_atoms(static_atoms),
         fluent_atoms(fluent_atoms),
         derived_atoms(derived_atoms),
         static_numeric_variables(static_numeric_variables),
-        fluent_numeric_variables(fluent_numeric_variables)
+        fluent_numeric_variables(fluent_numeric_variables),
+        auxiliary_numeric_variable(auxiliary_numeric_variable)
     {
     }
 
@@ -114,6 +117,8 @@ struct FactsView
         else
             static_assert(dependent_false<T>::value, "Missing case");
     }
+
+    const auto& get_auxiliary_numeric_variable() const noexcept { return auxiliary_numeric_variable; }
 };
 
 }

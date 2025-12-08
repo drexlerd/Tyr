@@ -21,7 +21,10 @@
 #include "tyr/common/formatter.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/node.hpp"
+#include "tyr/planning/state.hpp"
 
+#include <boost/dynamic_bitset.hpp>
 #include <fmt/core.h>
 #include <fmt/ostream.h>
 #include <fmt/ranges.h>
@@ -57,7 +60,31 @@ std::ostream& print(std::ostream& os, const planning::UnpackedState<Task>& el)
 template<typename Task>
 std::ostream& print(std::ostream& os, const planning::State<Task>& el)
 {
-    const auto context = el.get_task().get_repository();
+    const auto& context = *el.get_task().get_repository();
+
+    const auto& static_atoms_bitset = el.template get_atoms<formalism::StaticTag>();
+    const auto& fluent_atoms_bitset = el.template get_atoms<formalism::FluentTag>();
+    const auto& derived_atoms_bitset = el.template get_atoms<formalism::DerivedTag>();
+    const auto& fluent_numeric_variables = el.template get_numeric_variables<formalism::FluentTag>();
+
+    auto static_atoms = IndexList<formalism::GroundAtom<formalism::StaticTag>> {};
+    for (auto i = static_atoms_bitset.find_first(); i != boost::dynamic_bitset<>::npos; i = static_atoms_bitset.find_next(i))
+        static_atoms.push_back(Index<formalism::GroundAtom<formalism::StaticTag>>(i));
+
+    auto fluent_atoms = IndexList<formalism::GroundAtom<formalism::FluentTag>> {};
+    for (auto i = fluent_atoms_bitset.find_first(); i != boost::dynamic_bitset<>::npos; i = fluent_atoms_bitset.find_next(i))
+        fluent_atoms.push_back(Index<formalism::GroundAtom<formalism::FluentTag>>(i));
+
+    auto derived_atoms = IndexList<formalism::GroundAtom<formalism::DerivedTag>> {};
+    for (auto i = derived_atoms_bitset.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms_bitset.find_next(i))
+        derived_atoms.push_back(Index<formalism::GroundAtom<formalism::DerivedTag>>(i));
+
+    fmt::print(
+        os,
+        "State(static atoms={}, fluent atoms={}, derived atoms={})",
+        to_string(View<IndexList<formalism::GroundAtom<formalism::StaticTag>>, formalism::OverlayRepository<formalism::Repository>>(static_atoms, context)),
+        to_string(View<IndexList<formalism::GroundAtom<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>>(fluent_atoms, context)),
+        to_string(View<IndexList<formalism::GroundAtom<formalism::DerivedTag>>, formalism::OverlayRepository<formalism::Repository>>(derived_atoms, context)));
 
     return os;
 }

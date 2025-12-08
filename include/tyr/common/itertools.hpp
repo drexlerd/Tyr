@@ -37,17 +37,21 @@ template<class OuterRandomIt, class InnerRange = typename std::iterator_traits<O
 void for_element_in_cartesian_set(OuterRandomIt first, OuterRandomIt last, F&& callback)
 {
     const size_t n = last - first;
-    if (n == 0)
-        return;
 
-    if (std::any_of(first, last, [](auto&& inner) { return std::distance(inner.begin(), inner.empty()) == 0; }))
-        return;
-
-    // thread-local buffers
     thread_local std::vector<T> tmp;
+    tmp.resize(n);
+
+    if (n == 0)
+    {
+        callback(tmp);  // empty element for empty range
+        return;
+    }
+
+    if (std::any_of(first, last, [](auto&& inner) { return std::distance(inner.begin(), inner.end()) == 0; }))
+        return;
+
     thread_local std::vector<size_t> indices;
 
-    tmp.resize(n);
     indices.resize(n);
     indices.assign(n, 0);
 

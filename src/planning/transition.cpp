@@ -17,6 +17,9 @@
 
 #include "tyr/planning/transition.hpp"
 
+#include "tyr/common/dynamic_bitset.hpp"
+#include "tyr/common/variant.hpp"
+#include "tyr/common/vector.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_utils.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -32,24 +35,39 @@
 namespace tyr::planning
 {
 
-inline void collect_effects(View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
+inline void process_effects(View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
                             const tyr::grounder::FactsView& facts_view,
                             boost::dynamic_bitset<>& positive_effects,
                             boost::dynamic_bitset<>& negative_effects,
-                            std::vector<float_t>& numeric_variables)
+                            std::vector<float_t>& numeric_variables,
+                            float_t& succ_metric_value)
 {
-    // TODO: collect add/delete and numeric effects
-
     for (const auto cond_effect : action.get_effects())
     {
         if (is_applicable(cond_effect.get_condition(), facts_view))
         {
-            // TODO: collect add/delete and numeric effects
-            for (const auto literal : cond_effect.get_effect().get_literals()) {}
+            for (const auto literal : cond_effect.get_effect().get_literals())
+            {
+                if (literal.get_polarity())
+                    set(literal.get_atom().get_index().get_value(), positive_effects);
+                else
+                    set(literal.get_atom().get_index().get_value(), negative_effects);
+            }
 
-            for (const auto numeric_effect : cond_effect.get_effect().get_numeric_effects()) {}
+            for (const auto numeric_effect : cond_effect.get_effect().get_numeric_effects())
+            {
+                visit(
+                    [&](auto&& arg) {
+                        set(arg.get_fterm().get_index().get_value(),
+                            grounder::evaluate(numeric_effect, facts_view),
+                            numeric_variables,
+                            std::numeric_limits<float_t>::quiet_NaN());
+                    },
+                    numeric_effect.get_variant());
+            }
 
-            if (cond_effect.get_effect().get_auxiliary_numeric_effect()) {}
+            if (cond_effect.get_effect().get_auxiliary_numeric_effect())
+                succ_metric_value = grounder::evaluate(cond_effect.get_effect().get_auxiliary_numeric_effect().value(), facts_view);
         }
     }
 }
@@ -71,7 +89,8 @@ Node<Task> apply_action(Node<Task> node, View<Index<formalism::GroundAction>, fo
                                                 state.template get_atoms<formalism::FluentTag>(),
                                                 state.template get_atoms<formalism::DerivedTag>(),
                                                 state.template get_numeric_variables<formalism::StaticTag>(),
-                                                state.template get_numeric_variables<formalism::FluentTag>());
+                                                state.template get_numeric_variables<formalism::FluentTag>(),
+                                                node.get_state_metric());
 
     /// --- Fetch a scratch buffer for creating the successor state.
     auto succ_unpacked_state_ptr = task.get_unpacked_state_pool().get_or_allocate();
@@ -80,19 +99,42 @@ Node<Task> apply_action(Node<Task> node, View<Index<formalism::GroundAction>, fo
 
     // Copy state into mutable buffer
     succ_unpacked_state = state.get_unpacked_state();
+    auto& succ_fluent_atoms = succ_unpacked_state.template get_atoms<formalism::FluentTag>();
+    auto& succ_derived_atoms = succ_unpacked_state.template get_atoms<formalism::DerivedTag>();
+    auto& succ_numeric_variables = succ_unpacked_state.get_numeric_variables();
 
-    // TODO: collect positive and negative effects
+    auto succ_metric_value = std::numeric_limits<float_t>::quiet_NaN();
+
     auto positive_effects = boost::dynamic_bitset<>();
     auto negative_effects = boost::dynamic_bitset<>();
 
-    collect_effects(action, facts_view, positive_effects, negative_effects, succ_unpacked_state.get_numeric_variables());
+    process_effects(action, facts_view, positive_effects, negative_effects, succ_numeric_variables, succ_metric_value);
 
-    succ_unpacked_state.template get_atoms<formalism::FluentTag>() |= positive_effects;
-    succ_unpacked_state.template get_atoms<formalism::FluentTag>() -= negative_effects;
+    const auto max_size = std::max({ succ_fluent_atoms.size(), positive_effects.size(), negative_effects.size() });
+    succ_fluent_atoms.resize(max_size, false);
+    positive_effects.resize(max_size, false);
+    negative_effects.resize(max_size, false);
 
-    // TODO: add positive effects to state, then delete negative ones
+    succ_fluent_atoms -= negative_effects;
+    succ_fluent_atoms |= positive_effects;
 
-    // TODO: apply numeric effects in parallel
+    task.compute_extended_state(succ_unpacked_state);
+
+    if (task.get_task().get_domain().get_auxiliary_function())
+    {
+        const auto succ_facts_view = grounder::FactsView(state.template get_atoms<formalism::StaticTag>(),
+                                                         succ_fluent_atoms,
+                                                         succ_derived_atoms,
+                                                         state.template get_numeric_variables<formalism::StaticTag>(),
+                                                         succ_numeric_variables);
+
+        if (task.get_task().get_metric())
+            succ_metric_value = grounder::evaluate(task.get_task().get_metric().value().get_fexpr(), succ_facts_view);
+    }
+
+    const auto succ_state_index = task.register_state(succ_unpacked_state);
+
+    return Node<Task>(succ_state_index, succ_metric_value, task);
 }
 
 template Node<LiftedTask> apply_action(Node<LiftedTask> node, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);

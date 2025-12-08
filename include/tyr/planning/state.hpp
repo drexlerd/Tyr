@@ -57,6 +57,7 @@ public:
     const UnpackedState<Task>& get_unpacked_state() const noexcept { return *m_unpacked; }
 
     Task& get_task() noexcept { return *m_task; }
+    const Task& get_task() const noexcept { return *m_task; }
 
 private:
     SharedObjectPoolPtr<UnpackedState<Task>> m_unpacked;

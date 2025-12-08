@@ -28,9 +28,9 @@ namespace tyr::formalism
  */
 
 template<typename T>
-inline T apply(OpAssign, T el)
+inline T apply(OpAssign, T lhs, T rhs)
 {
-    return el;
+    return rhs;
 }
 
 template<typename T>

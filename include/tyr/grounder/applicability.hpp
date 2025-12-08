@@ -21,6 +21,7 @@
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/ground_numeric_effect_operator_utils.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/facts_view.hpp"
 
@@ -48,16 +49,16 @@ enum class EffectFamily
 
 // Forward declarations
 
-inline auto evaluate(float_t element, const FactsView& facts_view);
+inline float_t evaluate(float_t element, const FactsView& facts_view);
 
 template<formalism::ArithmeticOpKind O, formalism::Context C>
-auto evaluate(View<Index<formalism::UnaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
+float_t evaluate(View<Index<formalism::UnaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
 
 template<formalism::OpKind O, formalism::Context C>
-auto evaluate(View<Index<formalism::BinaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
+float_t evaluate(View<Index<formalism::BinaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
 
 template<formalism::ArithmeticOpKind O, formalism::Context C>
-auto evaluate(View<Index<formalism::MultiOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
+float_t evaluate(View<Index<formalism::MultiOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
 
 template<formalism::FactKind T, formalism::Context C>
     requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
@@ -67,32 +68,38 @@ template<formalism::Context C>
 float_t evaluate(View<Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>, C> element, const FactsView& facts_view);
 
 template<formalism::Context C>
-auto evaluate(View<Data<formalism::GroundFunctionExpression>, C> element, const FactsView& facts_view);
+float_t evaluate(View<Data<formalism::GroundFunctionExpression>, C> element, const FactsView& facts_view);
 
 template<formalism::Context C>
-auto evaluate(View<Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
+float_t evaluate(View<Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
 
 template<formalism::Context C>
-auto evaluate(View<Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
+bool evaluate(View<Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view);
+
+template<formalism::NumericEffectOpKind Op, formalism::FactKind T, formalism::Context C>
+float_t evaluate(View<Index<formalism::GroundNumericEffect<Op, T>>, C> element, const FactsView& facts_view);
+
+template<formalism::FactKind T, formalism::Context C>
+float_t evaluate(View<Data<formalism::GroundNumericEffectOperator<T>>, C> element, const FactsView& facts_view);
 
 // Implementations
 
-inline auto evaluate(float_t element, const FactsView& facts_view) { return element; }
+inline float_t evaluate(float_t element, const FactsView& facts_view) { return element; }
 
 template<formalism::ArithmeticOpKind O, formalism::Context C>
-auto evaluate(View<Index<formalism::UnaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
+float_t evaluate(View<Index<formalism::UnaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
 {
     return formalism::apply(O {}, evaluate(element.get_arg(), facts_view));
 }
 
 template<formalism::OpKind O, formalism::Context C>
-auto evaluate(View<Index<formalism::BinaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
+float_t evaluate(View<Index<formalism::BinaryOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
 {
     return formalism::apply(O {}, evaluate(element.get_lhs(), facts_view), evaluate(element.get_rhs(), facts_view));
 }
 
 template<formalism::ArithmeticOpKind O, formalism::Context C>
-auto evaluate(View<Index<formalism::MultiOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
+float_t evaluate(View<Index<formalism::MultiOperator<O, Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
 {
     const auto child_fexprs = element.get_args();
 
@@ -116,23 +123,38 @@ float_t evaluate(View<Index<formalism::GroundFunctionTerm<T>>, C> element, const
 template<formalism::Context C>
 float_t evaluate(View<Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>, C> element, const FactsView& facts_view)
 {
-    throw std::logic_error("Program should not contain auxiliary functions.");
+    if (!facts_view.get_auxiliary_numeric_variable())
+        return std::numeric_limits<float_t>::quiet_NaN();
+
+    return facts_view.get_auxiliary_numeric_variable().value();
 }
 
 template<formalism::Context C>
-auto evaluate(View<Data<formalism::GroundFunctionExpression>, C> element, const FactsView& facts_view)
+float_t evaluate(View<Data<formalism::GroundFunctionExpression>, C> element, const FactsView& facts_view)
 {
     return visit([&](auto&& arg) { return evaluate(arg, facts_view); }, element.get_variant());
 }
 
 template<formalism::Context C>
-auto evaluate(View<Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
+float_t evaluate(View<Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
 {
     return visit([&](auto&& arg) { return evaluate(arg, facts_view); }, element.get_variant());
 }
 
 template<formalism::Context C>
-auto evaluate(View<Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
+bool evaluate(View<Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>, C> element, const FactsView& facts_view)
+{
+    return visit([&](auto&& arg) { return evaluate(arg, facts_view); }, element.get_variant());
+}
+
+template<formalism::NumericEffectOpKind Op, formalism::FactKind T, formalism::Context C>
+float_t evaluate(View<Index<formalism::GroundNumericEffect<Op, T>>, C> element, const FactsView& facts_view)
+{
+    return formalism::apply(Op {}, evaluate(element.get_fterm(), facts_view), evaluate(element.get_fexpr(), facts_view));
+}
+
+template<formalism::FactKind T, formalism::Context C>
+float_t evaluate(View<Data<formalism::GroundNumericEffectOperator<T>>, C> element, const FactsView& facts_view)
 {
     return visit([&](auto&& arg) { return evaluate(arg, facts_view); }, element.get_variant());
 }

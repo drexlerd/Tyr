@@ -688,7 +688,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::Action>& el)
     fmt::print(os,
                "\nName: {}\n"
                "Condition: {}\n"
-               "Effect: {}",
+               "Effects: {}",
                to_string(el.name),
                to_string(el.condition),
                to_string(el.effects));
@@ -701,7 +701,7 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::Action>, C>& e
     fmt::print(os,
                "\nName: {}\n"
                "Condition: {}\n"
-               "Effect: {}",
+               "Effects: {}",
                to_string(el.get_name()),
                to_string(el.get_condition()),
                to_string(el.get_effects()));
@@ -712,7 +712,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::GroundAction>
 {
     fmt::print(os,
                "\nCondition: {}\n"
-               "Effect: {}",
+               "Effects: {}",
                to_string(el.condition),
                to_string(el.effects));
     return os;
@@ -723,7 +723,7 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::GroundAction>,
 {
     fmt::print(os,
                "\nCondition: {}\n"
-               "Effect: {}",
+               "Effects: {}",
                to_string(el.get_condition()),
                to_string(el.get_effects()));
     return os;
