@@ -27,12 +27,6 @@
 namespace tyr
 {
 
-namespace formalism
-{
-struct Domain;     // forward declaration
-class Repository;  // forward declaration
-}
-
 template<typename T>
 struct Data
 {
