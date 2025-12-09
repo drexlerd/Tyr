@@ -28,15 +28,36 @@
 namespace tyr::planning
 {
 
-struct GroundTaskProgram
+class GroundTaskProgram
 {
-    // Mapping from program predicate to task rule
-    using PredicateToActionMapping = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
-                                                  View<Index<formalism::Rule>, formalism::OverlayRepository<formalism::Repository>>>;
+public:
+    // Mapping from program rule to task action; there may be multiple actions
+    using RuleToActionsMapping = UnorderedMap<View<Index<formalism::Rule>, formalism::Repository>,
+                                              std::vector<View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>>>>;
 
-    PredicateToActionMapping predicate_to_action;
+    using RuleToAxiomsMapping = UnorderedMap<View<Index<formalism::Rule>, formalism::Repository>,
+                                             std::vector<View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>>>>;
+
+    // Mapping from program object to task object
+    using ObjectToObjectMapping = UnorderedMap<View<Index<formalism::Object>, formalism::Repository>,
+                                               View<Index<formalism::Object>, formalism::OverlayRepository<formalism::Repository>>>;
 
     explicit GroundTaskProgram(const LiftedTask& task);
+
+    const RuleToActionsMapping& get_rule_to_actions_mapping() const noexcept;
+    const RuleToAxiomsMapping& get_rule_to_axioms_mapping() const noexcept;
+    const ObjectToObjectMapping& get_object_to_object_mapping() const noexcept;
+
+    View<Index<formalism::Program>, formalism::Repository> get_program() const noexcept;
+    const formalism::RepositoryPtr& get_repository() const noexcept;
+
+private:
+    RuleToActionsMapping m_rule_to_actions;
+    RuleToAxiomsMapping m_rule_to_axioms;
+    ObjectToObjectMapping m_object_to_object;
+
+    formalism::RepositoryPtr m_repository;
+    View<Index<formalism::Program>, formalism::Repository> m_program;
 };
 
 }

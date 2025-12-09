@@ -25,7 +25,7 @@ TODO
 
 TODO
 
-## 3. Datalog Interface
+## 3. Datalog Interface (Finished)
 
 The high level C++ datalog interface aims to be as follows
 
@@ -58,7 +58,7 @@ auto solution = tyr::solver::solve_bottomup(execuction_context, annotated, weigh
 
 The high level C++ planning interface aims to be as follows. 
 
-## 4.1 Lifted Planning
+## 4.1 Lifted Planning (Finished)
 
 We obtain a lifted task by parsing the PDDL. We can then iteratively expand the search space, starting from the initial node (or some arbitrary instantiated node), by computing their successor nodes each labeled with their ground action that generates it.
 

@@ -48,9 +48,9 @@ int main(int argc, char** argv)
 
     auto lifted_task = parser.parse_task(problem_filepath);
 
-    // std::cout << *domain << std::endl;
+    std::cout << *domain << std::endl;
 
-    // std::cout << *lifted_task << std::endl;
+    std::cout << *lifted_task << std::endl;
 
     auto initial_node = lifted_task->get_initial_node();
 

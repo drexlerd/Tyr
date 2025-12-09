@@ -215,8 +215,6 @@ LiftedTask::LiftedTask(DomainPtr domain,
     {
         const auto action = task.get_domain().get_actions()[action_index];
 
-        std::cout << action << std::endl;
-
         auto parameter_domains_per_cond_effect = analysis::DomainListListList {};
 
         for (uint_t cond_effect_index = 0; cond_effect_index < action.get_effects().size(); ++cond_effect_index)
