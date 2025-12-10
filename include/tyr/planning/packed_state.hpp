@@ -23,14 +23,16 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/planning/state_index.hpp"
 
+#include <concepts>
 #include <valla/valla.hpp>
 
 namespace tyr::planning
 {
-// template<typename T>
-// concept PackedStateConcept = requires(T packed_state) {
-//     { packed_state.get_index() } -> std::same_as<StateIndex>;
-// };
+template<typename T>
+concept PackedStateConcept = requires(T state) {
+    typename T::TaskType;
+    { state.get_index() } -> std::same_as<StateIndex>;
+};
 
 template<typename Task>
 class PackedState

@@ -29,6 +29,8 @@ template<>
 class Node<GroundTask>
 {
 public:
+    using TaskType = GroundTask;
+
     std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<GroundTask>>>
     get_labeled_successor_nodes();
 
@@ -38,7 +40,6 @@ public:
 private:
 };
 
-using GroundNodeList = std::vector<Node<GroundTask>>;
 }
 
 #endif

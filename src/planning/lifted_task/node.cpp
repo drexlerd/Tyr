@@ -26,6 +26,8 @@
 namespace tyr::planning
 {
 
+State<LiftedTask> Node<LiftedTask>::get_state() const { return m_task->get_state(m_state_index); }
+
 std::vector<std::pair<View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>>, Node<LiftedTask>>>
 Node<LiftedTask>::get_labeled_successor_nodes()
 {
@@ -37,5 +39,7 @@ void Node<LiftedTask>::get_labeled_successor_nodes(
 {
     m_task->get_labeled_successor_nodes(*this, out_nodes);
 }
+
+static_assert(NodeConcept<Node<LiftedTask>>);
 
 }

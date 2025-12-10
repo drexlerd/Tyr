@@ -32,6 +32,8 @@ template<>
 class PackedState<LiftedTask>
 {
 public:
+    using TaskType = LiftedTask;
+
     PackedState(StateIndex index, valla::Slot<uint_t> fluent_atoms, valla::Slot<uint_t> derived_atoms, valla::Slot<uint_t> numeric_variables) noexcept :
         m_index(index),
         m_fluent_atoms(fluent_atoms),
@@ -66,6 +68,8 @@ private:
     valla::Slot<uint_t> m_derived_atoms;
     valla::Slot<uint_t> m_numeric_variables;
 };
+
+static_assert(PackedStateConcept<PackedState<LiftedTask>>);
 }
 
 #endif

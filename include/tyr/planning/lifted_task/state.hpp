@@ -29,6 +29,8 @@ template<>
 class State<LiftedTask>
 {
 public:
+    using TaskType = LiftedTask;
+
     State(LiftedTask& task, SharedObjectPoolPtr<UnpackedState<LiftedTask>> unpacked) noexcept : m_unpacked(std::move(unpacked)), m_task(&task) {}
 
     StateIndex get_index() const noexcept { return m_unpacked->get_index(); }

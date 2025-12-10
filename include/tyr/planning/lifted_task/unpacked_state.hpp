@@ -33,6 +33,8 @@ template<>
 class UnpackedState<LiftedTask>
 {
 public:
+    using TaskType = LiftedTask;
+
     UnpackedState() = default;
 
     StateIndex& get_index() noexcept { return m_index; }
@@ -81,6 +83,8 @@ private:
     boost::dynamic_bitset<> m_derived_atoms;
     std::vector<float_t> m_numeric_variables;
 };
+
+static_assert(UnpackedStateConcept<UnpackedState<LiftedTask>>);
 }
 
 #endif

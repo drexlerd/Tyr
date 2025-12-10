@@ -27,6 +27,8 @@ template<>
 class State<GroundTask>
 {
 public:
+    using TaskType = GroundTask;
+
 private:
 };
 }

@@ -29,10 +29,12 @@ template<>
 class Node<LiftedTask>
 {
 public:
+    using TaskType = LiftedTask;
+
     Node() noexcept : m_task(nullptr), m_state_metric(), m_state_index(StateIndex::max()) {}
     Node(StateIndex state_index, float_t state_metric, LiftedTask& task) noexcept : m_task(&task), m_state_metric(state_metric), m_state_index(state_index) {}
 
-    State<LiftedTask> get_state() const { return m_task->get_state(m_state_index); }
+    State<LiftedTask> get_state() const;
     LiftedTask& get_task() noexcept { return *m_task; }
     const LiftedTask& get_task() const noexcept { return *m_task; }
     float_t get_state_metric() const noexcept { return m_state_metric; }
@@ -50,7 +52,6 @@ private:
     StateIndex m_state_index;
 };
 
-using LiftedNodeList = std::vector<Node<LiftedTask>>;
 }
 
 #endif

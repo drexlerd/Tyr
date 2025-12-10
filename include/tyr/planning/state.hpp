@@ -20,17 +20,20 @@
 
 #include "tyr/common/shared_object_pool.hpp"
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/state_index.hpp"
 #include "tyr/planning/unpacked_state.hpp"
+
+#include <concepts>
 
 namespace tyr::planning
 {
-// template<typename T>
-// concept StateConcept = requires(T state) {
-//     { state.get_index() } -> std::same_as<StateIndex>;
-//     { state.get_task() } -> std::same_as<typename T::TaskType&>;
-//     { state.get_task() } -> std::same_as<const typename T::TaskType&>;
-//     { state.get_unpacked_state() } -> std::same_as<const UnpackedState<typename T::TaskType>&>;
-// };
+template<typename T>
+concept StateConcept = requires(T state) {
+    typename T::TaskType;
+    { state.get_index() } -> std::same_as<StateIndex>;
+    { state.get_task() } -> std::same_as<typename T::TaskType&>;
+    { state.get_unpacked_state() } -> std::same_as<const UnpackedState<typename T::TaskType>&>;
+};
 
 template<typename Task>
 class State

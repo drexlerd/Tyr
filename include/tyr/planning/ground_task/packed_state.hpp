@@ -29,6 +29,8 @@ template<>
 class PackedState<GroundTask>
 {
 public:
+    using TaskType = GroundTask;
+
 private:
 };
 }

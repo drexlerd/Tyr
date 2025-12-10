@@ -23,26 +23,25 @@
 #include "tyr/planning/state.hpp"
 #include "tyr/planning/state_index.hpp"
 
+#include <concepts>
+
 namespace tyr::planning
 {
-// template<typename T>
-// concept NodeConcept = requires(T node) {
-//     { node.get_state() } -> std::same_as<State<typename T::TaskType>>;
-//     { node.get_task() } -> std::same_as<typename T::TaskType&>;
-//     { node.get_task() } -> std::same_as<const typename T::TaskType&>;
-//     { node.get_state_metric() } -> std::same_as<float_t>;
-//     { node.get_state_index() } -> std::same_as<StateIndex>;
-//     { node.get_labeled_successor_nodes() };
-// };
+template<typename T>
+concept NodeConcept = requires(T node) {
+    typename T::TaskType;
+    { node.get_state() } -> std::same_as<State<typename T::TaskType>>;
+    { node.get_task() } -> std::same_as<typename T::TaskType&>;
+    { node.get_state_metric() } -> std::same_as<float_t>;
+    { node.get_state_index() } -> std::same_as<StateIndex>;
+    { node.get_labeled_successor_nodes() };
+};
 
 template<typename Task>
 class Node
 {
     static_assert(dependent_false<Task>::value, "Node is not defined for type T.");
 };
-
-template<typename Task>
-using NodeList = std::vector<Node<Task>>;
 }
 
 #endif

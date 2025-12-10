@@ -23,15 +23,15 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/planning/state_index.hpp"
 
-#include <boost/dynamic_bitset.hpp>
-#include <vector>
+#include <concepts>
 
 namespace tyr::planning
 {
-// template<typename T>
-// concept UnpackedStateConcept = requires(T state) {
-//     { state.get_index() } -> std::same_as<StateIndex>;
-// };
+template<typename T>
+concept UnpackedStateConcept = requires(T state) {
+    typename T::TaskType;
+    { state.get_index() } -> std::same_as<StateIndex&>;
+};
 
 template<typename Task>
 class UnpackedState

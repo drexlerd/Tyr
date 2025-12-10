@@ -31,6 +31,8 @@ template<>
 class UnpackedState<GroundTask>
 {
 public:
+    using TaskType = GroundTask;
+
     UnpackedState() = default;
 
 private:

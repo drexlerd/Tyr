@@ -51,4 +51,6 @@ const std::vector<float_t>& State<LiftedTask>::get_numeric_variables() const noe
 template const std::vector<float_t>& State<LiftedTask>::get_numeric_variables<formalism::StaticTag>() const noexcept;
 template const std::vector<float_t>& State<LiftedTask>::get_numeric_variables<formalism::FluentTag>() const noexcept;
 
+static_assert(StateConcept<State<LiftedTask>>);
+
 }
