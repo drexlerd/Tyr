@@ -14,6 +14,12 @@ def add_parallel_fraction(content, props):
         else:
             props["parallel_fraction"] = 0.0
 
+def add_coverage(content, props):
+    if "ground_seq_total_time" in props:
+        props["coverage"] = 1
+    else:
+        props["coverage"] = 0
+
 class GroundTaskParser(Parser):
     """
     Num fluent atoms: 90901
@@ -41,4 +47,5 @@ class GroundTaskParser(Parser):
         self.add_pattern("merge_seq_total_time", r"merge_seq_total_time: (\d+) ms", type=int)
         self.add_function(add_dummy_attribute)
         self.add_function(add_parallel_fraction)
+        self.add_function(add_coverage)
         

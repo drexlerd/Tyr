@@ -34,6 +34,7 @@ ATTRIBUTES = [
     "ground_seq_total_time",
     "merge_seq_total_time",
     "parallel_fraction",
+    "coverage",
 ]
 
 exp = Experiment("2025-11-10-ground_task-combined")

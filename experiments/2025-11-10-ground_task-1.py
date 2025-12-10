@@ -105,6 +105,7 @@ ATTRIBUTES = [
     "ground_seq_total_time",
     "merge_seq_total_time",
     "parallel_fraction",
+    "coverage",
 ]
 
 MEMORY_LIMIT = 8000
