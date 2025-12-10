@@ -60,7 +60,7 @@ The high level C++ planning interface is as follows:
 
 ## 4.1 Lifted Planning (Finished)
 
-We obtain a lifted task by parsing the PDDL. Then, we translate the lifted task into three datalog program: P1) ground task program, P2) action program, P3) axiom program. Program P1 encodes the delete free task to approximate the set of applicable ground actions and axioms in the task. Program P2 encodes a the action preconditions to overapproximate the set of ground applicable actions in a state. Program P3 encodes the axiom evaluation in a state. Given these three programs, the API allows to retrieve the extended initial node (sparse state + metric value) using program P1. Given a node, compute the labeled successor nodes (ground action + node) using programs P1 and P2.
+We obtain a lifted task by parsing the PDDL. Then, we translate the lifted task into three datalog program: P1) ground task program, P2) action program, P3) axiom program. Program P1 encodes the delete free task to approximate the set of applicable ground actions and axioms in the task. Program P2 encodes a the action preconditions to overapproximate the set of ground applicable actions in a state. Program P3 encodes the axiom evaluation in a state. Given these three programs, the API allows to retrieve the extended initial node (sparse state + metric value) using program P3. Given a node, compute the labeled successor nodes (ground action + node) using programs P2 and P3.
 
 ```cpp
 #include <tyr/tyr.hpp>
@@ -78,7 +78,7 @@ auto successor_nodes = initial_node.get_labeled_successor_nodes();
 
 ## 4.1 Grounded Planning
 
-From the lifted task and using program P3, we can compute a ground task that overapproximates the delete-free reachable ground atoms, actions, and axioms. From those, we derived mutex groups, enabling us to form a more compact finite-domain representation (FDR). The remaining interface remains identical, but uses FDR instead of a sparse state representation.
+From the lifted task and using program P1, we can compute a ground task that overapproximates the delete-free reachable ground atoms, actions, and axioms. From those, we derived mutex groups, enabling us to form a more compact finite-domain representation (FDR). The remaining interface remains identical, but uses FDR instead of a sparse state representation.
 
 ```cpp
 #include <tyr/tyr.hpp>
