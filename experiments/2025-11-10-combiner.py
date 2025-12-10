@@ -3,6 +3,8 @@
 from lab.experiment import Experiment
 from downward.reports.absolute import AbsoluteReport
 
+from lab.reports import Attribute, geometric_mean
+
 # Create custom report class with suitable info and error attributes.
 class BaseReport(AbsoluteReport):
     INFO_ATTRIBUTES = ["time_limit", "memory_limit"]
@@ -33,7 +35,7 @@ ATTRIBUTES = [
     "num_rules",
     "ground_seq_total_time",
     "merge_seq_total_time",
-    "parallel_fraction",
+    Attribute("parallel_fraction", function=geometric_mean),
     "coverage",
 ]
 

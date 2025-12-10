@@ -11,7 +11,7 @@ from downward import suites
 from downward.reports.absolute import AbsoluteReport
 from lab.environments import TetralithEnvironment, LocalEnvironment
 from lab.experiment import Experiment
-from lab.reports import Attribute, geometric_mean
+from lab.reports import Attribute, geometric_mean, arithmetic_mean
 
 DIR = Path(__file__).resolve().parent
 REPO = DIR.parent
@@ -104,7 +104,7 @@ ATTRIBUTES = [
     "num_rules",
     "ground_seq_total_time",
     "merge_seq_total_time",
-    "parallel_fraction",
+    Attribute("parallel_fraction", function=geometric_mean),
     "coverage",
 ]
 

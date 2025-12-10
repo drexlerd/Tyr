@@ -104,7 +104,7 @@ ATTRIBUTES = [
     "num_rules",
     "ground_seq_total_time",
     "merge_seq_total_time",
-    "parallel_fraction",
+    Attribute("parallel_fraction", function=geometric_mean),
     "coverage",
 ]
 
