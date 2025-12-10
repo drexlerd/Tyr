@@ -408,6 +408,16 @@ LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node)
 {
     auto result = std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>> {};
 
+    get_labeled_successor_nodes(node, result);
+
+    return result;
+}
+
+void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
+                                             std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>>& out_nodes)
+{
+    out_nodes.clear();
+
     const auto state = node.get_state();
     const auto& fluent_atoms = state.get_atoms<FluentTag>();
     const auto& derived_atoms = state.get_atoms<DerivedTag>();
@@ -425,14 +435,7 @@ LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node)
                                                           m_action_context,
                                                           m_action_program,
                                                           m_parameter_domains_per_cond_effect_per_action,
-                                                          result);
-
-    return result;
-}
-
-void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
-                                             std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>>& out_nodes)
-{
+                                                          out_nodes);
 }
 
 GroundTaskPtr LiftedTask::get_ground_task()
