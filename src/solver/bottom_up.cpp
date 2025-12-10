@@ -48,6 +48,8 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
 
         const uint_t num_rules = stratum.size();
 
+        auto start_ground_seq = std::chrono::steady_clock::now();
+
         tbb::parallel_for(uint_t { 0 },
                           num_rules,
                           [&](uint_t j)
@@ -78,13 +80,16 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                               ++rule_execution_context.statistics.num_executions;
                           });
 
+        auto end_ground_seq = std::chrono::steady_clock::now();
+        program_execution_context.statistics.ground_seq_total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(end_ground_seq - start_ground_seq);
+
         /**
          * Sequential merge.
          */
 
         /// --- Sequentially combine results into a temporary staging repository to prevent modying the program's repository
 
-        auto start_merge = std::chrono::steady_clock::now();
+        auto start_merge_seq = std::chrono::steady_clock::now();
 
         program_execution_context.clear_stage();
 
@@ -126,8 +131,8 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
             program_execution_context.facts_execution_context.assignment_sets.fluent_sets.predicate.insert(merge_head);
         }
 
-        auto end_merge = std::chrono::steady_clock::now();
-        program_execution_context.statistics.merge_total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(end_merge - start_merge);
+        auto end_merge_seq = std::chrono::steady_clock::now();
+        program_execution_context.statistics.merge_seq_total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(end_merge_seq - start_merge_seq);
 
         if (!discovered_new_fact)
             break;  ///< Reached fixed point

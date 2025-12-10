@@ -102,8 +102,9 @@ ATTRIBUTES = [
     "ground_total_time_max",
     "ground_total_time_median",
     "num_rules",
-    "merge_total_time",
-    "merge_total_time_average_over_rules",
+    "ground_seq_total_time",
+    "merge_seq_total_time",
+    "parallel_fraction",
 ]
 
 MEMORY_LIMIT = 8000

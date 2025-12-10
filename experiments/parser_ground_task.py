@@ -6,6 +6,14 @@ from lab import tools
 def add_dummy_attribute(content, props):
     props["dummy_attribute"] = 1
 
+def add_parallel_fraction(content, props):
+    if "ground_seq_total_time" in props and "merge_seq_total_time" in props:
+        total = (props["ground_seq_total_time"] + props["merge_seq_total_time"])
+        if total > 0:
+            props["parallel_fraction"] = props["ground_seq_total_time"] / total
+        else:
+            props["parallel_fraction"] = 0.0
+
 class GroundTaskParser(Parser):
     """
     Num fluent atoms: 90901
@@ -29,7 +37,8 @@ class GroundTaskParser(Parser):
         self.add_pattern("ground_total_time_max", r"ground_total_time_max: (\d+) ms", type=int)
         self.add_pattern("ground_total_time_median", r"ground_total_time_median: (\d+) ms", type=int)
         self.add_pattern("num_rules", r"num_rules: (\d+)", type=int)
-        self.add_pattern("merge_total_time", r"merge_total_time: (\d+) ms", type=int)
-        self.add_pattern("merge_total_time_average_over_rules", r"merge_total_time_average_over_rules: (\d+) ms", type=int)
+        self.add_pattern("ground_seq_total_time", r"ground_seq_total_time: (\d+) ms", type=int)
+        self.add_pattern("merge_seq_total_time", r"merge_seq_total_time: (\d+) ms", type=int)
         self.add_function(add_dummy_attribute)
+        self.add_function(add_parallel_fraction)
         

@@ -31,8 +31,9 @@ ATTRIBUTES = [
     "ground_total_time_max",
     "ground_total_time_median",
     "num_rules",
-    "merge_total_time",
-    "merge_total_time_average_over_rules",
+    "ground_seq_total_time",
+    "merge_seq_total_time",
+    "parallel_fraction",
 ]
 
 exp = Experiment("2025-11-10-ground_task-combined")

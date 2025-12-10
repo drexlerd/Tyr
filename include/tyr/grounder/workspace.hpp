@@ -231,7 +231,8 @@ struct ProgramExecutionContext
 
     struct Statistics
     {
-        std::chrono::nanoseconds merge_total_time { 0 };
+        std::chrono::nanoseconds ground_seq_total_time { 0 };
+        std::chrono::nanoseconds merge_seq_total_time { 0 };
     } statistics;
 
     ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, formalism::RepositoryPtr repository);

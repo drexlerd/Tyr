@@ -445,16 +445,15 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     auto to_ms = [](auto d) { return std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(d).count(); };
 
+    std::cout << "num_rules: " << ground_context.rule_execution_contexts.size() << std::endl;
     std::cout << "init_total_time_min: " << to_ms(aggregated_statistics.init_total_time_min) << " ms" << std::endl;
     std::cout << "init_total_time_max: " << to_ms(aggregated_statistics.init_total_time_max) << " ms" << std::endl;
     std::cout << "init_total_time_median: " << to_ms(aggregated_statistics.init_total_time_median) << " ms" << std::endl;
     std::cout << "ground_total_time_min: " << to_ms(aggregated_statistics.ground_total_time_min) << " ms" << std::endl;
     std::cout << "ground_total_time_max: " << to_ms(aggregated_statistics.ground_total_time_max) << " ms" << std::endl;
     std::cout << "ground_total_time_median: " << to_ms(aggregated_statistics.ground_total_time_median) << " ms" << std::endl;
-    std::cout << "num_rules: " << ground_context.rule_execution_contexts.size() << std::endl;
-    std::cout << "merge_total_time: " << to_ms(ground_context.statistics.merge_total_time) << " ms" << std::endl;
-    std::cout << "merge_total_time_average_over_rules: " << to_ms(ground_context.statistics.merge_total_time) / ground_context.rule_execution_contexts.size()
-              << " ms" << std::endl;
+    std::cout << "ground_seq_total_time: " << to_ms(ground_context.statistics.ground_seq_total_time) << " ms" << std::endl;
+    std::cout << "merge_seq_total_time: " << to_ms(ground_context.statistics.merge_seq_total_time) << " ms" << std::endl;
 
     ground_context.clear_program_to_task();
 
