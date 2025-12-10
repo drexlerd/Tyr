@@ -41,19 +41,17 @@ BENCHMARKS_DIR = Path(os.environ["BENCHMARKS_PDDL"])
 NODE = platform.node()
 REMOTE = re.match(r"tetralith\d+.nsc.liu.se|n\d+", NODE)
 
-ENVS = []
-for num_threads in [1,2,4,8]:
-    if REMOTE:
-        ENV = TetralithEnvironment(
-            setup=TetralithEnvironment.DEFAULT_SETUP,
-            memory_per_cpu="2840M",
-            cpus_per_task=num_threads,
-            extra_options="#SBATCH --account=naiss2025-22-1245")
-        ENVS.append((num_threads, ENV))
-        
-    else:
-        ENV = LocalEnvironment(processes=6)
-        ENVS.append((num_threads, ENV))
+NUM_THREADS = 4
+
+if REMOTE:
+    ENV = TetralithEnvironment(
+        setup=TetralithEnvironment.DEFAULT_SETUP,
+        memory_per_cpu="2840M",
+        cpus_per_task=NUM_THREADS,
+        extra_options="#SBATCH --account=naiss2025-22-1245")
+    
+else:
+    ENV = LocalEnvironment(processes=6)
 
 if REMOTE:
     SUITES = [
@@ -100,64 +98,63 @@ ATTRIBUTES = [
 
 MEMORY_LIMIT = 8000
 
-for num_threads, ENV in ENVS:
-    # Create a new experiment.
-    exp = Experiment(path=f"data/2025-11-10-ground_task-{num_threads}", environment=ENV)
-    exp.add_parser(GroundTaskParser())
+# Create a new experiment.
+exp = Experiment(environment=ENV)
+exp.add_parser(GroundTaskParser())
 
-    PLANNER_DIR = REPO / "build" / "exe" / "ground_task"
+PLANNER_DIR = REPO / "build" / "exe" / "ground_task"
 
-    exp.add_resource("planner_exe", PLANNER_DIR)
+exp.add_resource("planner_exe", PLANNER_DIR)
 
-    for prefix, SUITE in SUITES:
-        for task in suites.build_suite(BENCHMARKS_DIR / prefix, SUITE):
-                ################ Grounded ################
-                run = exp.add_run()
-                run.add_resource("domain", task.domain_file, symlink=True)
-                run.add_resource("problem", task.problem_file, symlink=True)
+for prefix, SUITE in SUITES:
+    for task in suites.build_suite(BENCHMARKS_DIR / prefix, SUITE):
+            ################ Grounded ################
+            run = exp.add_run()
+            run.add_resource("domain", task.domain_file, symlink=True)
+            run.add_resource("problem", task.problem_file, symlink=True)
 
-                run.add_command(
-                    f"ground_task-{num_threads}",
-                    [
-                        "./{planner_exe}", 
-                        "-D",
-                        "{domain}", 
-                        "-P",
-                        "{problem}", 
-                        "-N", 
-                        str(num_threads)
-                    ],
-                    TIME_LIMIT,
-                    MEMORY_LIMIT,
-                )
-                # AbsoluteReport needs the following properties:
-                # 'domain', 'problem', 'algorithm', 'coverage'.
-                run.set_property("domain", task.domain)
-                run.set_property("problem", task.problem)
-                run.set_property("algorithm", f"ground_task-{num_threads}")
-                # BaseReport needs the following properties:
-                # 'time_limit', 'memory_limit'.
-                run.set_property("time_limit", TIME_LIMIT)
-                run.set_property("memory_limit", MEMORY_LIMIT)
-                # Every run has to have a unique id in the form of a list.
-                # The algorithm name is only really needed when there are
-                # multiple algorithms.
-                run.set_property("id", [f"ground_task-{num_threads}", task.domain, task.problem])
+            run.add_command(
+                f"ground_task-{NUM_THREADS}",
+                [
+                    "./{planner_exe}", 
+                    "-D",
+                    "{domain}", 
+                    "-P",
+                    "{problem}", 
+                    "-N", 
+                    str(NUM_THREADS)
+                ],
+                TIME_LIMIT,
+                MEMORY_LIMIT,
+            )
+            # AbsoluteReport needs the following properties:
+            # 'domain', 'problem', 'algorithm', 'coverage'.
+            run.set_property("domain", task.domain)
+            run.set_property("problem", task.problem)
+            run.set_property("algorithm", f"ground_task-{NUM_THREADS}")
+            # BaseReport needs the following properties:
+            # 'time_limit', 'memory_limit'.
+            run.set_property("time_limit", TIME_LIMIT)
+            run.set_property("memory_limit", MEMORY_LIMIT)
+            # Every run has to have a unique id in the form of a list.
+            # The algorithm name is only really needed when there are
+            # multiple algorithms.
+            run.set_property("id", [f"ground_task-{NUM_THREADS}", task.domain, task.problem])
 
-    # Add step that writes experiment files to disk.
-    exp.add_step("build", exp.build)
+# Add step that writes experiment files to disk.
+exp.add_step("build", exp.build)
 
-    # Add step that executes all runs.
-    exp.add_step("start", exp.start_runs)
+# Add step that executes all runs.
+exp.add_step("start", exp.start_runs)
 
-    exp.add_step("parse", exp.parse)
+exp.add_step("parse", exp.parse)
 
-    # Add step that collects properties from run directories and
-    # writes them to *-eval/properties.
-    exp.add_fetcher(name="fetch")
+# Add step that collects properties from run directories and
+# writes them to *-eval/properties.
+exp.add_fetcher(name="fetch")
 
-    # Make a report.
-    exp.add_report(BaseReport(attributes=ATTRIBUTES), outfile="report.html")
+# Make a report.
+exp.add_report(BaseReport(attributes=ATTRIBUTES), outfile="report.html")
 
-    # Parse the commandline and run the specified steps.
-    exp.run_steps()
+# Parse the commandline and run the specified steps.
+exp.run_steps()
