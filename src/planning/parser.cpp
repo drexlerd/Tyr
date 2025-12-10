@@ -24,7 +24,7 @@ namespace tyr::planning
 
 Parser::Parser(const fs::path& domain_filepath, const loki::ParserOptions& options) :
     m_loki_parser(loki::Parser(loki::read_file(domain_filepath), domain_filepath, options)),
-    m_loki_domain_translation_result(loki::translate(m_loki_parser.get_domain(), loki::TranslatorOptions())),
+    m_loki_domain_translation_result(loki::translate(m_loki_parser.get_domain())),
     m_domain_repository(std::make_shared<formalism::Repository>())
 {
     auto translator = LokiToTyrTranslator();

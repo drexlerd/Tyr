@@ -16,6 +16,7 @@
  */
 
 #include <argparse/argparse.hpp>
+#include <chrono>
 #include <tyr/tyr.hpp>
 
 using namespace tyr;
@@ -51,5 +52,11 @@ int main(int argc, char** argv)
 
     std::cout << *lifted_task << std::endl;
 
+    auto start_time = std::chrono::high_resolution_clock::now();
+
     auto ground_task = lifted_task->get_ground_task();
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    std::cout << "Total task grounding time: " << duration_ms.count() << " ms" << std::endl;
 }
