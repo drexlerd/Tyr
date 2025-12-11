@@ -42,7 +42,7 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
     while (true)
     {
         /**
-         * Embarassingly parallel evaluation.
+         * Parallel evaluation.
          */
 
         const uint_t num_rules = stratum.size();

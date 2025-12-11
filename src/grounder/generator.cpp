@@ -47,13 +47,14 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
     const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
 
-    if (is_applicable(ground_rule, fact_sets_adapter))
+    if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
     {
-        // std::cout << ground_rule << std::endl;
+        rule_execution_context.all_bindings.insert(ground_rule.get_binding());
 
-        if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
+        if (is_applicable(ground_rule, fact_sets_adapter))
         {
-            rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+            // std::cout << ground_rule << std::endl;
+
             rule_execution_context.bindings.push_back(ground_rule.get_binding());
         }
     }
@@ -78,13 +79,14 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
         auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-        if (is_applicable(ground_rule, fact_sets_adapter))
+        if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
         {
-            // std::cout << ground_rule << std::endl;
+            rule_execution_context.all_bindings.insert(ground_rule.get_binding());
 
-            if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
+            if (is_applicable(ground_rule, fact_sets_adapter))
             {
-                rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+                // std::cout << ground_rule << std::endl;
+
                 rule_execution_context.bindings.push_back(ground_rule.get_binding());
             }
         }
@@ -116,11 +118,14 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
             auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-            if (is_applicable(ground_rule, fact_sets_adapter))
+            if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
             {
-                if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
+                rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+
+                if (is_applicable(ground_rule, fact_sets_adapter))
                 {
-                    rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+                    // std::cout << ground_rule << std::endl;
+
                     rule_execution_context.bindings.push_back(ground_rule.get_binding());
                 }
             }

@@ -152,6 +152,7 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
     /// --- Initialized derived atoms in unpacked state
     for (const auto& [rule, program_binding] : axiom_context.program_merge_rules)
     {
+        // TODO: this got ugly, essentially as compile + merge + ground
         auto atom_builder_ptr = axiom_context.builder.get_builder<GroundAtom<DerivedTag>>();
         auto& atom_builder = *atom_builder_ptr;
         atom_builder.clear();
