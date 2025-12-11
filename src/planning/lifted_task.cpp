@@ -444,6 +444,8 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     solve_bottom_up(ground_context);
 
+    std::cout << m_ground_program.get_program() << std::endl;
+
     auto aggregated_statistics = grounder::RuleExecutionContext::compute_aggregate_statistics(ground_context.rule_execution_contexts);
 
     auto to_ms = [](auto d) { return std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(d).count(); };

@@ -710,13 +710,14 @@ TaskVariableDomains compute_variable_domains(View<Index<formalism::Task>, formal
     auto action_domains = to_list(action_domain_sets);
     auto axiom_domains = to_list(axiom_domain_sets);
 
-    // std::cout << static_predicate_domains << std::endl;
-    // std::cout << fluent_predicate_domains << std::endl;
-    // std::cout << derived_predicate_domains << std::endl;
-    // std::cout << static_function_domains << std::endl;
-    // std::cout << fluent_function_domains << std::endl;
-    // std::cout << action_domains << std::endl;
-    // std::cout << axiom_domains << std::endl;
+    std::cout << std::endl;
+    std::cout << static_predicate_domains << std::endl;
+    std::cout << fluent_predicate_domains << std::endl;
+    std::cout << derived_predicate_domains << std::endl;
+    std::cout << static_function_domains << std::endl;
+    std::cout << fluent_function_domains << std::endl;
+    std::cout << action_domains << std::endl;
+    std::cout << axiom_domains << std::endl;
 
     return TaskVariableDomains { std::move(static_predicate_domains),
                                  std::move(fluent_predicate_domains),

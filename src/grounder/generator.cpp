@@ -111,13 +111,16 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
             if (is_applicable(ground_rule, fact_sets_adapter))
             {
-                // std::cout << ground_rule << std::endl;
-
                 if (!rule_execution_context.all_ground_rules.contains(ground_rule))
                 {
                     rule_execution_context.all_ground_rules.insert(ground_rule);
                     rule_execution_context.ground_rules.push_back(ground_rule);
                 }
+            }
+            else
+            {
+                std::cout << "Inapplicable rule: " << std::endl;
+                std::cout << ground_rule << std::endl;
             }
         });
 }

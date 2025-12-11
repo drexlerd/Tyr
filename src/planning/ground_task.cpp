@@ -33,10 +33,10 @@ GroundTask::GroundTask(DomainPtr domain,
                        IndexList<GroundAction> ground_actions,
                        IndexList<GroundAxiom> ground_axioms)
 {
-    // std::cout << make_view(fluent_atoms, *this->m_overlay_repository) << std::endl;
-    // std::cout << make_view(derived_atoms, *this->m_overlay_repository) << std::endl;
-    // std::cout << make_view(ground_actions, *this->m_overlay_repository) << std::endl;
-    // std::cout << make_view(ground_axioms, *this->m_overlay_repository) << std::endl;
+    std::cout << make_view(fluent_atoms, *overlay_repository) << std::endl;
+    std::cout << make_view(derived_atoms, *overlay_repository) << std::endl;
+    std::cout << make_view(ground_actions, *overlay_repository) << std::endl;
+    std::cout << make_view(ground_axioms, *overlay_repository) << std::endl;
 
     std::cout << "Num fluent atoms: " << fluent_atoms.size() << std::endl;
     std::cout << "Num derived atoms: " << derived_atoms.size() << std::endl;
