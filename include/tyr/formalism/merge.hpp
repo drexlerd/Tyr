@@ -377,8 +377,7 @@ auto merge(View<Index<Binding>, C_SRC> element, Builder& builder, C_DST& destina
                                    auto& binding = *binding_ptr;
                                    binding.clear();
 
-                                   for (const auto object : element.get_objects())
-                                       binding.objects.push_back(merge(object, builder, destination, cache).get_index());
+                                   binding.objects = element.get_objects().get_data();
 
                                    canonicalize(binding);
                                    return destination.get_or_create(binding, builder.get_buffer()).first;
@@ -433,7 +432,7 @@ auto merge(View<Index<Atom<T>>, C_SRC> element, Builder& builder, C_DST& destina
                                    auto& atom = *atom_ptr;
                                    atom.clear();
 
-                                   atom.predicate = merge(element.get_predicate(), builder, destination, cache).get_index();
+                                   atom.predicate = element.get_predicate().get_index();
                                    for (const auto term : element.get_terms())
                                        atom.terms.push_back(merge(term, builder, destination, cache).get_data());
 
@@ -453,7 +452,7 @@ auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& d
                                          auto& atom = *atom_ptr;
                                          atom.clear();
 
-                                         atom.predicate = merge(element.get_predicate(), builder, destination, cache).get_index();
+                                         atom.predicate = element.get_predicate().get_index();
                                          atom.binding = merge(element.get_binding(), builder, destination, cache).get_index();
 
                                          canonicalize(atom);
@@ -529,7 +528,7 @@ auto merge(View<Index<FunctionTerm<T>>, C_SRC> element, Builder& builder, C_DST&
                                            auto& fterm = *fterm_ptr;
                                            fterm.clear();
 
-                                           fterm.function = merge(element.get_function(), builder, destination, cache).get_index();
+                                           fterm.function = element.get_function().get_index();
                                            for (const auto term : element.get_terms())
                                                fterm.terms.push_back(merge(term, builder, destination, cache).get_data());
 
@@ -549,7 +548,7 @@ auto merge(View<Index<GroundFunctionTerm<T>>, C_SRC> element, Builder& builder, 
                                                  auto& fterm = *fterm_ptr;
                                                  fterm.clear();
 
-                                                 fterm.function = merge(element.get_function(), builder, destination, cache).get_index();
+                                                 fterm.function = element.get_function().get_index();
                                                  fterm.binding = merge(element.get_binding(), builder, destination, cache).get_index();
 
                                                  canonicalize(fterm);

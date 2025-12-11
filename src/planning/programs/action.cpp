@@ -26,10 +26,8 @@
 
 namespace tyr::planning
 {
-static View<Index<formalism::Program>, formalism::Repository> create(const LiftedTask& task,
-                                                                     ApplicableActionProgram::ObjectToObjectMapping& object_to_object_mapping,
-                                                                     ApplicableActionProgram::RuleToActionsMapping& rule_to_actions_mapping,
-                                                                     formalism::Repository& repository)
+static View<Index<formalism::Program>, formalism::Repository>
+create(const LiftedTask& task, ApplicableActionProgram::RuleToActionsMapping& rule_to_actions_mapping, formalism::Repository& repository)
 {
     auto merge_cache = formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>();
     auto compile_cache = formalism::CompileCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>();
@@ -61,21 +59,9 @@ static View<Index<formalism::Program>, formalism::Repository> create(const Lifte
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-    {
-        const auto new_object = formalism::merge(object, builder, repository, merge_cache);
-
-        object_to_object_mapping.emplace(new_object, object);
-
-        program.objects.push_back(new_object.get_index());
-    }
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
     for (const auto object : task.get_task().get_objects())
-    {
-        const auto new_object = formalism::merge(object, builder, repository, merge_cache);
-
-        object_to_object_mapping.emplace(new_object, object);
-
-        program.objects.push_back(new_object.get_index());
-    }
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
 
     for (const auto atom : task.get_task().get_atoms<formalism::StaticTag>())
         program.static_atoms.push_back(formalism::merge(atom, builder, repository, merge_cache).get_index());
@@ -169,15 +155,12 @@ static View<Index<formalism::Program>, formalism::Repository> create(const Lifte
 
 ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :
     m_rule_to_actions(),
-    m_object_to_object(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_object_to_object, m_rule_to_actions, *m_repository))
+    m_program(create(task, m_rule_to_actions, *m_repository))
 {
 }
 
 const ApplicableActionProgram::RuleToActionsMapping& ApplicableActionProgram::get_rule_to_actions_mapping() const noexcept { return m_rule_to_actions; }
-
-const ApplicableActionProgram::ObjectToObjectMapping& ApplicableActionProgram::get_object_to_object_mapping() const noexcept { return m_object_to_object; }
 
 View<Index<formalism::Program>, formalism::Repository> ApplicableActionProgram::get_program() const noexcept { return m_program; }
 

@@ -36,20 +36,14 @@ public:
         UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
                      View<Index<formalism::Predicate<formalism::DerivedTag>>, formalism::OverlayRepository<formalism::Repository>>>;
 
-    // Mapping from program object to task object
-    using ObjectToObjectMapping = UnorderedMap<View<Index<formalism::Object>, formalism::Repository>,
-                                               View<Index<formalism::Object>, formalism::OverlayRepository<formalism::Repository>>>;
-
     explicit AxiomEvaluatorProgram(const LiftedTask& task);
 
     const PredicateToPredicateMapping& get_predicate_to_predicate_mapping() const;
-    const ObjectToObjectMapping& get_object_to_object_mapping() const;
     View<Index<formalism::Program>, formalism::Repository> get_program() const;
     const formalism::RepositoryPtr& get_repository() const;
 
 private:
     PredicateToPredicateMapping m_prediate_to_predicate;
-    ObjectToObjectMapping m_object_to_object;
 
     formalism::RepositoryPtr m_repository;
     View<Index<formalism::Program>, formalism::Repository> m_program;

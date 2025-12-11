@@ -93,10 +93,8 @@ View<Index<formalism::Rule>, formalism::Repository> static create_axiom_rule(
     return repository.get_or_create(rule, builder.get_buffer()).first;
 }
 
-static View<Index<formalism::Program>, formalism::Repository> create(const LiftedTask& task,
-                                                                     AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate_mapping,
-                                                                     AxiomEvaluatorProgram::ObjectToObjectMapping& object_to_object_mapping,
-                                                                     formalism::Repository& repository)
+static View<Index<formalism::Program>, formalism::Repository>
+create(const LiftedTask& task, AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate_mapping, formalism::Repository& repository)
 {
     auto merge_cache = formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>();
     auto compile_cache = formalism::CompileCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>();
@@ -138,21 +136,9 @@ static View<Index<formalism::Program>, formalism::Repository> create(const Lifte
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-    {
-        const auto new_object = formalism::merge(object, builder, repository, merge_cache);
-
-        object_to_object_mapping.emplace(new_object, object);
-
-        program.objects.push_back(new_object.get_index());
-    }
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
     for (const auto object : task.get_task().get_objects())
-    {
-        const auto new_object = formalism::merge(object, builder, repository, merge_cache);
-
-        object_to_object_mapping.emplace(new_object, object);
-
-        program.objects.push_back(new_object.get_index());
-    }
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
 
     for (const auto atom : task.get_task().get_atoms<formalism::StaticTag>())
         program.static_atoms.push_back(formalism::merge(atom, builder, repository, merge_cache).get_index());
@@ -175,15 +161,12 @@ static View<Index<formalism::Program>, formalism::Repository> create(const Lifte
 
 AxiomEvaluatorProgram::AxiomEvaluatorProgram(const LiftedTask& task) :
     m_prediate_to_predicate(),
-    m_object_to_object(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_prediate_to_predicate, m_object_to_object, *m_repository))
+    m_program(create(task, m_prediate_to_predicate, *m_repository))
 {
 }
 
 const AxiomEvaluatorProgram::PredicateToPredicateMapping& AxiomEvaluatorProgram::get_predicate_to_predicate_mapping() const { return m_prediate_to_predicate; }
-
-const AxiomEvaluatorProgram::ObjectToObjectMapping& AxiomEvaluatorProgram::get_object_to_object_mapping() const { return m_object_to_object; }
 
 View<Index<formalism::Program>, formalism::Repository> AxiomEvaluatorProgram::get_program() const { return m_program; }
 

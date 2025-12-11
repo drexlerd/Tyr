@@ -187,7 +187,6 @@ View<Index<formalism::Rule>, formalism::Repository> static create_delete_free_ax
 }
 
 static View<Index<formalism::Program>, formalism::Repository> create(const LiftedTask& task,
-                                                                     GroundTaskProgram::ObjectToObjectMapping& object_to_object_mapping,
                                                                      GroundTaskProgram::RuleToActionsMapping& rule_to_actions_mapping,
                                                                      GroundTaskProgram::RuleToAxiomsMapping& rule_to_axioms_mapping,
                                                                      formalism::Repository& repository)
@@ -222,21 +221,9 @@ static View<Index<formalism::Program>, formalism::Repository> create(const Lifte
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-    {
-        const auto new_object = formalism::merge(object, builder, repository, merge_cache);
-
-        object_to_object_mapping.emplace(new_object, object);
-
-        program.objects.push_back(new_object.get_index());
-    }
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
     for (const auto object : task.get_task().get_objects())
-    {
-        const auto new_object = formalism::merge(object, builder, repository, merge_cache);
-
-        object_to_object_mapping.emplace(new_object, object);
-
-        program.objects.push_back(new_object.get_index());
-    }
+        program.objects.push_back(formalism::merge(object, builder, repository, merge_cache).get_index());
 
     for (const auto atom : task.get_task().get_atoms<formalism::StaticTag>())
         program.static_atoms.push_back(formalism::merge(atom, builder, repository, merge_cache).get_index());
@@ -271,17 +258,14 @@ static View<Index<formalism::Program>, formalism::Repository> create(const Lifte
 GroundTaskProgram::GroundTaskProgram(const LiftedTask& task) :
     m_rule_to_actions(),
     m_rule_to_axioms(),
-    m_object_to_object(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_object_to_object, m_rule_to_actions, m_rule_to_axioms, *m_repository))
+    m_program(create(task, m_rule_to_actions, m_rule_to_axioms, *m_repository))
 {
 }
 
 const GroundTaskProgram::RuleToActionsMapping& GroundTaskProgram::get_rule_to_actions_mapping() const noexcept { return m_rule_to_actions; }
 
 const GroundTaskProgram::RuleToAxiomsMapping& GroundTaskProgram::get_rule_to_axioms_mapping() const noexcept { return m_rule_to_axioms; }
-
-const GroundTaskProgram::ObjectToObjectMapping& GroundTaskProgram::get_object_to_object_mapping() const noexcept { return m_object_to_object; }
 
 View<Index<formalism::Program>, formalism::Repository> GroundTaskProgram::get_program() const noexcept { return m_program; }
 

@@ -158,11 +158,8 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
         atom_builder.clear();
 
         atom_builder.predicate = axiom_program.get_predicate_to_predicate_mapping().at(rule.get_head().get_predicate()).get_index();
-        binding.clear();
-        for (const auto object : program_binding.get_objects())
-            binding.push_back(axiom_program.get_object_to_object_mapping().at(object).get_index());
-        auto binding_view = make_view(binding, task_repository);
-        atom_builder.binding = to_binding(binding_view, axiom_context.builder, task_repository).get_index();
+        atom_builder.binding =
+            to_binding(make_view(program_binding.get_objects().get_data(), task_repository), axiom_context.builder, task_repository).get_index();
 
         canonicalize(atom_builder);
         const auto derived_atom = task_repository.get_or_create(atom_builder, axiom_context.builder.get_buffer()).first;
@@ -190,18 +187,16 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
 
     for (const auto& [rule, program_binding] : action_context.program_merge_rules)
     {
-        binding.clear();
-        for (const auto object : program_binding.get_objects())
-            binding.push_back(action_program.get_object_to_object_mapping().at(object).get_index());
-
-        auto binding_view = make_view(binding, task_repository);
-
         for (const auto action : action_program.get_rule_to_actions_mapping().at(rule))
         {
             const auto action_index = action.get_index().get_value();
 
-            const auto ground_action =
-                ground(action, binding_view, binding_full, parameter_domains_per_cond_effect_per_action[action_index], action_context.builder, task_repository);
+            const auto ground_action = ground(action,
+                                              make_view(program_binding.get_objects().get_data(), task_repository),
+                                              binding_full,
+                                              parameter_domains_per_cond_effect_per_action[action_index],
+                                              action_context.builder,
+                                              task_repository);
 
             effect_families.clear();
             if (grounder::is_applicable(ground_action, facts_view, effect_families))
@@ -499,18 +494,12 @@ GroundTaskPtr LiftedTask::get_ground_task()
     {
         if (m_ground_program.get_rule_to_actions_mapping().contains(rule))
         {
-            binding.clear();
-            for (const auto object : program_binding.get_objects())
-                binding.push_back(m_ground_program.get_object_to_object_mapping().at(object).get_index());
-
-            auto binding_view = make_view(binding, *this->m_overlay_repository);
-
             for (const auto action : m_ground_program.get_rule_to_actions_mapping().at(rule))
             {
                 const auto action_index = action.get_index().get_value();
 
                 const auto ground_action = ground(action,
-                                                  binding_view,
+                                                  make_view(program_binding.get_objects().get_data(), *this->m_overlay_repository),
                                                   binding_full,
                                                   m_parameter_domains_per_cond_effect_per_action[action_index],
                                                   ground_context.builder,
@@ -550,15 +539,12 @@ GroundTaskPtr LiftedTask::get_ground_task()
     {
         if (m_ground_program.get_rule_to_axioms_mapping().contains(rule))
         {
-            binding.clear();
-            for (const auto object : program_binding.get_objects())
-                binding.push_back(m_ground_program.get_object_to_object_mapping().at(object).get_index());
-
-            auto binding_view = make_view(binding, *this->m_overlay_repository);
-
             for (const auto axiom : m_ground_program.get_rule_to_axioms_mapping().at(rule))
             {
-                const auto ground_axiom = ground(axiom, binding_view, ground_context.builder, *this->m_overlay_repository);
+                const auto ground_axiom = ground(axiom,
+                                                 make_view(program_binding.get_objects().get_data(), *this->m_overlay_repository),
+                                                 ground_context.builder,
+                                                 *this->m_overlay_repository);
 
                 if (is_statically_applicable(ground_axiom, facts_view))
                 {
