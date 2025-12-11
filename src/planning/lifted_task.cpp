@@ -463,7 +463,7 @@ GroundTaskPtr LiftedTask::get_ground_task()
     std::cout << "merge_seq_total_time: " << to_ms(ground_context.statistics.merge_seq_total_time) << " ms" << std::endl;
     const auto total_time = (ground_context.statistics.ground_seq_total_time + ground_context.statistics.merge_seq_total_time).count();
     const auto parallel_time = ground_context.statistics.ground_seq_total_time.count();
-    std::cout << "parallel_fraction: " << ((total_time > 0) ? static_cast<double>(parallel_time) / total_time : 0.0) << std::endl;
+    std::cout << "parallel_fraction: " << ((total_time > 0) ? static_cast<double>(parallel_time) / total_time : 1.0) << std::endl;
 
     ground_context.clear_program_to_task();
 
