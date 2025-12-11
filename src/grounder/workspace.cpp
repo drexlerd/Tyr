@@ -90,11 +90,18 @@ RuleExecutionContext::RuleExecutionContext(View<Index<formalism::Rule>, formalis
     local(std::make_shared<formalism::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     repository(parent, *local),
     all_bindings(),
-    bindings()
+    bindings(),
+    stage_repository(std::make_shared<formalism::Repository>()),
+    stage_merge_cache()
 {
 }
 
-void RuleExecutionContext::clear() noexcept { local->clear(); }
+void RuleExecutionContext::clear() noexcept
+{
+    local->clear();
+    stage_repository->clear();
+    stage_merge_cache.clear();
+}
 
 void RuleExecutionContext::initialize(const AssignmentSets<formalism::Repository>& assignment_sets)
 {
@@ -127,9 +134,6 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
     thread_execution_contexts(),
     builder(),
     planning_execution_context(),
-    stage_repository(std::make_shared<formalism::Repository>()),
-    stage_merge_cache(),
-    stage_merge_rules(),
     stage_to_program_merge_cache(),
     program_to_task_merge_cache(),
     program_to_task_compile_cache(),
@@ -140,13 +144,6 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
         rule_execution_contexts.emplace_back(program.get_rules()[i], domains.rule_domains[i], facts_execution_context.assignment_sets.static_sets, *repository);
         rule_execution_contexts.back().initialize(facts_execution_context.assignment_sets);
     }
-}
-
-void ProgramExecutionContext::clear_stage() noexcept
-{
-    stage_repository->clear();
-    stage_merge_cache.clear();
-    stage_merge_rules.clear();
 }
 
 void ProgramExecutionContext::clear_stage_to_program() noexcept { stage_to_program_merge_cache.clear(); }

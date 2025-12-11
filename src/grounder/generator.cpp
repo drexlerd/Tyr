@@ -22,6 +22,7 @@
 
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/ground.hpp"
+#include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
@@ -43,19 +44,24 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
     thread_execution_context.binding.clear();
     const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
 
-    auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
-
     const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
 
-    if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
+    auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+
+    const auto merge_binding = formalism::merge(ground_rule.get_binding(),
+                                                thread_execution_context.builder,
+                                                *rule_execution_context.stage_repository,
+                                                rule_execution_context.stage_merge_cache);
+
+    if (!rule_execution_context.all_bindings.contains(merge_binding))
     {
-        rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+        rule_execution_context.all_bindings.insert(merge_binding);
 
         if (is_applicable(ground_rule, fact_sets_adapter))
         {
             // std::cout << ground_rule << std::endl;
 
-            rule_execution_context.bindings.push_back(ground_rule.get_binding());
+            rule_execution_context.bindings.push_back(merge_binding);
         }
     }
 }
@@ -79,15 +85,20 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
         auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-        if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
+        const auto merge_binding = formalism::merge(ground_rule.get_binding(),
+                                                    thread_execution_context.builder,
+                                                    *rule_execution_context.stage_repository,
+                                                    rule_execution_context.stage_merge_cache);
+
+        if (!rule_execution_context.all_bindings.contains(merge_binding))
         {
-            rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+            rule_execution_context.all_bindings.insert(merge_binding);
 
             if (is_applicable(ground_rule, fact_sets_adapter))
             {
                 // std::cout << ground_rule << std::endl;
 
-                rule_execution_context.bindings.push_back(ground_rule.get_binding());
+                rule_execution_context.bindings.push_back(merge_binding);
             }
         }
     }
@@ -118,15 +129,20 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
             auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-            if (!rule_execution_context.all_bindings.contains(ground_rule.get_binding()))
+            const auto merge_binding = formalism::merge(ground_rule.get_binding(),
+                                                        thread_execution_context.builder,
+                                                        *rule_execution_context.stage_repository,
+                                                        rule_execution_context.stage_merge_cache);
+
+            if (!rule_execution_context.all_bindings.contains(merge_binding))
             {
-                rule_execution_context.all_bindings.insert(ground_rule.get_binding());
+                rule_execution_context.all_bindings.insert(merge_binding);
 
                 if (is_applicable(ground_rule, fact_sets_adapter))
                 {
                     // std::cout << ground_rule << std::endl;
 
-                    rule_execution_context.bindings.push_back(ground_rule.get_binding());
+                    rule_execution_context.bindings.push_back(merge_binding);
                 }
             }
         });

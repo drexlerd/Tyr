@@ -147,8 +147,6 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 {
     axiom_context.clear_program_to_task();
 
-    auto& binding = axiom_context.planning_execution_context.binding;
-
     /// --- Initialized derived atoms in unpacked state
     for (const auto& [rule, program_binding] : axiom_context.program_merge_rules)
     {
@@ -179,7 +177,6 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
 {
     out_successors.clear();
 
-    auto& binding = action_context.planning_execution_context.binding;
     auto& binding_full = action_context.planning_execution_context.binding_full;
     auto& effect_families = action_context.planning_execution_context.effect_families;
     auto& positive_effects = action_context.planning_execution_context.positive_effects;
@@ -464,6 +461,9 @@ GroundTaskPtr LiftedTask::get_ground_task()
     std::cout << "ground_total_time_median: " << to_ms(aggregated_statistics.ground_total_time_median) << " ms" << std::endl;
     std::cout << "ground_seq_total_time: " << to_ms(ground_context.statistics.ground_seq_total_time) << " ms" << std::endl;
     std::cout << "merge_seq_total_time: " << to_ms(ground_context.statistics.merge_seq_total_time) << " ms" << std::endl;
+    const auto total_time = (ground_context.statistics.ground_seq_total_time + ground_context.statistics.merge_seq_total_time).count();
+    const auto parallel_time = ground_context.statistics.ground_seq_total_time.count();
+    std::cout << "parallel_fraction: " << ((total_time > 0) ? static_cast<double>(parallel_time) / total_time : 0.0) << std::endl;
 
     ground_context.clear_program_to_task();
 
@@ -478,7 +478,6 @@ GroundTaskPtr LiftedTask::get_ground_task()
                                                 initial_state.template get_numeric_variables<formalism::FluentTag>(),
                                                 initial_node.get_state_metric());
 
-    auto& binding = ground_context.planning_execution_context.binding;
     auto& binding_full = ground_context.planning_execution_context.binding_full;
 
     /// --- Ground Atoms

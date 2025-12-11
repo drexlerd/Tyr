@@ -68,10 +68,13 @@ struct RuleExecutionContext
     kpkc::DenseKPartiteGraph consistency_graph;
     kpkc::Workspace kpkc_workspace;
     std::shared_ptr<formalism::Repository> local;
-    formalism::OverlayRepository<formalism::Repository> repository;
+    formalism::OverlayRepository<formalism::Repository> repository;  // deduplicate with the global
 
-    UnorderedSet<View<Index<formalism::Binding>, formalism::OverlayRepository<formalism::Repository>>> all_bindings;
-    std::vector<View<Index<formalism::Binding>, formalism::OverlayRepository<formalism::Repository>>> bindings;
+    UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> all_bindings;
+    std::vector<View<Index<formalism::Binding>, formalism::Repository>> bindings;
+
+    formalism::RepositoryPtr stage_repository;  // backup for sequential merge
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> stage_merge_cache;
 
     struct Statistics
     {
@@ -171,7 +174,6 @@ struct ThreadExecutionContext
 
 struct PlanningExecutionContext
 {
-    IndexList<formalism::Object> binding;
     IndexList<formalism::Object> binding_full;
     formalism::EffectFamilyList effect_families;
     boost::dynamic_bitset<> positive_effects;
@@ -198,14 +200,6 @@ struct ProgramExecutionContext
     formalism::Builder builder;
 
     PlanningExecutionContext planning_execution_context;
-
-    // Stage
-    formalism::RepositoryPtr stage_repository;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> stage_merge_cache;
-
-    UnorderedSet<std::pair<View<Index<formalism::Rule>, formalism::Repository>, View<Index<formalism::Binding>, formalism::Repository>>> stage_merge_rules;
-
-    void clear_stage() noexcept;
 
     // Stage to program
     formalism::MergeCache<formalism::Repository, formalism::Repository> stage_to_program_merge_cache;

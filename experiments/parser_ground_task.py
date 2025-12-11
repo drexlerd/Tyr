@@ -6,14 +6,6 @@ from lab import tools
 def add_dummy_attribute(content, props):
     props["dummy_attribute"] = 1
 
-def add_parallel_fraction(content, props):
-    if "ground_seq_total_time" in props and "merge_seq_total_time" in props:
-        total = (props["ground_seq_total_time"] + props["merge_seq_total_time"])
-        if total > 0:
-            props["parallel_fraction"] = props["ground_seq_total_time"] / total
-        else:
-            props["parallel_fraction"] = 0.0
-
 def add_coverage(content, props):
     if "ground_seq_total_time" in props:
         props["coverage"] = 1
@@ -39,6 +31,7 @@ class GroundTaskParser(Parser):
         self.add_pattern("ground_total_time_median", r"ground_total_time_median: (.+) ms", type=float)
         self.add_pattern("ground_seq_total_time", r"ground_seq_total_time: (.+) ms", type=float)
         self.add_pattern("merge_seq_total_time", r"merge_seq_total_time: (.+) ms", type=float)
+        self.add_pattern("parallel_fraction", r"parallel_fraction: (.+)", type=float)
 
         self.add_pattern("num_fluent_atoms", r"Num fluent atoms: (\d+)", type=int)
         self.add_pattern("num_derived_atoms", r"Num derived atoms: (\d+)", type=int)
@@ -46,6 +39,6 @@ class GroundTaskParser(Parser):
         self.add_pattern("num_ground_axioms", r"Num ground axioms: (\d+)", type=int)
         self.add_pattern("total_task_grounding_time", r"Total task grounding time: (\d+) ms", type=int)
         self.add_function(add_dummy_attribute)
-        self.add_function(add_parallel_fraction)
+
         self.add_function(add_coverage)
         
