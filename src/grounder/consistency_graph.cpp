@@ -21,6 +21,7 @@
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment_sets.hpp"
 #include "tyr/grounder/declarations.hpp"

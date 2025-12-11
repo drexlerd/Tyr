@@ -29,6 +29,7 @@
 #include "tyr/grounder/declarations.hpp"
 #include "tyr/grounder/fact_sets.hpp"
 #include "tyr/grounder/facts_view.hpp"
+#include "tyr/grounder/formatter.hpp"
 #include "tyr/grounder/kpkc.hpp"
 #include "tyr/grounder/workspace.hpp"
 
@@ -68,6 +69,9 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
     {
         thread_execution_context.binding.clear();
         const auto& vertex = rule_execution_context.static_consistency_graph.get_vertex(vertex_index);
+
+        assert(uint_t(vertex.get_parameter_index()) == 0);
+
         thread_execution_context.binding.push_back(vertex.get_object_index());
 
         const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
@@ -98,11 +102,14 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
         rule_execution_context.kpkc_workspace,
         [&](auto&& clique)
         {
-            thread_execution_context.binding.clear();
+            thread_execution_context.binding.resize(clique.size());
             for (const auto vertex_index : clique)
             {
                 const auto& vertex = rule_execution_context.static_consistency_graph.get_vertex(vertex_index);
-                thread_execution_context.binding.push_back(Index<formalism::Object>(vertex.get_object_index()));
+
+                assert(uint_t(vertex.get_parameter_index()) < clique.size());
+
+                thread_execution_context.binding[uint_t(vertex.get_parameter_index())] = vertex.get_object_index();
             }
 
             const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
@@ -116,11 +123,6 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                     rule_execution_context.all_ground_rules.insert(ground_rule);
                     rule_execution_context.ground_rules.push_back(ground_rule);
                 }
-            }
-            else
-            {
-                std::cout << "Inapplicable rule: " << std::endl;
-                std::cout << ground_rule << std::endl;
             }
         });
 }
