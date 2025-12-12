@@ -27,9 +27,9 @@
 #include "tyr/formalism/merge.hpp"
 #include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
+#include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/generator.hpp"
-#include "tyr/grounder/workspace.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
@@ -329,8 +329,16 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_action_program(*this),
     m_axiom_program(*this),
     m_ground_program(*this),
-    m_action_context(m_action_program.get_program(), m_action_program.get_repository()),
-    m_axiom_context(m_axiom_program.get_program(), m_axiom_program.get_repository()),
+    m_action_context(m_action_program.get_program(),
+                     m_action_program.get_repository(),
+                     m_action_program.get_domains(),
+                     m_action_program.get_strata(),
+                     m_action_program.get_listeners()),
+    m_axiom_context(m_axiom_program.get_program(),
+                    m_axiom_program.get_repository(),
+                    m_axiom_program.get_domains(),
+                    m_axiom_program.get_strata(),
+                    m_axiom_program.get_listeners()),
     m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(task))
 {
     for (const auto atom : task.template get_atoms<formalism::StaticTag>())
@@ -444,7 +452,11 @@ void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
 
 GroundTaskPtr LiftedTask::get_ground_task()
 {
-    auto ground_context = grounder::ProgramExecutionContext(m_ground_program.get_program(), m_ground_program.get_repository());
+    auto ground_context = grounder::ProgramExecutionContext(m_ground_program.get_program(),
+                                                            m_ground_program.get_repository(),
+                                                            m_ground_program.get_domains(),
+                                                            m_ground_program.get_strata(),
+                                                            m_ground_program.get_listeners());
 
     solve_bottom_up(ground_context);
 

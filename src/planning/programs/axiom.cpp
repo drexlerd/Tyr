@@ -162,14 +162,25 @@ create(const LiftedTask& task, AxiomEvaluatorProgram::PredicateToPredicateMappin
 AxiomEvaluatorProgram::AxiomEvaluatorProgram(const LiftedTask& task) :
     m_prediate_to_predicate(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_prediate_to_predicate, *m_repository))
+    m_program(create(task, m_prediate_to_predicate, *m_repository)),
+    m_domains(analysis::compute_variable_domains(m_program)),
+    m_strata(analysis::compute_rule_stratification(m_program)),
+    m_listeners(analysis::compute_listeners(m_strata))
 {
 }
 
-const AxiomEvaluatorProgram::PredicateToPredicateMapping& AxiomEvaluatorProgram::get_predicate_to_predicate_mapping() const { return m_prediate_to_predicate; }
+const AxiomEvaluatorProgram::PredicateToPredicateMapping& AxiomEvaluatorProgram::get_predicate_to_predicate_mapping() const noexcept
+{
+    return m_prediate_to_predicate;
+}
 
-View<Index<formalism::Program>, formalism::Repository> AxiomEvaluatorProgram::get_program() const { return m_program; }
+View<Index<formalism::Program>, formalism::Repository> AxiomEvaluatorProgram::get_program() const noexcept { return m_program; }
 
-const formalism::RepositoryPtr& AxiomEvaluatorProgram::get_repository() const { return m_repository; }
+const formalism::RepositoryPtr& AxiomEvaluatorProgram::get_repository() const noexcept { return m_repository; }
 
+const analysis::ProgramVariableDomains& AxiomEvaluatorProgram::get_domains() const noexcept { return m_domains; }
+
+const analysis::RuleStrata& AxiomEvaluatorProgram::get_strata() const noexcept { return m_strata; }
+
+const analysis::Listeners& AxiomEvaluatorProgram::get_listeners() const noexcept { return m_listeners; }
 }

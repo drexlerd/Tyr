@@ -38,10 +38,18 @@ TEST(TyrTests, TyrGrounderGenerator)
     std::cout << program << std::endl;
 
     /**
+     * Analysis 1
+     */
+
+    auto domains = analysis::compute_variable_domains(program);
+    auto strata = analysis::compute_rule_stratification(program);
+    auto listeners = analysis::compute_listeners(strata);
+
+    /**
      * Allocation 1: Execution contexts
      */
 
-    auto program_execution_context = grounder::ProgramExecutionContext(program, repository);
+    auto program_execution_context = grounder::ProgramExecutionContext(program, repository, domains, strata, listeners);
 
     /**
      * Parallelization 1: Lock-free rule grounding

@@ -259,7 +259,10 @@ GroundTaskProgram::GroundTaskProgram(const LiftedTask& task) :
     m_rule_to_actions(),
     m_rule_to_axioms(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_rule_to_actions, m_rule_to_axioms, *m_repository))
+    m_program(create(task, m_rule_to_actions, m_rule_to_axioms, *m_repository)),
+    m_domains(analysis::compute_variable_domains(m_program)),
+    m_strata(analysis::compute_rule_stratification(m_program)),
+    m_listeners(analysis::compute_listeners(m_strata))
 {
 }
 
@@ -270,5 +273,11 @@ const GroundTaskProgram::RuleToAxiomsMapping& GroundTaskProgram::get_rule_to_axi
 View<Index<formalism::Program>, formalism::Repository> GroundTaskProgram::get_program() const noexcept { return m_program; }
 
 const formalism::RepositoryPtr& GroundTaskProgram::get_repository() const noexcept { return m_repository; }
+
+const analysis::ProgramVariableDomains& GroundTaskProgram::get_domains() const noexcept { return m_domains; }
+
+const analysis::RuleStrata& GroundTaskProgram::get_strata() const noexcept { return m_strata; }
+
+const analysis::Listeners& GroundTaskProgram::get_listeners() const noexcept { return m_listeners; }
 
 }

@@ -18,6 +18,9 @@
 #ifndef TYR_PLANNING_PROGRAMS_AXIOM_HPP_
 #define TYR_PLANNING_PROGRAMS_AXIOM_HPP_
 
+#include "tyr/analysis/domains.hpp"
+#include "tyr/analysis/listeners.hpp"
+#include "tyr/analysis/stratification.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
@@ -38,15 +41,22 @@ public:
 
     explicit AxiomEvaluatorProgram(const LiftedTask& task);
 
-    const PredicateToPredicateMapping& get_predicate_to_predicate_mapping() const;
-    View<Index<formalism::Program>, formalism::Repository> get_program() const;
-    const formalism::RepositoryPtr& get_repository() const;
+    const PredicateToPredicateMapping& get_predicate_to_predicate_mapping() const noexcept;
+    View<Index<formalism::Program>, formalism::Repository> get_program() const noexcept;
+    const formalism::RepositoryPtr& get_repository() const noexcept;
+    const analysis::ProgramVariableDomains& get_domains() const noexcept;
+    const analysis::RuleStrata& get_strata() const noexcept;
+    const analysis::Listeners& get_listeners() const noexcept;
 
 private:
     PredicateToPredicateMapping m_prediate_to_predicate;
 
     formalism::RepositoryPtr m_repository;
     View<Index<formalism::Program>, formalism::Repository> m_program;
+
+    analysis::ProgramVariableDomains m_domains;
+    analysis::RuleStrata m_strata;
+    analysis::Listeners m_listeners;
 };
 
 }

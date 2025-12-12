@@ -156,7 +156,10 @@ create(const LiftedTask& task, ApplicableActionProgram::RuleToActionsMapping& ru
 ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :
     m_rule_to_actions(),
     m_repository(std::make_shared<formalism::Repository>()),
-    m_program(create(task, m_rule_to_actions, *m_repository))
+    m_program(create(task, m_rule_to_actions, *m_repository)),
+    m_domains(analysis::compute_variable_domains(m_program)),
+    m_strata(analysis::compute_rule_stratification(m_program)),
+    m_listeners(analysis::compute_listeners(m_strata))
 {
 }
 
@@ -165,5 +168,11 @@ const ApplicableActionProgram::RuleToActionsMapping& ApplicableActionProgram::ge
 View<Index<formalism::Program>, formalism::Repository> ApplicableActionProgram::get_program() const noexcept { return m_program; }
 
 const formalism::RepositoryPtr& ApplicableActionProgram::get_repository() const noexcept { return m_repository; }
+
+const analysis::ProgramVariableDomains& ApplicableActionProgram::get_domains() const noexcept { return m_domains; }
+
+const analysis::RuleStrata& ApplicableActionProgram::get_strata() const noexcept { return m_strata; }
+
+const analysis::Listeners& ApplicableActionProgram::get_listeners() const noexcept { return m_listeners; }
 
 }

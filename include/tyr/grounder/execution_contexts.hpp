@@ -217,21 +217,22 @@ struct TaskToProgramExecutionContext
 
 struct ProgramExecutionContext
 {
-    /// --- Program
+    /// --- Program & analysis
     const View<Index<formalism::Program>, formalism::Repository> program;
     const formalism::RepositoryPtr repository;
+    const analysis::ProgramVariableDomains& domains;
+    const analysis::RuleStrata& strata;
+    const analysis::Listeners& listeners;
 
-    analysis::ProgramVariableDomains domains;
-    analysis::RuleStrata strata;
-    analysis::Listeners listeners;
+    /// --- Builder
+    formalism::Builder builder;
 
+    /// --- Execution contexts
     FactsExecutionContext facts_execution_context;
 
     std::vector<RuleExecutionContext> rule_execution_contexts;
 
     oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
-
-    formalism::Builder builder;
 
     PlanningExecutionContext planning_execution_context;
 
@@ -246,7 +247,11 @@ struct ProgramExecutionContext
         std::chrono::nanoseconds merge_seq_total_time { 0 };
     } statistics;
 
-    ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, formalism::RepositoryPtr repository);
+    ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program,
+                            formalism::RepositoryPtr repository,
+                            const analysis::ProgramVariableDomains& domains,
+                            const analysis::RuleStrata& strata,
+                            const analysis::Listeners& listeners);
 };
 
 }

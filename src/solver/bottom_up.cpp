@@ -21,8 +21,8 @@
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/ground.hpp"
 #include "tyr/formalism/views.hpp"
+#include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/grounder/generator.hpp"
-#include "tyr/grounder/workspace.hpp"
 
 #include <oneapi/tbb/enumerable_thread_specific.h>
 #include <oneapi/tbb/parallel_for.h>

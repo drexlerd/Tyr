@@ -23,7 +23,7 @@
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
-#include "tyr/grounder/workspace.hpp"
+#include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
 #include "tyr/planning/lifted_task/packed_state.hpp"

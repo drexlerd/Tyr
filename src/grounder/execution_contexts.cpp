@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/workspace.hpp"
+#include "tyr/grounder/execution_contexts.hpp"
 
 #include "tyr/formalism/formatter.hpp"
 
@@ -155,16 +155,20 @@ void TaskToProgramExecutionContext::clear() noexcept
  * ProgramExecutionContext
  */
 
-ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program, formalism::RepositoryPtr repository) :
+ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>, formalism::Repository> program,
+                                                 formalism::RepositoryPtr repository,
+                                                 const analysis::ProgramVariableDomains& domains,
+                                                 const analysis::RuleStrata& strata,
+                                                 const analysis::Listeners& listeners) :
     program(program),
     repository(repository),
-    domains(analysis::compute_variable_domains(program)),
-    strata(analysis::compute_rule_stratification(program)),
-    listeners(analysis::compute_listeners(strata)),
+    domains(domains),
+    strata(strata),
+    listeners(listeners),
+    builder(),
     facts_execution_context(program, domains),
     rule_execution_contexts(),
     thread_execution_contexts(),
-    builder(),
     planning_execution_context(),
     program_results_execution_context(),
     stage_to_program_execution_context(),

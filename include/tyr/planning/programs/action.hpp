@@ -18,6 +18,9 @@
 #ifndef TYR_PLANNING_PROGRAMS_ACTION_HPP_
 #define TYR_PLANNING_PROGRAMS_ACTION_HPP_
 
+#include "tyr/analysis/domains.hpp"
+#include "tyr/analysis/listeners.hpp"
+#include "tyr/analysis/stratification.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
@@ -38,15 +41,21 @@ public:
     explicit ApplicableActionProgram(const LiftedTask& task);
 
     const RuleToActionsMapping& get_rule_to_actions_mapping() const noexcept;
-
     View<Index<formalism::Program>, formalism::Repository> get_program() const noexcept;
     const formalism::RepositoryPtr& get_repository() const noexcept;
+    const analysis::ProgramVariableDomains& get_domains() const noexcept;
+    const analysis::RuleStrata& get_strata() const noexcept;
+    const analysis::Listeners& get_listeners() const noexcept;
 
 private:
     RuleToActionsMapping m_rule_to_actions;
 
     formalism::RepositoryPtr m_repository;
     View<Index<formalism::Program>, formalism::Repository> m_program;
+
+    analysis::ProgramVariableDomains m_domains;
+    analysis::RuleStrata m_strata;
+    analysis::Listeners m_listeners;
 };
 
 }
