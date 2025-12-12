@@ -15,24 +15,25 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_GROUND_TASK_STATE_HPP_
-#define TYR_PLANNING_GROUND_TASK_STATE_HPP_
+#ifndef TYR_FORMALISM_PLANNING_FDR_CONJUNCTIVE_CONDITION_INDEX_HPP_
+#define TYR_FORMALISM_PLANNING_FDR_CONJUNCTIVE_CONDITION_INDEX_HPP_
 
-#include "tyr/planning/declarations.hpp"
-#include "tyr/planning/state.hpp"
+#include "tyr/common/index_mixins.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
 
-namespace tyr::planning
+namespace tyr
 {
 template<>
-class State<GroundTask>
+struct Index<formalism::FDRConjunctiveCondition> : IndexMixin<Index<formalism::FDRConjunctiveCondition>>
 {
-public:
-    using TaskType = GroundTask;
+    using Tag = formalism::FDRConjunctiveCondition;
 
-private:
-    SharedObjectPoolPtr<UnpackedState<GroundTask>> m_unpacked;
-    GroundTask* m_task;
+    // Inherit constructors
+    using Base = IndexMixin<Index<formalism::FDRConjunctiveCondition>>;
+    using Base::Base;
 };
+
 }
 
 #endif

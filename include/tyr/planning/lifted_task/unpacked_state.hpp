@@ -76,9 +76,6 @@ public:
 
 private:
     StateIndex m_index;
-    /// TODO: if we change this to per relation storage, we obtain std::vector<boost::dynamic_bitset<>>
-    /// This is ugly in regards of clearning, because clearing the outter vector deallocates memory of the inner bitsets
-    /// Moreover, resizing the outter vector allocated memory of the inner bitsets.
     boost::dynamic_bitset<> m_fluent_atoms;
     boost::dynamic_bitset<> m_derived_atoms;
     std::vector<float_t> m_numeric_variables;

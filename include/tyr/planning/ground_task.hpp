@@ -67,6 +67,11 @@ private:
     size_t m_num_derived_atoms;
     size_t m_num_actions;
     size_t m_num_axioms;
+
+    IndexList<formalism::FDRVariable<formalism::FluentTag>> m_fluent_variables;
+    IndexList<formalism::FDRVariable<formalism::DerivedTag>> m_derived_variables;
+
+    DataList<formalism::FDRFact<formalism::FluentTag>> m_fluent_fact;
 };
 
 }

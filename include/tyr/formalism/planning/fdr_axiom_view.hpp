@@ -15,41 +15,39 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_PLANNING_GROUND_ACTION_VIEW_HPP_
-#define TYR_FORMALISM_PLANNING_GROUND_ACTION_VIEW_HPP_
+#ifndef TYR_FORMALISM_PLANNING_FDR_AXIOM_VIEW_HPP_
+#define TYR_FORMALISM_PLANNING_FDR_AXIOM_VIEW_HPP_
 
 #include "tyr/common/types.hpp"
-#include "tyr/common/vector.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_conjunctive_condition_view.hpp"
-#include "tyr/formalism/planning/action_view.hpp"
-#include "tyr/formalism/planning/ground_action_index.hpp"
-#include "tyr/formalism/planning/ground_conditional_effect_view.hpp"
+#include "tyr/formalism/planning/axiom_view.hpp"
+#include "tyr/formalism/planning/fdr_axiom_index.hpp"
+#include "tyr/formalism/planning/fdr_conjunctive_condition_view.hpp"
+#include "tyr/formalism/planning/fdr_fact_data.hpp"
 
 namespace tyr
 {
 
 template<formalism::Context C>
-class View<Index<formalism::GroundAction>, C>
+class View<Index<formalism::FDRAxiom>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::GroundAction> m_handle;
+    Index<formalism::FDRAxiom> m_handle;
 
 public:
-    using Tag = formalism::GroundAction;
+    using Tag = formalism::FDRAxiom;
 
-    View(Index<formalism::GroundAction> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::FDRAxiom> handle, const C& context) : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_action() const noexcept { return make_view(get_data().action, *m_context); }
-    auto get_condition() const noexcept { return make_view(get_data().condition, *m_context); }
-    auto get_effects() const noexcept { return make_view(get_data().effects, *m_context); }
-    auto get_arity() const noexcept { return get_condition().get_arity(); }
+    auto get_axiom() const noexcept { return make_view(get_data().axiom, *m_context); }
+    auto get_body() const noexcept { return make_view(get_data().body, *m_context); }
+    auto get_head() const noexcept { return make_view(get_data().head, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

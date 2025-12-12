@@ -385,6 +385,10 @@ struct FDRAxiom
 {
 };
 
+struct FDRTask
+{
+};
+
 class Builder;
 
 /**

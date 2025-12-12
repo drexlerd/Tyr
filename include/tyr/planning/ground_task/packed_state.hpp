@@ -23,15 +23,59 @@
 
 #include <valla/valla.hpp>
 
+/**
+ * Forward declarations
+ */
+
+namespace tyr::formalism
+{
+struct FluentTag;
+struct DerivedTag;
+}
+
+/**
+ * Definitions
+ */
+
 namespace tyr::planning
 {
+
 template<>
 class PackedState<GroundTask>
 {
 public:
     using TaskType = GroundTask;
 
+    PackedState(StateIndex index, const uint_t* fluent_facts, const uint_t* derived_facts, valla::Slot<uint_t> numeric_variables) noexcept :
+        m_index(index),
+        m_fluent_facts(fluent_facts),
+        m_derived_facts(derived_facts),
+        m_numeric_variables(numeric_variables)
+    {
+    }
+
+    StateIndex get_index() const noexcept { return m_index; }
+
+    template<formalism::FactKind T>
+    const uint_t* get_facts() const noexcept
+    {
+        if constexpr (std::same_as<T, formalism::FluentTag>)
+            return m_fluent_facts;
+        else if constexpr (std::same_as<T, formalism::DerivedTag>)
+            return m_derived_facts;
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
+
+    valla::Slot<uint_t> get_numeric_variables() const noexcept { return m_numeric_variables; }
+
+    auto identifying_members() const noexcept { return std::tie(m_fluent_facts, m_derived_facts, m_numeric_variables.i1, m_numeric_variables.i2); }
+
 private:
+    StateIndex m_index;
+    const uint_t* m_fluent_facts;
+    const uint_t* m_derived_facts;
+    valla::Slot<uint_t> m_numeric_variables;
 };
 }
 

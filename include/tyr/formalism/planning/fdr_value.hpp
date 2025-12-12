@@ -15,24 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_GROUND_TASK_STATE_HPP_
-#define TYR_PLANNING_GROUND_TASK_STATE_HPP_
+#ifndef TYR_FORMALISM_PLANNING_FDR_VALUE_HPP_
+#define TYR_FORMALISM_PLANNING_FDR_VALUE_HPP_
 
-#include "tyr/planning/declarations.hpp"
-#include "tyr/planning/state.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/common/uint_mixins.hpp"
+#include "tyr/formalism/declarations.hpp"
 
-namespace tyr::planning
+namespace tyr::formalism
 {
-template<>
-class State<GroundTask>
+struct FDRValue : FixedUintMixin<FDRValue>
 {
-public:
-    using TaskType = GroundTask;
-
-private:
-    SharedObjectPoolPtr<UnpackedState<GroundTask>> m_unpacked;
-    GroundTask* m_task;
+    using Base = FixedUintMixin<FDRValue>;
+    using Base::Base;
 };
+
 }
 
 #endif

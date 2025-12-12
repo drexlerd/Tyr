@@ -19,9 +19,27 @@
 #define TYR_PLANNING_GROUND_TASK_NODE_HPP_
 
 #include "tyr/common/config.hpp"
-#include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/planning/declarations.hpp"
 #include "tyr/planning/node.hpp"
+#include "tyr/planning/state_index.hpp"
+
+/**
+ * Forward declarations
+ */
+
+namespace tyr::formalism
+{
+template<typename T>
+class OverlayRepository;
+
+class Repository;
+
+struct GroundAction;
+}
+
+/**
+ * Definitions
+ */
 
 namespace tyr::planning
 {

@@ -15,41 +15,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_GROUND_CONJUNCTIVE_CONDITION_VIEW_HPP_
-#define TYR_FORMALISM_GROUND_CONJUNCTIVE_CONDITION_VIEW_HPP_
+#ifndef TYR_FORMALISM_PLANNING_FDR_FACT_VIEW_HPP_
+#define TYR_FORMALISM_PLANNING_FDR_FACT_VIEW_HPP_
 
 #include "tyr/common/types.hpp"
-#include "tyr/common/vector.hpp"
-#include "tyr/formalism/boolean_operator_view.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_conjunctive_condition_index.hpp"
-#include "tyr/formalism/ground_literal_view.hpp"
+#include "tyr/formalism/object_index.hpp"
 
 namespace tyr
 {
-template<formalism::Context C>
-class View<Index<formalism::GroundConjunctiveCondition>, C>
+template<formalism::FactKind T, formalism::Context C>
+class View<Data<formalism::FDRFact<T>>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::GroundConjunctiveCondition> m_handle;
+    Data<formalism::FDRFact<T>> m_handle;
 
 public:
-    using Tag = formalism::GroundConjunctiveCondition;
+    using Tag = formalism::FDRFact<T>;
 
-    View(Index<formalism::GroundConjunctiveCondition> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Data<formalism::FDRFact<T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return m_handle; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
-    auto get_index() const noexcept { return m_handle; }
-    template<formalism::FactKind T>
-    auto get_literals() const
-    {
-        return make_view(get_data().template get_literals<T>(), *m_context);
-    }
-    auto get_numeric_constraints() const { return make_view(get_data().numeric_constraints, *m_context); }
+    auto get_variable() const noexcept { return make_view(get_data().variable, *m_context); }
+    auto get_value() const noexcept { return get_data().value; }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
