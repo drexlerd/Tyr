@@ -60,6 +60,16 @@ struct FactsExecutionContext
     void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, formalism::Repository> view);
 };
 
+struct RuleStageExecutionContext
+{
+    formalism::RepositoryPtr repository;  // backup for sequential merge
+    UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> bindings;
+
+    RuleStageExecutionContext();
+
+    void clear() noexcept;
+};
+
 struct RuleExecutionContext
 {
     /// --- Thread
@@ -69,15 +79,9 @@ struct RuleExecutionContext
     kpkc::DenseKPartiteGraph consistency_graph;
     kpkc::Workspace kpkc_workspace;
     std::shared_ptr<formalism::Repository> local;
-    formalism::OverlayRepository<formalism::Repository> repository;  // deduplicate with the global
+    formalism::OverlayRepository<formalism::Repository> repository;  // deduplicate with the program repository
 
-    /// --- Copy thread to stage
-    UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> all_bindings;
     std::vector<View<Index<formalism::Binding>, formalism::Repository>> bindings;
-
-    /// --- Stage
-    formalism::RepositoryPtr stage_repository;  // backup for sequential merge
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> stage_merge_cache;
 
     struct Statistics
     {
@@ -192,13 +196,6 @@ struct ProgramResultsExecutionContext
     void clear() noexcept;
 };
 
-struct StageToProgramExecutionContext
-{
-    formalism::MergeCache<formalism::Repository, formalism::Repository> merge_cache;
-
-    void clear() noexcept;
-};
-
 struct ProgramToTaskExecutionContext
 {
     formalism::MergeCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> merge_cache;
@@ -231,13 +228,13 @@ struct ProgramExecutionContext
     FactsExecutionContext facts_execution_context;
 
     std::vector<RuleExecutionContext> rule_execution_contexts;
+    std::vector<RuleStageExecutionContext> rule_stage_execution_contexts;
 
     oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
 
     PlanningExecutionContext planning_execution_context;
 
     ProgramResultsExecutionContext program_results_execution_context;
-    StageToProgramExecutionContext stage_to_program_execution_context;
     ProgramToTaskExecutionContext program_to_task_execution_context;
     TaskToProgramExecutionContext task_to_program_execution_context;
 

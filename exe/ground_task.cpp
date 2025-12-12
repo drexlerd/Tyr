@@ -48,9 +48,9 @@ int main(int argc, char** argv)
 
     auto lifted_task = parser.parse_task(problem_filepath);
 
-    std::cout << *domain << std::endl;
+    // std::cout << *domain << std::endl;
 
-    std::cout << *lifted_task << std::endl;
+    // std::cout << *lifted_task << std::endl;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 

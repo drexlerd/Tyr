@@ -31,6 +31,7 @@ struct Data<formalism::BooleanOperator<T>>
     using Tag = formalism::BooleanOperator<T>;
 
     using Variant = ::cista::offset::variant<Index<formalism::BinaryOperator<formalism::OpEq, T>>,
+                                             Index<formalism::BinaryOperator<formalism::OpNe, T>>,
                                              Index<formalism::BinaryOperator<formalism::OpLe, T>>,
                                              Index<formalism::BinaryOperator<formalism::OpLt, T>>,
                                              Index<formalism::BinaryOperator<formalism::OpGe, T>>,

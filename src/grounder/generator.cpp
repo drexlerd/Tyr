@@ -15,9 +15,6 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_GENERATOR_HPP_
-#define TYR_GROUNDER_GENERATOR_HPP_
-
 #include "tyr/grounder/generator.hpp"
 
 #include "tyr/formalism/formatter.hpp"
@@ -39,6 +36,7 @@ namespace tyr::grounder
 
 void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
                          RuleExecutionContext& rule_execution_context,
+                         RuleStageExecutionContext& rule_stage_execution_context,
                          ThreadExecutionContext& thread_execution_context)
 {
     thread_execution_context.binding.clear();
@@ -48,14 +46,11 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
     auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-    const auto merge_binding = formalism::merge(ground_rule.get_binding(),
-                                                thread_execution_context.builder,
-                                                *rule_execution_context.stage_repository,
-                                                rule_execution_context.stage_merge_cache);
+    const auto merge_binding = formalism::merge(ground_rule.get_binding(), thread_execution_context.builder, *rule_stage_execution_context.repository);
 
-    if (!rule_execution_context.all_bindings.contains(merge_binding))
+    if (!rule_stage_execution_context.bindings.contains(merge_binding))
     {
-        rule_execution_context.all_bindings.insert(merge_binding);
+        rule_stage_execution_context.bindings.insert(merge_binding);
 
         if (is_applicable(ground_rule, fact_sets_adapter))
         {
@@ -68,6 +63,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
 void ground_unary_case(const FactsExecutionContext& fact_execution_context,
                        RuleExecutionContext& rule_execution_context,
+                       RuleStageExecutionContext& rule_stage_execution_context,
                        ThreadExecutionContext& thread_execution_context)
 {
     const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
@@ -85,14 +81,11 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
         auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-        const auto merge_binding = formalism::merge(ground_rule.get_binding(),
-                                                    thread_execution_context.builder,
-                                                    *rule_execution_context.stage_repository,
-                                                    rule_execution_context.stage_merge_cache);
+        const auto merge_binding = formalism::merge(ground_rule.get_binding(), thread_execution_context.builder, *rule_stage_execution_context.repository);
 
-        if (!rule_execution_context.all_bindings.contains(merge_binding))
+        if (!rule_stage_execution_context.bindings.contains(merge_binding))
         {
-            rule_execution_context.all_bindings.insert(merge_binding);
+            rule_stage_execution_context.bindings.insert(merge_binding);
 
             if (is_applicable(ground_rule, fact_sets_adapter))
             {
@@ -106,6 +99,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
 void ground_general_case(const FactsExecutionContext& fact_execution_context,
                          RuleExecutionContext& rule_execution_context,
+                         RuleStageExecutionContext& rule_stage_execution_context,
                          ThreadExecutionContext& thread_execution_context)
 {
     const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
@@ -129,14 +123,11 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
             auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-            const auto merge_binding = formalism::merge(ground_rule.get_binding(),
-                                                        thread_execution_context.builder,
-                                                        *rule_execution_context.stage_repository,
-                                                        rule_execution_context.stage_merge_cache);
+            const auto merge_binding = formalism::merge(ground_rule.get_binding(), thread_execution_context.builder, *rule_stage_execution_context.repository);
 
-            if (!rule_execution_context.all_bindings.contains(merge_binding))
+            if (!rule_stage_execution_context.bindings.contains(merge_binding))
             {
-                rule_execution_context.all_bindings.insert(merge_binding);
+                rule_stage_execution_context.bindings.insert(merge_binding);
 
                 if (is_applicable(ground_rule, fact_sets_adapter))
                 {
@@ -148,7 +139,10 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
         });
 }
 
-void ground(const FactsExecutionContext& fact_execution_context, RuleExecutionContext& rule_execution_context, ThreadExecutionContext& thread_execution_context)
+void ground(const FactsExecutionContext& fact_execution_context,
+            RuleExecutionContext& rule_execution_context,
+            RuleStageExecutionContext& rule_stage_execution_context,
+            ThreadExecutionContext& thread_execution_context)
 {
     const auto rule = rule_execution_context.rule;
     const auto& fact_sets = fact_execution_context.fact_sets;
@@ -159,13 +153,11 @@ void ground(const FactsExecutionContext& fact_execution_context, RuleExecutionCo
     const auto arity = rule.get_body().get_arity();
 
     if (arity == 0)
-        ground_nullary_case(fact_execution_context, rule_execution_context, thread_execution_context);
+        ground_nullary_case(fact_execution_context, rule_execution_context, rule_stage_execution_context, thread_execution_context);
     else if (arity == 1)
-        ground_unary_case(fact_execution_context, rule_execution_context, thread_execution_context);
+        ground_unary_case(fact_execution_context, rule_execution_context, rule_stage_execution_context, thread_execution_context);
     else
-        ground_general_case(fact_execution_context, rule_execution_context, thread_execution_context);
+        ground_general_case(fact_execution_context, rule_execution_context, rule_stage_execution_context, thread_execution_context);
 }
 
 }
-
-#endif

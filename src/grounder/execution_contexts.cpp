@@ -76,6 +76,18 @@ template void FactsExecutionContext::insert(View<IndexList<formalism::GroundFunc
 template void FactsExecutionContext::insert(View<IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>>, formalism::Repository> view);
 
 /**
+ * RuleStageExecutionContext
+ */
+
+RuleStageExecutionContext::RuleStageExecutionContext() : repository(std::make_shared<formalism::Repository>()), bindings() {}
+
+void RuleStageExecutionContext::clear() noexcept
+{
+    repository->clear();
+    bindings.clear();
+}
+
+/**
  * RuleExecutionContext
  */
 
@@ -89,18 +101,14 @@ RuleExecutionContext::RuleExecutionContext(View<Index<formalism::Rule>, formalis
     kpkc_workspace(grounder::kpkc::allocate_workspace(static_consistency_graph)),
     local(std::make_shared<formalism::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     repository(parent, *local),
-    all_bindings(),
-    bindings(),
-    stage_repository(std::make_shared<formalism::Repository>()),
-    stage_merge_cache()
+    bindings()
 {
 }
 
 void RuleExecutionContext::clear() noexcept
 {
     local->clear();
-    stage_repository->clear();
-    stage_merge_cache.clear();
+    bindings.clear();
 }
 
 void RuleExecutionContext::initialize(const AssignmentSets<formalism::Repository>& assignment_sets)
@@ -124,12 +132,6 @@ void ThreadExecutionContext::clear() noexcept
  */
 
 void ProgramResultsExecutionContext::clear() noexcept { rule_binding_pairs.clear(); }
-
-/**
- * StateToProgramExecutionContext
- */
-
-void StageToProgramExecutionContext::clear() noexcept { merge_cache.clear(); }
 
 /**
  * ProgramToTaskExecutionContext
@@ -168,10 +170,10 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
     builder(),
     facts_execution_context(program, domains),
     rule_execution_contexts(),
+    rule_stage_execution_contexts(),
     thread_execution_contexts(),
     planning_execution_context(),
     program_results_execution_context(),
-    stage_to_program_execution_context(),
     program_to_task_execution_context(),
     task_to_program_execution_context()
 {
@@ -180,6 +182,7 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
         rule_execution_contexts.emplace_back(program.get_rules()[i], domains.rule_domains[i], facts_execution_context.assignment_sets.static_sets, *repository);
         rule_execution_contexts.back().initialize(facts_execution_context.assignment_sets);
     }
+    rule_stage_execution_contexts.resize(rule_execution_contexts.size());
 }
 
 }

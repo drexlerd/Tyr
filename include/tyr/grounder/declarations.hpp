@@ -65,6 +65,7 @@ struct VertexAssignment;
 struct EdgeAssignment;
 
 struct FactsExecutionContext;
+struct RuleStageExecutionContext;
 struct RuleExecutionContext;
 struct ProgramExecutionContext;
 struct ThreadExecutionContext;

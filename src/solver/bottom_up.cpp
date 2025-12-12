@@ -46,28 +46,36 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                           [&](uint_t j)
                           {
                               const auto i = stratum[j].get_index().get_value();
-
                               auto& facts_execution_context = program_execution_context.facts_execution_context;
                               auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
-                              auto& thread_execution_context = program_execution_context.thread_execution_contexts.local();  // thread-local
-                              thread_execution_context.clear();
+                              auto& rule_stage_execution_context = program_execution_context.rule_stage_execution_contexts[i];
+                              auto& thread_execution_context = program_execution_context.thread_execution_contexts.local();
 
-                              auto start_init = std::chrono::steady_clock::now();
+                              {
+                                  ///--- Initialization phase
+                                  auto start_init = std::chrono::steady_clock::now();
 
-                              rule_execution_context.initialize(program_execution_context.facts_execution_context.assignment_sets);
+                                  thread_execution_context.clear();
+                                  rule_execution_context.clear();
+                                  rule_execution_context.initialize(program_execution_context.facts_execution_context.assignment_sets);
 
-                              auto end_init = std::chrono::steady_clock::now();
-                              rule_execution_context.statistics.init_total_time += std::chrono::duration_cast<std::chrono::nanoseconds>(end_init - start_init);
+                                  auto end_init = std::chrono::steady_clock::now();
+                                  rule_execution_context.statistics.init_total_time +=
+                                      std::chrono::duration_cast<std::chrono::nanoseconds>(end_init - start_init);
+                              }
 
-                              auto start_ground = std::chrono::steady_clock::now();
+                              {
+                                  /// --- Grounding phase
+                                  auto start_ground = std::chrono::steady_clock::now();
 
-                              ground(facts_execution_context, rule_execution_context, thread_execution_context);
+                                  ground(facts_execution_context, rule_execution_context, rule_stage_execution_context, thread_execution_context);
 
-                              auto end_ground = std::chrono::steady_clock::now();
-                              rule_execution_context.statistics.ground_total_time +=
-                                  std::chrono::duration_cast<std::chrono::nanoseconds>(end_ground - start_ground);
+                                  auto end_ground = std::chrono::steady_clock::now();
+                                  rule_execution_context.statistics.ground_total_time +=
+                                      std::chrono::duration_cast<std::chrono::nanoseconds>(end_ground - start_ground);
 
-                              ++rule_execution_context.statistics.num_executions;
+                                  ++rule_execution_context.statistics.num_executions;
+                              }
                           });
 
         auto end_ground_seq = std::chrono::steady_clock::now();
@@ -91,11 +99,9 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
 
             for (const auto binding : rule_execution_context.bindings)
             {
-                const auto merge_binding = merge(binding,
-                                                 program_execution_context.builder,
-                                                 *program_execution_context.repository,
-                                                 program_execution_context.stage_to_program_execution_context.merge_cache);
+                const auto merge_binding = merge(binding, program_execution_context.builder, *program_execution_context.repository);
 
+                /// --- Insert (rule, binding) pair
                 program_execution_context.program_results_execution_context.rule_binding_pairs.emplace(rule_execution_context.rule, merge_binding);
 
                 const auto ground_head = formalism::ground(rule_execution_context.rule.get_head(),
@@ -103,7 +109,7 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                                                            program_execution_context.builder,
                                                            *program_execution_context.repository);
 
-                // Insert new fact
+                // Insert new fact into fact sets and assigment sets
                 if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(ground_head))
                     discovered_new_fact = true;
 
@@ -123,13 +129,11 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
 void solve_bottom_up(grounder::ProgramExecutionContext& program_execution_context)
 {
     program_execution_context.program_results_execution_context.clear();
-    program_execution_context.stage_to_program_execution_context.clear();
+    for (auto& rule_stage_execution_context : program_execution_context.rule_stage_execution_contexts)
+        rule_stage_execution_context.clear();
 
     for (const auto& stratum : program_execution_context.strata.strata)
     {
-        for (size_t j = 0; j < stratum.size(); ++j)
-            program_execution_context.rule_execution_contexts[j].clear();
-
         solve_bottom_up_for_stratum(program_execution_context, stratum);
     }
 }

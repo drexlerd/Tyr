@@ -1108,14 +1108,9 @@ private:
                 {
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, Index<formalism::Literal<formalism::DerivedTag>>>)
-                    {
-                        // We store atoms in the head, not literals
                         axiom.head = make_view(arg, context).get_atom().get_index();
-                    }
                     else
-                    {
                         throw std::runtime_error("ToMimirStructures::translate_lifted: Expected Literal<DerivedTag> in axiom head.");
-                    }
                 },
                 index_literal_variant);
         }
