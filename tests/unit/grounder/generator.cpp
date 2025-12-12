@@ -63,10 +63,11 @@ TEST(TyrTests, TyrGrounderGenerator)
                       {
                           auto& facts_execution_context = program_execution_context.facts_execution_context;
                           auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
+                          auto& rule_stage_execution_context = program_execution_context.rule_stage_execution_contexts[i];
                           auto& thread_execution_context = program_execution_context.thread_execution_contexts.local();  // thread-local
                           thread_execution_context.clear();
 
-                          grounder::ground(facts_execution_context, rule_execution_context, thread_execution_context);
+                          grounder::ground(facts_execution_context, rule_execution_context, rule_stage_execution_context, thread_execution_context);
                       });
 }
 }

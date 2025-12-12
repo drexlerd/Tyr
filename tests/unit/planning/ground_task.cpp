@@ -168,5 +168,225 @@ TEST(TyrTests, TyrPlanningGroundTask)
         EXPECT_EQ(ground_task->get_num_actions(), 20);
         EXPECT_EQ(ground_task->get_num_axioms(), 0);
     }
+
+    {
+        // Hiking
+
+        auto ground_task = compute_ground_task(absolute("hiking/domain.pddl"), absolute("hiking/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 12);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 41);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Logistics
+
+        auto ground_task = compute_ground_task(absolute("logistics/domain.pddl"), absolute("logistics/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 9);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 14);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Miconic
+
+        auto ground_task = compute_ground_task(absolute("miconic/domain.pddl"), absolute("miconic/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 8);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 6);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Miconic-fulladl
+
+        auto ground_task = compute_ground_task(absolute("miconic-fulladl/domain.pddl"), absolute("miconic-fulladl/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 9);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 22);
+        EXPECT_EQ(ground_task->get_num_actions(), 14);
+        EXPECT_EQ(ground_task->get_num_axioms(), 15);
+    }
+
+    {
+        // Miconic-simpleadl
+
+        auto ground_task = compute_ground_task(absolute("miconic-simpleadl/domain.pddl"), absolute("miconic-simpleadl/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 4);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 4);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Philosophers
+
+        auto ground_task = compute_ground_task(absolute("philosophers/domain.pddl"), absolute("philosophers/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 50);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 21);
+        EXPECT_EQ(ground_task->get_num_actions(), 34);
+        EXPECT_EQ(ground_task->get_num_axioms(), 34);
+    }
+
+    {
+        // Pushworld
+
+        auto ground_task = compute_ground_task(absolute("pushworld/domain.pddl"), absolute("pushworld/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 327);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 6924);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Refuel
+
+        auto ground_task = compute_ground_task(absolute("refuel/domain.pddl"), absolute("refuel/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 1);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Refuel-adl
+
+        auto ground_task = compute_ground_task(absolute("refuel-adl/domain.pddl"), absolute("refuel-adl/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 6);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 1);
+        EXPECT_EQ(ground_task->get_num_actions(), 15);
+        EXPECT_EQ(ground_task->get_num_axioms(), 3);
+    }
+
+    {
+        // Reward
+
+        auto ground_task = compute_ground_task(absolute("reward/domain.pddl"), absolute("reward/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 7);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 6);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Rovers
+
+        auto ground_task = compute_ground_task(absolute("rovers/domain.pddl"), absolute("rovers/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 9);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 7);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Satellite
+
+        auto ground_task = compute_ground_task(absolute("satellite/domain.pddl"), absolute("satellite/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 12);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 18);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Schedule
+
+        auto ground_task = compute_ground_task(absolute("schedule/domain.pddl"), absolute("schedule/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 45);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 49);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Sokoban
+
+        auto ground_task = compute_ground_task(absolute("sokoban/domain.pddl"), absolute("sokoban/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 260);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 526);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Spanner
+
+        auto ground_task = compute_ground_task(absolute("spanner/domain.pddl"), absolute("spanner/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 9);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 4);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Tpp
+
+        auto ground_task = compute_ground_task(absolute("tpp/numeric/domain.pddl"), absolute("tpp/numeric/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 6);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 56);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Transport
+
+        auto ground_task = compute_ground_task(absolute("transport/domain.pddl"), absolute("transport/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 26);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 104);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Visitall
+
+        auto ground_task = compute_ground_task(absolute("visitall/domain.pddl"), absolute("visitall/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 14);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 12);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Woodworking
+
+        auto ground_task = compute_ground_task(absolute("woodworking/domain.pddl"), absolute("woodworking/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 19);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 57);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
+        // Zenotravel
+
+        auto ground_task = compute_ground_task(absolute("zenotravel/numeric/domain.pddl"), absolute("zenotravel/numeric/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 15);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 37);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
 }
 }
