@@ -130,14 +130,9 @@ struct VariableReference
 
     VariableReference& operator=(Data<formalism::FDRFact<T>> fact) noexcept
     {
-        assert_layout_ok(*layout);
         assert(fact.variable == layout->variable);
 
-        const Block v = static_cast<Block>(fact.value);  // adapt if needed
-
-        const size_t base = layout->base_word_index;
-        write_portion(layout->high, data, base, v);
-        write_portion(layout->low, data, base, v);
+        *this = fact.value;
 
         return *this;
     }
@@ -155,7 +150,9 @@ struct VariableReference
         return *this;
     }
 
-    explicit operator Data<formalism::FDRFact<T>>() const noexcept
+    explicit operator Data<formalism::FDRFact<T>>() const noexcept { return Data<formalism::FDRFact<T>>(layout->variable, formalism::FDRValue(*this)); }
+
+    explicit operator formalism::FDRValue() const noexcept
     {
         assert_layout_ok(*layout);
 
@@ -163,7 +160,7 @@ struct VariableReference
 
         const Block v = read_portion(layout->high, data, base) | read_portion(layout->low, data, base);
 
-        return Data<formalism::FDRFact<T>>(layout->variable, formalism::FDRValue(v));
+        return formalism::FDRValue(v);
     }
 
     VariableReference(const VariableLayout<T, Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }

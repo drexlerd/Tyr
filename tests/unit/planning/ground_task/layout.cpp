@@ -68,10 +68,10 @@ TEST(TyrTests, TyrPlanningGroundTaskLayout)
     // Create a reference
     auto ref_fact_0 = VariableReference(layouts[0], state.data());
 
-    EXPECT_EQ(Data<FDRFact<FluentTag>>(ref_fact_0).value, FDRValue { 0 });
+    EXPECT_EQ(FDRValue(ref_fact_0), FDRValue { 0 });
 
     ref_fact_0 = FDRValue { 2 };
 
-    EXPECT_EQ(Data<FDRFact<FluentTag>>(ref_fact_0).value, FDRValue { 2 });
+    EXPECT_EQ(FDRValue(ref_fact_0), FDRValue { 2 });
 }
 }
