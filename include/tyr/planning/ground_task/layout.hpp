@@ -166,8 +166,15 @@ struct VariableReference
     VariableReference(const VariableLayout<T, Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }
 };
 
+template<formalism::FactKind T, std::unsigned_integral Block>
+struct FDRVariablesLayout
+{
+    VariableLayoutList<T, Block> layouts;
+    size_t total_blocks;
+};
+
 template<formalism::FactKind T, formalism::Context C, std::unsigned_integral Block>
-std::pair<VariableLayoutList<T, Block>, size_t> create_layouts(View<IndexList<formalism::FDRVariable<T>>, C> variables)
+FDRVariablesLayout<T, Block> create_layouts(View<IndexList<formalism::FDRVariable<T>>, C> variables)
 {
     constexpr size_t W = std::numeric_limits<Block>::digits;
 
@@ -269,7 +276,7 @@ std::pair<VariableLayoutList<T, Block>, size_t> create_layouts(View<IndexList<fo
 
     const size_t total_blocks = word_index + (bit_pos != 0 ? 1 : 0);
 
-    return { layouts, total_blocks };
+    return FDRVariablesLayout<T, Block> { layouts, total_blocks };
 }
 
 }

@@ -42,6 +42,7 @@ public:
 
     auto get_index() const noexcept { return m_handle; }
     auto get_domain_size() const noexcept { return get_data().domain_size; }
+    auto get_atoms() const noexcept { return make_view(get_data().atoms, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

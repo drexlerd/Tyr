@@ -435,9 +435,6 @@ inline const Repository& get_repository(const Repository& context) noexcept { re
 template<typename C>
 class OverlayRepository;
 
-template<typename C>
-using OverlayRepositoryPtr = std::shared_ptr<OverlayRepository<C>>;
-
 /// @brief Make OverlayRepository a trivial context.
 template<typename C>
 inline const OverlayRepository<C>& get_repository(const OverlayRepository<C>& context) noexcept

@@ -26,6 +26,8 @@ Domain::Domain(std::shared_ptr<formalism::Repository> repository, View<Index<for
 {
 }
 
+const std::shared_ptr<formalism::Repository>& Domain::get_repository() const noexcept { return m_repository; }
+
 View<Index<formalism::Domain>, formalism::Repository> Domain::get_domain() const noexcept { return m_domain; }
 
 }

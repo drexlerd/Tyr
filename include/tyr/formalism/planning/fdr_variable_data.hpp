@@ -33,9 +33,15 @@ struct Data<formalism::FDRVariable<T>>
 
     Index<formalism::FDRVariable<T>> index;
     uint_t domain_size;
+    IndexList<formalism::GroundAtom<T>> atoms;
 
     Data() = default;
-    Data(Index<formalism::FDRVariable<T>> index, uint_t domain_size) : index(index), domain_size(domain_size) {}
+    Data(Index<formalism::FDRVariable<T>> index, uint_t domain_size, IndexList<formalism::GroundAtom<T>> atoms) :
+        index(index),
+        domain_size(domain_size),
+        atoms(std::move(atoms))
+    {
+    }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;
@@ -45,9 +51,10 @@ struct Data<formalism::FDRVariable<T>>
     {
         tyr::clear(index);
         tyr::clear(domain_size);
+        tyr::clear(atoms);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, domain_size); }
+    auto cista_members() const noexcept { return std::tie(index, domain_size, atoms); }
     auto identifying_members() const noexcept { return std::tie(index); }
 };
 }

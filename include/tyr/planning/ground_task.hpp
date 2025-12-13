@@ -24,6 +24,7 @@
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"
+#include "tyr/planning/ground_task/layout.hpp"
 #include "tyr/planning/ground_task/node.hpp"
 #include "tyr/planning/ground_task/packed_state.hpp"
 #include "tyr/planning/ground_task/state.hpp"
@@ -35,8 +36,6 @@ namespace tyr::planning
 class GroundTask
 {
 public:
-    // Eventually pass ground facts, actions, and axioms derived from delete relaxation in the constructor
-    // and build a data structure to efficiently compute applicable actions.
     GroundTask(DomainPtr domain,
                formalism::RepositoryPtr repository,
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
@@ -68,10 +67,18 @@ private:
     size_t m_num_actions;
     size_t m_num_axioms;
 
+    DomainPtr m_domain;
+
+    formalism::RepositoryPtr m_repository;
+    formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
+
     IndexList<formalism::FDRVariable<formalism::FluentTag>> m_fluent_variables;
     IndexList<formalism::FDRVariable<formalism::DerivedTag>> m_derived_variables;
 
-    DataList<formalism::FDRFact<formalism::FluentTag>> m_fluent_fact;
+    FDRVariablesLayout<formalism::FluentTag, uint_t> m_fluent_layout;
+    FDRVariablesLayout<formalism::DerivedTag, uint_t> m_derived_layout;
+
+    DataList<formalism::FDRFact<formalism::FluentTag>> m_fluent_facts;
 };
 
 }

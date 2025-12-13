@@ -58,15 +58,15 @@ TEST(TyrTests, TyrPlanningGroundTaskLayout)
     const auto variable_3 = repository.get_or_create(variable, builder.get_buffer()).first;
     variables.push_back(variable_3.get_index());
 
-    auto [layouts, num_blocks] = create_layouts<FluentTag, Repository, uint8_t>(make_view(variables, repository));
+    auto variables_layout = create_layouts<FluentTag, Repository, uint8_t>(make_view(variables, repository));
 
-    EXPECT_EQ(num_blocks, 3);
+    EXPECT_EQ(variables_layout.total_blocks, 3);
 
     // Create a state
-    auto state = std::vector<uint8_t>(num_blocks, 0);
+    auto state = std::vector<uint8_t>(variables_layout.total_blocks, 0);
 
     // Create a reference
-    auto ref_fact_0 = VariableReference(layouts[0], state.data());
+    auto ref_fact_0 = VariableReference(variables_layout.layouts[0], state.data());
 
     EXPECT_EQ(FDRValue(ref_fact_0), FDRValue { 0 });
 

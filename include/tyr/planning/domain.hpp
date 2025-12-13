@@ -31,6 +31,7 @@ class Domain
 public:
     Domain(std::shared_ptr<formalism::Repository> repository, View<Index<formalism::Domain>, formalism::Repository> domain);
 
+    const std::shared_ptr<formalism::Repository>& get_repository() const noexcept;
     View<Index<formalism::Domain>, formalism::Repository> get_domain() const noexcept;
 
 private:
