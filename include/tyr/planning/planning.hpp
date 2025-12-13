@@ -22,6 +22,7 @@
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/formatter.hpp"
 #include "tyr/planning/ground_task.hpp"
+#include "tyr/planning/ground_task/layout.hpp"
 #include "tyr/planning/ground_task/node.hpp"
 #include "tyr/planning/ground_task/state.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"

@@ -36,7 +36,7 @@ TEST(TyrTests, TyrFormalismBuilder)
 
         numeric_effect.fexpr.value = 0.5;
 
-        EXPECT_EQ(numeric_effect.fexpr.value, Data<GroundFunctionExpression>(0.5));
+        EXPECT_EQ(numeric_effect.fexpr, Data<GroundFunctionExpression>(0.5));
     }
 
     {

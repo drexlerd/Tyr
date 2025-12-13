@@ -130,7 +130,16 @@ struct Builder
                                       BuilderEntry<GroundAxiom>,
                                       BuilderEntry<Metric>,
                                       BuilderEntry<Domain>,
-                                      BuilderEntry<Task>>;
+                                      BuilderEntry<Task>,
+                                      BuilderEntry<FDRVariable<formalism::FluentTag>>,
+                                      BuilderEntry<FDRVariable<formalism::DerivedTag>>,
+                                      BuilderEntry<FDRFact<formalism::FluentTag>>,
+                                      BuilderEntry<FDRFact<formalism::DerivedTag>>,
+                                      BuilderEntry<FDRConjunctiveCondition>,
+                                      BuilderEntry<FDRConjunctiveEffect>,
+                                      BuilderEntry<FDRConditionalEffect>,
+                                      BuilderEntry<FDRAxiom>,
+                                      BuilderEntry<FDRAction>>;
 
     BuilderStorage m_builder;
 

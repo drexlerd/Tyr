@@ -20,42 +20,8 @@
 #ifndef TYR_FORMALISM_CANONICALIZATION_HPP_
 #define TYR_FORMALISM_CANONICALIZATION_HPP_
 
-#include "tyr/formalism/arithmetic_operator_data.hpp"
-#include "tyr/formalism/atom_data.hpp"
-#include "tyr/formalism/binary_operator_data.hpp"
-#include "tyr/formalism/boolean_operator_data.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/function_data.hpp"
-#include "tyr/formalism/function_expression_data.hpp"
-#include "tyr/formalism/function_term_data.hpp"
-#include "tyr/formalism/ground_atom_data.hpp"
-#include "tyr/formalism/ground_function_expression_data.hpp"
-#include "tyr/formalism/ground_function_term_data.hpp"
-#include "tyr/formalism/ground_function_term_value_data.hpp"
-#include "tyr/formalism/ground_literal_data.hpp"
-#include "tyr/formalism/ground_rule_data.hpp"
-#include "tyr/formalism/literal_data.hpp"
-#include "tyr/formalism/multi_operator_data.hpp"
-#include "tyr/formalism/object_data.hpp"
-#include "tyr/formalism/planning/action_data.hpp"
-#include "tyr/formalism/planning/axiom_data.hpp"
-#include "tyr/formalism/planning/conditional_effect_data.hpp"
-#include "tyr/formalism/planning/conjunctive_effect_data.hpp"
-#include "tyr/formalism/planning/domain_data.hpp"
-#include "tyr/formalism/planning/ground_action_data.hpp"
-#include "tyr/formalism/planning/ground_axiom_data.hpp"
-#include "tyr/formalism/planning/ground_conditional_effect_data.hpp"
-#include "tyr/formalism/planning/ground_conjunctive_effect_data.hpp"
-#include "tyr/formalism/planning/ground_numeric_effect_data.hpp"
-#include "tyr/formalism/planning/metric_data.hpp"
-#include "tyr/formalism/planning/numeric_effect_data.hpp"
-#include "tyr/formalism/planning/task_data.hpp"
-#include "tyr/formalism/predicate_data.hpp"
-#include "tyr/formalism/program_data.hpp"
-#include "tyr/formalism/rule_data.hpp"
-#include "tyr/formalism/term_data.hpp"
-#include "tyr/formalism/unary_operator_data.hpp"
-#include "tyr/formalism/variable_data.hpp"
+#include "tyr/common/comparators.hpp"
+#include "tyr/formalism/datas.hpp"
 
 #include <algorithm>
 
@@ -273,6 +239,31 @@ inline bool is_canonical(const Data<Domain>& data)
            && is_canonical(data.static_functions) && is_canonical(data.fluent_functions) && is_canonical(data.constants) && is_canonical(data.actions)
            && is_canonical(data.axioms);
 }
+
+template<FactKind T>
+bool is_canonical(const Data<FDRVariable<T>>& data)
+{
+    return true;
+}
+
+template<FactKind T>
+bool is_canonical(const Data<FDRFact<T>>& data)
+{
+    return true;
+}
+
+inline bool is_canonical(const Data<FDRConjunctiveCondition>& data)
+{
+    return is_canonical(data.fluent_facts) && is_canonical(data.derived_facts) && is_canonical(data.numeric_constraints);
+}
+
+inline bool is_canonical(const Data<FDRConjunctiveEffect>& data) { return is_canonical(data.facts) && is_canonical(data.numeric_effects); }
+
+inline bool is_canonical(const Data<FDRConditionalEffect>& data) { return true; }
+
+inline bool is_canonical(const Data<FDRAction>& data) { return is_canonical(data.effects); }
+
+inline bool is_canonical(const Data<FDRAxiom>& data) { return true; }
 
 /**
  * Datalog
@@ -535,6 +526,44 @@ inline void canonicalize(Data<Domain>& data)
     canonicalize(data.actions);
     canonicalize(data.axioms);
 }
+
+template<FactKind T>
+void canonicalize(Data<FDRVariable<T>>& data)
+{
+    // Trivially canonical
+}
+
+template<FactKind T>
+void canonicalize(Data<FDRFact<T>>& data)
+{
+    // Trivially canonical
+}
+
+inline void canonicalize(Data<FDRConjunctiveCondition>& data)
+{
+    canonicalize(data.fluent_facts);
+    canonicalize(data.derived_facts);
+    canonicalize(data.numeric_constraints);
+}
+
+inline void canonicalize(Data<FDRConjunctiveEffect>& data)
+{
+    canonicalize(data.facts);
+    canonicalize(data.numeric_effects);
+}
+
+inline void canonicalize(Data<FDRConditionalEffect>& data)
+{
+    // Trivially canonical
+}
+
+inline void canonicalize(Data<FDRAction>& data) { canonicalize(data.effects); }
+
+inline void canonicalize(Data<FDRAxiom>& data)
+{
+    // Trivially canonical
+}
+
 }
 
 #endif

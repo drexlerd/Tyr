@@ -142,6 +142,19 @@ struct VariableReference
         return *this;
     }
 
+    VariableReference& operator=(formalism::FDRValue value) noexcept
+    {
+        assert_layout_ok(*layout);
+
+        const Block v = static_cast<Block>(uint_t(value));
+
+        const size_t base = layout->base_word_index;
+        write_portion(layout->high, data, base, v);
+        write_portion(layout->low, data, base, v);
+
+        return *this;
+    }
+
     explicit operator Data<formalism::FDRFact<T>>() const noexcept
     {
         assert_layout_ok(*layout);
@@ -156,9 +169,8 @@ struct VariableReference
     VariableReference(const VariableLayout<T, Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }
 };
 
-template<formalism::FactKind T, std::unsigned_integral Block>
-VariableLayoutList<T, Block>
-create_layouts(View<IndexList<formalism::FDRVariable<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>> variables)
+template<formalism::FactKind T, formalism::Context C, std::unsigned_integral Block>
+std::pair<VariableLayoutList<T, Block>, size_t> create_layouts(View<IndexList<formalism::FDRVariable<T>>, C> variables)
 {
     constexpr size_t W = std::numeric_limits<Block>::digits;
 
@@ -258,7 +270,9 @@ create_layouts(View<IndexList<formalism::FDRVariable<formalism::FluentTag>>, for
         layouts.push_back(L);
     }
 
-    return layouts;
+    const size_t total_blocks = word_index + (bit_pos != 0 ? 1 : 0);
+
+    return { layouts, total_blocks };
 }
 
 }

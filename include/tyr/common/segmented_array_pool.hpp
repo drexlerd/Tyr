@@ -18,15 +18,23 @@
 #ifndef TYR_COMMON_SEGMENTED_ARRAY_POOL_HPP_
 #define TYR_COMMON_SEGMENTED_ARRAY_POOL_HPP_
 
+#include <bit>
+#include <cassert>
 #include <cstddef>
+#include <tyr/common/bits.hpp>
 #include <vector>
 
 namespace tyr
 {
 
-template<typename T>
+template<typename T, size_t ArraysPerSegment = 1024>
 class SegmentedArrayPool
 {
+    static_assert(is_power_of_two(ArraysPerSegment));
+
+    static constexpr size_t seg_shift = std::countr_zero(ArraysPerSegment);
+    static constexpr size_t seg_mask = ArraysPerSegment - 1;
+
 private:
     void increase_capacity()
     {
@@ -53,12 +61,12 @@ private:
     }
 
 public:
-    SegmentedArrayPool(size_t array_size, size_t num_arrays_per_segment = 1024) :
+    explicit SegmentedArrayPool(size_t array_size) :
         m_array_size(array_size),
-        m_num_arrays_per_segment(num_arrays_per_segment),
-        m_segment_size(num_arrays_per_segment * array_size),
+        m_segment_size(ArraysPerSegment * array_size),
         m_cur_seg(0),
-        m_cur_pos(0)
+        m_cur_pos(0),
+        m_num_arrays(0)
     {
     }
 
@@ -69,25 +77,43 @@ public:
         T* result = &m_segments[m_cur_seg][m_cur_pos];
 
         m_cur_pos += m_array_size;
+        ++m_num_arrays;
 
         return result;
+    }
+
+    const T* operator[](size_t array_index) const noexcept
+    {
+        assert(array_index < m_num_arrays);
+        const size_t seg = array_index >> seg_shift;
+        const size_t idx = array_index & seg_mask;
+        return &m_segments[seg][idx * m_array_size];
+    }
+
+    T* operator[](size_t array_index) noexcept
+    {
+        assert(array_index < m_num_arrays);
+        const size_t seg = array_index >> seg_shift;
+        const size_t idx = array_index & seg_mask;
+        return &m_segments[seg][idx * m_array_size];
     }
 
     void clear() noexcept
     {
         m_cur_seg = 0;
         m_cur_pos = 0;
+        m_num_arrays = 0;
     }
 
 private:
     std::vector<std::vector<T>> m_segments;
 
     size_t m_array_size;
-    size_t m_num_arrays_per_segment;
     size_t m_segment_size;
 
     size_t m_cur_seg;
     size_t m_cur_pos;
+    size_t m_num_arrays;
 };
 
 }

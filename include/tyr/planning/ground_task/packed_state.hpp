@@ -46,7 +46,7 @@ class PackedState<GroundTask>
 public:
     using TaskType = GroundTask;
 
-    PackedState(StateIndex index, const uint_t* fluent_facts, const uint_t* derived_facts, valla::Slot<uint_t> numeric_variables) noexcept :
+    PackedState(StateIndex index, uint_t fluent_facts, uint_t derived_facts, valla::Slot<uint_t> numeric_variables) noexcept :
         m_index(index),
         m_fluent_facts(fluent_facts),
         m_derived_facts(derived_facts),
@@ -57,7 +57,7 @@ public:
     StateIndex get_index() const noexcept { return m_index; }
 
     template<formalism::FactKind T>
-    const uint_t* get_facts() const noexcept
+    const uint_t get_facts() const noexcept
     {
         if constexpr (std::same_as<T, formalism::FluentTag>)
             return m_fluent_facts;
@@ -73,8 +73,8 @@ public:
 
 private:
     StateIndex m_index;
-    const uint_t* m_fluent_facts;
-    const uint_t* m_derived_facts;
+    uint_t m_fluent_facts;
+    uint_t m_derived_facts;
     valla::Slot<uint_t> m_numeric_variables;
 };
 }

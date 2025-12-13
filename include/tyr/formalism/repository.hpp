@@ -131,7 +131,16 @@ private:
                                          RepositoryEntry<GroundAxiom>,
                                          RepositoryEntry<Metric>,
                                          RepositoryEntry<Domain>,
-                                         RepositoryEntry<Task>>;
+                                         RepositoryEntry<Task>,
+                                         RepositoryEntry<FDRVariable<FluentTag>>,
+                                         RepositoryEntry<FDRVariable<DerivedTag>>,
+                                         RepositoryEntry<FDRFact<FluentTag>>,
+                                         RepositoryEntry<FDRFact<DerivedTag>>,
+                                         RepositoryEntry<FDRConjunctiveCondition>,
+                                         RepositoryEntry<FDRConjunctiveEffect>,
+                                         RepositoryEntry<FDRConditionalEffect>,
+                                         RepositoryEntry<FDRAxiom>,
+                                         RepositoryEntry<FDRAction>>;
 
     RepositoryStorage m_repository;
 

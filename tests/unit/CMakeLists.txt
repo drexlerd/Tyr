@@ -29,3 +29,4 @@ add_gtest(grounder_static_consistency_graph              "grounder/static_consis
 
 add_gtest(planning_lifted_task                           "planning/lifted_task.cpp")
 add_gtest(planning_ground_task                           "planning/ground_task.cpp")
+add_gtest(planning_ground_task_layout                    "planning/ground_task/layout.cpp")
