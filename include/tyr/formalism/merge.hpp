@@ -614,17 +614,11 @@ auto merge(View<Data<FunctionExpression>, C_SRC> element, Builder& builder, C_DS
             using Alternative = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<Alternative, float_t>)
-            {
                 return View<Data<FunctionExpression>, C_DST>(Data<FunctionExpression>(arg), destination);
-            }
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC>>)
-            {
                 return View<Data<FunctionExpression>, C_DST>(Data<FunctionExpression>(merge(arg, builder, destination, cache).get_data()), destination);
-            }
             else
-            {
                 return View<Data<FunctionExpression>, C_DST>(Data<FunctionExpression>(merge(arg, builder, destination, cache).get_index()), destination);
-            }
         },
         element.get_variant());
 }
@@ -638,19 +632,13 @@ auto merge(View<Data<GroundFunctionExpression>, C_SRC> element, Builder& builder
             using Alternative = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<Alternative, float_t>)
-            {
                 return View<Data<GroundFunctionExpression>, C_DST>(Data<GroundFunctionExpression>(arg), destination);
-            }
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, C_SRC>>)
-            {
                 return View<Data<GroundFunctionExpression>, C_DST>(Data<GroundFunctionExpression>(merge(arg, builder, destination, cache).get_data()),
                                                                    destination);
-            }
             else
-            {
                 return View<Data<GroundFunctionExpression>, C_DST>(Data<GroundFunctionExpression>(merge(arg, builder, destination, cache).get_index()),
                                                                    destination);
-            }
         },
         element.get_variant());
 }
