@@ -365,23 +365,7 @@ struct FDRFact
 {
 };
 
-struct FDRConjunctiveCondition
-{
-};
-
-struct FDRConjunctiveEffect
-{
-};
-
-struct FDRConditionalEffect
-{
-};
-
-struct FDRAction
-{
-};
-
-struct FDRAxiom
+struct GroundFDRConjunctiveCondition
 {
 };
 

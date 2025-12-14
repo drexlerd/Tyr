@@ -135,11 +135,7 @@ struct Builder
                                       BuilderEntry<FDRVariable<formalism::DerivedTag>>,
                                       BuilderEntry<FDRFact<formalism::FluentTag>>,
                                       BuilderEntry<FDRFact<formalism::DerivedTag>>,
-                                      BuilderEntry<FDRConjunctiveCondition>,
-                                      BuilderEntry<FDRConjunctiveEffect>,
-                                      BuilderEntry<FDRConditionalEffect>,
-                                      BuilderEntry<FDRAxiom>,
-                                      BuilderEntry<FDRAction>,
+                                      BuilderEntry<GroundFDRConjunctiveCondition>,
                                       BuilderEntry<FDRTask>>;
 
     BuilderStorage m_builder;

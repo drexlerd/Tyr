@@ -22,9 +22,9 @@
 #include "tyr/common/types_utils.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_index.hpp"
-#include "tyr/formalism/ground_conjunctive_condition_index.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
 #include "tyr/formalism/planning/ground_conjunctive_effect_index.hpp"
+#include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
 
 namespace tyr
 {
@@ -36,13 +36,13 @@ struct Data<formalism::GroundAction>
 
     Index<formalism::GroundAction> index;
     Index<formalism::Action> action;
-    Index<formalism::GroundConjunctiveCondition> condition;
+    Index<formalism::GroundFDRConjunctiveCondition> condition;
     IndexList<formalism::GroundConditionalEffect> effects;
 
     Data() = default;
     Data(Index<formalism::GroundAction> index,
          Index<formalism::Action> action,
-         Index<formalism::GroundConjunctiveCondition> condition,
+         Index<formalism::GroundFDRConjunctiveCondition> condition,
          IndexList<formalism::GroundConditionalEffect> effects) :
         index(index),
         action(action),

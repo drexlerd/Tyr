@@ -23,6 +23,7 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_literal_view.hpp"
+#include "tyr/formalism/planning/fdr_fact_view.hpp"
 #include "tyr/formalism/planning/ground_conjunctive_effect_index.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_view.hpp"
 
@@ -46,7 +47,7 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_literals() const noexcept { return make_view(get_data().literals, *m_context); }
+    auto get_facts() const noexcept { return make_view(get_data().facts, *m_context); }
     auto get_numeric_effects() const noexcept { return make_view(get_data().numeric_effects, *m_context); }
     auto get_auxiliary_numeric_effect() const noexcept { return make_view(get_data().auxiliary_numeric_effect, *m_context); }
 

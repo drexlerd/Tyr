@@ -369,7 +369,7 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     }
 
     /* Initial section */
-    const auto func_insert_ground_atom = [&](IndexGroundLiteralVariant index_atom_variant,
+    const auto func_insert_ground_atom = [&](IndexGroundLiteralOrFactVariant index_atom_variant,
                                              IndexList<formalism::GroundAtom<formalism::StaticTag>>& static_atoms,
                                              IndexList<formalism::GroundAtom<formalism::FluentTag>>& fluent_atoms)
     {
@@ -380,8 +380,8 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
 
                 if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::StaticTag>>>)
                     static_atoms.push_back(make_view(arg, *overlay_task_context).get_atom().get_index());
-                else if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::FluentTag>>>)
-                    fluent_atoms.push_back(make_view(arg, *overlay_task_context).get_atom().get_index());
+                else if constexpr (std::is_same_v<T, Data<formalism::FDRFact<formalism::FluentTag>>>)
+                    fluent_atoms.push_back(make_view(arg, *overlay_task_context).get_atom().get_index());  // we know it must have a value
                 else if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::DerivedTag>>>)
                     throw std::runtime_error("Derived ground atoms are not allowed to be defined in the initial section.");
                 else
@@ -434,7 +434,7 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     else
     {
         // Create empty conjunctive condition
-        auto conj_cond_ptr = builder.get_builder<formalism::GroundConjunctiveCondition>();
+        auto conj_cond_ptr = builder.get_builder<formalism::GroundFDRConjunctiveCondition>();
         auto& conj_cond = *conj_cond_ptr;
         conj_cond.clear();
         canonicalize(conj_cond);

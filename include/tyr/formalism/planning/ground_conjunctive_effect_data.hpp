@@ -22,6 +22,7 @@
 #include "tyr/common/types_utils.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_literal_index.hpp"
+#include "tyr/formalism/planning/fdr_fact_data.hpp"
 #include "tyr/formalism/planning/ground_conjunctive_effect_index.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_data.hpp"
 
@@ -34,17 +35,17 @@ struct Data<formalism::GroundConjunctiveEffect>
     using Tag = formalism::GroundConjunctiveEffect;
 
     Index<formalism::GroundConjunctiveEffect> index;
-    IndexList<formalism::GroundLiteral<formalism::FluentTag>> literals;
+    DataList<formalism::FDRFact<formalism::FluentTag>> facts;
     DataList<formalism::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects;
     ::cista::optional<Data<formalism::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect;  // :action-cost
 
     Data() = default;
     Data(Index<formalism::GroundConjunctiveEffect> index,
-         IndexList<formalism::GroundLiteral<formalism::FluentTag>> literals,
+         DataList<formalism::FDRFact<formalism::FluentTag>> facts,
          DataList<formalism::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects,
          ::cista::optional<Data<formalism::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect) :
         index(index),
-        literals(std::move(literals)),
+        facts(std::move(facts)),
         numeric_effects(std::move(numeric_effects)),
         auxiliary_numeric_effect(std::move(auxiliary_numeric_effect))
     {
@@ -57,13 +58,13 @@ struct Data<formalism::GroundConjunctiveEffect>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(literals);
+        tyr::clear(facts);
         tyr::clear(numeric_effects);
         tyr::clear(auxiliary_numeric_effect);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, literals, numeric_effects, auxiliary_numeric_effect); }
-    auto identifying_members() const noexcept { return std::tie(literals, numeric_effects, auxiliary_numeric_effect); }
+    auto cista_members() const noexcept { return std::tie(index, facts, numeric_effects, auxiliary_numeric_effect); }
+    auto identifying_members() const noexcept { return std::tie(facts, numeric_effects, auxiliary_numeric_effect); }
 };
 }
 

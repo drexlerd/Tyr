@@ -41,7 +41,7 @@ public:
     StateIndex get_index() const noexcept { return m_index; }
 
     template<formalism::FactKind T>
-    DataList<formalism::FDRFact<T>>& get_facts() noexcept
+    auto& get_facts() noexcept
     {
         if constexpr (std::same_as<T, formalism::FluentTag>)
             return m_fluent_facts;
@@ -52,7 +52,7 @@ public:
     }
 
     template<formalism::FactKind T>
-    const DataList<formalism::FDRFact<T>>& get_facts() const noexcept
+    const auto& get_facts() const noexcept
     {
         if constexpr (std::same_as<T, formalism::FluentTag>)
             return m_fluent_facts;
@@ -76,7 +76,7 @@ public:
 private:
     StateIndex m_index;
     DataList<formalism::FDRFact<formalism::FluentTag>> m_fluent_facts;
-    DataList<formalism::FDRFact<formalism::DerivedTag>> m_derived_facts;
+    boost::dynamic_bitset<> m_derived_facts;
     std::vector<float_t> m_numeric_variables;
 };
 }

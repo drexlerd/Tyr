@@ -26,12 +26,12 @@
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/planning/axiom_index.hpp"
 #include "tyr/formalism/planning/domain_index.hpp"
-#include "tyr/formalism/planning/fdr_action_index.hpp"
-#include "tyr/formalism/planning/fdr_axiom_index.hpp"
-#include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
 #include "tyr/formalism/planning/fdr_fact_data.hpp"
 #include "tyr/formalism/planning/fdr_task_index.hpp"
 #include "tyr/formalism/planning/fdr_variable_index.hpp"
+#include "tyr/formalism/planning/ground_action_index.hpp"
+#include "tyr/formalism/planning/ground_axiom_index.hpp"
+#include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
 #include "tyr/formalism/planning/metric_index.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 
@@ -61,9 +61,9 @@ struct Data<formalism::FDRTask>
     IndexList<formalism::FDRVariable<formalism::FluentTag>> fluent_variables;
     IndexList<formalism::FDRVariable<formalism::DerivedTag>> derived_variables;
     DataList<formalism::FDRFact<formalism::FluentTag>> fluent_facts;
-    Index<formalism::FDRConjunctiveCondition> goal;
-    IndexList<formalism::FDRAction> ground_actions;
-    IndexList<formalism::FDRAxiom> ground_axioms;
+    Index<formalism::GroundFDRConjunctiveCondition> goal;
+    IndexList<formalism::GroundAction> ground_actions;
+    IndexList<formalism::GroundAxiom> ground_axioms;
 
     Data() = default;
     Data(Index<formalism::FDRTask> index,
@@ -82,9 +82,9 @@ struct Data<formalism::FDRTask>
          IndexList<formalism::FDRVariable<formalism::FluentTag>> fluent_variables,
          IndexList<formalism::FDRVariable<formalism::DerivedTag>> derived_variables,
          DataList<formalism::FDRFact<formalism::FluentTag>> fluent_facts,
-         Index<formalism::FDRConjunctiveCondition> goal,
-         IndexList<formalism::FDRAction> ground_actions,
-         IndexList<formalism::FDRAxiom> ground_axioms) :
+         Index<formalism::GroundFDRConjunctiveCondition> goal,
+         IndexList<formalism::GroundAction> ground_actions,
+         IndexList<formalism::GroundAxiom> ground_axioms) :
         index(index),
         name(std::move(name)),
         domain(domain),

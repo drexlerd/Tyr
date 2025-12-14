@@ -22,8 +22,8 @@
 #include "tyr/common/types_utils.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
-#include "tyr/formalism/ground_conjunctive_condition_index.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
+#include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
 
 namespace tyr
 {
@@ -35,13 +35,13 @@ struct Data<formalism::GroundAxiom>
 
     Index<formalism::GroundAxiom> index;
     Index<formalism::Axiom> axiom;
-    Index<formalism::GroundConjunctiveCondition> body;
+    Index<formalism::GroundFDRConjunctiveCondition> body;
     Index<formalism::GroundAtom<formalism::DerivedTag>> head;
 
     Data() = default;
     Data(Index<formalism::GroundAxiom> index,
          Index<formalism::Axiom> axiom,
-         Index<formalism::GroundConjunctiveCondition> body,
+         Index<formalism::GroundFDRConjunctiveCondition> body,
          Index<formalism::GroundAtom<formalism::DerivedTag>> head) :
         index(index),
         axiom(axiom),

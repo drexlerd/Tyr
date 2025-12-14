@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_PLANNING_FDR_AXIOM_INDEX_HPP_
-#define TYR_FORMALISM_PLANNING_FDR_AXIOM_INDEX_HPP_
+#ifndef TYR_FORMALISM_PLANNING_GROUND_FDR_CONJUNCTIVE_CONDITION_INDEX_HPP_
+#define TYR_FORMALISM_PLANNING_GROUND_FDR_CONJUNCTIVE_CONDITION_INDEX_HPP_
 
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
@@ -25,12 +25,12 @@
 namespace tyr
 {
 template<>
-struct Index<formalism::FDRAxiom> : IndexMixin<Index<formalism::FDRAxiom>>
+struct Index<formalism::GroundFDRConjunctiveCondition> : IndexMixin<Index<formalism::GroundFDRConjunctiveCondition>>
 {
-    using Tag = formalism::FDRAxiom;
+    using Tag = formalism::GroundFDRConjunctiveCondition;
 
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::FDRAxiom>>;
+    using Base = IndexMixin<Index<formalism::GroundFDRConjunctiveCondition>>;
     using Base::Base;
 };
 

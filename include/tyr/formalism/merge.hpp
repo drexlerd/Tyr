@@ -226,6 +226,19 @@ auto merge(View<Index<Binding>, C_SRC> element, Builder& builder, C_DST& destina
 }
 
 template<Context C_SRC, Context C_DST>
+View<Index<Binding>, C_DST> merge(View<IndexList<Object>, C_SRC> element, Builder& builder, C_DST& destination)
+{
+    auto binding_ptr = builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    binding.objects = element.get_data();
+
+    canonicalize(binding);
+    return destination.get_or_create(binding, builder.get_buffer()).first;
+}
+
+template<Context C_SRC, Context C_DST>
 auto merge(View<Data<Term>, C_SRC> element, Builder& builder, C_DST& destination)
 {
     return visit(
@@ -499,6 +512,27 @@ auto merge(View<Index<ConjunctiveCondition>, C_SRC> element, Builder& builder, C
 
     canonicalize(conj_cond);
     return destination.get_or_create(conj_cond, builder.get_buffer()).first;
+}
+
+template<Context C_SRC, Context C_DST>
+auto merge(View<Index<FDRVariable<FluentTag>>, C_SRC> element, Builder& builder, C_DST& destination)
+{
+    auto variable_ptr = builder.get_builder<FDRVariable<FluentTag>>();
+    auto& variable = *variable_ptr;
+    variable.clear();
+
+    variable.domain_size = element.get_domain_size();
+    for (const auto atom : element.get_atoms())
+        variable.atoms.push_back(merge(atom, builder, destination).get_index());
+
+    canonicalize(variable);
+    return destination.get_or_create(variable, builder.get_buffer()).first;
+}
+
+template<Context C_SRC, Context C_DST>
+auto merge(View<Data<FDRFact<FluentTag>>, C_SRC> element, Builder& builder, C_DST& destination)
+{
+    return make_view(Data<FDRFact<FluentTag>>(merge(element.get_variable(), builder, destination).get_index(), element.get_value()), destination);
 }
 
 template<Context C_SRC, Context C_DST>

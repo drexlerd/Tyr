@@ -303,30 +303,10 @@ inline std::ostream& operator<<(std::ostream& os, const Data<FDRFact<T>>& el);
 template<FactKind T, Context C>
 std::ostream& operator<<(std::ostream& os, const View<Data<FDRFact<T>>, C>& el);
 
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRConjunctiveCondition>& el);
+inline std::ostream& operator<<(std::ostream& os, const Data<GroundFDRConjunctiveCondition>& el);
 
 template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRConjunctiveCondition>, C>& el);
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRConjunctiveEffect>& el);
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRConjunctiveEffect>, C>& el);
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRConditionalEffect>& el);
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRConditionalEffect>, C>& el);
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRAction>& el);
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRAction>, C>& el);
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRAxiom>& el);
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRAxiom>, C>& el);
+std::ostream& operator<<(std::ostream& os, const View<Index<GroundFDRConjunctiveCondition>, C>& el);
 
 inline std::ostream& operator<<(std::ostream& os, const Data<FDRTask>& el);
 
@@ -1094,7 +1074,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::GroundConjunc
     {
         IndentScope scope(os);
 
-        os << print_indent << "fluent literals = " << el.literals << "\n";
+        os << print_indent << "fluent literals = " << el.facts << "\n";
 
         os << print_indent << "fluent numeric effects = " << el.numeric_effects << "\n";
 
@@ -1112,7 +1092,7 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::GroundConjunct
     {
         IndentScope scope(os);
 
-        os << print_indent << "fluent literals = " << el.get_literals() << "\n";
+        os << print_indent << "fluent literals = " << el.get_facts() << "\n";
 
         os << print_indent << "fluent numeric effects = " << el.get_numeric_effects() << "\n";
 
@@ -1474,15 +1454,17 @@ std::ostream& print(std::ostream& os, const View<Data<formalism::FDRFact<T>>, C>
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::FDRConjunctiveCondition>& el)
+inline std::ostream& print(std::ostream& os, const Data<formalism::GroundFDRConjunctiveCondition>& el)
 {
-    os << "FDRConjunctiveCondition(\n";
+    os << "GroundFDRConjunctiveCondition(\n";
     {
         IndentScope scope(os);
 
+        os << print_indent << "static literals = " << el.static_literals << "\n";
+
         os << print_indent << "fluent facts = " << el.fluent_facts << "\n";
 
-        os << print_indent << "derived facts = " << el.derived_facts << "\n";
+        os << print_indent << "derived literals = " << el.derived_literals << "\n";
 
         os << print_indent << "numeric constraints = " << el.numeric_constraints << "\n";
     }
@@ -1492,7 +1474,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::FDRConjunctiv
 }
 
 template<formalism::Context C>
-std::ostream& print(std::ostream& os, const View<Index<formalism::FDRConjunctiveCondition>, C>& el)
+std::ostream& print(std::ostream& os, const View<Index<formalism::GroundFDRConjunctiveCondition>, C>& el)
 {
     os << "FDRConjunctiveCondition(\n";
     {
@@ -1503,150 +1485,6 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::FDRConjunctive
         os << print_indent << "derived facts = " << el.template get_facts<formalism::DerivedTag>() << "\n";
 
         os << print_indent << "numeric constraints = " << el.get_numeric_constraints() << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-inline std::ostream& print(std::ostream& os, const Data<formalism::FDRConjunctiveEffect>& el)
-{
-    os << "FDRConjunctiveEffect(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "fluent facts = " << el.facts << "\n";
-
-        os << print_indent << "fluent numeric effects = " << el.numeric_effects << "\n";
-
-        os << print_indent << "auxiliary numeric effect = " << el.auxiliary_numeric_effect << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-template<formalism::Context C>
-std::ostream& print(std::ostream& os, const View<Index<formalism::FDRConjunctiveEffect>, C>& el)
-{
-    os << "FDRConjunctiveEffect(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "fluent facts = " << el.get_facts() << "\n";
-
-        os << print_indent << "fluent numeric effects = " << el.get_numeric_effects() << "\n";
-
-        os << print_indent << "auxiliary numeric effect = " << el.get_auxiliary_numeric_effect() << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-inline std::ostream& print(std::ostream& os, const Data<formalism::FDRConditionalEffect>& el)
-{
-    os << "FDRConditionalEffect(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "condition = " << el.condition << "\n";
-
-        os << print_indent << "effect = " << el.effect << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-template<formalism::Context C>
-std::ostream& print(std::ostream& os, const View<Index<formalism::FDRConditionalEffect>, C>& el)
-{
-    os << "FDRConditionalEffect(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "condition = " << el.get_condition() << "\n";
-
-        os << print_indent << "effect = " << el.get_effect() << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-inline std::ostream& print(std::ostream& os, const Data<formalism::FDRAction>& el)
-{
-    os << "FDRAction(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "index = " << el.index << "\n";
-
-        os << print_indent << "action index = " << el.action << "\n";
-
-        os << print_indent << "condition = " << el.condition << "\n";
-
-        os << print_indent << "effects = " << el.effects << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-template<formalism::Context C>
-std::ostream& print(std::ostream& os, const View<Index<formalism::FDRAction>, C>& el)
-{
-    os << "FDRAction(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "index = " << el.get_index() << "\n";
-
-        os << print_indent << "action index = " << el.get_action().get_index() << "\n";
-
-        os << print_indent << "condition = " << el.get_condition() << "\n";
-
-        os << print_indent << "effects = " << el.get_effects() << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-inline std::ostream& print(std::ostream& os, const Data<formalism::FDRAxiom>& el)
-{
-    os << "FDRAxiom(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "index = " << el.index << "\n";
-
-        os << print_indent << "axiom index = " << el.axiom << "\n";
-
-        os << print_indent << "body = " << el.body << "\n";
-
-        os << print_indent << "head = " << el.head << "\n";
-    }
-    os << print_indent << ")";
-
-    return os;
-}
-
-template<formalism::Context C>
-std::ostream& print(std::ostream& os, const View<Index<formalism::FDRAxiom>, C>& el)
-{
-    os << "FDRAxiom(\n";
-    {
-        IndentScope scope(os);
-
-        os << print_indent << "index = " << el.get_index() << "\n";
-
-        os << print_indent << "axiom index = " << el.get_axiom().get_index() << "\n";
-
-        os << print_indent << "body = " << el.get_body() << "\n";
-
-        os << print_indent << "head = " << el.get_head() << "\n";
     }
     os << print_indent << ")";
 
@@ -2204,42 +2042,10 @@ std::ostream& operator<<(std::ostream& os, const View<Data<FDRFact<T>>, C>& el)
     return tyr::print(os, el);
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRConjunctiveCondition>& el) { return tyr::print(os, el); }
+inline std::ostream& operator<<(std::ostream& os, const Data<GroundFDRConjunctiveCondition>& el) { return tyr::print(os, el); }
 
 template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRConjunctiveCondition>, C>& el)
-{
-    return tyr::print(os, el);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRConjunctiveEffect>& el) { return tyr::print(os, el); }
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRConjunctiveEffect>, C>& el)
-{
-    return tyr::print(os, el);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRConditionalEffect>& el) { return tyr::print(os, el); }
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRConditionalEffect>, C>& el)
-{
-    return tyr::print(os, el);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRAction>& el) { return tyr::print(os, el); }
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRAction>, C>& el)
-{
-    return tyr::print(os, el);
-}
-
-inline std::ostream& operator<<(std::ostream& os, const Data<FDRAxiom>& el) { return tyr::print(os, el); }
-
-template<Context C>
-std::ostream& operator<<(std::ostream& os, const View<Index<FDRAxiom>, C>& el)
+std::ostream& operator<<(std::ostream& os, const View<Index<GroundFDRConjunctiveCondition>, C>& el)
 {
     return tyr::print(os, el);
 }

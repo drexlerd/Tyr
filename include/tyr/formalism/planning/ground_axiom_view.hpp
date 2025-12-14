@@ -21,9 +21,9 @@
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_view.hpp"
-#include "tyr/formalism/ground_conjunctive_condition_view.hpp"
 #include "tyr/formalism/planning/axiom_view.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
+#include "tyr/formalism/planning/ground_fdr_conjunctive_condition_view.hpp"
 
 namespace tyr
 {

@@ -20,7 +20,7 @@
 #include "tyr/analysis/analysis.hpp"
 #include "tyr/common/chrono.hpp"
 #include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/ground.hpp"
+#include "tyr/formalism/grounder_datalog.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/grounder/generator.hpp"
@@ -96,10 +96,10 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                     /// --- Insert (rule, binding) pair
                     program_execution_context.program_results_execution_context.rule_binding_pairs.emplace(rule_execution_context.rule, merge_binding);
 
-                    const auto ground_head = formalism::ground(rule_execution_context.rule.get_head(),
-                                                               merge_binding.get_objects(),
-                                                               program_execution_context.builder,
-                                                               *program_execution_context.repository);
+                    const auto ground_head = formalism::ground_datalog(rule_execution_context.rule.get_head(),
+                                                                       merge_binding.get_objects(),
+                                                                       program_execution_context.builder,
+                                                                       *program_execution_context.repository);
 
                     // Insert new fact into fact sets and assigment sets
                     if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(ground_head))

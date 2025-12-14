@@ -174,7 +174,8 @@ bool is_canonical(const Data<GroundFunctionTermValue<T>>& data)
 
 inline bool is_canonical(const Data<ConjunctiveCondition>& data)
 {
-    return is_canonical(data.static_literals) && is_canonical(data.fluent_literals) && is_canonical(data.numeric_constraints);
+    return is_canonical(data.static_literals) && is_canonical(data.fluent_literals) && is_canonical(data.numeric_constraints)
+           && is_canonical(data.static_nullary_literals) && is_canonical(data.fluent_nullary_literals) && is_canonical(data.derived_nullary_literals);
 }
 
 inline bool is_canonical(const Data<GroundConjunctiveCondition>& data)
@@ -215,7 +216,7 @@ inline bool is_canonical(const Data<GroundConditionalEffect>& data) { return tru
 
 inline bool is_canonical(const Data<ConjunctiveEffect>& data) { return is_canonical(data.literals) && is_canonical(data.numeric_effects); }
 
-inline bool is_canonical(const Data<GroundConjunctiveEffect>& data) { return is_canonical(data.literals) && is_canonical(data.numeric_effects); }
+inline bool is_canonical(const Data<GroundConjunctiveEffect>& data) { return is_canonical(data.facts) && is_canonical(data.numeric_effects); }
 
 inline bool is_canonical(const Data<Action>& data) { return true; }
 
@@ -252,18 +253,11 @@ bool is_canonical(const Data<FDRFact<T>>& data)
     return true;
 }
 
-inline bool is_canonical(const Data<FDRConjunctiveCondition>& data)
+inline bool is_canonical(const Data<GroundFDRConjunctiveCondition>& data)
 {
-    return is_canonical(data.fluent_facts) && is_canonical(data.derived_facts) && is_canonical(data.numeric_constraints);
+    return is_canonical(data.static_literals) && is_canonical(data.fluent_facts) && is_canonical(data.derived_literals)
+           && is_canonical(data.numeric_constraints);
 }
-
-inline bool is_canonical(const Data<FDRConjunctiveEffect>& data) { return is_canonical(data.facts) && is_canonical(data.numeric_effects); }
-
-inline bool is_canonical(const Data<FDRConditionalEffect>& data) { return true; }
-
-inline bool is_canonical(const Data<FDRAction>& data) { return is_canonical(data.effects); }
-
-inline bool is_canonical(const Data<FDRAxiom>& data) { return true; }
 
 inline bool is_canonical(const Data<FDRTask>& data)
 {
@@ -439,6 +433,9 @@ inline void canonicalize(Data<ConjunctiveCondition>& data)
     canonicalize(data.static_literals);
     canonicalize(data.fluent_literals);
     canonicalize(data.numeric_constraints);
+    canonicalize(data.static_nullary_literals);
+    canonicalize(data.fluent_nullary_literals);
+    canonicalize(data.derived_nullary_literals);
 }
 
 inline void canonicalize(Data<GroundConjunctiveCondition>& data)
@@ -498,7 +495,7 @@ inline void canonicalize(Data<ConjunctiveEffect>& data)
 
 inline void canonicalize(Data<GroundConjunctiveEffect>& data)
 {
-    canonicalize(data.literals);
+    canonicalize(data.facts);
     canonicalize(data.numeric_effects);
 }
 
@@ -547,29 +544,12 @@ void canonicalize(Data<FDRFact<T>>& data)
     // Trivially canonical
 }
 
-inline void canonicalize(Data<FDRConjunctiveCondition>& data)
+inline void canonicalize(Data<GroundFDRConjunctiveCondition>& data)
 {
+    canonicalize(data.static_literals);
     canonicalize(data.fluent_facts);
-    canonicalize(data.derived_facts);
+    canonicalize(data.derived_literals);
     canonicalize(data.numeric_constraints);
-}
-
-inline void canonicalize(Data<FDRConjunctiveEffect>& data)
-{
-    canonicalize(data.facts);
-    canonicalize(data.numeric_effects);
-}
-
-inline void canonicalize(Data<FDRConditionalEffect>& data)
-{
-    // Trivially canonical
-}
-
-inline void canonicalize(Data<FDRAction>& data) { canonicalize(data.effects); }
-
-inline void canonicalize(Data<FDRAxiom>& data)
-{
-    // Trivially canonical
 }
 
 inline void canonicalize(Data<FDRTask>& data)

@@ -136,11 +136,7 @@ private:
                                          RepositoryEntry<FDRVariable<DerivedTag>>,
                                          RepositoryEntry<FDRFact<FluentTag>>,
                                          RepositoryEntry<FDRFact<DerivedTag>>,
-                                         RepositoryEntry<FDRConjunctiveCondition>,
-                                         RepositoryEntry<FDRConjunctiveEffect>,
-                                         RepositoryEntry<FDRConditionalEffect>,
-                                         RepositoryEntry<FDRAxiom>,
-                                         RepositoryEntry<FDRAction>,
+                                         RepositoryEntry<GroundFDRConjunctiveCondition>,
                                          RepositoryEntry<FDRTask>>;
 
     RepositoryStorage m_repository;

@@ -18,7 +18,7 @@
 #include "tyr/grounder/generator.hpp"
 
 #include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/ground.hpp"
+#include "tyr/formalism/grounder_datalog.hpp"
 #include "tyr/formalism/merge.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -44,7 +44,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
     const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
 
-    auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+    auto ground_rule = formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
     const auto merge_binding = formalism::merge(ground_rule.get_binding(), thread_execution_context.builder, *rule_stage_execution_context.repository);
 
@@ -79,7 +79,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
         const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
 
-        auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+        auto ground_rule = formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
         const auto merge_binding = formalism::merge(ground_rule.get_binding(), thread_execution_context.builder, *rule_stage_execution_context.repository);
 
@@ -121,7 +121,8 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
             const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
 
-            auto ground_rule = formalism::ground(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+            auto ground_rule =
+                formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
             const auto merge_binding = formalism::merge(ground_rule.get_binding(), thread_execution_context.builder, *rule_stage_execution_context.repository);
 
