@@ -120,13 +120,38 @@ void RuleExecutionContext::initialize(const AssignmentSets<formalism::Repository
  * ThreadExecutionContext
  */
 
-void ThreadExecutionContext::clear() noexcept { binding.clear(); }
+void ThreadExecutionContext::clear() noexcept
+{
+    binding.clear();
+    local_merge_cache.clear();
+    global_merge_cache.clear();
+}
 
 /**
  * ProgramResultsExecutionContext
  */
 
 void ProgramResultsExecutionContext::clear() noexcept { rule_binding_pairs.clear(); }
+
+/**
+ * ProgramToTaskExecutionContext
+ */
+
+void ProgramToTaskExecutionContext::clear() noexcept
+{
+    merge_cache.clear();
+    compile_cache.clear();
+}
+
+/**
+ * TaskToProgramExecutionContext
+ */
+
+void TaskToProgramExecutionContext::clear() noexcept
+{
+    merge_cache.clear();
+    compile_cache.clear();
+}
 
 /**
  * ProgramExecutionContext
@@ -148,7 +173,9 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<formalism::Program>,
     rule_stage_execution_contexts(),
     thread_execution_contexts(),
     planning_execution_context(),
-    program_results_execution_context()
+    program_results_execution_context(),
+    program_to_task_execution_context(),
+    task_to_program_execution_context()
 {
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {

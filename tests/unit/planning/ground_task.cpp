@@ -236,6 +236,17 @@ TEST(TyrTests, TyrPlanningGroundTask)
     }
 
     {
+        // Pushworld
+
+        auto ground_task = compute_ground_task(absolute("pushworld/domain.pddl"), absolute("pushworld/test_problem.pddl"));
+
+        EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 327);
+        EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+        EXPECT_EQ(ground_task->get_num_actions(), 6924);
+        EXPECT_EQ(ground_task->get_num_axioms(), 0);
+    }
+
+    {
         // Refuel
 
         auto ground_task = compute_ground_task(absolute("refuel/domain.pddl"), absolute("refuel/test_problem.pddl"));
