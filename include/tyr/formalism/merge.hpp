@@ -21,6 +21,7 @@
 #include "tyr/common/tuple.hpp"
 #include "tyr/formalism/builder.hpp"
 #include "tyr/formalism/canonicalization.hpp"
+#include "tyr/formalism/datas.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/views.hpp"
 
@@ -58,20 +59,20 @@ auto merge(View<Index<Binding>, C_SRC> element, Builder& builder, C_DST& destina
 template<Context C_SRC, Context C_DST>
 auto merge(View<Data<Term>, C_SRC> element, Builder& builder, C_DST& destination);
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& destination);
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST = T_SRC>
+auto merge(View<Index<Predicate<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination);
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<Atom<T>>, C_SRC> element, Builder& builder, C_DST& destination);
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST = T_SRC>
+auto merge(View<Index<Atom<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination);
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& destination);
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST = T_SRC>
+auto merge(View<Index<GroundAtom<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination);
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<Literal<T>>, C_SRC> element, Builder& builder, C_DST& destination);
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST = T_SRC>
+auto merge(View<Index<Literal<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination);
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundLiteral<T>>, C_SRC> element, Builder& builder, C_DST& destination);
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST = T_SRC>
+auto merge(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination);
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge(View<Index<Function<T>>, C_SRC> element, Builder& builder, C_DST& destination);
@@ -242,10 +243,10 @@ auto merge(View<Data<Term>, C_SRC> element, Builder& builder, C_DST& destination
         element.get_variant());
 }
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& destination)
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Predicate<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination)
 {
-    auto predicate_ptr = builder.template get_builder<Predicate<T>>();
+    auto predicate_ptr = builder.template get_builder<Predicate<T_DST>>();
     auto& predicate = *predicate_ptr;
     predicate.clear();
 
@@ -256,14 +257,17 @@ auto merge(View<Index<Predicate<T>>, C_SRC> element, Builder& builder, C_DST& de
     return destination.get_or_create(predicate, builder.get_buffer()).first;
 }
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<Atom<T>>, C_SRC> element, Builder& builder, C_DST& destination)
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Atom<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination)
 {
-    auto atom_ptr = builder.template get_builder<Atom<T>>();
+    auto atom_ptr = builder.template get_builder<Atom<T_DST>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.predicate = element.get_predicate().get_index();
+    if constexpr (std::is_same_v<T_SRC, T_DST>)
+        atom.predicate = element.get_predicate().get_index();
+    else
+        atom.predicate = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), builder, destination).get_index();
     for (const auto term : element.get_terms())
         atom.terms.push_back(merge(term, builder, destination).get_data());
 
@@ -271,43 +275,46 @@ auto merge(View<Index<Atom<T>>, C_SRC> element, Builder& builder, C_DST& destina
     return destination.get_or_create(atom, builder.get_buffer()).first;
 }
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundAtom<T>>, C_SRC> element, Builder& builder, C_DST& destination)
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<GroundAtom<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination)
 {
-    auto atom_ptr = builder.template get_builder<GroundAtom<T>>();
+    auto atom_ptr = builder.template get_builder<GroundAtom<T_DST>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.predicate = element.get_predicate().get_index();
+    if constexpr (std::is_same_v<T_SRC, T_DST>)
+        atom.predicate = element.get_predicate().get_index();
+    else
+        atom.predicate = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), builder, destination).get_index();
     atom.binding = merge(element.get_binding(), builder, destination).get_index();
 
     canonicalize(atom);
     return destination.get_or_create(atom, builder.get_buffer()).first;
 }
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<Literal<T>>, C_SRC> element, Builder& builder, C_DST& destination)
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Literal<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination)
 {
-    auto literal_ptr = builder.template get_builder<Literal<T>>();
+    auto literal_ptr = builder.template get_builder<Literal<T_DST>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge(element.get_atom(), builder, destination).get_index();
+    literal.atom = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_atom(), builder, destination).get_index();
 
     canonicalize(literal);
     return destination.get_or_create(literal, builder.get_buffer()).first;
 }
 
-template<FactKind T, Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundLiteral<T>>, C_SRC> element, Builder& builder, C_DST& destination)
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, Builder& builder, C_DST& destination)
 {
-    auto literal_ptr = builder.template get_builder<GroundLiteral<T>>();
+    auto literal_ptr = builder.template get_builder<GroundLiteral<T_DST>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge(element.get_atom(), builder, destination).get_index();
+    literal.atom = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_atom(), builder, destination).get_index();
 
     canonicalize(literal);
     return destination.get_or_create(literal, builder.get_buffer()).first;
