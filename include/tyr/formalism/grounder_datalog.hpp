@@ -79,8 +79,6 @@ ground_datalog(View<Index<ConjunctiveCondition>, C_SRC> element, View<IndexList<
         conj_cond.static_literals.push_back(ground_datalog(literal, binding, builder, destination).get_index());
     for (const auto literal : element.template get_literals<FluentTag>())
         conj_cond.fluent_literals.push_back(ground_datalog(literal, binding, builder, destination).get_index());
-    for (const auto literal : element.template get_literals<DerivedTag>())
-        conj_cond.derived_literals.push_back(ground_datalog(literal, binding, builder, destination).get_index());
     for (const auto numeric_constraint : element.get_numeric_constraints())
         conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, binding, builder, destination).get_data());
 

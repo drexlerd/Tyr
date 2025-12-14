@@ -48,8 +48,6 @@ struct TaggedFactSets;
 template<formalism::Context C>
 struct FactSets;
 
-struct FactsView;
-
 template<formalism::Context C>
 class StaticConsistencyGraph;
 

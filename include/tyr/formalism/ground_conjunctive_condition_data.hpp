@@ -36,7 +36,6 @@ struct Data<formalism::GroundConjunctiveCondition>
     Index<formalism::GroundConjunctiveCondition> index;
     IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_literals;
     IndexList<formalism::GroundLiteral<formalism::FluentTag>> fluent_literals;
-    IndexList<formalism::GroundLiteral<formalism::DerivedTag>> derived_literals;  ///< ignored in datalog.
     DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_constraints;
 
     Data() = default;
@@ -48,7 +47,6 @@ struct Data<formalism::GroundConjunctiveCondition>
         index(index),
         static_literals(std::move(static_literals)),
         fluent_literals(std::move(fluent_literals)),
-        derived_literals(std::move(derived_literals)),
         numeric_constraints(std::move(numeric_constraints))
     {
     }
@@ -62,7 +60,6 @@ struct Data<formalism::GroundConjunctiveCondition>
         tyr::clear(index);
         tyr::clear(static_literals);
         tyr::clear(fluent_literals);
-        tyr::clear(derived_literals);
         tyr::clear(numeric_constraints);
     }
 
@@ -79,8 +76,8 @@ struct Data<formalism::GroundConjunctiveCondition>
             static_assert(dependent_false<T>::value, "Missing case");
     }
 
-    auto cista_members() const noexcept { return std::tie(index, static_literals, fluent_literals, derived_literals, numeric_constraints); }
-    auto identifying_members() const noexcept { return std::tie(static_literals, fluent_literals, derived_literals, numeric_constraints); }
+    auto cista_members() const noexcept { return std::tie(index, static_literals, fluent_literals, numeric_constraints); }
+    auto identifying_members() const noexcept { return std::tie(static_literals, fluent_literals, numeric_constraints); }
 };
 }
 

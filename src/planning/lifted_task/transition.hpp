@@ -22,8 +22,6 @@
 #include "tyr/common/types.hpp"
 #include "tyr/planning/declarations.hpp"
 
-#include <boost/dynamic_bitset.hpp>
-
 /**
  * Forward declarations
  */
@@ -45,10 +43,7 @@ struct GroundAction;
 namespace tyr::planning
 {
 
-extern Node<LiftedTask> apply_action(Node<LiftedTask> node,
-                                     View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
-                                     boost::dynamic_bitset<>& out_positive_effects,
-                                     boost::dynamic_bitset<>& out_negative_effects);
+extern Node<LiftedTask> apply_action(Node<LiftedTask> node, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
 }
 
 #endif

@@ -27,7 +27,6 @@
 #include "tyr/grounder/declarations.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/grounder/fact_sets.hpp"
-#include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/formatter.hpp"
 #include "tyr/grounder/kpkc.hpp"
 
@@ -42,8 +41,6 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
     thread_execution_context.binding.clear();
     const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
 
-    const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
-
     const auto merge_binding =
         formalism::merge(binding, thread_execution_context.builder, *rule_stage_execution_context.repository, thread_execution_context.merge_cache);
 
@@ -53,7 +50,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
         auto ground_rule = formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-        if (is_applicable(ground_rule, fact_sets_adapter))
+        if (is_applicable(ground_rule, fact_execution_context.fact_sets))
         {
             // std::cout << ground_rule << std::endl;
 
@@ -67,8 +64,6 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
                        RuleStageExecutionContext& rule_stage_execution_context,
                        ThreadExecutionContext& thread_execution_context)
 {
-    const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
-
     for (const auto vertex_index : rule_execution_context.kpkc_workspace.consistent_vertices_vec)
     {
         thread_execution_context.binding.clear();
@@ -90,7 +85,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
             auto ground_rule =
                 formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-            if (is_applicable(ground_rule, fact_sets_adapter))
+            if (is_applicable(ground_rule, fact_execution_context.fact_sets))
             {
                 // std::cout << ground_rule << std::endl;
 
@@ -105,8 +100,6 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                          RuleStageExecutionContext& rule_stage_execution_context,
                          ThreadExecutionContext& thread_execution_context)
 {
-    const auto fact_sets_adapter = FactsView(fact_execution_context.fact_sets);
-
     kpkc::for_each_k_clique(
         rule_execution_context.consistency_graph,
         rule_execution_context.kpkc_workspace,
@@ -134,7 +127,7 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                 auto ground_rule =
                     formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
 
-                if (is_applicable(ground_rule, fact_sets_adapter))
+                if (is_applicable(ground_rule, fact_execution_context.fact_sets))
                 {
                     // std::cout << ground_rule << std::endl;
 

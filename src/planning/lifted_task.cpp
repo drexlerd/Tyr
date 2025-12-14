@@ -24,11 +24,10 @@
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/grounder_planning.hpp"
 #include "tyr/formalism/merge.hpp"
-#include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
-#include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/generator.hpp"
+#include "tyr/planning/applicability.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
@@ -44,12 +43,12 @@ using namespace tyr::solver;
 namespace tyr::planning
 {
 
-float_t evaluate_metric(View<Index<Task>, OverlayRepository<Repository>> task_view, const tyr::grounder::FactsView& facts_view)
+float_t evaluate_metric(View<Index<Task>, OverlayRepository<Repository>> task_view, Node<LiftedTask> node)
 {
     if (task_view.get_auxiliary_fterm_value())
         return task_view.get_auxiliary_fterm_value().value().get_value();
 
-    return task_view.get_metric() ? evaluate(task_view.get_metric().value().get_fexpr(), facts_view) : 0.;
+    return task_view.get_metric() ? evaluate(task_view.get_metric().value().get_fexpr(), node) : 0.;
 }
 
 static void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
@@ -166,7 +165,6 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 
 static void read_solution_and_instantiate_labeled_successor_nodes(
     Node<LiftedTask> node,
-    const tyr::grounder::FactsView& facts_view,
     OverlayRepository<Repository>& task_repository,
     ProgramExecutionContext& action_context,
     const ApplicableActionProgram& action_program,
@@ -177,8 +175,7 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
 
     auto& binding_full = action_context.planning_execution_context.binding_full;
     auto& effect_families = action_context.planning_execution_context.effect_families;
-    auto& positive_effects = action_context.planning_execution_context.positive_effects;
-    auto& negative_effects = action_context.planning_execution_context.negative_effects;
+    auto& assign = action_context.planning_execution_context.assign;
 
     for (const auto& [rule, program_binding] : action_context.program_results_execution_context.rule_binding_pairs)
     {
@@ -190,13 +187,13 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
                                                        make_view(program_binding.get_objects().get_data(), task_repository),
                                                        binding_full,
                                                        parameter_domains_per_cond_effect_per_action[action_index],
-                                                       action_context.assign,
+                                                       assign,
                                                        action_context.builder,
                                                        task_repository);
 
             effect_families.clear();
-            if (grounder::is_applicable(ground_action, facts_view, effect_families))
-                out_successors.emplace_back(ground_action, apply_action(node, ground_action, positive_effects, negative_effects));
+            if (is_applicable(ground_action, node, effect_families))
+                out_successors.emplace_back(ground_action, apply_action(node, ground_action));
         }
     }
 }
@@ -394,7 +391,6 @@ Node<LiftedTask> LiftedTask::get_initial_node()
     unpacked_state.clear();
 
     auto& fluent_atoms = unpacked_state.template get_atoms<FluentTag>();
-    auto& derived_atoms = unpacked_state.template get_atoms<DerivedTag>();
     auto& numeric_variables = unpacked_state.get_numeric_variables();
 
     for (const auto atom : m_task.get_atoms<FluentTag>())
@@ -407,9 +403,9 @@ Node<LiftedTask> LiftedTask::get_initial_node()
 
     const auto state_index = register_state(unpacked_state);
 
-    const auto facts_view = grounder::FactsView(this->m_static_atoms_bitset, fluent_atoms, derived_atoms, this->m_static_numeric_variables, numeric_variables);
+    const auto node = Node<LiftedTask>(state_index, 0, *this);
 
-    const auto state_metric = evaluate_metric(this->get_task(), facts_view);
+    const auto state_metric = evaluate_metric(this->get_task(), node);
 
     return Node<LiftedTask>(state_index, state_metric, *this);
 }
@@ -434,14 +430,11 @@ void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
     const auto& derived_atoms = state.get_atoms<DerivedTag>();
     const auto& numeric_variables = state.get_numeric_variables<FluentTag>();
 
-    const auto facts_view = grounder::FactsView(this->m_static_atoms_bitset, fluent_atoms, derived_atoms, this->m_static_numeric_variables, numeric_variables);
-
     insert_extended_state(fluent_atoms, derived_atoms, numeric_variables, *this->m_overlay_repository, m_action_context);
 
     solve_bottom_up(m_action_context);
 
     read_solution_and_instantiate_labeled_successor_nodes(node,
-                                                          facts_view,
                                                           *this->m_overlay_repository,
                                                           m_action_context,
                                                           m_action_program,
@@ -478,16 +471,8 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     ground_context.program_to_task_execution_context.clear();
 
-    // --- Prepare FactsView based on initial node. We will only check static applicability here.
-
     const auto initial_node = this->get_initial_node();
     const auto initial_state = initial_node.get_state();
-    const auto facts_view = grounder::FactsView(initial_state.template get_atoms<formalism::StaticTag>(),
-                                                initial_state.template get_atoms<formalism::FluentTag>(),
-                                                initial_state.template get_atoms<formalism::DerivedTag>(),
-                                                initial_state.template get_numeric_variables<formalism::StaticTag>(),
-                                                initial_state.template get_numeric_variables<formalism::FluentTag>(),
-                                                initial_node.get_state_metric());
 
     auto& binding_full = ground_context.planning_execution_context.binding_full;
 

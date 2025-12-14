@@ -83,6 +83,18 @@ public:
 
     const auto& get_static_atoms_bitset() const noexcept { return m_static_atoms_bitset; }
     const auto& get_static_numeric_variables() const noexcept { return m_static_numeric_variables; }
+    bool test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const
+    {
+        if (index.get_value() >= m_static_atoms_bitset.size())
+            return false;
+        return m_static_atoms_bitset.test(index.get_value());
+    }
+    float_t get(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const
+    {
+        if (index.get_value() >= m_static_numeric_variables.size())
+            return std::numeric_limits<float_t>::quiet_NaN();
+        return m_static_numeric_variables[index.get_value()];
+    }
 
 private:
     // Inputs

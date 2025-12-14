@@ -27,7 +27,6 @@
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/unpacked_state.hpp"
-#include "tyr/planning/views.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <vector>
@@ -58,7 +57,20 @@ public:
             m_fluent_atoms.resize(fact.variable.get_value() + 1, false);
         m_fluent_atoms[fact.variable.get_value()] = uint_t(fact.value);
     }
-    auto get_fluent_facts_impl() const { return FDRFactListView<boost::dynamic_bitset<>>(m_fluent_atoms); }
+
+    // Fluent numeric variables
+    float_t get_impl(Index<formalism::GroundFunctionTerm<formalism::FluentTag>> index) const
+    {
+        if (index.get_value() >= m_numeric_variables.size())
+            return std::numeric_limits<float_t>::quiet_NaN();
+        return m_numeric_variables[index.get_value()];
+    }
+    void set_impl(Index<formalism::GroundFunctionTerm<formalism::FluentTag>> index, float_t value)
+    {
+        if (index.get_value() >= m_numeric_variables.size())
+            m_numeric_variables.resize(index.get_value() + 1, std::numeric_limits<float_t>::quiet_NaN());
+        m_numeric_variables[index.get_value()] = value;
+    }
 
     // Derived atoms
     bool test_impl(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const
@@ -73,22 +85,6 @@ public:
             m_derived_atoms.resize(index.get_value() + 1, false);
         m_derived_atoms.set(index.get_value());
     }
-    const boost::dynamic_bitset<>& get_derived_atoms_impl() const { return m_derived_atoms; }
-
-    // Numeric variables
-    float_t get_impl(Index<formalism::GroundFunctionTerm<formalism::FluentTag>> index) const
-    {
-        if (index.get_value() >= m_numeric_variables.size())
-            return std::numeric_limits<float_t>::quiet_NaN();
-        return m_numeric_variables[index.get_value()];
-    }
-    void set_impl(Index<formalism::GroundFunctionTerm<formalism::FluentTag>> index, float_t value)
-    {
-        if (index.get_value() >= m_numeric_variables.size())
-            m_numeric_variables.resize(index.get_value() + 1, std::numeric_limits<float_t>::quiet_NaN());
-        m_numeric_variables[index.get_value()] = value;
-    }
-    const std::vector<float_t>& get_numeric_variables_impl() const { return m_numeric_variables; }
 
     void clear_impl()
     {
@@ -96,6 +92,36 @@ public:
         m_derived_atoms.clear();
         m_numeric_variables.clear();
     }
+
+    /**
+     * For lifted task
+     */
+
+    template<formalism::FactKind T>
+    boost::dynamic_bitset<>& get_atoms() noexcept
+    {
+        if constexpr (std::same_as<T, formalism::FluentTag>)
+            return m_fluent_atoms;
+        else if constexpr (std::same_as<T, formalism::DerivedTag>)
+            return m_derived_atoms;
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
+
+    template<formalism::FactKind T>
+    const boost::dynamic_bitset<>& get_atoms() const noexcept
+    {
+        if constexpr (std::same_as<T, formalism::FluentTag>)
+            return m_fluent_atoms;
+        else if constexpr (std::same_as<T, formalism::DerivedTag>)
+            return m_derived_atoms;
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
+
+    std::vector<float_t>& get_numeric_variables() noexcept { return m_numeric_variables; }
+
+    const std::vector<float_t>& get_numeric_variables() const noexcept { return m_numeric_variables; }
 
 private:
     StateIndex m_index;

@@ -25,7 +25,6 @@
 #include "tyr/grounder/declarations.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/grounder/fact_sets.hpp"
-#include "tyr/grounder/facts_view.hpp"
 #include "tyr/grounder/formatter.hpp"
 #include "tyr/grounder/generator.hpp"
 #include "tyr/grounder/kpkc.hpp"

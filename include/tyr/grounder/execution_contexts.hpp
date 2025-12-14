@@ -183,8 +183,7 @@ struct PlanningExecutionContext
 {
     IndexList<formalism::Object> binding_full;
     formalism::EffectFamilyList effect_families;
-    boost::dynamic_bitset<> positive_effects;
-    boost::dynamic_bitset<> negative_effects;
+    UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> assign;
 
     PlanningExecutionContext() = default;
 };
@@ -221,8 +220,6 @@ struct ProgramExecutionContext
 
     /// --- Builder
     formalism::Builder builder;
-
-    UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> assign;
 
     /// --- Execution contexts
     FactsExecutionContext facts_execution_context;

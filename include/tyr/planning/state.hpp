@@ -27,6 +27,46 @@
 
 namespace tyr::planning
 {
+
+template<typename Derived>
+class StateMixin
+{
+private:
+    /// @brief Helper to cast to Derived.
+    constexpr const auto& self() const { return static_cast<const Derived&>(*this); }
+    constexpr auto& self() { return static_cast<Derived&>(*this); }
+
+public:
+    StateIndex get_index() const { return self().get_index_impl(); }
+
+    /**
+     * Static part
+     */
+
+    // Static atoms
+    bool test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const { return self().test_impl(index); }
+
+    // Static numeric variables
+    float_t get(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const { return self().get_impl(index); }
+
+    /**
+     * Fluent part
+     */
+
+    // Fluent facts
+    formalism::FDRValue get(Index<formalism::FDRVariable<formalism::FluentTag>> index) const { return self().get_impl(index); }
+
+    // Fluent numeric variables
+    float_t get(Index<formalism::GroundFunctionTerm<formalism::FluentTag>> index) const { return self().get_impl(index); }
+
+    /**
+     * Derived part
+     */
+
+    // Derived atoms
+    bool test(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const { return self().test_impl(index); }
+};
+
 template<typename Task>
 class State
 {

@@ -27,9 +27,8 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_utils.hpp"
-#include "tyr/grounder/applicability.hpp"
 #include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/facts_view.hpp"
+#include "tyr/planning/applicability.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/lifted_task.hpp"
@@ -42,57 +41,30 @@ namespace tyr::planning
 {
 
 inline void process_effects(View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
-                            const tyr::grounder::FactsView& facts_view,
-                            boost::dynamic_bitset<>& positive_effects,
-                            boost::dynamic_bitset<>& negative_effects,
-                            std::vector<float_t>& numeric_variables,
+                            Node<LiftedTask> node,
+                            UnpackedState<LiftedTask>& succ_unpacked_state,
                             float_t& succ_metric_value)
 {
     for (const auto cond_effect : action.get_effects())
     {
-        if (is_applicable(cond_effect.get_condition(), facts_view))
+        if (is_applicable(cond_effect.get_condition(), node))
         {
-            for (const auto literal : cond_effect.get_effect().get_literals())
-            {
-                if (literal.get_polarity())
-                    set(literal.get_atom().get_index().get_value(), positive_effects);
-                else
-                    set(literal.get_atom().get_index().get_value(), negative_effects);
-            }
+            for (const auto fact : cond_effect.get_effect().get_facts())
+                succ_unpacked_state.set(fact.get_data());
 
             for (const auto numeric_effect : cond_effect.get_effect().get_numeric_effects())
-            {
-                visit(
-                    [&](auto&& arg) {
-                        set(arg.get_fterm().get_index().get_value(),
-                            grounder::evaluate(numeric_effect, facts_view),
-                            numeric_variables,
-                            std::numeric_limits<float_t>::quiet_NaN());
-                    },
-                    numeric_effect.get_variant());
-            }
+                visit([&](auto&& arg) { succ_unpacked_state.set(arg.get_fterm().get_index(), evaluate(numeric_effect, node)); }, numeric_effect.get_variant());
 
             if (cond_effect.get_effect().get_auxiliary_numeric_effect().has_value())
-            {
-                succ_metric_value = grounder::evaluate(cond_effect.get_effect().get_auxiliary_numeric_effect().value(), facts_view);
-            }
+                succ_metric_value = evaluate(cond_effect.get_effect().get_auxiliary_numeric_effect().value(), node);
         }
     }
 }
 
-Node<LiftedTask> apply_action(Node<LiftedTask> node,
-                              View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
-                              boost::dynamic_bitset<>& out_positive_effects,
-                              boost::dynamic_bitset<>& out_negative_effects)
+Node<LiftedTask> apply_action(Node<LiftedTask> node, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action)
 {
     const auto state = node.get_state();
     auto& task = node.get_task();
-    const auto facts_view = grounder::FactsView(state.template get_atoms<formalism::StaticTag>(),
-                                                state.template get_atoms<formalism::FluentTag>(),
-                                                state.template get_atoms<formalism::DerivedTag>(),
-                                                state.template get_numeric_variables<formalism::StaticTag>(),
-                                                state.template get_numeric_variables<formalism::FluentTag>(),
-                                                node.get_state_metric());
 
     /// --- Fetch a scratch buffer for creating the successor state.
     auto succ_unpacked_state_ptr = task.get_unpacked_state_pool().get_or_allocate();
@@ -101,42 +73,21 @@ Node<LiftedTask> apply_action(Node<LiftedTask> node,
 
     // Copy state into mutable buffer
     succ_unpacked_state = state.get_unpacked_state();
-    auto& succ_fluent_atoms = succ_unpacked_state.template get_atoms<formalism::FluentTag>();
-    auto& succ_derived_atoms = succ_unpacked_state.template get_atoms<formalism::DerivedTag>();
-    auto& succ_numeric_variables = succ_unpacked_state.get_numeric_variables();
 
     auto succ_metric_value = node.get_state_metric();
 
-    out_positive_effects.clear();
-    out_negative_effects.clear();
-
-    process_effects(action, facts_view, out_positive_effects, out_negative_effects, succ_numeric_variables, succ_metric_value);
-
-    const auto max_size = std::max({ succ_fluent_atoms.size(), out_positive_effects.size(), out_negative_effects.size() });
-    succ_fluent_atoms.resize(max_size, false);
-    out_positive_effects.resize(max_size, false);
-    out_negative_effects.resize(max_size, false);
-
-    succ_fluent_atoms -= out_negative_effects;
-    succ_fluent_atoms |= out_positive_effects;
+    process_effects(action, node, succ_unpacked_state, succ_metric_value);
 
     task.compute_extended_state(succ_unpacked_state);
 
-    if (task.get_task().get_metric())
-    {
-        const auto succ_facts_view = grounder::FactsView(state.template get_atoms<formalism::StaticTag>(),
-                                                         succ_fluent_atoms,
-                                                         succ_derived_atoms,
-                                                         state.template get_numeric_variables<formalism::StaticTag>(),
-                                                         succ_numeric_variables,
-                                                         succ_metric_value);
+    const auto succ_state_index = task.register_state(succ_unpacked_state);
 
-        succ_metric_value = grounder::evaluate(task.get_task().get_metric().value().get_fexpr(), succ_facts_view);
-    }
+    const auto succ_node = Node<LiftedTask>(succ_state_index, succ_metric_value, task);
+
+    if (task.get_task().get_metric())
+        succ_metric_value = evaluate(task.get_task().get_metric().value().get_fexpr(), succ_node);
     else
         ++succ_metric_value;  // Assume unit cost if no metric is given
-
-    const auto succ_state_index = task.register_state(succ_unpacked_state);
 
     return Node<LiftedTask>(succ_state_index, succ_metric_value, task);
 }

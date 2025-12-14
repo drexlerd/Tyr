@@ -29,25 +29,56 @@
 namespace tyr::planning
 {
 template<>
-class State<LiftedTask>
+class State<LiftedTask> : public StateMixin<State<LiftedTask>>
 {
 public:
     using TaskType = LiftedTask;
 
     State(LiftedTask& task, SharedObjectPoolPtr<UnpackedState<LiftedTask>> unpacked) noexcept : m_unpacked(std::move(unpacked)), m_task(&task) {}
 
-    StateIndex get_index() const noexcept { return m_unpacked->get_index(); }
+    StateIndex get_index_impl() const { return m_unpacked->get_index(); }
+
+    /**
+     * Static part
+     */
+
+    // Static atoms
+    bool test_impl(Index<formalism::GroundAtom<formalism::StaticTag>> index) const;
+
+    // Static numeric variables
+    float_t get_impl(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const;
+
+    /**
+     * Fluent part
+     */
+
+    // Fluent facts
+    formalism::FDRValue get_impl(Index<formalism::FDRVariable<formalism::FluentTag>> index) const { return m_unpacked->get(index); }
+
+    // Fluent numeric variables
+    float_t get_impl(Index<formalism::GroundFunctionTerm<formalism::FluentTag>> index) const { return m_unpacked->get(index); }
+
+    /**
+     * Derived part
+     */
+
+    // Derived atoms
+    bool test_impl(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const { return m_unpacked->test(index); }
+
+    LiftedTask& get_task() noexcept { return *m_task; }
+    const LiftedTask& get_task() const noexcept { return *m_task; }
+
+    /**
+     * For lifted task
+     */
+
+    const UnpackedState<LiftedTask>& get_unpacked_state() const noexcept { return *m_unpacked; }
 
     template<formalism::FactKind T>
     const boost::dynamic_bitset<>& get_atoms() const noexcept;
 
     template<formalism::FactKind T>
     const std::vector<float_t>& get_numeric_variables() const noexcept;
-
-    const UnpackedState<LiftedTask>& get_unpacked_state() const noexcept { return *m_unpacked; }
-
-    LiftedTask& get_task() noexcept { return *m_task; }
-    const LiftedTask& get_task() const noexcept { return *m_task; }
 
 private:
     SharedObjectPoolPtr<UnpackedState<LiftedTask>> m_unpacked;

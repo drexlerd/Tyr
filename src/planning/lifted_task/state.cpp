@@ -22,6 +22,10 @@
 namespace tyr::planning
 {
 
+bool State<LiftedTask>::test_impl(Index<formalism::GroundAtom<formalism::StaticTag>> index) const { return m_task->test(index); }
+
+float_t State<LiftedTask>::get_impl(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const { return m_task->get(index); }
+
 template<formalism::FactKind T>
 const boost::dynamic_bitset<>& State<LiftedTask>::get_atoms() const noexcept
 {
