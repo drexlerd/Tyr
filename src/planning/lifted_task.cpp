@@ -575,11 +575,6 @@ GroundTaskPtr LiftedTask::get_ground_task()
     canonicalize(ground_actions);
     canonicalize(ground_axioms);
 
-    // std::cout << make_view(fluent_atoms, *m_overlay_repository) << std::endl;
-    // std::cout << make_view(derived_atoms, *m_overlay_repository) << std::endl;
-    // std::cout << make_view(ground_actions, *m_overlay_repository) << std::endl;
-    // std::cout << make_view(ground_axioms, *m_overlay_repository) << std::endl;
-
     std::cout << "Num fluent atoms: " << fluent_atoms.size() << std::endl;
     std::cout << "Num derived atoms: " << derived_atoms.size() << std::endl;
     std::cout << "Num ground actions: " << ground_actions.size() << std::endl;

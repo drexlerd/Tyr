@@ -29,6 +29,82 @@
 namespace tyr::formalism
 {
 template<Context C_SRC, Context C_DST>
+class GrounderCache
+{
+private:
+    template<typename T_SRC, typename T_DST = T_SRC>
+    struct MapEntryType
+    {
+        using value_type = std::pair<T_SRC, T_DST>;
+        using container_type = UnorderedMap<std::pair<View<Index<T_SRC>, C_SRC>, View<Index<Binding>, C_SRC>>, View<Index<T_DST>, C_DST>>;
+
+        container_type container;
+    };
+
+    using GrounderStorage = std::tuple<MapEntryType<Atom<StaticTag>, GroundAtom<StaticTag>>,
+                                       MapEntryType<Atom<FluentTag>, GroundAtom<FluentTag>>,
+                                       MapEntryType<Atom<DerivedTag>, GroundAtom<DerivedTag>>,
+                                       MapEntryType<Atom<FluentTag>, GroundAtom<DerivedTag>>,
+                                       MapEntryType<Atom<DerivedTag>, GroundAtom<FluentTag>>,
+                                       MapEntryType<Literal<StaticTag>, GroundLiteral<StaticTag>>,
+                                       MapEntryType<Literal<FluentTag>, GroundLiteral<FluentTag>>,
+                                       MapEntryType<Literal<DerivedTag>, GroundLiteral<DerivedTag>>,
+                                       MapEntryType<Literal<FluentTag>, GroundLiteral<DerivedTag>>,
+                                       MapEntryType<Literal<DerivedTag>, GroundLiteral<FluentTag>>,
+                                       MapEntryType<FunctionTerm<StaticTag>, GroundFunctionTerm<StaticTag>>,
+                                       MapEntryType<FunctionTerm<FluentTag>, GroundFunctionTerm<FluentTag>>,
+                                       MapEntryType<FunctionTerm<AuxiliaryTag>, GroundFunctionTerm<AuxiliaryTag>>,
+                                       MapEntryType<UnaryOperator<OpSub, Data<FunctionExpression>>, UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpAdd, Data<FunctionExpression>>, BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpSub, Data<FunctionExpression>>, BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpMul, Data<FunctionExpression>>, BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpDiv, Data<FunctionExpression>>, BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<MultiOperator<OpAdd, Data<FunctionExpression>>, MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<MultiOperator<OpMul, Data<FunctionExpression>>, MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpEq, Data<FunctionExpression>>, BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpNe, Data<FunctionExpression>>, BinaryOperator<OpNe, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpLe, Data<FunctionExpression>>, BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpLt, Data<FunctionExpression>>, BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpGe, Data<FunctionExpression>>, BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<BinaryOperator<OpGt, Data<FunctionExpression>>, BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
+                                       MapEntryType<ConjunctiveCondition, GroundConjunctiveCondition>,
+                                       MapEntryType<Rule, GroundRule>,
+                                       MapEntryType<NumericEffect<OpAssign, FluentTag>, GroundNumericEffect<OpAssign, FluentTag>>,
+                                       MapEntryType<NumericEffect<OpIncrease, FluentTag>, GroundNumericEffect<OpIncrease, FluentTag>>,
+                                       MapEntryType<NumericEffect<OpDecrease, FluentTag>, GroundNumericEffect<OpDecrease, FluentTag>>,
+                                       MapEntryType<NumericEffect<OpScaleUp, FluentTag>, GroundNumericEffect<OpScaleUp, FluentTag>>,
+                                       MapEntryType<NumericEffect<OpScaleDown, FluentTag>, GroundNumericEffect<OpScaleDown, FluentTag>>,
+                                       MapEntryType<NumericEffect<OpIncrease, AuxiliaryTag>, GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
+                                       MapEntryType<ConditionalEffect, GroundConditionalEffect>,
+                                       MapEntryType<ConjunctiveEffect, GroundConjunctiveEffect>,
+                                       MapEntryType<Action, GroundAction>,
+                                       MapEntryType<Axiom, GroundAxiom>>;
+
+    GrounderStorage m_maps;
+
+public:
+    GrounderCache() = default;
+
+    template<typename T_SRC, typename T_DST = T_SRC>
+    auto& get() noexcept
+    {
+        using Key = std::pair<T_SRC, T_DST>;
+        return get_container<Key>(m_maps);
+    }
+    template<typename T_SRC, typename T_DST = T_SRC>
+    const auto& get() const noexcept
+    {
+        using Key = std::pair<T_SRC, T_DST>;
+        return get_container<Key>(m_maps);
+    }
+
+    void clear() noexcept
+    {
+        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_maps);
+    }
+};
+
+template<Context C_SRC, Context C_DST>
 View<Index<Binding>, C_DST> ground_common(View<DataList<Term>, C_SRC> element, View<IndexList<Object>, C_DST> binding, Builder& builder, C_DST& destination)
 {
     // Fetch and clear
