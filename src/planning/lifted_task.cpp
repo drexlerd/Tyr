@@ -339,6 +339,8 @@ LiftedTask::LiftedTask(DomainPtr domain,
                     m_axiom_program.get_listeners()),
     m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(task))
 {
+    std::cout << m_fdr_context.get_variables() << std::endl;
+
     for (const auto atom : task.template get_atoms<formalism::StaticTag>())
         set(atom.get_index().get_value(), m_static_atoms_bitset);
 

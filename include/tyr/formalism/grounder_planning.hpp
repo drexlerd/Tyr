@@ -84,6 +84,8 @@ ground_planning(View<Index<Atom<FluentTag>>, C_SRC> element, View<IndexList<Obje
     {
         const auto [new_variable, new_variable_inserted] = create_fdr_variable(new_atom, builder, destination);
 
+        std::cout << new_atom.get_index() << " " << new_atom << " " << new_variable.get_index() << " " << new_variable << std::endl;
+
         assert(new_variable_inserted);
         assert(new_atom.get_index().get_value() == new_variable.get_index().get_value());
     }

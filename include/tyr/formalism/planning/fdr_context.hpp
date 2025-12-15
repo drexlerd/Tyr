@@ -85,6 +85,8 @@ public:
         return make_view(Data<FDRFact<FluentTag>>(var_index, FDRValue { 0 }), m_context);
     }
 
+    View<IndexList<FDRVariable<FluentTag>>, C> get_variables() const { return make_view(m_variables, m_context); }
+
 private:
     C& m_context;
     Data<FDRVariable<FluentTag>> m_builder;
@@ -111,6 +113,8 @@ public:
     {
         return make_view(Data<FDRFact<FluentTag>>(get_fact(literal.get_atom()).get_variable().get_index(), FDRValue { 0 }), m_context);
     }
+
+    View<IndexList<FDRVariable<FluentTag>>, C> get_variables() const { return make_view(m_variables, m_context); }
 
 private:
     C& m_context;

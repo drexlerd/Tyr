@@ -55,7 +55,7 @@ struct Data<formalism::FDRVariable<T>>
     }
 
     auto cista_members() const noexcept { return std::tie(index, domain_size, atoms); }
-    auto identifying_members() const noexcept { return std::tie(index); }
+    auto identifying_members() const noexcept { return std::tie(domain_size, atoms); }
 };
 }
 
