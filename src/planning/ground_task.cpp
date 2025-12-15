@@ -274,7 +274,6 @@ GroundTask::GroundTask(DomainPtr domain,
     m_fluent_layout(create_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(m_fdr_task.get_variables<FluentTag>())),
     m_derived_layout(create_layouts<DerivedTag, OverlayRepository<Repository>, uint_t>(m_fdr_task.get_variables<DerivedTag>()))
 {
-    std::cout << m_fdr_task << std::endl;
 }
 
 Node<GroundTask> get_initial_node() {}
