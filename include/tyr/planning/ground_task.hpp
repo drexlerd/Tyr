@@ -20,6 +20,7 @@
 
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"
@@ -37,13 +38,20 @@ class GroundTask
 {
 public:
     GroundTask(DomainPtr domain,
-               formalism::RepositoryPtr repository,
+               formalism::RepositoryPtr m_repository,
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
-               View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
-               IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms,
-               IndexList<formalism::GroundAtom<formalism::DerivedTag>> derived_atoms,
-               IndexList<formalism::GroundAction> actions,
-               IndexList<formalism::GroundAxiom> axioms);
+               View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> fdr_task,
+               formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context);
+
+    static std::shared_ptr<GroundTask> create(DomainPtr domain,
+                                              formalism::RepositoryPtr repository,
+                                              formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
+                                              View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
+                                              IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms,
+                                              IndexList<formalism::GroundAtom<formalism::DerivedTag>> derived_atoms,
+                                              IndexList<formalism::GroundAtom<formalism::FluentTag>> initial_fluent_atoms,
+                                              IndexList<formalism::GroundAction> actions,
+                                              IndexList<formalism::GroundAxiom> axioms);
 
     void compute_extended_state(UnpackedState<GroundTask>& unpacked_state);
 
@@ -62,19 +70,15 @@ public:
     size_t get_num_axioms() const noexcept;
 
 private:
-    size_t m_num_fluent_atoms;
-    size_t m_num_derived_atoms;
-    size_t m_num_actions;
-    size_t m_num_axioms;
-
     DomainPtr m_domain;
 
     formalism::RepositoryPtr m_repository;
     formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
-    // View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> m_task;
+    View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> m_fdr_task;
+    formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> m_fdr_context;
 
-    // FDRVariablesLayout<formalism::FluentTag, uint_t> m_fluent_layout;
-    // FDRVariablesLayout<formalism::DerivedTag, uint_t> m_derived_layout;
+    FDRVariablesLayout<formalism::FluentTag, uint_t> m_fluent_layout;
+    FDRVariablesLayout<formalism::DerivedTag, uint_t> m_derived_layout;
 };
 
 }

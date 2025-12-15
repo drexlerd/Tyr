@@ -1070,7 +1070,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::GroundConjunc
     {
         IndentScope scope(os);
 
-        os << print_indent << "fluent literals = " << el.facts << "\n";
+        os << print_indent << "fluent facts = " << el.facts << "\n";
 
         os << print_indent << "fluent numeric effects = " << el.numeric_effects << "\n";
 
@@ -1088,7 +1088,7 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::GroundConjunct
     {
         IndentScope scope(os);
 
-        os << print_indent << "fluent literals = " << el.get_facts() << "\n";
+        os << print_indent << "fluent facts = " << el.get_facts() << "\n";
 
         os << print_indent << "fluent numeric effects = " << el.get_numeric_effects() << "\n";
 
@@ -1446,7 +1446,18 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::FDRFact<T>>& 
 template<formalism::FactKind T, formalism::Context C>
 std::ostream& print(std::ostream& os, const View<Data<formalism::FDRFact<T>>, C>& el)
 {
-    fmt::print(os, "<{},{}>", to_string(el.get_variable().get_index()), to_string(el.get_value()));
+    if (el.get_value() == formalism::FDRValue::none())
+        fmt::print(os,
+                   "<{},{}>: (none-of {})",
+                   to_string(el.get_variable().get_index()),
+                   to_string(el.get_value()),
+                   fmt::join(to_strings(el.get_variable().get_atoms()), " "));
+    else
+        fmt::print(os,
+                   "<{},{}>: {}",
+                   to_string(el.get_variable().get_index()),
+                   to_string(el.get_value()),
+                   to_string(el.get_variable().get_atoms()[uint_t(el.get_value()) - 1]));
     return os;
 }
 
@@ -1517,7 +1528,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::FDRTask>& el)
 
         os << print_indent << "axioms = " << el.axioms << "\n";
 
-        os << print_indent << "fluent variables = " << el.fluent_variables << "\n";
+        os << print_indent << "fluent facts = " << el.fluent_variables << "\n";
 
         os << print_indent << "derived variables = " << el.derived_variables << "\n";
 
@@ -1565,7 +1576,7 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::FDRTask>, C>& 
 
         os << print_indent << "axioms = " << el.get_axioms() << "\n";
 
-        os << print_indent << "fluent variables = " << el.template get_variables<formalism::FluentTag>() << "\n";
+        os << print_indent << "fluent facts = " << el.template get_variables<formalism::FluentTag>() << "\n";
 
         os << print_indent << "derived variables = " << el.template get_variables<formalism::DerivedTag>() << "\n";
 

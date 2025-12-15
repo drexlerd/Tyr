@@ -560,6 +560,11 @@ GroundTaskPtr LiftedTask::get_ground_task()
         }
     }
 
+    auto initial_fluent_atoms = IndexList<GroundAtom<FluentTag>> {};
+    for (const auto atom : m_task.get_atoms<FluentTag>())
+        if (fluent_atoms_set.contains(atom.get_index()))
+            initial_fluent_atoms.push_back(atom.get_index());
+
     auto fluent_atoms = IndexList<GroundAtom<FluentTag>>(fluent_atoms_set.begin(), fluent_atoms_set.end());
     auto derived_atoms = IndexList<GroundAtom<DerivedTag>>(derived_atoms_set.begin(), derived_atoms_set.end());
     auto ground_actions = IndexList<GroundAction>(ground_actions_set.begin(), ground_actions_set.end());
@@ -580,7 +585,15 @@ GroundTaskPtr LiftedTask::get_ground_task()
     std::cout << "Num ground actions: " << ground_actions.size() << std::endl;
     std::cout << "Num ground axioms: " << ground_axioms.size() << std::endl;
 
-    return std::make_shared<GroundTask>(m_domain, m_repository, m_overlay_repository, m_task, fluent_atoms, derived_atoms, ground_actions, ground_axioms);
+    return GroundTask::create(m_domain,
+                              m_repository,
+                              m_overlay_repository,
+                              m_task,
+                              fluent_atoms,
+                              derived_atoms,
+                              initial_fluent_atoms,
+                              ground_actions,
+                              ground_axioms);
 }
 
 const ApplicableActionProgram& LiftedTask::get_action_program() const { return m_action_program; }

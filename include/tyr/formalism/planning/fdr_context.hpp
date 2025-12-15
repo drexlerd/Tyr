@@ -123,9 +123,9 @@ public:
         }
     }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom) { return m_mapping.at(atom); }
+    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom) const { return m_mapping.at(atom); }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal)
+    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal) const
     {
         auto pos_fact = this->get_fact(literal.get_atom());
 

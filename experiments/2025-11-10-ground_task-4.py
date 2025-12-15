@@ -68,7 +68,7 @@ if REMOTE:
         ("mine-pddl", SUITE_MINEPDDL),
         ("mine-pddl-numeric", SUITE_MINEPDDL)
     ]
-    TIME_LIMIT = 30 * 60
+    TIME_LIMIT = 10 * 60
 else:
     SUITES = [
         #("cnot-synthesis", SUITE_CNOT_SYNTHESIS_TEST),
