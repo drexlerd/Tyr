@@ -17,7 +17,8 @@
 
 #include "tyr/planning/lifted_task.hpp"
 
-#include "lifted_task/transition.hpp"
+#include "metric.hpp"
+#include "transition.hpp"
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/vector.hpp"
@@ -42,14 +43,6 @@ using namespace tyr::solver;
 
 namespace tyr::planning
 {
-
-float_t evaluate_metric(View<Index<Task>, OverlayRepository<Repository>> task_view, Node<LiftedTask> node)
-{
-    if (task_view.get_auxiliary_fterm_value())
-        return task_view.get_auxiliary_fterm_value().value().get_value();
-
-    return task_view.get_metric() ? evaluate(task_view.get_metric().value().get_fexpr(), node) : 0.;
-}
 
 static void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
                                             const OverlayRepository<Repository>& atoms_context,
@@ -159,7 +152,7 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 }
 
 static void read_solution_and_instantiate_labeled_successor_nodes(
-    Node<LiftedTask> node,
+    const StateContext<LiftedTask>& state_context,
     OverlayRepository<Repository>& task_repository,
     ProgramExecutionContext& action_context,
     BinaryFDRContext<OverlayRepository<Repository>>& fdr_context,
@@ -189,8 +182,8 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
                                                        fdr_context);
 
             effect_families.clear();
-            if (is_applicable(ground_action, node, effect_families))
-                out_successors.emplace_back(ground_action, apply_action(node, ground_action));
+            if (is_applicable(ground_action, state_context, effect_families))
+                out_successors.emplace_back(ground_action, apply_action(state_context, ground_action));
         }
     }
 }
@@ -336,8 +329,6 @@ LiftedTask::LiftedTask(DomainPtr domain,
                     m_axiom_program.get_listeners()),
     m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(task))
 {
-    std::cout << m_fdr_context.get_variables() << std::endl;
-
     for (const auto atom : task.template get_atoms<formalism::StaticTag>())
         set(atom.get_index().get_value(), m_static_atoms_bitset);
 
@@ -378,11 +369,11 @@ void LiftedTask::compute_extended_state(UnpackedState<LiftedTask>& unpacked_stat
     auto& fluent_atoms = unpacked_state.template get_atoms<FluentTag>();
     auto& derived_atoms = unpacked_state.template get_atoms<DerivedTag>();
 
-    insert_unextended_state(fluent_atoms, *this->m_overlay_repository, m_axiom_context);
+    insert_unextended_state(fluent_atoms, *m_overlay_repository, m_axiom_context);
 
     solve_bottom_up(m_axiom_context);
 
-    read_derived_atoms_from_program_context(m_axiom_program, derived_atoms, *this->m_overlay_repository, m_axiom_context);
+    read_derived_atoms_from_program_context(m_axiom_program, derived_atoms, *m_overlay_repository, m_axiom_context);
 }
 
 Node<LiftedTask> LiftedTask::get_initial_node()
@@ -404,9 +395,9 @@ Node<LiftedTask> LiftedTask::get_initial_node()
 
     const auto state_index = register_state(unpacked_state);
 
-    const auto node = Node<LiftedTask>(state_index, 0, *this);
+    const auto state_context = StateContext<LiftedTask>(*this, unpacked_state, 0);
 
-    const auto state_metric = evaluate_metric(this->get_task(), node);
+    const auto state_metric = evaluate_metric(get_task().get_metric(), get_task().get_auxiliary_fterm_value(), state_context);
 
     return Node<LiftedTask>(state_index, state_metric, *this);
 }
@@ -430,13 +421,14 @@ void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
     const auto& fluent_atoms = state.get_atoms<FluentTag>();
     const auto& derived_atoms = state.get_atoms<DerivedTag>();
     const auto& numeric_variables = state.get_numeric_variables<FluentTag>();
+    const auto state_context = StateContext<LiftedTask>(*this, state.get_unpacked_state(), node.get_state_metric());
 
-    insert_extended_state(fluent_atoms, derived_atoms, numeric_variables, *this->m_overlay_repository, m_action_context);
+    insert_extended_state(fluent_atoms, derived_atoms, numeric_variables, *m_overlay_repository, m_action_context);
 
     solve_bottom_up(m_action_context);
 
-    read_solution_and_instantiate_labeled_successor_nodes(node,
-                                                          *this->m_overlay_repository,
+    read_solution_and_instantiate_labeled_successor_nodes(state_context,
+                                                          *m_overlay_repository,
                                                           m_action_context,
                                                           m_fdr_context,
                                                           m_action_program,
@@ -473,10 +465,12 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     ground_context.program_to_task_execution_context.clear();
 
-    const auto initial_node = this->get_initial_node();
+    const auto initial_node = get_initial_node();
     const auto initial_state = initial_node.get_state();
+    const auto initial_state_context = StateContext(*this, initial_state.get_unpacked_state(), 0);
 
     auto& binding_full = ground_context.planning_execution_context.binding_full;
+    auto& assign = ground_context.planning_execution_context.assign;
 
     /// --- Ground Atoms
 
@@ -487,9 +481,84 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     auto ground_actions_set = UnorderedSet<Index<GroundAction>> {};
 
+    for (const auto& [rule, program_binding] : ground_context.program_results_execution_context.rule_binding_pairs)
+    {
+        if (m_ground_program.get_rule_to_actions_mapping().contains(rule))
+        {
+            for (const auto action : m_ground_program.get_rule_to_actions_mapping().at(rule))
+            {
+                const auto action_index = action.get_index().get_value();
+
+                const auto ground_action = ground_planning(action,
+                                                           make_view(program_binding.get_objects().get_data(), *m_overlay_repository),
+                                                           binding_full,
+                                                           m_parameter_domains_per_cond_effect_per_action[action_index],
+                                                           assign,
+                                                           ground_context.builder,
+                                                           *m_overlay_repository,
+                                                           m_fdr_context);
+
+                if (is_statically_applicable(ground_action, initial_state_context))
+                {
+                    ground_actions_set.insert(ground_action.get_index());
+
+                    for (const auto fact : ground_action.get_condition().get_facts<FluentTag>())
+                        for (const auto atom : fact.get_variable().get_atoms())
+                            fluent_atoms_set.insert(atom.get_index());
+
+                    for (const auto literal : ground_action.get_condition().get_facts<DerivedTag>())
+                        derived_atoms_set.insert(literal.get_atom().get_index());
+
+                    for (const auto cond_effect : ground_action.get_effects())
+                    {
+                        for (const auto fact : cond_effect.get_condition().get_facts<FluentTag>())
+                            for (const auto atom : fact.get_variable().get_atoms())
+                                fluent_atoms_set.insert(atom.get_index());
+
+                        for (const auto literal : cond_effect.get_condition().get_facts<DerivedTag>())
+                            derived_atoms_set.insert(literal.get_atom().get_index());
+
+                        for (const auto fact : cond_effect.get_effect().get_facts())
+                            for (const auto atom : fact.get_variable().get_atoms())
+                                fluent_atoms_set.insert(atom.get_index());
+                    }
+                }
+            }
+        }
+    }
+
     /// --- Ground Axioms
 
     auto ground_axioms_set = UnorderedSet<Index<GroundAxiom>> {};
+
+    for (const auto& [rule, program_binding] : ground_context.program_results_execution_context.rule_binding_pairs)
+    {
+        if (m_ground_program.get_rule_to_axioms_mapping().contains(rule))
+        {
+            for (const auto axiom : m_ground_program.get_rule_to_axioms_mapping().at(rule))
+            {
+                const auto ground_axiom = ground_planning(axiom,
+                                                          make_view(program_binding.get_objects().get_data(), *m_overlay_repository),
+                                                          ground_context.builder,
+                                                          *m_overlay_repository,
+                                                          m_fdr_context);
+
+                if (is_statically_applicable(ground_axiom, initial_state_context))
+                {
+                    ground_axioms_set.insert(ground_axiom.get_index());
+
+                    for (const auto fact : ground_axiom.get_body().get_facts<FluentTag>())
+                        for (const auto atom : fact.get_variable().get_atoms())
+                            fluent_atoms_set.insert(atom.get_index());
+
+                    for (const auto literal : ground_axiom.get_body().get_facts<DerivedTag>())
+                        derived_atoms_set.insert(literal.get_atom().get_index());
+
+                    derived_atoms_set.insert(ground_axiom.get_head().get_index());
+                }
+            }
+        }
+    }
 
     auto fluent_atoms = IndexList<GroundAtom<FluentTag>>(fluent_atoms_set.begin(), fluent_atoms_set.end());
     auto derived_atoms = IndexList<GroundAtom<DerivedTag>>(derived_atoms_set.begin(), derived_atoms_set.end());
@@ -501,24 +570,17 @@ GroundTaskPtr LiftedTask::get_ground_task()
     canonicalize(ground_actions);
     canonicalize(ground_axioms);
 
-    // std::cout << make_view(fluent_atoms, *this->m_overlay_repository) << std::endl;
-    // std::cout << make_view(derived_atoms, *this->m_overlay_repository) << std::endl;
-    // std::cout << make_view(ground_actions, *this->m_overlay_repository) << std::endl;
-    // std::cout << make_view(ground_axioms, *this->m_overlay_repository) << std::endl;
+    // std::cout << make_view(fluent_atoms, *m_overlay_repository) << std::endl;
+    // std::cout << make_view(derived_atoms, *m_overlay_repository) << std::endl;
+    // std::cout << make_view(ground_actions, *m_overlay_repository) << std::endl;
+    // std::cout << make_view(ground_axioms, *m_overlay_repository) << std::endl;
 
     std::cout << "Num fluent atoms: " << fluent_atoms.size() << std::endl;
     std::cout << "Num derived atoms: " << derived_atoms.size() << std::endl;
     std::cout << "Num ground actions: " << ground_actions.size() << std::endl;
     std::cout << "Num ground axioms: " << ground_axioms.size() << std::endl;
 
-    return std::make_shared<GroundTask>(this->m_domain,
-                                        this->m_repository,
-                                        this->m_overlay_repository,
-                                        this->m_task,
-                                        fluent_atoms,
-                                        derived_atoms,
-                                        ground_actions,
-                                        ground_axioms);
+    return std::make_shared<GroundTask>(m_domain, m_repository, m_overlay_repository, m_task, fluent_atoms, derived_atoms, ground_actions, ground_axioms);
 }
 
 const ApplicableActionProgram& LiftedTask::get_action_program() const { return m_action_program; }

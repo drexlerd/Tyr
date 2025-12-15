@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_SRC_PLANNING_LIFTED_TASK_TRANSITION_HPP_
-#define TYR_SRC_PLANNING_LIFTED_TASK_TRANSITION_HPP_
+#ifndef TYR_SRC_PLANNING_TRANSITION_HPP_
+#define TYR_SRC_PLANNING_TRANSITION_HPP_
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
@@ -43,7 +43,9 @@ struct GroundAction;
 namespace tyr::planning
 {
 
-extern Node<LiftedTask> apply_action(Node<LiftedTask> node, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
+template<typename Task>
+Node<Task> apply_action(const StateContext<Task>& state_context,
+                        View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
 }
 
 #endif

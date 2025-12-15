@@ -15,32 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_DECLARATIONS_HPP_
-#define TYR_PLANNING_DECLARATIONS_HPP_
+#ifndef TYR_SRC_PLANNING_METRIC_HPP_
+#define TYR_SRC_PLANNING_METRIC_HPP_
 
-#include <concepts>
-#include <memory>
+#include "tyr/common/declarations.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
+#include "tyr/planning/declarations.hpp"
 
 namespace tyr::planning
 {
-class LiftedTask;
-using LiftedTaskPtr = std::shared_ptr<LiftedTask>;
-class GroundTask;
-using GroundTaskPtr = std::shared_ptr<GroundTask>;
-class Domain;
-using DomainPtr = std::shared_ptr<Domain>;
 
-template<typename Task>
-class Node;
-template<typename Task>
-class PackedState;
-template<typename Task>
-class UnpackedState;
-template<typename Task>
-class State;
-
-template<typename Task>
-struct StateContext;
+template<typename T>
+float_t evaluate_metric(View<::cista::optional<Index<formalism::Metric>>, formalism::OverlayRepository<formalism::Repository>> metric,
+                        View<::cista::optional<Index<formalism::GroundFunctionTermValue<formalism::AuxiliaryTag>>>,
+                             formalism::OverlayRepository<formalism::Repository>> auxiliary_fterm_value,
+                        const StateContext<T>& state_context);
 }
 
 #endif

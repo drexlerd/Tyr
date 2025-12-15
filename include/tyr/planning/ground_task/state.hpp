@@ -25,7 +25,7 @@
 namespace tyr::planning
 {
 template<>
-class State<GroundTask> : public StateMixin<State<LiftedTask>>
+class State<GroundTask> : public StateMixin<State<LiftedTask>, GroundTask>
 {
 public:
     using TaskType = GroundTask;

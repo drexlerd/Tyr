@@ -29,7 +29,7 @@
 namespace tyr::planning
 {
 template<>
-class State<LiftedTask> : public StateMixin<State<LiftedTask>>
+class State<LiftedTask> : public StateMixin<State<LiftedTask>, LiftedTask>
 {
 public:
     using TaskType = LiftedTask;
@@ -65,8 +65,8 @@ public:
     // Derived atoms
     bool test_impl(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const { return m_unpacked->test(index); }
 
-    LiftedTask& get_task() noexcept { return *m_task; }
-    const LiftedTask& get_task() const noexcept { return *m_task; }
+    LiftedTask& get_task_impl() noexcept { return *m_task; }
+    const LiftedTask& get_task_impl() const noexcept { return *m_task; }
 
     /**
      * For lifted task

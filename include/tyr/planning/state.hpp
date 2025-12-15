@@ -28,7 +28,7 @@
 namespace tyr::planning
 {
 
-template<typename Derived>
+template<typename Derived, typename Task>
 class StateMixin
 {
 private:
@@ -65,6 +65,14 @@ public:
 
     // Derived atoms
     bool test(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const { return self().test_impl(index); }
+
+    /**
+     * Unpacked State
+     */
+
+    const UnpackedState<Task>& get_unpacked_state() const { return self().get_unpacked_state_impl(); }
+    Task& get_task() noexcept { return self().get_task_impl(); }
+    const Task& get_task() const noexcept { return self().get_task_impl(); }
 };
 
 template<typename Task>

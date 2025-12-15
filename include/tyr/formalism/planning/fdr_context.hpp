@@ -27,6 +27,7 @@
 #include "tyr/formalism/ground_atom_view.hpp"
 #include "tyr/formalism/ground_literal_view.hpp"
 #include "tyr/formalism/planning/fdr_value.hpp"
+#include "tyr/formalism/planning/fdr_variable_data.hpp"
 #include "tyr/formalism/planning/fdr_variable_index.hpp"
 #include "tyr/formalism/planning/fdr_variable_view.hpp"
 
@@ -105,13 +106,34 @@ public:
         m_variables(),
         m_mapping()
     {
+        auto buffer = buffer::Buffer();
+        auto variable = Data<FDRVariable<FluentTag>>();
+
+        for (const auto& group : mutexes)
+        {
+            variable.clear();
+            variable.domain_size = group.size() + 1;
+            for (const auto& atom : group)
+                variable.atoms.push_back(atom.get_index());
+            canonicalize(variable);
+            const auto new_variable = context.get_or_create(variable, buffer).first;
+            m_variables.push_back(new_variable.get_index());
+            for (uint_t i = 0; i < group.size(); ++i)
+                m_mapping.emplace(group[i], make_view(Data<FDRFact<FluentTag>>(new_variable.get_index(), FDRValue { i + 1 }), context));
+        }
     }
 
     View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom) { return m_mapping.at(atom); }
 
     View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal)
     {
-        return make_view(Data<FDRFact<FluentTag>>(get_fact(literal.get_atom()).get_variable().get_index(), FDRValue { 0 }), m_context);
+        auto pos_fact = this->get_fact(literal.get_atom());
+
+        if (literal.get_polarity())
+            return pos_fact;
+
+        const auto var_index = pos_fact.get_variable().get_index();
+        return make_view(Data<FDRFact<FluentTag>>(var_index, FDRValue { 0 }), m_context);
     }
 
     View<IndexList<FDRVariable<FluentTag>>, C> get_variables() const { return make_view(m_variables, m_context); }

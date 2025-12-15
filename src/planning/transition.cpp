@@ -40,31 +40,35 @@
 namespace tyr::planning
 {
 
-inline void process_effects(View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
-                            Node<LiftedTask> node,
-                            UnpackedState<LiftedTask>& succ_unpacked_state,
-                            float_t& succ_metric_value)
+template<typename Task>
+void process_effects(View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
+                     UnpackedState<Task>& succ_unpacked_state,
+                     StateContext<Task>& state_context)
 {
     for (const auto cond_effect : action.get_effects())
     {
-        if (is_applicable(cond_effect.get_condition(), node))
+        if (is_applicable(cond_effect.get_condition(), state_context))
         {
             for (const auto fact : cond_effect.get_effect().get_facts())
                 succ_unpacked_state.set(fact.get_data());
 
             for (const auto numeric_effect : cond_effect.get_effect().get_numeric_effects())
-                visit([&](auto&& arg) { succ_unpacked_state.set(arg.get_fterm().get_index(), evaluate(numeric_effect, node)); }, numeric_effect.get_variant());
+                visit([&](auto&& arg) { succ_unpacked_state.set(arg.get_fterm().get_index(), evaluate(numeric_effect, state_context)); },
+                      numeric_effect.get_variant());
 
+            /// Collect the increment (total-cost) in the state_context
             if (cond_effect.get_effect().get_auxiliary_numeric_effect().has_value())
-                succ_metric_value = evaluate(cond_effect.get_effect().get_auxiliary_numeric_effect().value(), node);
+                state_context.auxiliary_value = evaluate(cond_effect.get_effect().get_auxiliary_numeric_effect().value(), state_context);
         }
     }
 }
 
-Node<LiftedTask> apply_action(Node<LiftedTask> node, View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action)
+template<typename Task>
+Node<Task> apply_action(const StateContext<Task>& state_context,
+                        View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action)
 {
-    const auto state = node.get_state();
-    auto& task = node.get_task();
+    auto tmp_state_context = state_context;
+    auto& task = tmp_state_context.task;
 
     /// --- Fetch a scratch buffer for creating the successor state.
     auto succ_unpacked_state_ptr = task.get_unpacked_state_pool().get_or_allocate();
@@ -72,23 +76,24 @@ Node<LiftedTask> apply_action(Node<LiftedTask> node, View<Index<formalism::Groun
     succ_unpacked_state.clear();
 
     // Copy state into mutable buffer
-    succ_unpacked_state = state.get_unpacked_state();
+    succ_unpacked_state = tmp_state_context.unpacked_state;
 
-    auto succ_metric_value = node.get_state_metric();
-
-    process_effects(action, node, succ_unpacked_state, succ_metric_value);
+    process_effects(action, succ_unpacked_state, tmp_state_context);
 
     task.compute_extended_state(succ_unpacked_state);
 
     const auto succ_state_index = task.register_state(succ_unpacked_state);
 
-    const auto succ_node = Node<LiftedTask>(succ_state_index, succ_metric_value, task);
+    auto succ_state_context = StateContext { task, succ_unpacked_state, tmp_state_context.auxiliary_value };
 
     if (task.get_task().get_metric())
-        succ_metric_value = evaluate(task.get_task().get_metric().value().get_fexpr(), succ_node);
+        succ_state_context.auxiliary_value = evaluate(task.get_task().get_metric().value().get_fexpr(), succ_state_context);
     else
-        ++succ_metric_value;  // Assume unit cost if no metric is given
+        ++succ_state_context.auxiliary_value;  // Assume unit cost if no metric is given
 
-    return Node<LiftedTask>(succ_state_index, succ_metric_value, task);
+    return Node<Task>(succ_state_index, succ_state_context.auxiliary_value, task);
 }
+
+template Node<LiftedTask> apply_action(const StateContext<LiftedTask>& state_context,
+                                       View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
 }
