@@ -49,7 +49,6 @@ public:
                                               View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
                                               IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms,
                                               IndexList<formalism::GroundAtom<formalism::DerivedTag>> derived_atoms,
-                                              IndexList<formalism::GroundAtom<formalism::FluentTag>> initial_fluent_atoms,
                                               IndexList<formalism::GroundAction> actions,
                                               IndexList<formalism::GroundAxiom> axioms);
 

@@ -175,7 +175,6 @@ auto create_mutex_groups(View<IndexList<GroundAtom<FluentTag>>, OverlayRepositor
 auto create_task(View<Index<Task>, OverlayRepository<Repository>> task,
                  View<IndexList<GroundAtom<FluentTag>>, OverlayRepository<Repository>> fluent_atoms,
                  View<IndexList<GroundAtom<DerivedTag>>, OverlayRepository<Repository>> derived_atoms,
-                 View<IndexList<GroundAtom<FluentTag>>, OverlayRepository<Repository>> initial_fluent_atoms,
                  View<IndexList<GroundAction>, OverlayRepository<Repository>> actions,
                  View<IndexList<GroundAxiom>, OverlayRepository<Repository>> axioms,
                  OverlayRepository<Repository>& repository)
@@ -220,7 +219,7 @@ auto create_task(View<Index<Task>, OverlayRepository<Repository>> task,
         fdr_task.fluent_variables.push_back(variable.get_index());
 
     /// --- Create FDR fluent facts
-    for (const auto atom : initial_fluent_atoms)
+    for (const auto atom : task.get_atoms<FluentTag>())
         fdr_task.fluent_facts.push_back(fdr_context.get_fact(merge(atom, builder, repository, merge_cache)).get_data());
 
     /// --- Create FDR goal
@@ -243,7 +242,6 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
                                                View<Index<Task>, OverlayRepository<Repository>> task,
                                                IndexList<GroundAtom<FluentTag>> fluent_atoms,
                                                IndexList<GroundAtom<DerivedTag>> derived_atoms,
-                                               IndexList<GroundAtom<FluentTag>> initial_fluent_atoms,
                                                IndexList<GroundAction> actions,
                                                IndexList<GroundAxiom> axioms)
 {
@@ -253,7 +251,6 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
     const auto [fdr_task, fdr_context] = create_task(task,
                                                      make_view(fluent_atoms, *task_overlay_repository),
                                                      make_view(derived_atoms, *task_overlay_repository),
-                                                     make_view(fluent_atoms, *task_overlay_repository),
                                                      make_view(actions, *task_overlay_repository),
                                                      make_view(axioms, *task_overlay_repository),
                                                      *overlay_repository);
