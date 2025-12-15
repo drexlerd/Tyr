@@ -101,22 +101,14 @@ std::ostream& print(std::ostream& os, const planning::State<planning::LiftedTask
     auto static_fterm_values = std::vector<
         std::pair<View<Index<formalism::GroundFunctionTerm<formalism::StaticTag>>, formalism::OverlayRepository<formalism::Repository>>, float_t>> {};
     for (uint_t i = 0; i < static_numeric_variables.size(); ++i)
-    {
         if (!std::isnan(static_numeric_variables[i]))
-        {
             static_fterm_values.emplace_back(make_view(Index<formalism::GroundFunctionTerm<formalism::StaticTag>>(i), context), static_numeric_variables[i]);
-        }
-    }
 
     auto fluent_fterm_values = std::vector<
         std::pair<View<Index<formalism::GroundFunctionTerm<formalism::FluentTag>>, formalism::OverlayRepository<formalism::Repository>>, float_t>> {};
     for (uint_t i = 0; i < fluent_numeric_variables.size(); ++i)
-    {
         if (!std::isnan(fluent_numeric_variables[i]))
-        {
-            fluent_fterm_values.emplace_back(make_view(Index<formalism::GroundFunctionTerm<formalism::FluentTag>>(i), context), static_numeric_variables[i]);
-        }
-    }
+            fluent_fterm_values.emplace_back(make_view(Index<formalism::GroundFunctionTerm<formalism::FluentTag>>(i), context), fluent_numeric_variables[i]);
 
     os << "State(\n";
     {
