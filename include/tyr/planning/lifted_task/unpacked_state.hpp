@@ -47,7 +47,8 @@ public:
     // Fluent facts
     formalism::FDRValue get_impl(Index<formalism::FDRVariable<formalism::FluentTag>> index) const
     {
-        assert(index.get_value() < m_fluent_atoms.size());
+        if (index.get_value() >= m_fluent_atoms.size())
+            return formalism::FDRValue { 0 };
         return formalism::FDRValue { m_fluent_atoms.test(index.get_value()) };
     }
     void set_impl(Data<formalism::FDRFact<formalism::FluentTag>> fact)

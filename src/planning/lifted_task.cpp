@@ -144,22 +144,17 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 {
     axiom_context.program_to_task_execution_context.clear();
 
-    /// --- Initialized derived atoms in unpacked state
+    /// --- Initialize derived atoms in unpacked state
     for (const auto& [rule, program_binding] : axiom_context.program_results_execution_context.rule_binding_pairs)
     {
-        // TODO: this got ugly, essentially as compile + merge + ground
-        auto atom_builder_ptr = axiom_context.builder.get_builder<GroundAtom<DerivedTag>>();
-        auto& atom_builder = *atom_builder_ptr;
-        atom_builder.clear();
+        const auto ground_atom = ground_planning<FluentTag, Repository, OverlayRepository<Repository>, DerivedTag>(
+            rule.get_head(),
+            make_view(program_binding.get_objects().get_data(), task_repository),
+            axiom_context.builder,
+            task_repository,
+            axiom_context.program_to_task_execution_context.merge_cache);
 
-        atom_builder.predicate = axiom_program.get_predicate_to_predicate_mapping().at(rule.get_head().get_predicate()).get_index();
-        atom_builder.binding =
-            merge(program_binding, axiom_context.builder, task_repository, axiom_context.program_to_task_execution_context.merge_cache).get_index();
-
-        canonicalize(atom_builder);
-        const auto derived_atom = task_repository.get_or_create(atom_builder, axiom_context.builder.get_buffer()).first;
-
-        set(derived_atom.get_index().get_value(), derived_atoms);
+        set(ground_atom.get_index().get_value(), derived_atoms);
     }
 }
 
@@ -167,6 +162,7 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
     Node<LiftedTask> node,
     OverlayRepository<Repository>& task_repository,
     ProgramExecutionContext& action_context,
+    BinaryFDRContext<OverlayRepository<Repository>>& fdr_context,
     const ApplicableActionProgram& action_program,
     const std::vector<analysis::DomainListListList>& parameter_domains_per_cond_effect_per_action,
     std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>>& out_successors)
@@ -189,7 +185,8 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
                                                        parameter_domains_per_cond_effect_per_action[action_index],
                                                        assign,
                                                        action_context.builder,
-                                                       task_repository);
+                                                       task_repository,
+                                                       fdr_context);
 
             effect_families.clear();
             if (is_applicable(ground_action, node, effect_families))
@@ -441,6 +438,7 @@ void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
     read_solution_and_instantiate_labeled_successor_nodes(node,
                                                           *this->m_overlay_repository,
                                                           m_action_context,
+                                                          m_fdr_context,
                                                           m_action_program,
                                                           m_parameter_domains_per_cond_effect_per_action,
                                                           out_nodes);
