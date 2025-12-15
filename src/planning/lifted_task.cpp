@@ -311,11 +311,13 @@ inline valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float
 LiftedTask::LiftedTask(DomainPtr domain,
                        RepositoryPtr repository,
                        OverlayRepositoryPtr<Repository> overlay_repository,
-                       View<Index<Task>, OverlayRepository<Repository>> task) :
+                       View<Index<Task>, OverlayRepository<Repository>> task,
+                       formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context) :
     m_domain(std::move(domain)),
     m_repository(std::move(repository)),
     m_overlay_repository(std::move(overlay_repository)),
     m_task(task),
+    m_fdr_context(std::move(fdr_context)),
     m_uint_nodes(),
     m_float_nodes(),
     m_packed_states(),

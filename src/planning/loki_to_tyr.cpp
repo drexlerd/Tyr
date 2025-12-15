@@ -331,6 +331,8 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     auto task_context = std::make_shared<formalism::Repository>();
     auto overlay_task_context = std::make_shared<formalism::OverlayRepository<formalism::Repository>>(*domain_context, *task_context);
 
+    auto fdr_context = formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>>(*overlay_task_context);
+
     /* Name */
     task.name = element->get_name();
 
@@ -390,8 +392,10 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
             index_atom_variant);
     };
 
-    for (const auto& index_atom_variant : translate_grounded(element->get_initial_literals(), builder, *overlay_task_context))
+    for (const auto& literal : element->get_initial_literals())
     {
+        const auto index_atom_variant = translate_grounded(literal, builder, *overlay_task_context, fdr_context);
+
         func_insert_ground_atom(index_atom_variant, task.static_atoms, task.fluent_atoms);
     }
 
@@ -429,7 +433,7 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
 
     if (element->get_goal_condition().has_value())
     {
-        task.goal = translate_grounded(element->get_goal_condition().value(), builder, *overlay_task_context);
+        task.goal = translate_grounded(element->get_goal_condition().value(), builder, *overlay_task_context, fdr_context);
     }
     else
     {
@@ -455,7 +459,11 @@ LokiToTyrTranslator::translate(const loki::Problem& element, formalism::Builder&
     task.axioms = translate_lifted(element->get_axioms(), builder, *overlay_task_context);
 
     formalism::canonicalize(task);
-    return std::make_shared<LiftedTask>(domain, task_context, overlay_task_context, overlay_task_context->get_or_create(task, builder.get_buffer()).first);
+    return std::make_shared<LiftedTask>(domain,
+                                        task_context,
+                                        overlay_task_context,
+                                        overlay_task_context->get_or_create(task, builder.get_buffer()).first,
+                                        std::move(fdr_context));
 }
 
 }

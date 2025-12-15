@@ -21,6 +21,7 @@
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/common.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
@@ -45,7 +46,8 @@ public:
     LiftedTask(DomainPtr domain,
                formalism::RepositoryPtr repository,
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
-               View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
+               View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
+               formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context);
 
     State<LiftedTask> get_state(StateIndex state_index);
 
@@ -102,6 +104,7 @@ private:
     formalism::RepositoryPtr m_repository;
     formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
     View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> m_task;
+    formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>> m_fdr_context;
 
     // States
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;

@@ -22,6 +22,7 @@
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/types.hpp"
+#include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_view.hpp"
 #include "tyr/formalism/ground_literal_view.hpp"
@@ -97,11 +98,19 @@ class GeneralFDRContext : public FDRContextMixin<GeneralFDRContext<C>, C>
 {
 public:
     // Create mapping based on mutexes.
-    GeneralFDRContext(std::vector<std::vector<View<Index<GroundAtom<FluentTag>>>, C>> mutexes, C& context) : m_context(context), m_variables(), m_mapping() {}
+    GeneralFDRContext(const std::vector<std::vector<View<Index<GroundAtom<FluentTag>>, C>>>& mutexes, C& context) :
+        m_context(context),
+        m_variables(),
+        m_mapping()
+    {
+    }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom) {}
+    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom) { return m_mapping.at(atom); }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal) {}
+    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal)
+    {
+        return make_view(Data<FDRFact<FluentTag>>(get_fact(literal.get_atom()).get_variable().get_index(), FDRValue { 0 }), m_context);
+    }
 
 private:
     C& m_context;
