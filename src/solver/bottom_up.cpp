@@ -130,6 +130,7 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
 void solve_bottom_up(grounder::ProgramExecutionContext& program_execution_context)
 {
     program_execution_context.program_results_execution_context.clear();
+    program_execution_context.stage_to_program_execution_context.clear();
 
     for (auto& rule_stage_execution_context : program_execution_context.rule_stage_execution_contexts)
         rule_stage_execution_context.clear();

@@ -167,6 +167,8 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
     auto& effect_families = action_context.planning_execution_context.effect_families;
     auto& assign = action_context.planning_execution_context.assign;
 
+    action_context.task_to_task_execution_context.clear();
+
     for (const auto& [rule, binding_program] : action_context.program_results_execution_context.rule_binding_pairs)
     {
         for (const auto action : action_program.get_rule_to_actions_mapping().at(rule))
@@ -472,6 +474,7 @@ GroundTaskPtr LiftedTask::get_ground_task()
     const auto initial_state_context = StateContext(*this, initial_state.get_unpacked_state(), 0);
 
     auto& assign = ground_context.planning_execution_context.assign;
+    ground_context.task_to_task_execution_context.clear();
 
     /// --- Ground Atoms
 
