@@ -166,24 +166,18 @@ View<Index<Binding>, C_DST> ground_common(View<DataList<Term>, C_SRC> element, G
 template<FactKind T, Context C_SRC, Context C_DST>
 View<Index<GroundFunctionTerm<T>>, C_DST> ground_common(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<C_SRC, C_DST>& context)
 {
-    return with_cache<FunctionTerm<T>, GroundFunctionTerm<T>>(element,
-                                                              context.binding,
-                                                              context.cache,
-                                                              [&]()
-                                                              {
-                                                                  // Fetch and clear
-                                                                  auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
-                                                                  auto& fterm = *fterm_ptr;
-                                                                  fterm.clear();
+    // Fetch and clear
+    auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
+    auto& fterm = *fterm_ptr;
+    fterm.clear();
 
-                                                                  // Fill data
-                                                                  fterm.function = element.get_function().get_index();
-                                                                  fterm.binding = ground_common(element.get_terms(), context).get_index();
+    // Fill data
+    fterm.function = element.get_function().get_index();
+    fterm.binding = ground_common(element.get_terms(), context).get_index();
 
-                                                                  // Canonicalize and Serialize
-                                                                  canonicalize(fterm);
-                                                                  return context.destination.get_or_create(fterm, context.builder.get_buffer()).first;
-                                                              });
+    // Canonicalize and Serialize
+    canonicalize(fterm);
+    return context.destination.get_or_create(fterm, context.builder.get_buffer()).first;
 }
 
 template<Context C_SRC, Context C_DST>
@@ -208,74 +202,53 @@ template<OpKind O, Context C_SRC, Context C_DST>
 View<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC> element,
                                                                                    GrounderContext<C_SRC, C_DST>& context)
 {
-    return with_cache<UnaryOperator<O, Data<FunctionExpression>>, UnaryOperator<O, Data<GroundFunctionExpression>>>(
-        element,
-        context.binding,
-        context.cache,
-        [&]()
-        {
-            // Fetch and clear
-            auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, Data<GroundFunctionExpression>>>();
-            auto& unary = *unary_ptr;
-            unary.clear();
+    // Fetch and clear
+    auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, Data<GroundFunctionExpression>>>();
+    auto& unary = *unary_ptr;
+    unary.clear();
 
-            // Fill data
-            unary.arg = ground_common(element.get_arg(), context).get_data();
+    // Fill data
+    unary.arg = ground_common(element.get_arg(), context).get_data();
 
-            // Canonicalize and Serialize
-            canonicalize(unary);
-            return context.destination.get_or_create(unary, context.builder.get_buffer()).first;
-        });
+    // Canonicalize and Serialize
+    canonicalize(unary);
+    return context.destination.get_or_create(unary, context.builder.get_buffer()).first;
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
 View<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SRC> element,
                                                                                     GrounderContext<C_SRC, C_DST>& context)
 {
-    return with_cache<BinaryOperator<O, Data<FunctionExpression>>, BinaryOperator<O, Data<GroundFunctionExpression>>>(
-        element,
-        context.binding,
-        context.cache,
-        [&]()
-        {
-            // Fetch and clear
-            auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, Data<GroundFunctionExpression>>>();
-            auto& binary = *binary_ptr;
-            binary.clear();
+    // Fetch and clear
+    auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, Data<GroundFunctionExpression>>>();
+    auto& binary = *binary_ptr;
+    binary.clear();
 
-            // Fill data
-            binary.lhs = ground_common(element.get_lhs(), context).get_data();
-            binary.rhs = ground_common(element.get_rhs(), context).get_data();
+    // Fill data
+    binary.lhs = ground_common(element.get_lhs(), context).get_data();
+    binary.rhs = ground_common(element.get_rhs(), context).get_data();
 
-            // Canonicalize and Serialize
-            canonicalize(binary);
-            return context.destination.get_or_create(binary, context.builder.get_buffer()).first;
-        });
+    // Canonicalize and Serialize
+    canonicalize(binary);
+    return context.destination.get_or_create(binary, context.builder.get_buffer()).first;
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
 View<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC> element,
                                                                                    GrounderContext<C_SRC, C_DST>& context)
 {
-    return with_cache<MultiOperator<O, Data<FunctionExpression>>, MultiOperator<O, Data<GroundFunctionExpression>>>(
-        element,
-        context.binding,
-        context.cache,
-        [&]()
-        {
-            // Fetch and clear
-            auto multi_ptr = context.builder.template get_builder<MultiOperator<O, Data<GroundFunctionExpression>>>();
-            auto& multi = *multi_ptr;
-            multi.clear();
+    // Fetch and clear
+    auto multi_ptr = context.builder.template get_builder<MultiOperator<O, Data<GroundFunctionExpression>>>();
+    auto& multi = *multi_ptr;
+    multi.clear();
 
-            // Fill data
-            for (const auto arg : element.get_args())
-                multi.args.push_back(ground_common(arg, context).get_data());
+    // Fill data
+    for (const auto arg : element.get_args())
+        multi.args.push_back(ground_common(arg, context).get_data());
 
-            // Canonicalize and Serialize
-            canonicalize(multi);
-            return context.destination.get_or_create(multi, context.builder.get_buffer()).first;
-        });
+    // Canonicalize and Serialize
+    canonicalize(multi);
+    return context.destination.get_or_create(multi, context.builder.get_buffer()).first;
 }
 
 template<Context C_SRC, Context C_DST>

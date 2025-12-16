@@ -20,6 +20,7 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
+#include "tyr/formalism/binding_view.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_view.hpp"
 #include "tyr/formalism/ground_conjunctive_condition_view.hpp"
@@ -46,6 +47,7 @@ public:
 
     auto get_index() const noexcept { return m_handle; }
     auto get_rule() const noexcept { return make_view(get_data().rule, *m_context); }
+    auto get_binding() const noexcept { return make_view(get_data().binding, *m_context); }
     auto get_body() const noexcept { return make_view(get_data().body, *m_context); }
     auto get_head() const noexcept { return make_view(get_data().head, *m_context); }
 

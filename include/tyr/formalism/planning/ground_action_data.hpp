@@ -20,6 +20,7 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
+#include "tyr/formalism/binding_index.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_index.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
@@ -36,16 +37,19 @@ struct Data<formalism::GroundAction>
 
     Index<formalism::GroundAction> index;
     Index<formalism::Action> action;
+    Index<formalism::Binding> binding;
     Index<formalism::GroundFDRConjunctiveCondition> condition;
     IndexList<formalism::GroundConditionalEffect> effects;
 
     Data() = default;
     Data(Index<formalism::GroundAction> index,
          Index<formalism::Action> action,
+         Index<formalism::Binding> binding,
          Index<formalism::GroundFDRConjunctiveCondition> condition,
          IndexList<formalism::GroundConditionalEffect> effects) :
         index(index),
         action(action),
+        binding(binding),
         condition(condition),
         effects(std::move(effects))
     {
@@ -59,12 +63,13 @@ struct Data<formalism::GroundAction>
     {
         tyr::clear(index);
         tyr::clear(action);
+        tyr::clear(binding);
         tyr::clear(condition);
         tyr::clear(effects);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, action, condition, effects); }
-    auto identifying_members() const noexcept { return std::tie(action, condition, effects); }
+    auto cista_members() const noexcept { return std::tie(index, action, binding, condition, effects); }
+    auto identifying_members() const noexcept { return std::tie(action, binding); }
 };
 }
 

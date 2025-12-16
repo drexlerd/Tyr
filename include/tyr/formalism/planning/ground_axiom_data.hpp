@@ -20,6 +20,7 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
+#include "tyr/formalism/binding_index.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
@@ -35,16 +36,19 @@ struct Data<formalism::GroundAxiom>
 
     Index<formalism::GroundAxiom> index;
     Index<formalism::Axiom> axiom;
+    Index<formalism::Binding> binding;
     Index<formalism::GroundFDRConjunctiveCondition> body;
     Index<formalism::GroundAtom<formalism::DerivedTag>> head;
 
     Data() = default;
     Data(Index<formalism::GroundAxiom> index,
          Index<formalism::Axiom> axiom,
+         Index<formalism::Binding> binding,
          Index<formalism::GroundFDRConjunctiveCondition> body,
          Index<formalism::GroundAtom<formalism::DerivedTag>> head) :
         index(index),
         axiom(axiom),
+        binding(binding),
         body(body),
         head(head)
     {
@@ -58,12 +62,13 @@ struct Data<formalism::GroundAxiom>
     {
         tyr::clear(index);
         tyr::clear(axiom);
+        tyr::clear(binding);
         tyr::clear(body);
         tyr::clear(head);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, axiom, body, head); }
-    auto identifying_members() const noexcept { return std::tie(axiom, body, head); }
+    auto cista_members() const noexcept { return std::tie(index, axiom, binding, body, head); }
+    auto identifying_members() const noexcept { return std::tie(axiom, binding); }
 };
 }
 

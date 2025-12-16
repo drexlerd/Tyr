@@ -38,6 +38,7 @@ class GroundTaskParser(Parser):
         self.add_pattern("num_ground_actions", r"Num ground actions: (\d+)", type=int)
         self.add_pattern("num_ground_axioms", r"Num ground axioms: (\d+)", type=int)
         self.add_pattern("total_task_grounding_time", r"Total task grounding time: (\d+) ms", type=int)
+        self.add_pattern("peak_memory_usage", r"Peak memory usage: (\d+) bytes", type=int)
         self.add_function(add_dummy_attribute)
 
         self.add_function(add_coverage)

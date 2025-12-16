@@ -21,6 +21,7 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
 #include "tyr/common/vector.hpp"
+#include "tyr/formalism/binding_index.hpp"
 #include "tyr/formalism/boolean_operator_data.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/ground_atom_index.hpp"
@@ -37,16 +38,19 @@ struct Data<formalism::GroundRule>
 
     Index<formalism::GroundRule> index;
     Index<formalism::Rule> rule;
+    Index<formalism::Binding> binding;
     Index<formalism::GroundConjunctiveCondition> body;
     Index<formalism::GroundAtom<formalism::FluentTag>> head;
 
     Data() = default;
     Data(Index<formalism::GroundRule> index,
          Index<formalism::Rule> rule,
+         Index<formalism::Binding> binding,
          Index<formalism::GroundConjunctiveCondition> body,
          Index<formalism::GroundAtom<formalism::FluentTag>> head) :
         index(index),
         rule(rule),
+        binding(binding),
         body(body),
         head(head)
     {
@@ -60,12 +64,13 @@ struct Data<formalism::GroundRule>
     {
         tyr::clear(index);
         tyr::clear(rule);
+        tyr::clear(binding);
         tyr::clear(body);
         tyr::clear(head);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, rule, body, head); }
-    auto identifying_members() const noexcept { return std::tie(rule, body, head); }
+    auto cista_members() const noexcept { return std::tie(index, binding, rule, body, head); }
+    auto identifying_members() const noexcept { return std::tie(rule, binding); }
 };
 
 }

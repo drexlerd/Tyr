@@ -59,4 +59,5 @@ int main(int argc, char** argv)
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     std::cout << "Total task grounding time: " << duration_ms.count() << " ms" << std::endl;
+    std::cout << "Peak memory usage: " << get_peak_memory_usage_in_bytes() << " bytes" << std::endl;
 }

@@ -117,6 +117,7 @@ static auto create_ground_action(View<Index<GroundAction>, OverlayRepository<Rep
     auto& fdr_action = *fdr_action_ptr;
     fdr_action.clear();
 
+    fdr_action.binding = merge(element.get_binding(), context).get_index();
     fdr_action.action = element.get_action().get_index();
     fdr_action.condition = create_ground_fdr_conjunctive_condition(element.get_condition(), fdr_context, context).get_index();
     for (const auto cond_eff : element.get_effects())
@@ -134,6 +135,7 @@ static auto create_ground_axiom(View<Index<GroundAxiom>, OverlayRepository<Repos
     auto& fdr_axiom = *fdr_axiom_ptr;
     fdr_axiom.clear();
 
+    fdr_axiom.binding = merge(element.get_binding(), context).get_index();
     fdr_axiom.axiom = element.get_axiom().get_index();
     fdr_axiom.body = create_ground_fdr_conjunctive_condition(element.get_body(), fdr_context, context).get_index();
     fdr_axiom.head = merge(element.get_head(), context).get_index();
