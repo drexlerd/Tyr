@@ -28,12 +28,6 @@
 
 namespace tyr::planning
 {
-template<typename T>
-concept PackedStateConcept = requires(T state) {
-    typename T::TaskType;
-    { state.get_index() } -> std::same_as<StateIndex>;
-};
-
 template<typename Task>
 class PackedState
 {

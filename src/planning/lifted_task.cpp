@@ -49,11 +49,11 @@ static void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluen
                                             ProgramExecutionContext& axiom_context)
 {
     /// --- Initialize FactSets
+    auto merge_context = MergeContext { axiom_context.builder, *axiom_context.repository, axiom_context.task_to_program_execution_context.merge_cache };
+
     for (auto i = fluent_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = fluent_atoms.find_next(i))
-        axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(merge(make_view(Index<GroundAtom<FluentTag>>(i), atoms_context),
-                                                                                           axiom_context.builder,
-                                                                                           *axiom_context.repository,
-                                                                                           axiom_context.task_to_program_execution_context.merge_cache));
+        axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(
+            merge(make_view(Index<GroundAtom<FluentTag>>(i), atoms_context), merge_context));
 }
 
 static void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
@@ -61,12 +61,11 @@ static void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& deri
                                              ProgramExecutionContext& axiom_context)
 {
     /// --- Initialize FactSets
+    auto merge_context = MergeContext { axiom_context.builder, *axiom_context.repository, axiom_context.task_to_program_execution_context.merge_cache };
+
     for (auto i = derived_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms.find_next(i))
         axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(
-            merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(make_view(Index<GroundAtom<DerivedTag>>(i), atoms_context),
-                                                                                    axiom_context.builder,
-                                                                                    *axiom_context.repository,
-                                                                                    axiom_context.task_to_program_execution_context.merge_cache));
+            merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(make_view(Index<GroundAtom<DerivedTag>>(i), atoms_context), merge_context));
 }
 
 static void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
@@ -74,14 +73,13 @@ static void insert_numeric_variables_to_fact_set(const std::vector<float_t>& num
                                                  ProgramExecutionContext& axiom_context)
 {
     /// --- Initialize FactSets
+    auto merge_context = MergeContext { axiom_context.builder, *axiom_context.repository, axiom_context.task_to_program_execution_context.merge_cache };
+
     for (uint_t i = 0; i < numeric_variables.size(); ++i)
     {
         if (!std::isnan(numeric_variables[i]))
             axiom_context.facts_execution_context.fact_sets.fluent_sets.function.insert(
-                merge(make_view(Index<GroundFunctionTerm<FluentTag>>(i), numeric_variables_context),
-                      axiom_context.builder,
-                      *axiom_context.repository,
-                      axiom_context.task_to_program_execution_context.merge_cache),
+                merge(make_view(Index<GroundFunctionTerm<FluentTag>>(i), numeric_variables_context), merge_context),
                 numeric_variables[i]);
     }
 }
@@ -138,14 +136,18 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
     axiom_context.program_to_task_execution_context.clear();
 
     /// --- Initialize derived atoms in unpacked state
-    for (const auto& [rule, program_binding] : axiom_context.program_results_execution_context.rule_binding_pairs)
+
+    for (const auto& [rule, binding_program] : axiom_context.program_results_execution_context.rule_binding_pairs)
     {
-        const auto ground_atom = ground_planning<FluentTag, Repository, OverlayRepository<Repository>, DerivedTag>(
-            rule.get_head(),
-            make_view(program_binding.get_objects().get_data(), task_repository),
-            axiom_context.builder,
-            task_repository,
-            axiom_context.program_to_task_execution_context.merge_cache);
+        auto merge_context = MergeContext { axiom_context.builder, task_repository, axiom_context.program_to_task_execution_context.merge_cache };
+
+        auto binding_task = merge(binding_program, merge_context);
+
+        auto grounder_context =
+            GrounderContext { axiom_context.builder, task_repository, binding_task, axiom_context.program_to_task_execution_context.grounder_cache };
+
+        const auto ground_atom =
+            ground_planning<FluentTag, Repository, OverlayRepository<Repository>, DerivedTag>(rule.get_head(), merge_context, grounder_context);
 
         set(ground_atom.get_index().get_value(), derived_atoms);
     }
@@ -162,24 +164,24 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
 {
     out_successors.clear();
 
-    auto& binding_full = action_context.planning_execution_context.binding_full;
     auto& effect_families = action_context.planning_execution_context.effect_families;
     auto& assign = action_context.planning_execution_context.assign;
 
-    for (const auto& [rule, program_binding] : action_context.program_results_execution_context.rule_binding_pairs)
+    for (const auto& [rule, binding_program] : action_context.program_results_execution_context.rule_binding_pairs)
     {
         for (const auto action : action_program.get_rule_to_actions_mapping().at(rule))
         {
             const auto action_index = action.get_index().get_value();
 
-            const auto ground_action = ground_planning(action,
-                                                       make_view(program_binding.get_objects().get_data(), task_repository),
-                                                       binding_full,
-                                                       parameter_domains_per_cond_effect_per_action[action_index],
-                                                       assign,
-                                                       action_context.builder,
-                                                       task_repository,
-                                                       fdr_context);
+            auto merge_context = MergeContext { action_context.builder, task_repository, action_context.program_to_task_execution_context.merge_cache };
+
+            auto binding_task = merge(binding_program, merge_context);
+
+            auto grounder_context =
+                GrounderContext { action_context.builder, task_repository, binding_task, action_context.task_to_task_execution_context.grounder_cache };
+
+            const auto ground_action =
+                ground_planning(action, grounder_context, parameter_domains_per_cond_effect_per_action[action_index], assign, fdr_context);
 
             effect_families.clear();
             if (is_applicable(ground_action, state_context, effect_families))
@@ -469,7 +471,6 @@ GroundTaskPtr LiftedTask::get_ground_task()
     const auto initial_state = initial_node.get_state();
     const auto initial_state_context = StateContext(*this, initial_state.get_unpacked_state(), 0);
 
-    auto& binding_full = ground_context.planning_execution_context.binding_full;
     auto& assign = ground_context.planning_execution_context.assign;
 
     /// --- Ground Atoms
@@ -491,22 +492,23 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     auto ground_actions_set = UnorderedSet<Index<GroundAction>> {};
 
-    for (const auto& [rule, program_binding] : ground_context.program_results_execution_context.rule_binding_pairs)
+    auto merge_context = MergeContext { ground_context.builder, *m_overlay_repository, ground_context.program_to_task_execution_context.merge_cache };
+
+    for (const auto& [rule, binding_program] : ground_context.program_results_execution_context.rule_binding_pairs)
     {
         if (m_ground_program.get_rule_to_actions_mapping().contains(rule))
         {
+            auto binding_task = merge(binding_program, merge_context);
+
+            auto grounder_context =
+                GrounderContext { ground_context.builder, *m_overlay_repository, binding_task, ground_context.task_to_task_execution_context.grounder_cache };
+
             for (const auto action : m_ground_program.get_rule_to_actions_mapping().at(rule))
             {
                 const auto action_index = action.get_index().get_value();
 
-                const auto ground_action = ground_planning(action,
-                                                           make_view(program_binding.get_objects().get_data(), *m_overlay_repository),
-                                                           binding_full,
-                                                           m_parameter_domains_per_cond_effect_per_action[action_index],
-                                                           assign,
-                                                           ground_context.builder,
-                                                           *m_overlay_repository,
-                                                           m_fdr_context);
+                const auto ground_action =
+                    ground_planning(action, grounder_context, m_parameter_domains_per_cond_effect_per_action[action_index], assign, m_fdr_context);
 
                 if (is_statically_applicable(ground_action, initial_state_context))
                 {
@@ -541,17 +543,18 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     auto ground_axioms_set = UnorderedSet<Index<GroundAxiom>> {};
 
-    for (const auto& [rule, program_binding] : ground_context.program_results_execution_context.rule_binding_pairs)
+    for (const auto& [rule, binding_program] : ground_context.program_results_execution_context.rule_binding_pairs)
     {
         if (m_ground_program.get_rule_to_axioms_mapping().contains(rule))
         {
+            auto binding_task = merge(binding_program, merge_context);
+
+            auto grounder_context =
+                GrounderContext { ground_context.builder, *m_overlay_repository, binding_task, ground_context.task_to_task_execution_context.grounder_cache };
+
             for (const auto axiom : m_ground_program.get_rule_to_axioms_mapping().at(rule))
             {
-                const auto ground_axiom = ground_planning(axiom,
-                                                          make_view(program_binding.get_objects().get_data(), *m_overlay_repository),
-                                                          ground_context.builder,
-                                                          *m_overlay_repository,
-                                                          m_fdr_context);
+                const auto ground_axiom = ground_planning(axiom, grounder_context, m_fdr_context);
 
                 if (is_statically_applicable(ground_axiom, initial_state_context))
                 {

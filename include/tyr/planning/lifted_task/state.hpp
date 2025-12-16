@@ -18,10 +18,11 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_STATE_HPP_
 #define TYR_PLANNING_LIFTED_TASK_STATE_HPP_
 
+#include "tyr/planning/lifted_task/unpacked_state.hpp"
+//
 #include "tyr/common/shared_object_pool.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/lifted_task/unpacked_state.hpp"
 #include "tyr/planning/state.hpp"
 
 #include <boost/dynamic_bitset.hpp>

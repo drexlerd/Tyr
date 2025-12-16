@@ -32,45 +32,44 @@ create(const LiftedTask& task, ApplicableActionProgram::RuleToActionsMapping& ru
 {
     auto merge_cache = MergeCache<OverlayRepository<Repository>, Repository>();
     auto builder = Builder();
+    auto context = MergeContext<OverlayRepository<Repository>, Repository>(builder, repository, merge_cache);
     auto program_ptr = builder.get_builder<Program>();
     auto& program = *program_ptr;
     program.clear();
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<StaticTag>())
-        program.static_predicates.push_back(merge(predicate, builder, repository, merge_cache).get_index());
+        program.static_predicates.push_back(merge(predicate, context).get_index());
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<FluentTag>())
-        program.fluent_predicates.push_back(merge(predicate, builder, repository, merge_cache).get_index());
+        program.fluent_predicates.push_back(merge(predicate, context).get_index());
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<DerivedTag>())
-        program.fluent_predicates.push_back(
-            merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, builder, repository, merge_cache).get_index());
+        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).get_index());
 
     for (const auto predicate : task.get_task().get_derived_predicates())
-        program.fluent_predicates.push_back(
-            merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, builder, repository, merge_cache).get_index());
+        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).get_index());
 
     for (const auto function : task.get_task().get_domain().get_functions<StaticTag>())
-        program.static_functions.push_back(merge(function, builder, repository, merge_cache).get_index());
+        program.static_functions.push_back(merge(function, context).get_index());
 
     for (const auto function : task.get_task().get_domain().get_functions<FluentTag>())
-        program.fluent_functions.push_back(merge(function, builder, repository, merge_cache).get_index());
+        program.fluent_functions.push_back(merge(function, context).get_index());
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-        program.objects.push_back(merge(object, builder, repository, merge_cache).get_index());
+        program.objects.push_back(merge(object, context).get_index());
     for (const auto object : task.get_task().get_objects())
-        program.objects.push_back(merge(object, builder, repository, merge_cache).get_index());
+        program.objects.push_back(merge(object, context).get_index());
 
     for (const auto atom : task.get_task().get_atoms<StaticTag>())
-        program.static_atoms.push_back(merge(atom, builder, repository, merge_cache).get_index());
+        program.static_atoms.push_back(merge(atom, context).get_index());
 
     for (const auto atom : task.get_task().get_atoms<FluentTag>())
-        program.fluent_atoms.push_back(merge(atom, builder, repository, merge_cache).get_index());
+        program.fluent_atoms.push_back(merge(atom, context).get_index());
 
     for (const auto fterm_value : task.get_task().get_fterm_values<StaticTag>())
-        program.static_fterm_values.push_back(merge(fterm_value, builder, repository, merge_cache).get_index());
+        program.static_fterm_values.push_back(merge(fterm_value, context).get_index());
 
     for (const auto action : task.get_task().get_domain().get_actions())
     {
@@ -96,20 +95,19 @@ create(const LiftedTask& task, ApplicableActionProgram::RuleToActionsMapping& ru
         conj_cond.clear();
 
         for (const auto variable : action.get_variables())
-            conj_cond.variables.push_back(merge(variable, builder, repository, merge_cache).get_index());
+            conj_cond.variables.push_back(merge(variable, context).get_index());
 
         for (const auto literal : action.get_condition().get_literals<StaticTag>())
-            conj_cond.static_literals.push_back(merge(literal, builder, repository, merge_cache).get_index());
+            conj_cond.static_literals.push_back(merge(literal, context).get_index());
 
         for (const auto literal : action.get_condition().get_literals<FluentTag>())
-            conj_cond.fluent_literals.push_back(merge(literal, builder, repository, merge_cache).get_index());
+            conj_cond.fluent_literals.push_back(merge(literal, context).get_index());
 
         for (const auto literal : action.get_condition().get_literals<DerivedTag>())
-            conj_cond.fluent_literals.push_back(
-                merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(literal, builder, repository, merge_cache).get_index());
+            conj_cond.fluent_literals.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(literal, context).get_index());
 
         for (const auto numeric_constraint : action.get_condition().get_numeric_constraints())
-            conj_cond.numeric_constraints.push_back(merge(numeric_constraint, builder, repository, merge_cache).get_data());
+            conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context).get_data());
 
         canonicalize(conj_cond);
         const auto new_conj_cond = repository.get_or_create(conj_cond, builder.get_buffer()).first;

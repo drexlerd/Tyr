@@ -26,16 +26,6 @@
 
 namespace tyr::planning
 {
-template<typename T>
-concept NodeConcept = requires(T node) {
-    typename T::TaskType;
-    { node.get_state() } -> std::same_as<State<typename T::TaskType>>;
-    { node.get_task() } -> std::same_as<typename T::TaskType&>;
-    { node.get_state_metric() } -> std::same_as<float_t>;
-    { node.get_state_index() } -> std::same_as<StateIndex>;
-    { node.get_labeled_successor_nodes() };
-};
-
 template<typename Task>
 class Node
 {

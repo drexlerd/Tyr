@@ -30,31 +30,93 @@
 #include "tyr/grounder/formatter.hpp"
 #include "tyr/grounder/kpkc.hpp"
 
+using namespace tyr::formalism;
+
 namespace tyr::grounder
 {
+
+static auto create_empty_binding_in_stage(MergeContext<OverlayRepository<Repository>, Repository>& context)
+{
+    auto binding_ptr = context.builder.get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    canonicalize(binding);
+    return context.destination.get_or_create(binding, context.builder.get_buffer()).first;
+}
+
+static auto create_unary_binding_in_stage(uint_t vertex_index,
+                                          const StaticConsistencyGraph<Repository, ConjunctiveCondition>& consistency_graph,
+                                          MergeContext<OverlayRepository<Repository>, Repository>& context)
+{
+    auto binding_ptr = context.builder.get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    const auto& vertex = consistency_graph.get_vertex(vertex_index);
+    assert(uint_t(vertex.get_parameter_index()) == 0);
+    binding.objects.push_back(vertex.get_object_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(binding, context.builder.get_buffer()).first;
+}
+
+static auto create_general_binding_in_stage(const std::vector<uint_t>& clique,
+                                            const StaticConsistencyGraph<Repository, ConjunctiveCondition>& consistency_graph,
+                                            MergeContext<OverlayRepository<Repository>, Repository>& context)
+{
+    auto binding_ptr = context.builder.get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    binding.objects.resize(clique.size());
+    for (const auto vertex_index : clique)
+    {
+        const auto& vertex = consistency_graph.get_vertex(vertex_index);
+        assert(uint_t(vertex.get_parameter_index()) < clique.size());
+        binding.objects[uint_t(vertex.get_parameter_index())] = vertex.get_object_index();
+    }
+
+    canonicalize(binding);
+    return context.destination.get_or_create(binding, context.builder.get_buffer()).first;
+}
 
 void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
                          RuleExecutionContext& rule_execution_context,
                          RuleStageExecutionContext& rule_stage_execution_context,
                          ThreadExecutionContext& thread_execution_context)
 {
-    thread_execution_context.binding.clear();
-    const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
+    auto merge_context_rule = MergeContext<Repository, OverlayRepository<Repository>> { thread_execution_context.builder,
+                                                                                        rule_execution_context.overlay_repository,
+                                                                                        rule_execution_context.merge_cache };
 
-    const auto merge_binding =
-        formalism::merge(binding, thread_execution_context.builder, *rule_stage_execution_context.repository, thread_execution_context.merge_cache);
+    auto merge_context_stage = MergeContext<OverlayRepository<Repository>, Repository> { thread_execution_context.builder,
+                                                                                         *rule_stage_execution_context.repository,
+                                                                                         rule_stage_execution_context.merge_cache };
 
-    if (!rule_stage_execution_context.bindings.contains(merge_binding))
+    /// --- Rule stage
+    const auto binding_stage = create_empty_binding_in_stage(merge_context_stage);
+
+    if (!rule_stage_execution_context.bindings.contains(binding_stage))
     {
-        rule_stage_execution_context.bindings.insert(merge_binding);
+        rule_stage_execution_context.bindings.insert(binding_stage);
 
-        auto ground_rule = formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+        /// --- Rule stage -> Rule
+        const auto binding_rule = merge(binding_stage, merge_context_rule);
+
+        auto ground_context_rule = GrounderContext<Repository, OverlayRepository<Repository>> { thread_execution_context.builder,
+                                                                                                rule_execution_context.overlay_repository,
+                                                                                                binding_rule,
+                                                                                                rule_execution_context.grounder_cache };
+
+        /// --- Rule
+        auto ground_rule = ground_datalog(rule_execution_context.rule, ground_context_rule);
 
         if (is_applicable(ground_rule, fact_execution_context.fact_sets))
         {
             // std::cout << ground_rule << std::endl;
 
-            rule_execution_context.bindings.push_back(merge_binding);
+            rule_execution_context.bindings.push_back(binding_stage);
         }
     }
 }
@@ -64,32 +126,39 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
                        RuleStageExecutionContext& rule_stage_execution_context,
                        ThreadExecutionContext& thread_execution_context)
 {
+    auto merge_context_rule = MergeContext<Repository, OverlayRepository<Repository>> { thread_execution_context.builder,
+                                                                                        rule_execution_context.overlay_repository,
+                                                                                        rule_execution_context.merge_cache };
+
+    auto merge_context_stage = MergeContext<OverlayRepository<Repository>, Repository> { thread_execution_context.builder,
+                                                                                         *rule_stage_execution_context.repository,
+                                                                                         rule_stage_execution_context.merge_cache };
+
     for (const auto vertex_index : rule_execution_context.kpkc_workspace.consistent_vertices_vec)
     {
-        thread_execution_context.binding.clear();
-        const auto& vertex = rule_execution_context.static_consistency_graph.get_vertex(vertex_index);
+        /// --- Rule stage
+        const auto binding_stage = create_unary_binding_in_stage(vertex_index, rule_execution_context.static_consistency_graph, merge_context_stage);
 
-        assert(uint_t(vertex.get_parameter_index()) == 0);
-
-        thread_execution_context.binding.push_back(vertex.get_object_index());
-
-        const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
-
-        const auto merge_binding =
-            formalism::merge(binding, thread_execution_context.builder, *rule_stage_execution_context.repository, thread_execution_context.merge_cache);
-
-        if (!rule_stage_execution_context.bindings.contains(merge_binding))
+        if (!rule_stage_execution_context.bindings.contains(binding_stage))
         {
-            rule_stage_execution_context.bindings.insert(merge_binding);
+            rule_stage_execution_context.bindings.insert(binding_stage);
 
-            auto ground_rule =
-                formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+            /// --- Rule stage -> Rule
+            const auto binding_rule = merge(binding_stage, merge_context_rule);
+
+            auto ground_context_rule = GrounderContext<Repository, OverlayRepository<Repository>> { thread_execution_context.builder,
+                                                                                                    rule_execution_context.overlay_repository,
+                                                                                                    binding_rule,
+                                                                                                    rule_execution_context.grounder_cache };
+
+            /// --- Rule
+            auto ground_rule = ground_datalog(rule_execution_context.rule, ground_context_rule);
 
             if (is_applicable(ground_rule, fact_execution_context.fact_sets))
             {
                 // std::cout << ground_rule << std::endl;
 
-                rule_execution_context.bindings.push_back(merge_binding);
+                rule_execution_context.bindings.push_back(binding_stage);
             }
         }
     }
@@ -100,41 +169,46 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                          RuleStageExecutionContext& rule_stage_execution_context,
                          ThreadExecutionContext& thread_execution_context)
 {
-    kpkc::for_each_k_clique(
-        rule_execution_context.consistency_graph,
-        rule_execution_context.kpkc_workspace,
-        [&](auto&& clique)
-        {
-            thread_execution_context.binding.resize(clique.size());
-            for (const auto vertex_index : clique)
-            {
-                const auto& vertex = rule_execution_context.static_consistency_graph.get_vertex(vertex_index);
+    auto merge_context_rule = MergeContext<Repository, OverlayRepository<Repository>> { thread_execution_context.builder,
+                                                                                        rule_execution_context.overlay_repository,
+                                                                                        rule_execution_context.merge_cache };
 
-                assert(uint_t(vertex.get_parameter_index()) < clique.size());
+    auto merge_context_stage = MergeContext<OverlayRepository<Repository>, Repository> { thread_execution_context.builder,
+                                                                                         *rule_stage_execution_context.repository,
+                                                                                         rule_stage_execution_context.merge_cache };
 
-                thread_execution_context.binding[uint_t(vertex.get_parameter_index())] = vertex.get_object_index();
-            }
+    kpkc::for_each_k_clique(rule_execution_context.consistency_graph,
+                            rule_execution_context.kpkc_workspace,
+                            [&](auto&& clique)
+                            {
+                                /// --- Rule stage
+                                const auto binding_stage =
+                                    create_general_binding_in_stage(clique, rule_execution_context.static_consistency_graph, merge_context_stage);
 
-            const auto binding = make_view(thread_execution_context.binding, rule_execution_context.repository);
+                                if (!rule_stage_execution_context.bindings.contains(binding_stage))
+                                {
+                                    rule_stage_execution_context.bindings.insert(binding_stage);
 
-            const auto merge_binding =
-                formalism::merge(binding, thread_execution_context.builder, *rule_stage_execution_context.repository, thread_execution_context.merge_cache);
+                                    /// --- Rule stage -> Rule
+                                    const auto binding_rule = merge(binding_stage, merge_context_rule);
 
-            if (!rule_stage_execution_context.bindings.contains(merge_binding))
-            {
-                rule_stage_execution_context.bindings.insert(merge_binding);
+                                    auto ground_context_rule =
+                                        GrounderContext<Repository, OverlayRepository<Repository>> { thread_execution_context.builder,
+                                                                                                     rule_execution_context.overlay_repository,
+                                                                                                     binding_rule,
+                                                                                                     rule_execution_context.grounder_cache };
 
-                auto ground_rule =
-                    formalism::ground_datalog(rule_execution_context.rule, binding, thread_execution_context.builder, rule_execution_context.repository);
+                                    /// --- Rule
+                                    auto ground_rule = ground_datalog(rule_execution_context.rule, ground_context_rule);
 
-                if (is_applicable(ground_rule, fact_execution_context.fact_sets))
-                {
-                    // std::cout << ground_rule << std::endl;
+                                    if (is_applicable(ground_rule, fact_execution_context.fact_sets))
+                                    {
+                                        // std::cout << ground_rule << std::endl;
 
-                    rule_execution_context.bindings.push_back(merge_binding);
-                }
-            }
-        });
+                                        rule_execution_context.bindings.push_back(binding_stage);
+                                    }
+                                }
+                            });
 }
 
 void ground(const FactsExecutionContext& fact_execution_context,

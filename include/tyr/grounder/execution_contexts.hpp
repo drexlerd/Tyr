@@ -22,6 +22,7 @@
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/formalism/builder.hpp"
+#include "tyr/formalism/grounder_common.hpp"
 #include "tyr/formalism/merge_common.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -61,10 +62,12 @@ struct FactsExecutionContext
 
 struct RuleStageExecutionContext
 {
-    formalism::RepositoryPtr repository;  // backup for sequential merge
-    UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> bindings;
+    /// Merge thread into staging area
+    formalism::RepositoryPtr repository;
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> merge_cache;
 
-    formalism::MergeCache<formalism::Repository, formalism::Repository> merge_cache;
+    /// Bindings encountered across iterations
+    UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> bindings;
 
     RuleStageExecutionContext();
 
@@ -73,16 +76,21 @@ struct RuleStageExecutionContext
 
 struct RuleExecutionContext
 {
-    /// --- Thread
     const View<Index<formalism::Rule>, formalism::Repository> rule;
     const View<Index<formalism::GroundConjunctiveCondition>, formalism::Repository> nullary_condition;
     const StaticConsistencyGraph<formalism::Repository, formalism::ConjunctiveCondition> static_consistency_graph;
 
     kpkc::DenseKPartiteGraph consistency_graph;
     kpkc::Workspace kpkc_workspace;
-    std::shared_ptr<formalism::Repository> local;
-    formalism::OverlayRepository<formalism::Repository> repository;  // deduplicate with the program repository
 
+    /// Merge stage into rule execution context
+    std::shared_ptr<formalism::Repository> repository;
+    formalism::OverlayRepository<formalism::Repository> overlay_repository;
+    formalism::MergeCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> merge_cache;
+    // Ground program rule in rule execution context
+    formalism::GrounderCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> grounder_cache;
+
+    /// Bindings kept from iteration in stage
     std::vector<View<Index<formalism::Binding>, formalism::Repository>> bindings;
 
     struct Statistics
@@ -171,8 +179,6 @@ struct RuleExecutionContext
 
 struct ThreadExecutionContext
 {
-    IndexList<formalism::Object> binding;
-
     formalism::Builder builder;
     formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> merge_cache;
 
@@ -183,15 +189,25 @@ struct ThreadExecutionContext
 
 struct PlanningExecutionContext
 {
-    IndexList<formalism::Object> binding_full;
     formalism::EffectFamilyList effect_families;
     UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> assign;
 
     PlanningExecutionContext() = default;
 };
 
+struct StageToProgramExecutionContext
+{
+    StageToProgramExecutionContext() = default;
+
+    formalism::MergeCache<formalism::Repository, formalism::Repository> merge_cache;
+
+    void clear() noexcept;
+};
+
 struct ProgramResultsExecutionContext
 {
+    ProgramResultsExecutionContext() = default;
+
     UnorderedSet<std::pair<View<Index<formalism::Rule>, formalism::Repository>, View<Index<formalism::Binding>, formalism::Repository>>> rule_binding_pairs;
 
     void clear() noexcept;
@@ -199,14 +215,30 @@ struct ProgramResultsExecutionContext
 
 struct ProgramToTaskExecutionContext
 {
+    ProgramToTaskExecutionContext() = default;
+
     formalism::MergeCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> merge_cache;
+    formalism::GrounderCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> grounder_cache;
 
     void clear() noexcept;
 };
 
 struct TaskToProgramExecutionContext
 {
+    TaskToProgramExecutionContext() = default;
+
     formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> merge_cache;
+    formalism::GrounderCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> grounder_cache;
+
+    void clear() noexcept;
+};
+
+struct TaskToTaskExecutionContext
+{
+    TaskToTaskExecutionContext() = default;
+
+    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> merge_cache;
+    formalism::GrounderCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> grounder_cache;
 
     void clear() noexcept;
 };
@@ -222,6 +254,7 @@ struct ProgramExecutionContext
 
     /// --- Builder
     formalism::Builder builder;
+    formalism::GrounderCache<formalism::Repository, formalism::Repository> grounder_cache;
 
     /// --- Execution contexts
     FactsExecutionContext facts_execution_context;
@@ -233,8 +266,10 @@ struct ProgramExecutionContext
 
     PlanningExecutionContext planning_execution_context;
 
+    StageToProgramExecutionContext stage_to_program_execution_context;
     ProgramResultsExecutionContext program_results_execution_context;
     ProgramToTaskExecutionContext program_to_task_execution_context;
+    TaskToTaskExecutionContext task_to_task_execution_context;
     TaskToProgramExecutionContext task_to_program_execution_context;
 
     struct Statistics

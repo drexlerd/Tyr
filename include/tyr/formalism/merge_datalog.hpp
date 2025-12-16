@@ -33,78 +33,78 @@ namespace tyr::formalism
  */
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache);
+auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_SRC, C_DST>& context);
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<Rule>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache);
+auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context);
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundRule>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache);
+auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context);
 
 /**
  * Implementations
  */
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_SRC, C_DST>& context)
 {
     return with_cache<GroundConjunctiveCondition, GroundConjunctiveCondition>(
         element,
-        cache,
+        context.cache,
         [&]()
         {
-            auto conj_cond_ptr = builder.template get_builder<GroundConjunctiveCondition>();
+            auto conj_cond_ptr = context.builder.template get_builder<GroundConjunctiveCondition>();
             auto& conj_cond = *conj_cond_ptr;
             conj_cond.clear();
 
             for (const auto literal : element.template get_literals<StaticTag>())
-                conj_cond.static_literals.push_back(merge(literal, builder, destination, cache).get_index());
+                conj_cond.static_literals.push_back(merge(literal, context).get_index());
             for (const auto literal : element.template get_literals<FluentTag>())
-                conj_cond.fluent_literals.push_back(merge(literal, builder, destination, cache).get_index());
+                conj_cond.fluent_literals.push_back(merge(literal, context).get_index());
             for (const auto numeric_constraint : element.get_numeric_constraints())
-                conj_cond.numeric_constraints.push_back(merge(numeric_constraint, builder, destination, cache).get_data());
+                conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context).get_data());
 
             canonicalize(conj_cond);
-            return destination.get_or_create(conj_cond, builder.get_buffer()).first;
+            return context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first;
         });
 }
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<Rule>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context)
 {
     return with_cache<Rule, Rule>(element,
-                                  cache,
+                                  context.cache,
                                   [&]()
                                   {
-                                      auto rule_ptr = builder.template get_builder<Rule>();
+                                      auto rule_ptr = context.builder.template get_builder<Rule>();
                                       auto& rule = *rule_ptr;
                                       rule.clear();
 
-                                      rule.body = merge(element.get_body(), builder, destination, cache).get_index();
-                                      rule.head = merge(element.get_head(), builder, destination, cache).get_index();
+                                      rule.body = merge(element.get_body(), context).get_index();
+                                      rule.head = merge(element.get_head(), context).get_index();
 
                                       canonicalize(rule);
-                                      return destination.get_or_create(rule, builder.get_buffer()).first;
+                                      return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
                                   });
 }
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundRule>, C_SRC> element, Builder& builder, C_DST& destination, MergeCache<C_SRC, C_DST>& cache)
+auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context)
 {
     return with_cache<GroundRule, GroundRule>(element,
-                                              cache,
+                                              context.cache,
                                               [&]()
                                               {
-                                                  auto rule_ptr = builder.template get_builder<GroundRule>();
+                                                  auto rule_ptr = context.builder.template get_builder<GroundRule>();
                                                   auto& rule = *rule_ptr;
                                                   rule.clear();
 
                                                   rule.rule = element.get_rule().get_index();
-                                                  rule.body = merge(element.get_body(), builder, destination, cache).get_index();
-                                                  rule.head = merge(element.get_head(), builder, destination, cache).get_index();
+                                                  rule.body = merge(element.get_body(), context).get_index();
+                                                  rule.head = merge(element.get_head(), context).get_index();
 
                                                   canonicalize(rule);
-                                                  return destination.get_or_create(rule, builder.get_buffer()).first;
+                                                  return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
                                               });
 }
 

@@ -18,10 +18,11 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_PACKED_STATE_HPP_
 #define TYR_PLANNING_LIFTED_TASK_PACKED_STATE_HPP_
 
+#include "tyr/planning/packed_state.hpp"
+//
 #include "tyr/common/config.hpp"
 #include "tyr/common/declarations.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/packed_state.hpp"
 #include "tyr/planning/state_index.hpp"
 
 #include <valla/valla.hpp>
@@ -83,7 +84,6 @@ private:
     valla::Slot<uint_t> m_numeric_variables;
 };
 
-static_assert(PackedStateConcept<PackedState<LiftedTask>>);
 }
 
 #endif

@@ -22,7 +22,6 @@
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/fact_sets.hpp"
 

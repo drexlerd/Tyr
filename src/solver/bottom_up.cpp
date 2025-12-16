@@ -83,25 +83,34 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
 
             auto discovered_new_fact = bool { false };
 
+            auto merge_context_program = formalism::MergeContext<formalism::Repository, formalism::Repository> {
+                program_execution_context.builder,
+                *program_execution_context.repository,
+                program_execution_context.stage_to_program_execution_context.merge_cache
+            };
+
             for (uint_t j = 0; j < stratum.size(); ++j)
             {
                 const auto i = stratum[j].get_index().get_value();
 
                 const auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
-                auto& rule_stage_execution_context = program_execution_context.rule_stage_execution_contexts[i];
 
                 for (const auto binding : rule_execution_context.bindings)
                 {
-                    const auto merge_binding =
-                        merge(binding, program_execution_context.builder, *program_execution_context.repository, rule_stage_execution_context.merge_cache);
+                    /// --- Stage -> Program
+                    const auto binding_program = formalism::merge(binding, merge_context_program);
+
+                    /// --- Program
+                    auto ground_context_program =
+                        formalism::GrounderContext<formalism::Repository, formalism::Repository> { program_execution_context.builder,
+                                                                                                   *program_execution_context.repository,
+                                                                                                   binding_program,
+                                                                                                   program_execution_context.grounder_cache };
 
                     /// --- Insert (rule, binding) pair
-                    program_execution_context.program_results_execution_context.rule_binding_pairs.emplace(rule_execution_context.rule, merge_binding);
+                    program_execution_context.program_results_execution_context.rule_binding_pairs.emplace(rule_execution_context.rule, binding_program);
 
-                    const auto ground_head = formalism::ground_datalog(rule_execution_context.rule.get_head(),
-                                                                       merge_binding.get_objects(),
-                                                                       program_execution_context.builder,
-                                                                       *program_execution_context.repository);
+                    const auto ground_head = formalism::ground_datalog(rule_execution_context.rule.get_head(), ground_context_program);
 
                     // Insert new fact into fact sets and assigment sets
                     if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(ground_head))

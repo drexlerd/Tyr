@@ -40,6 +40,4 @@ void Node<LiftedTask>::get_labeled_successor_nodes(
     m_task->get_labeled_successor_nodes(*this, out_nodes);
 }
 
-static_assert(NodeConcept<Node<LiftedTask>>);
-
 }
