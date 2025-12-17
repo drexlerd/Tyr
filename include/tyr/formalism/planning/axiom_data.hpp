@@ -24,6 +24,7 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/planning/axiom_index.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/variable_index.hpp"
 
 namespace tyr
 {
@@ -34,12 +35,17 @@ struct Data<formalism::Axiom>
     using Tag = formalism::Axiom;
 
     Index<formalism::Axiom> index;
+    IndexList<formalism::Variable> variables;
     Index<formalism::FDRConjunctiveCondition> body;
     Index<formalism::Atom<formalism::DerivedTag>> head;
 
     Data() = default;
-    Data(Index<formalism::Axiom> index, Index<formalism::FDRConjunctiveCondition> body, Index<formalism::Atom<formalism::DerivedTag>> head) :
+    Data(Index<formalism::Axiom> index,
+         IndexList<formalism::Variable> variables,
+         Index<formalism::FDRConjunctiveCondition> body,
+         Index<formalism::Atom<formalism::DerivedTag>> head) :
         index(index),
+        variables(std::move(variables)),
         body(body),
         head(head)
     {
@@ -52,12 +58,13 @@ struct Data<formalism::Axiom>
     void clear() noexcept
     {
         tyr::clear(index);
+        tyr::clear(variables);
         tyr::clear(body);
         tyr::clear(head);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, body, head); }
-    auto identifying_members() const noexcept { return std::tie(body, head); }
+    auto cista_members() const noexcept { return std::tie(index, variables, body, head); }
+    auto identifying_members() const noexcept { return std::tie(variables, body, head); }
 };
 }
 

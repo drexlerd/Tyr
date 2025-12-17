@@ -176,6 +176,8 @@ auto merge(View<Index<FDRConjunctiveCondition>, C_SRC> element, MergeContext<C_S
             auto& conj_cond = *conj_cond_ptr;
             conj_cond.clear();
 
+            for (const auto variable : element.get_variables())
+                conj_cond.variables.push_back(merge(variable, context).get_index());
             for (const auto literal : element.template get_literals<StaticTag>())
                 conj_cond.static_literals.push_back(merge(literal, context).get_index());
             for (const auto literal : element.template get_literals<FluentTag>())
@@ -201,6 +203,8 @@ auto merge(View<Index<Axiom>, C_SRC> element, MergeContext<C_SRC, C_DST>& contex
                                         auto& axiom = *axiom_ptr;
                                         axiom.clear();
 
+                                        for (const auto variable : element.get_variables())
+                                            axiom.variables.push_back(merge(variable, context).get_index());
                                         axiom.body = merge(element.get_body(), context).get_index();
                                         axiom.head = merge(element.get_head(), context).get_index();
 

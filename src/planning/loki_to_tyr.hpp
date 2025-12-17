@@ -810,10 +810,12 @@ private:
     }
 
     template<formalism::Context C>
-    IndexList<formalism::ConditionalEffect> translate_lifted(loki::Effect element, formalism::Builder& builder, C& context)
+    IndexList<formalism::ConditionalEffect>
+    translate_lifted(loki::Effect element, const IndexList<formalism::Variable>& parameters, formalism::Builder& builder, C& context)
     {
         using ConditionalEffectData = UnorderedMap<Index<formalism::FDRConjunctiveCondition>,
-                                                   std::tuple<IndexList<formalism::Literal<formalism::FluentTag>>,
+                                                   std::tuple<IndexList<formalism::Variable>,
+                                                              IndexList<formalism::Literal<formalism::FluentTag>>,
                                                               DataList<formalism::NumericEffectOperator<formalism::FluentTag>>,
                                                               ::cista::optional<Data<formalism::NumericEffectOperator<formalism::AuxiliaryTag>>>>>;
 
@@ -821,8 +823,9 @@ private:
         {
             auto tmp_effect = effect;
 
+            auto universal_parameters = IndexList<formalism::Variable> {};
+
             /* 1. Parse universal part. */
-            auto parameters = IndexList<formalism::Variable> {};
 
             std::visit(
                 [&](auto&& subeffect)
@@ -831,7 +834,7 @@ private:
 
                     if constexpr (std::is_same_v<SubEffectT, loki::EffectCompositeForall>)
                     {
-                        parameters = translate_common(subeffect->get_parameters(), builder, context);
+                        universal_parameters = translate_common(subeffect->get_parameters(), builder, context);
 
                         tmp_effect = subeffect->get_effect();
                     }
@@ -839,7 +842,7 @@ private:
                 tmp_effect->get_effect());
 
             ///---------- Push parameters and parse scope -------------
-            m_param_map.push_parameters(parameters);
+            m_param_map.push_parameters(universal_parameters);
             {
                 /* 2. Parse conditional part */
                 auto conjunctive_condition = std::visit(
@@ -847,9 +850,12 @@ private:
                     {
                         using SubEffectT = std::decay_t<decltype(subeffect)>;
 
+                        auto all_parameters = parameters;
+                        all_parameters.insert(all_parameters.end(), universal_parameters.begin(), universal_parameters.end());
+
                         if constexpr (std::is_same_v<SubEffectT, loki::EffectCompositeWhen>)
                         {
-                            auto conjunctive_condition = translate_lifted(subeffect->get_condition(), parameters, builder, context);
+                            auto conjunctive_condition = translate_lifted(subeffect->get_condition(), all_parameters, builder, context);
 
                             tmp_effect = subeffect->get_effect();
 
@@ -869,9 +875,14 @@ private:
 
                 // Fetch container to store the effects
                 auto& effect_data = ref_conditional_effect_data[conjunctive_condition];
-                auto& data_fluent_literals = std::get<0>(effect_data);
-                auto& data_fluent_numeric_effects = std::get<1>(effect_data);
-                auto& data_auxiliary_numeric_effect = std::get<2>(effect_data);
+                auto& stored_universal = std::get<0>(effect_data);
+                if (stored_universal.empty())
+                    stored_universal = universal_parameters;
+                else
+                    assert(stored_universal.size() == universal_parameters.size() && "Same guard but different forall-scope.");
+                auto& data_fluent_literals = std::get<1>(effect_data);
+                auto& data_fluent_numeric_effects = std::get<2>(effect_data);
+                auto& data_auxiliary_numeric_effect = std::get<3>(effect_data);
 
                 /* 3. Parse effect part */
                 std::visit(
@@ -941,7 +952,7 @@ private:
                     tmp_effect->get_effect());
             }
             ///---------- Pop parameters -------------
-            m_param_map.pop_parameters(parameters);
+            m_param_map.pop_parameters(universal_parameters);
         };
 
         /* Parse the effect */
@@ -971,7 +982,10 @@ private:
 
         for (const auto& [cond_conjunctive_condition, value] : conditional_effect_data)
         {
-            const auto& [cond_effect_fluent_literals, cond_effect_fluent_numeric_effects, cond_effect_auxiliary_numeric_effects] = value;
+            const auto& [cond_effect_universal_parameters,
+                         cond_effect_fluent_literals,
+                         cond_effect_fluent_numeric_effects,
+                         cond_effect_auxiliary_numeric_effects] = value;
 
             auto conj_effect_ptr = builder.template get_builder<formalism::ConjunctiveEffect>();
             auto& conj_effect = *conj_effect_ptr;
@@ -985,6 +999,7 @@ private:
             auto cond_effect_ptr = builder.template get_builder<formalism::ConditionalEffect>();
             auto& cond_effect = *cond_effect_ptr;
             cond_effect.clear();
+            cond_effect.variables = cond_effect_universal_parameters;
             cond_effect.condition = cond_conjunctive_condition;
             cond_effect.effect = conj_effect_index;
             formalism::canonicalize(cond_effect);
@@ -1007,6 +1022,8 @@ private:
 
         // 1. Translate conditions
         auto parameters = translate_common(element->get_parameters(), builder, context);
+        action.variables = parameters;
+
         ///---------- Push parameters and parse scope -------------
         m_param_map.push_parameters(parameters);
         {
@@ -1030,7 +1047,7 @@ private:
             auto conditional_effects = IndexList<formalism::ConditionalEffect> {};
             if (element->get_effect().has_value())
             {
-                const auto conditional_effects_ = translate_lifted(element->get_effect().value(), builder, context);
+                const auto conditional_effects_ = translate_lifted(element->get_effect().value(), parameters, builder, context);
                 conditional_effects = conditional_effects_;
             }
             action.effects = conditional_effects;
@@ -1050,6 +1067,8 @@ private:
         axiom.clear();
 
         auto parameters = translate_common(element->get_parameters(), builder, context);
+        axiom.variables = parameters;
+
         ///---------- Push parameters and parse scope -------------
         m_param_map.push_parameters(parameters);
         {

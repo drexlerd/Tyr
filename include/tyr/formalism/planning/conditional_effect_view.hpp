@@ -23,6 +23,7 @@
 #include "tyr/formalism/planning/conditional_effect_index.hpp"
 #include "tyr/formalism/planning/conjunctive_effect_index.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_view.hpp"
+#include "tyr/formalism/variable_view.hpp"
 
 namespace tyr
 {
@@ -44,7 +45,8 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_arity() const noexcept { return get_condition().get_arity(); }
+    auto get_arity() const noexcept { return get_variables().size(); }
+    auto get_variables() const noexcept { return make_view(get_data().variables, *m_context); }
     auto get_condition() const noexcept { return make_view(get_data().condition, *m_context); }
     auto get_effect() const noexcept { return make_view(get_data().effect, *m_context); }
 

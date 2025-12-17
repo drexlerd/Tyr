@@ -582,7 +582,7 @@ TaskVariableDomains compute_variable_domains(View<Index<formalism::Task>, formal
 
             for (const auto c_effect : action.get_effects())
             {
-                const auto c_variables = c_effect.get_condition().get_variables();
+                const auto c_variables = c_effect.get_variables();  ///< all quantified variables
 
                 auto c_parameter_domains = parameter_domains;
                 c_parameter_domains.resize(variables.size() + c_variables.size(), universe);

@@ -80,6 +80,8 @@ auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context
                                       auto& rule = *rule_ptr;
                                       rule.clear();
 
+                                      for (const auto variable : element.get_variables())
+                                          rule.variables.push_back(merge(variable, context).get_index());
                                       rule.body = merge(element.get_body(), context).get_index();
                                       rule.head = merge(element.get_head(), context).get_index();
 

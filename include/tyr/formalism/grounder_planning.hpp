@@ -238,7 +238,7 @@ View<Index<GroundAction>, C_DST> ground_planning(View<Index<Action>, C_SRC> elem
         const auto& parameter_domains = cond_effect_domains[cond_effect_index];
 
         // Ensure that we stripped off the action precondition parameter domains.
-        assert(std::distance(parameter_domains.begin(), parameter_domains.end()) == static_cast<int>(cond_effect.get_condition().get_arity()));
+        assert(std::distance(parameter_domains.begin(), parameter_domains.end()) == static_cast<int>(cond_effect.get_arity()));
 
         for_element_in_cartesian_set(parameter_domains.begin(),
                                      parameter_domains.end(),

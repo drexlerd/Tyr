@@ -23,6 +23,7 @@
 #include "tyr/formalism/atom_index.hpp"
 #include "tyr/formalism/conjunctive_condition_index.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/variable_index.hpp"
 
 namespace tyr
 {
@@ -32,12 +33,17 @@ struct Data<formalism::Rule>
     using Tag = formalism::Rule;
 
     Index<formalism::Rule> index;
+    IndexList<formalism::Variable> variables;
     Index<formalism::ConjunctiveCondition> body;
     Index<formalism::Atom<formalism::FluentTag>> head;
 
     Data() = default;
-    Data(Index<formalism::Rule> index, Index<formalism::ConjunctiveCondition> body, Index<formalism::Atom<formalism::FluentTag>> head) :
+    Data(Index<formalism::Rule> index,
+         IndexList<formalism::Variable> variables,
+         Index<formalism::ConjunctiveCondition> body,
+         Index<formalism::Atom<formalism::FluentTag>> head) :
         index(index),
+        variables(std::move(variables)),
         body(body),
         head(head)
     {
@@ -50,12 +56,13 @@ struct Data<formalism::Rule>
     void clear() noexcept
     {
         tyr::clear(index);
+        tyr::clear(variables);
         tyr::clear(body);
         tyr::clear(head);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, body, head); }
-    auto identifying_members() const noexcept { return std::tie(body, head); }
+    auto cista_members() const noexcept { return std::tie(index, variables, body, head); }
+    auto identifying_members() const noexcept { return std::tie(variables, body, head); }
 };
 }
 

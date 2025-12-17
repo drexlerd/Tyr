@@ -715,6 +715,8 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::Rule>& el)
     {
         IndentScope scope(os);
 
+        os << print_indent << "variables = " << el.variables << "\n";
+
         os << print_indent << "head = " << el.head << "\n";
 
         os << print_indent << "body = " << el.body << "\n";
@@ -730,6 +732,8 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Rule>, 
     os << "Rule(\n";
     {
         IndentScope scope(os);
+
+        os << print_indent << "variables = " << el.get_variables() << "\n";
 
         os << print_indent << "head = " << el.get_head() << "\n";
 
@@ -969,6 +973,8 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::ConditionalEf
     {
         IndentScope scope(os);
 
+        os << print_indent << "variables = " << el.variables << "\n";
+
         os << print_indent << "condition = " << el.condition << "\n";
 
         os << print_indent << "effect = " << el.effect << "\n";
@@ -984,6 +990,8 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::ConditionalEff
     os << "ConditionalEffect(\n";
     {
         IndentScope scope(os);
+
+        os << print_indent << "variables = " << el.get_variables() << "\n";
 
         os << print_indent << "condition = " << el.get_condition() << "\n";
 
@@ -1105,6 +1113,8 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::Action>& el)
 
         os << print_indent << "name = " << el.name << "\n";
 
+        os << print_indent << "variables = " << el.variables << "\n";
+
         os << print_indent << "condition = " << el.condition << "\n";
 
         os << print_indent << "effects = " << el.effects << "\n";
@@ -1124,6 +1134,8 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::Action>, C>& e
         os << print_indent << "index = " << el.get_index() << "\n";
 
         os << print_indent << "name = " << el.get_name() << "\n";
+
+        os << print_indent << "variables = " << el.get_variables() << "\n";
 
         os << print_indent << "condition = " << el.get_condition() << "\n";
 
@@ -1181,6 +1193,8 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::Axiom>& el)
 
         os << print_indent << "index = " << el.index << "\n";
 
+        os << print_indent << "variables = " << el.variables << "\n";
+
         os << print_indent << "body = " << el.body << "\n";
 
         os << print_indent << "head = " << el.head << "\n";
@@ -1198,6 +1212,8 @@ std::ostream& print(std::ostream& os, const View<Index<formalism::Axiom>, C>& el
         IndentScope scope(os);
 
         os << print_indent << "index = " << el.get_index() << "\n";
+
+        os << print_indent << "variables = " << el.get_variables() << "\n";
 
         os << print_indent << "body = " << el.get_body() << "\n";
 

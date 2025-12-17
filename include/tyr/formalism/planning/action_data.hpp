@@ -24,6 +24,7 @@
 #include "tyr/formalism/planning/action_index.hpp"
 #include "tyr/formalism/planning/conditional_effect_index.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/variable_index.hpp"
 
 namespace tyr
 {
@@ -36,6 +37,7 @@ struct Data<formalism::Action>
     Index<formalism::Action> index;
     ::cista::offset::string name;
     uint_t original_arity;
+    IndexList<formalism::Variable> variables;
     Index<formalism::FDRConjunctiveCondition> condition;
     IndexList<formalism::ConditionalEffect> effects;
 
@@ -43,10 +45,12 @@ struct Data<formalism::Action>
     Data(Index<formalism::Action> index,
          ::cista::offset::string name,
          uint_t original_arity,
+         IndexList<formalism::Variable> variables,
          Index<formalism::FDRConjunctiveCondition> condition,
          IndexList<formalism::ConditionalEffect> effects) :
         index(index),
         name(std::move(name)),
+        variables(std::move(variables)),
         condition(condition),
         effects(std::move(effects))
     {
@@ -60,12 +64,13 @@ struct Data<formalism::Action>
     {
         tyr::clear(index);
         tyr::clear(name);
+        tyr::clear(variables);
         tyr::clear(condition);
         tyr::clear(effects);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, name, original_arity, condition, effects); }
-    auto identifying_members() const noexcept { return std::tie(name, original_arity, condition, effects); }
+    auto cista_members() const noexcept { return std::tie(index, name, variables, original_arity, condition, effects); }
+    auto identifying_members() const noexcept { return std::tie(name, variables, original_arity, condition, effects); }
 };
 }
 

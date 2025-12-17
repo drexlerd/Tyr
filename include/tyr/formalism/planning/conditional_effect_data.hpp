@@ -24,6 +24,7 @@
 #include "tyr/formalism/planning/conditional_effect_index.hpp"
 #include "tyr/formalism/planning/conjunctive_effect_index.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/variable_index.hpp"
 
 namespace tyr
 {
@@ -34,12 +35,17 @@ struct Data<formalism::ConditionalEffect>
     using Tag = formalism::ConditionalEffect;
 
     Index<formalism::ConditionalEffect> index;
+    IndexList<formalism::Variable> variables;
     Index<formalism::FDRConjunctiveCondition> condition;
     Index<formalism::ConjunctiveEffect> effect;
 
     Data() = default;
-    Data(Index<formalism::ConditionalEffect> index, Index<formalism::FDRConjunctiveCondition> condition, Index<formalism::ConjunctiveEffect> effect) :
+    Data(Index<formalism::ConditionalEffect> index,
+         IndexList<formalism::Variable> variables,
+         Index<formalism::FDRConjunctiveCondition> condition,
+         Index<formalism::ConjunctiveEffect> effect) :
         index(index),
+        variables(std::move(variables)),
         condition(condition),
         effect(effect)
     {
@@ -52,12 +58,13 @@ struct Data<formalism::ConditionalEffect>
     void clear() noexcept
     {
         tyr::clear(index);
+        tyr::clear(variables);
         tyr::clear(condition);
         tyr::clear(effect);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, condition, effect); }
-    auto identifying_members() const noexcept { return std::tie(condition, effect); }
+    auto cista_members() const noexcept { return std::tie(index, variables, condition, effect); }
+    auto identifying_members() const noexcept { return std::tie(variables, condition, effect); }
 };
 }
 

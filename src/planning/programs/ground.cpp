@@ -28,6 +28,21 @@ using namespace tyr::formalism;
 
 namespace tyr::planning
 {
+static IndexList<Variable> collect_free_variables() {}
+
+/**
+ * Assume each pre and eff is a set of literals
+ *
+ * Action = [pre, [<c1_pre,c1_eff>,...,cn_pre,cn_eff>]]
+ * App_pre :- pre
+ * App_c1_pre :- App_pre and ci_pre    forall i=1,...,n
+ * e :- App_ci_pre                     forall i=1,...,n forall e in ci_eff
+ */
+template<formalism::Context C>
+struct Mappings
+{
+    UnorderedMap<View<Index<FDRConjunctiveCondition>, C>, View<Index<Atom<FluentTag>>, C>> condition;
+};
 
 void append_from_condition(View<Index<FDRConjunctiveCondition>, OverlayRepository<Repository>> cond,
                            MergeContext<OverlayRepository<Repository>, Repository>& context,
@@ -72,7 +87,7 @@ static View<Index<ConjunctiveCondition>, Repository> make_delete_free_body(View<
 
     for (const auto variable : action.get_variables())
         conj_cond.variables.push_back(merge(variable, context).get_index());
-    for (const auto variable : cond_eff.get_condition().get_variables())
+    for (const auto variable : cond_eff.get_variables())
         conj_cond.variables.push_back(merge(variable, context).get_index());
 
     append_from_condition(action.get_condition(), context, conj_cond);
