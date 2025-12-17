@@ -109,7 +109,7 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
         {
             // std::cout << ground_rule << std::endl;
 
-            rule_execution_context.bindings.push_back(binding_stage);
+            rule_execution_context.bindings.push_back(binding_stage);  /// TODO: store this in staging or why are we even creating it there?
         }
     }
 }
@@ -144,7 +144,7 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
             {
                 // std::cout << ground_rule << std::endl;
 
-                rule_execution_context.bindings.push_back(binding_stage);
+                rule_execution_context.bindings.push_back(binding_stage);  /// TODO: store this in staging or why are we even creating it there?
             }
         }
     }
@@ -183,7 +183,7 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
                 {
                     // std::cout << ground_rule << std::endl;
 
-                    rule_execution_context.bindings.push_back(binding_stage);
+                    rule_execution_context.bindings.push_back(binding_stage);  /// TODO: store this in staging or why are we even creating it there?
                 }
             }
         });
