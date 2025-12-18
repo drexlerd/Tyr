@@ -235,6 +235,37 @@ View<Index<Rule>, Repository> create_effect_rule(View<Index<Action>, OverlayRepo
     return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
 }
 
+extern View<Index<Rule>, Repository> create_cond_effect_rule(View<Index<Action>, OverlayRepository<Repository>> action,
+                                                             View<Index<ConditionalEffect>, OverlayRepository<Repository>> cond_eff,
+                                                             View<Index<Atom<FluentTag>>, Repository> effect,
+                                                             MergeContext<OverlayRepository<Repository>, Repository>& context)
+{
+    auto rule_ptr = context.builder.get_builder<Rule>();
+    auto& rule = *rule_ptr;
+    rule.clear();
+
+    auto conj_cond_ptr = context.builder.get_builder<ConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
+    conj_cond.clear();
+
+    for (const auto variable : action.get_variables())
+        conj_cond.variables.push_back(merge(variable, context).get_index());
+    for (const auto variable : cond_eff.get_variables())
+        conj_cond.variables.push_back(merge(variable, context).get_index());
+    append_from_condition(cond_eff.get_condition(), context, conj_cond);
+    conj_cond.fluent_literals.push_back(create_applicability_literal(action, context).get_index());
+
+    canonicalize(conj_cond);
+    const auto new_conj_cond = context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first;
+
+    rule.variables = new_conj_cond.get_variables().get_data();
+    rule.body = new_conj_cond.get_index();
+    rule.head = effect.get_index();
+
+    canonicalize(rule);
+    return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
+}
+
 View<Index<Predicate<FluentTag>>, Repository> create_applicability_predicate(View<Index<Axiom>, OverlayRepository<Repository>> axiom,
                                                                              MergeContext<OverlayRepository<Repository>, Repository>& context)
 {

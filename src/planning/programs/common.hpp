@@ -77,6 +77,12 @@ create_effect_rule(View<Index<formalism::Action>, formalism::OverlayRepository<f
                    View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
                    formalism::MergeContext<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>& context);
 
+extern View<Index<formalism::Rule>, formalism::Repository>
+create_cond_effect_rule(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
+                        View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
+                        View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
+                        formalism::MergeContext<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>& context);
+
 extern View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>
 create_applicability_predicate(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
                                formalism::MergeContext<formalism::OverlayRepository<formalism::Repository>, formalism::Repository>& context);

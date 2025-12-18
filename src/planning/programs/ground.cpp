@@ -56,16 +56,12 @@ static void translate_action_to_delete_free_rules(View<Index<Action>, OverlayRep
 
     for (const auto cond_eff : action.get_effects())
     {
-        program.fluent_predicates.push_back(create_triggered_predicate(action, cond_eff, context).get_index());
-
-        program.rules.push_back(create_triggered_rule(action, cond_eff, context).get_index());
-
         for (const auto literal : cond_eff.get_effect().get_literals())
         {
             if (!literal.get_polarity())
                 continue;  /// ignore delete effects
 
-            program.rules.push_back(create_effect_rule(action, cond_eff, merge(literal.get_atom(), context), context).get_index());
+            program.rules.push_back(create_cond_effect_rule(action, cond_eff, merge(literal.get_atom(), context), context).get_index());
         }
     }
 }
