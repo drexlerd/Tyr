@@ -87,7 +87,7 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
         /// --- Sequentially combine results into a temporary staging repository to prevent modying the program's repository
 
         {
-            auto stopwatch = StopwatchScope(program_execution_context.statistics.merge_seq_total_time);
+            const auto stopwatch = StopwatchScope(program_execution_context.statistics.merge_seq_total_time);
 
             auto discovered_new_fact = bool { false };
 
@@ -96,30 +96,34 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                 const auto i = active_rules[j].get_index().get_value();
 
                 const auto& rule_execution_context = program_execution_context.rule_execution_contexts[i];
+                auto& rule_stage_execution_context = program_execution_context.rule_stage_execution_contexts[i];
 
-                for (const auto binding : rule_execution_context.bindings)  ///< TODO: rename to novel bindings
+                auto merge_context = formalism::MergeContext { program_execution_context.builder,
+                                                               *program_execution_context.repository,
+                                                               rule_stage_execution_context.merge_cache };
+
+                for (const auto ground_head_index : rule_execution_context.ground_heads)
                 {
                     /// --- Program
-                    program_execution_context.binding = binding.get_data().objects;
 
-                    auto ground_context_program = formalism::GrounderContext { program_execution_context.builder,
-                                                                               *program_execution_context.repository,
-                                                                               program_execution_context.binding };
+                    // Note: the head lives in the stage but its index is stored in rule because it is reset each iteration
+                    const auto ground_head_rule = make_view(ground_head_index, *rule_stage_execution_context.repository);
 
-                    const auto ground_head = make_view(formalism::ground_datalog(rule_execution_context.rule.get_head(), ground_context_program).first,
-                                                       *program_execution_context.repository);
+                    // Merge it into the program
+                    const auto ground_head_index_program = merge(ground_head_rule, merge_context).first;
 
                     // Insert new fact into fact sets and assigment sets
-                    if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(ground_head))
+                    if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(ground_head_index_program))
                     {
                         discovered_new_fact = true;
 
-                        scheduler.on_generate(ground_head.get_predicate());
-                    }
+                        const auto ground_head_program = make_view(ground_head_index_program, *program_execution_context.repository);
 
-                    /// TODO: if nobody listens on this predicate, we can skip insertion.
-                    program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(ground_head);
-                    program_execution_context.facts_execution_context.assignment_sets.fluent_sets.predicate.insert(ground_head);
+                        scheduler.on_generate(ground_head_program.get_predicate());
+
+                        program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(ground_head_program);
+                        program_execution_context.facts_execution_context.assignment_sets.fluent_sets.predicate.insert(ground_head_program);
+                    }
                 }
             }
 

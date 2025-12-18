@@ -65,10 +65,10 @@ struct RuleStageExecutionContext
 {
     /// Merge thread into staging area
     formalism::RepositoryPtr repository;
-    formalism::MergeCache merge_cache;
 
-    /// Bindings encountered across iterations
-    UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> bindings;
+    /// Ground heads encountered across iterations
+    IndexList<formalism::Object> binding;
+    formalism::MergeCache merge_cache;
 
     RuleStageExecutionContext();
 
@@ -87,11 +87,10 @@ struct RuleExecutionContext
     /// Merge stage into rule execution context
     std::shared_ptr<formalism::Repository> repository;
     formalism::OverlayRepository<formalism::Repository> overlay_repository;
-    formalism::MergeCache merge_cache;
 
     /// Bindings kept from iteration in stage
     IndexList<formalism::Object> binding;
-    std::vector<View<Index<formalism::Binding>, formalism::Repository>> bindings;
+    std::vector<Index<formalism::GroundAtom<formalism::FluentTag>>> ground_heads;
 
     struct Statistics
     {
@@ -236,7 +235,6 @@ struct ProgramExecutionContext
 
     /// --- Builder
     formalism::Builder builder;
-    IndexList<formalism::Object> binding;
 
     /// --- Execution contexts
     FactsExecutionContext facts_execution_context;

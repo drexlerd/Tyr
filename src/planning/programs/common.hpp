@@ -21,7 +21,7 @@
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/merge_common.hpp"
+#include "tyr/formalism/merge_planning.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"

@@ -19,7 +19,7 @@
 
 #include "common.hpp"
 #include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/merge_datalog.hpp"
+#include "tyr/formalism/merge_planning.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"

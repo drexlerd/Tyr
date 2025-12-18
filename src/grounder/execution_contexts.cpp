@@ -82,12 +82,11 @@ template void FactsExecutionContext::insert(View<IndexList<GroundFunctionTermVal
  * RuleStageExecutionContext
  */
 
-RuleStageExecutionContext::RuleStageExecutionContext() : repository(std::make_shared<Repository>()), merge_cache(), bindings() {}
+RuleStageExecutionContext::RuleStageExecutionContext() : repository(std::make_shared<Repository>()), binding(), merge_cache() {}
 
 void RuleStageExecutionContext::clear() noexcept
 {
     repository->clear();
-    bindings.clear();
     merge_cache.clear();
 }
 
@@ -107,16 +106,15 @@ RuleExecutionContext::RuleExecutionContext(View<Index<Rule>, Repository> rule,
     kpkc_workspace(grounder::kpkc::allocate_workspace(static_consistency_graph)),
     repository(std::make_shared<Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     overlay_repository(parent, *repository),
-    merge_cache(),
-    bindings()
+    binding(),
+    ground_heads()
 {
 }
 
 void RuleExecutionContext::clear() noexcept
 {
     repository->clear();
-    bindings.clear();
-    merge_cache.clear();
+    ground_heads.clear();
 }
 
 void RuleExecutionContext::initialize(const AssignmentSets<Repository>& assignment_sets)
@@ -189,7 +187,6 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<Program>, Repository
     listeners(listeners),
     rule_scheduler_strata(create_rule_scheduler_strata(strata, listeners, *repository)),
     builder(),
-    binding(),
     facts_execution_context(program, domains),
     rule_execution_contexts(),
     rule_stage_execution_contexts(),

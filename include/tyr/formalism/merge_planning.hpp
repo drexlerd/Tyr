@@ -23,6 +23,7 @@
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/merge_common.hpp"
+#include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/views.hpp"
 
 namespace tyr::formalism
@@ -31,6 +32,21 @@ namespace tyr::formalism
 /**
  * Forward declarations
  */
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Predicate<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context);
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Atom<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context);
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<GroundAtom<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context);
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Literal<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context);
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context);
 
 template<NumericEffectOpKind O, FactKind T, Context C_SRC, Context C_DST>
 auto merge(View<Index<NumericEffect<O, T>>, C_SRC> element, MergeContext<C_DST>& context);
@@ -82,6 +98,102 @@ auto merge(View<Index<GroundAxiom>, C_SRC> element, MergeContext<C_DST>& context
 /**
  * Implementations
  */
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Predicate<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context)
+{
+    return with_cache<Predicate<T_SRC>, Predicate<T_DST>>(element,
+                                                          context.cache,
+                                                          [&]()
+                                                          {
+                                                              auto predicate_ptr = context.builder.template get_builder<Predicate<T_DST>>();
+                                                              auto& predicate = *predicate_ptr;
+                                                              predicate.clear();
+
+                                                              predicate.name = element.get_name();
+                                                              predicate.arity = element.get_arity();
+
+                                                              canonicalize(predicate);
+                                                              return context.destination.get_or_create(predicate, context.builder.get_buffer());
+                                                          });
+}
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Atom<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context)
+{
+    return with_cache<Atom<T_SRC>, Atom<T_DST>>(element,
+                                                context.cache,
+                                                [&]()
+                                                {
+                                                    auto atom_ptr = context.builder.template get_builder<Atom<T_DST>>();
+                                                    auto& atom = *atom_ptr;
+                                                    atom.clear();
+
+                                                    atom.predicate = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), context).first;
+                                                    for (const auto term : element.get_terms())
+                                                        atom.terms.push_back(merge(term, context));
+
+                                                    canonicalize(atom);
+                                                    return context.destination.get_or_create(atom, context.builder.get_buffer());
+                                                });
+}
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<GroundAtom<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context)
+{
+    return with_cache<GroundAtom<T_SRC>, GroundAtom<T_DST>>(element,
+                                                            context.cache,
+                                                            [&]()
+                                                            {
+                                                                auto atom_ptr = context.builder.template get_builder<GroundAtom<T_DST>>();
+                                                                auto& atom = *atom_ptr;
+                                                                atom.clear();
+
+                                                                atom.predicate = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), context).first;
+                                                                atom.binding = merge(element.get_binding(), context).first;
+
+                                                                canonicalize(atom);
+                                                                return context.destination.get_or_create(atom, context.builder.get_buffer());
+                                                            });
+}
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<Literal<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context)
+{
+    return with_cache<Literal<T_SRC>, Literal<T_DST>>(element,
+                                                      context.cache,
+                                                      [&]()
+                                                      {
+                                                          auto literal_ptr = context.builder.template get_builder<Literal<T_DST>>();
+                                                          auto& literal = *literal_ptr;
+                                                          literal.clear();
+
+                                                          literal.polarity = element.get_polarity();
+                                                          literal.atom = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_atom(), context).first;
+
+                                                          canonicalize(literal);
+                                                          return context.destination.get_or_create(literal, context.builder.get_buffer());
+                                                      });
+}
+
+template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
+auto merge(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, MergeContext<C_DST>& context)
+{
+    return with_cache<GroundLiteral<T_SRC>, GroundLiteral<T_DST>>(element,
+                                                                  context.cache,
+                                                                  [&]()
+                                                                  {
+                                                                      auto literal_ptr = context.builder.template get_builder<GroundLiteral<T_DST>>();
+                                                                      auto& literal = *literal_ptr;
+                                                                      literal.clear();
+
+                                                                      literal.polarity = element.get_polarity();
+                                                                      literal.atom = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_atom(), context).first;
+
+                                                                      canonicalize(literal);
+                                                                      return context.destination.get_or_create(literal, context.builder.get_buffer());
+                                                                  });
+}
 
 template<NumericEffectOpKind O, FactKind T, Context C_SRC, Context C_DST>
 auto merge(View<Index<NumericEffect<O, T>>, C_SRC> element, MergeContext<C_DST>& context)
