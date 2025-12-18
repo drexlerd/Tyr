@@ -33,20 +33,20 @@ namespace tyr::formalism
  */
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_SRC, C_DST>& context);
+auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_DST>& context);
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context);
+auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_DST>& context);
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context);
+auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_DST>& context);
 
 /**
  * Implementations
  */
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_SRC, C_DST>& context)
+auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_DST>& context)
 {
     return with_cache<GroundConjunctiveCondition, GroundConjunctiveCondition>(
         element,
@@ -58,19 +58,19 @@ auto merge(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<
             conj_cond.clear();
 
             for (const auto literal : element.template get_literals<StaticTag>())
-                conj_cond.static_literals.push_back(merge(literal, context).get_index());
+                conj_cond.static_literals.push_back(merge(literal, context).first);
             for (const auto literal : element.template get_literals<FluentTag>())
-                conj_cond.fluent_literals.push_back(merge(literal, context).get_index());
+                conj_cond.fluent_literals.push_back(merge(literal, context).first);
             for (const auto numeric_constraint : element.get_numeric_constraints())
-                conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context).get_data());
+                conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context));
 
             canonicalize(conj_cond);
-            return context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first;
+            return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
         });
 }
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context)
+auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_DST>& context)
 {
     return with_cache<Rule, Rule>(element,
                                   context.cache,
@@ -81,17 +81,17 @@ auto merge(View<Index<Rule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context
                                       rule.clear();
 
                                       for (const auto variable : element.get_variables())
-                                          rule.variables.push_back(merge(variable, context).get_index());
-                                      rule.body = merge(element.get_body(), context).get_index();
-                                      rule.head = merge(element.get_head(), context).get_index();
+                                          rule.variables.push_back(merge(variable, context).first);
+                                      rule.body = merge(element.get_body(), context).first;
+                                      rule.head = merge(element.get_head(), context).first;
 
                                       canonicalize(rule);
-                                      return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
+                                      return context.destination.get_or_create(rule, context.builder.get_buffer());
                                   });
 }
 
 template<Context C_SRC, Context C_DST>
-auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_SRC, C_DST>& context)
+auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_DST>& context)
 {
     return with_cache<GroundRule, GroundRule>(element,
                                               context.cache,
@@ -102,11 +102,11 @@ auto merge(View<Index<GroundRule>, C_SRC> element, MergeContext<C_SRC, C_DST>& c
                                                   rule.clear();
 
                                                   rule.rule = element.get_rule().get_index();
-                                                  rule.body = merge(element.get_body(), context).get_index();
-                                                  rule.head = merge(element.get_head(), context).get_index();
+                                                  rule.body = merge(element.get_body(), context).first;
+                                                  rule.head = merge(element.get_head(), context).first;
 
                                                   canonicalize(rule);
-                                                  return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
+                                                  return context.destination.get_or_create(rule, context.builder.get_buffer());
                                               });
 }
 

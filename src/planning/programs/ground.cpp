@@ -41,18 +41,18 @@ namespace tyr::planning
 
 static void translate_action_to_delete_free_rules(View<Index<Action>, OverlayRepository<Repository>> action,
                                                   Data<Program>& program,
-                                                  MergeContext<OverlayRepository<Repository>, Repository>& context,
+                                                  MergeContext<Repository>& context,
                                                   GroundTaskProgram::AppPredicateToActionsMapping& predicate_to_actions_mapping)
 {
-    const auto applicability_predicate = create_applicability_predicate(action, context);
+    const auto applicability_predicate = create_applicability_predicate(action, context).first;
 
-    predicate_to_actions_mapping[applicability_predicate].emplace_back(action);
+    predicate_to_actions_mapping[applicability_predicate].emplace_back(action.get_index());
 
-    program.fluent_predicates.push_back(applicability_predicate.get_index());
+    program.fluent_predicates.push_back(applicability_predicate);
 
-    const auto applicability_rule = create_applicability_rule(action, context);
+    const auto applicability_rule = create_applicability_rule(action, context).first;
 
-    program.rules.push_back(applicability_rule.get_index());
+    program.rules.push_back(applicability_rule);
 
     for (const auto cond_eff : action.get_effects())
     {
@@ -61,28 +61,33 @@ static void translate_action_to_delete_free_rules(View<Index<Action>, OverlayRep
             if (!literal.get_polarity())
                 continue;  /// ignore delete effects
 
-            program.rules.push_back(create_cond_effect_rule(action, cond_eff, merge(literal.get_atom(), context), context).get_index());
+            program.rules.push_back(
+                create_cond_effect_rule(action, cond_eff, make_view(merge(literal.get_atom(), context).first, context.destination), context).first);
         }
     }
 }
 
 static void translate_axiom_to_delete_free_axiom_rules(View<Index<Axiom>, OverlayRepository<Repository>> axiom,
                                                        Data<Program>& program,
-                                                       MergeContext<OverlayRepository<Repository>, Repository>& context,
+                                                       MergeContext<Repository>& context,
                                                        GroundTaskProgram::AppPredicateToAxiomsMapping& predicate_to_axioms_mapping)
 {
-    const auto applicability_predicate = create_applicability_predicate(axiom, context);
+    const auto applicability_predicate = create_applicability_predicate(axiom, context).first;
 
-    program.fluent_predicates.push_back(applicability_predicate.get_index());
+    program.fluent_predicates.push_back(applicability_predicate);
 
-    predicate_to_axioms_mapping[applicability_predicate].emplace_back(axiom);
+    predicate_to_axioms_mapping[applicability_predicate].emplace_back(axiom.get_index());
 
-    const auto applicability_rule = create_applicability_rule(axiom, context);
+    const auto applicability_rule = create_applicability_rule(axiom, context).first;
 
-    program.rules.push_back(applicability_rule.get_index());
+    program.rules.push_back(applicability_rule);
 
     program.rules.push_back(
-        create_effect_rule(axiom, merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(axiom.get_head(), context), context).get_index());
+        create_effect_rule(
+            axiom,
+            make_view(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(axiom.get_head(), context).first, context.destination),
+            context)
+            .first);
 }
 
 static View<Index<Program>, Repository> create(const LiftedTask& task,
@@ -90,46 +95,46 @@ static View<Index<Program>, Repository> create(const LiftedTask& task,
                                                GroundTaskProgram::AppPredicateToAxiomsMapping& predicate_to_axioms_mapping,
                                                Repository& destination)
 {
-    auto merge_cache = MergeCache<OverlayRepository<Repository>, Repository>();
+    auto merge_cache = MergeCache();
     auto builder = Builder();
-    auto context = MergeContext<OverlayRepository<Repository>, Repository>(builder, destination, merge_cache);
+    auto context = MergeContext<Repository>(builder, destination, merge_cache);
     auto program_ptr = builder.get_builder<Program>();
     auto& program = *program_ptr;
     program.clear();
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<StaticTag>())
-        program.static_predicates.push_back(merge(predicate, context).get_index());
+        program.static_predicates.push_back(merge(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<FluentTag>())
-        program.fluent_predicates.push_back(merge(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<DerivedTag>())
-        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_derived_predicates())
-        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).first);
 
     for (const auto function : task.get_task().get_domain().get_functions<StaticTag>())
-        program.static_functions.push_back(merge(function, context).get_index());
+        program.static_functions.push_back(merge(function, context).first);
 
     for (const auto function : task.get_task().get_domain().get_functions<FluentTag>())
-        program.fluent_functions.push_back(merge(function, context).get_index());
+        program.fluent_functions.push_back(merge(function, context).first);
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-        program.objects.push_back(merge(object, context).get_index());
+        program.objects.push_back(merge(object, context).first);
     for (const auto object : task.get_task().get_objects())
-        program.objects.push_back(merge(object, context).get_index());
+        program.objects.push_back(merge(object, context).first);
 
     for (const auto atom : task.get_task().get_atoms<StaticTag>())
-        program.static_atoms.push_back(merge(atom, context).get_index());
+        program.static_atoms.push_back(merge(atom, context).first);
 
     for (const auto atom : task.get_task().get_atoms<FluentTag>())
-        program.fluent_atoms.push_back(merge(atom, context).get_index());
+        program.fluent_atoms.push_back(merge(atom, context).first);
 
     for (const auto fterm_value : task.get_task().get_fterm_values<StaticTag>())
-        program.static_fterm_values.push_back(merge(fterm_value, context).get_index());
+        program.static_fterm_values.push_back(merge(fterm_value, context).first);
 
     for (const auto action : task.get_task().get_domain().get_actions())
         translate_action_to_delete_free_rules(action, program, context, rule_to_actions_mapping);
@@ -141,7 +146,7 @@ static View<Index<Program>, Repository> create(const LiftedTask& task,
         translate_axiom_to_delete_free_axiom_rules(axiom, program, context, predicate_to_axioms_mapping);
 
     canonicalize(program);
-    return destination.get_or_create(program, builder.get_buffer()).first;
+    return make_view(destination.get_or_create(program, builder.get_buffer()).first, destination);
 }
 
 GroundTaskProgram::GroundTaskProgram(const LiftedTask& task) :

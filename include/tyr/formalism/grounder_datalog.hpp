@@ -29,7 +29,7 @@
 namespace tyr::formalism
 {
 template<FactKind T, Context C_SRC, Context C_DST>
-View<Index<GroundAtom<T>>, C_DST> ground_datalog(View<Index<Atom<T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_datalog(View<Index<Atom<T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T>>();
@@ -38,15 +38,15 @@ View<Index<GroundAtom<T>>, C_DST> ground_datalog(View<Index<Atom<T>>, C_SRC> ele
 
     // Fill data
     atom.predicate = element.get_predicate().get_index();
-    atom.binding = ground_common(element.get_terms(), context).get_index();
+    atom.binding = ground_common(element.get_terms(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(atom);
-    return context.destination.get_or_create(atom, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
-View<Index<GroundLiteral<T>>, C_DST> ground_datalog(View<Index<Literal<T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_datalog(View<Index<Literal<T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto ground_literal_ptr = context.builder.template get_builder<GroundLiteral<T>>();
@@ -55,15 +55,15 @@ View<Index<GroundLiteral<T>>, C_DST> ground_datalog(View<Index<Literal<T>>, C_SR
 
     // Fill data
     ground_literal.polarity = element.get_polarity();
-    ground_literal.atom = ground_datalog(element.get_atom(), context).get_index();
+    ground_literal.atom = ground_datalog(element.get_atom(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(ground_literal);
-    return context.destination.get_or_create(ground_literal, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(ground_literal, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
-View<Index<GroundConjunctiveCondition>, C_DST> ground_datalog(View<Index<ConjunctiveCondition>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_datalog(View<Index<ConjunctiveCondition>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto conj_cond_ptr = context.builder.template get_builder<GroundConjunctiveCondition>();
@@ -72,19 +72,19 @@ View<Index<GroundConjunctiveCondition>, C_DST> ground_datalog(View<Index<Conjunc
 
     // Fill data
     for (const auto literal : element.template get_literals<StaticTag>())
-        conj_cond.static_literals.push_back(ground_datalog(literal, context).get_index());
+        conj_cond.static_literals.push_back(ground_datalog(literal, context).first);
     for (const auto literal : element.template get_literals<FluentTag>())
-        conj_cond.fluent_literals.push_back(ground_datalog(literal, context).get_index());
+        conj_cond.fluent_literals.push_back(ground_datalog(literal, context).first);
     for (const auto numeric_constraint : element.get_numeric_constraints())
-        conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, context).get_data());
+        conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, context));
 
     // Canonicalize and Serialize
     canonicalize(conj_cond);
-    return context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
-View<Index<GroundRule>, C_DST> ground_datalog(View<Index<Rule>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_datalog(View<Index<Rule>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto rule_ptr = context.builder.template get_builder<GroundRule>();
@@ -93,13 +93,13 @@ View<Index<GroundRule>, C_DST> ground_datalog(View<Index<Rule>, C_SRC> element, 
 
     // Fill data
     rule.rule = element.get_index();
-    rule.binding = ground_common(context.binding, context).get_index();
-    rule.body = ground_datalog(element.get_body(), context).get_index();
-    rule.head = ground_datalog(element.get_head(), context).get_index();
+    rule.binding = ground_common(context.binding, context).first;
+    rule.body = ground_datalog(element.get_body(), context).first;
+    rule.head = ground_datalog(element.get_head(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(rule);
-    return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
 }

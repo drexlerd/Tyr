@@ -65,7 +65,7 @@ struct RuleStageExecutionContext
 {
     /// Merge thread into staging area
     formalism::RepositoryPtr repository;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> merge_cache;
+    formalism::MergeCache merge_cache;
 
     /// Bindings encountered across iterations
     UnorderedSet<View<Index<formalism::Binding>, formalism::Repository>> bindings;
@@ -87,7 +87,7 @@ struct RuleExecutionContext
     /// Merge stage into rule execution context
     std::shared_ptr<formalism::Repository> repository;
     formalism::OverlayRepository<formalism::Repository> overlay_repository;
-    formalism::MergeCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> merge_cache;
+    formalism::MergeCache merge_cache;
 
     /// Bindings kept from iteration in stage
     IndexList<formalism::Object> binding;
@@ -180,7 +180,7 @@ struct RuleExecutionContext
 struct ThreadExecutionContext
 {
     formalism::Builder builder;
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> merge_cache;
+    formalism::MergeCache merge_cache;
 
     ThreadExecutionContext() = default;
 
@@ -199,7 +199,7 @@ struct ProgramToTaskExecutionContext
 {
     ProgramToTaskExecutionContext() = default;
 
-    formalism::MergeCache<formalism::Repository, formalism::OverlayRepository<formalism::Repository>> merge_cache;
+    formalism::MergeCache merge_cache;
     IndexList<formalism::Object> binding;
 
     void clear() noexcept;
@@ -209,7 +209,7 @@ struct TaskToProgramExecutionContext
 {
     TaskToProgramExecutionContext() = default;
 
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::Repository> merge_cache;
+    formalism::MergeCache merge_cache;
 
     void clear() noexcept;
 };
@@ -218,7 +218,7 @@ struct TaskToTaskExecutionContext
 {
     TaskToTaskExecutionContext() = default;
 
-    formalism::MergeCache<formalism::OverlayRepository<formalism::Repository>, formalism::OverlayRepository<formalism::Repository>> merge_cache;
+    formalism::MergeCache merge_cache;
     IndexList<formalism::Object> binding;
 
     void clear() noexcept;

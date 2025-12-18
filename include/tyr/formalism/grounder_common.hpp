@@ -38,7 +38,7 @@ struct GrounderContext
 };
 
 template<Context C_SRC, Context C_DST>
-View<Index<Binding>, C_DST> ground_common(View<DataList<Term>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_common(View<DataList<Term>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto binding_ptr = context.builder.template get_builder<Binding>();
@@ -65,11 +65,11 @@ View<Index<Binding>, C_DST> ground_common(View<DataList<Term>, C_SRC> element, G
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(binding, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
 template<Context C>
-View<Index<Binding>, C> ground_common(const IndexList<Object>& element, GrounderContext<C>& context)
+auto ground_common(const IndexList<Object>& element, GrounderContext<C>& context)
 {
     // Fetch and clear
     auto binding_ptr = context.builder.template get_builder<Binding>();
@@ -81,11 +81,11 @@ View<Index<Binding>, C> ground_common(const IndexList<Object>& element, Grounder
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(binding, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
-View<Index<GroundFunctionTerm<T>>, C_DST> ground_common(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_common(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
@@ -94,15 +94,15 @@ View<Index<GroundFunctionTerm<T>>, C_DST> ground_common(View<Index<FunctionTerm<
 
     // Fill data
     fterm.function = element.get_function().get_index();
-    fterm.binding = ground_common(element.get_terms(), context).get_index();
+    fterm.binding = ground_common(element.get_terms(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(fterm);
-    return context.destination.get_or_create(fterm, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(fterm, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
-View<Data<GroundFunctionExpression>, C_DST> ground_common(View<Data<FunctionExpression>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground_common(View<Data<FunctionExpression>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     return visit(
         [&](auto&& arg)
@@ -110,18 +110,17 @@ View<Data<GroundFunctionExpression>, C_DST> ground_common(View<Data<FunctionExpr
             using Alternative = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<Alternative, float_t>)
-                return make_view(Data<GroundFunctionExpression>(arg), context.destination);
+                return Data<GroundFunctionExpression>(arg);
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC>>)
-                return make_view(Data<GroundFunctionExpression>(ground_common(arg, context).get_data()), context.destination);
+                return Data<GroundFunctionExpression>(ground_common(arg, context));
             else
-                return make_view(Data<GroundFunctionExpression>(ground_common(arg, context).get_index()), context.destination);
+                return Data<GroundFunctionExpression>(ground_common(arg, context).first);
         },
         element.get_variant());
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
-View<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC> element,
-                                                                                   GrounderContext<C_DST>& context)
+auto ground_common(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, Data<GroundFunctionExpression>>>();
@@ -129,16 +128,15 @@ View<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_comm
     unary.clear();
 
     // Fill data
-    unary.arg = ground_common(element.get_arg(), context).get_data();
+    unary.arg = ground_common(element.get_arg(), context);
 
     // Canonicalize and Serialize
     canonicalize(unary);
-    return context.destination.get_or_create(unary, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(unary, context.builder.get_buffer());
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
-View<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SRC> element,
-                                                                                    GrounderContext<C_DST>& context)
+auto ground_common(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, Data<GroundFunctionExpression>>>();
@@ -146,17 +144,16 @@ View<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_com
     binary.clear();
 
     // Fill data
-    binary.lhs = ground_common(element.get_lhs(), context).get_data();
-    binary.rhs = ground_common(element.get_rhs(), context).get_data();
+    binary.lhs = ground_common(element.get_lhs(), context);
+    binary.rhs = ground_common(element.get_rhs(), context);
 
     // Canonicalize and Serialize
     canonicalize(binary);
-    return context.destination.get_or_create(binary, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(binary, context.builder.get_buffer());
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
-View<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC> element,
-                                                                                   GrounderContext<C_DST>& context)
+auto ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto multi_ptr = context.builder.template get_builder<MultiOperator<O, Data<GroundFunctionExpression>>>();
@@ -165,31 +162,24 @@ View<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, C_DST> ground_comm
 
     // Fill data
     for (const auto arg : element.get_args())
-        multi.args.push_back(ground_common(arg, context).get_data());
+        multi.args.push_back(ground_common(arg, context));
 
     // Canonicalize and Serialize
     canonicalize(multi);
-    return context.destination.get_or_create(multi, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(multi, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
-View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Data<BooleanOperator<Data<FunctionExpression>>>, C_SRC> element,
-                                                                                 GrounderContext<C_DST>& context)
+auto ground_common(View<Data<BooleanOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
-    return visit(
-        [&](auto&& arg) {
-            return make_view(Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).get_index(), element.get_arity()),
-                             context.destination);
-        },
-        element.get_variant());
+    return visit([&](auto&& arg) { return Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).first, element.get_arity()); },
+                 element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST>
-View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, C_DST> ground_common(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC> element,
-                                                                                    GrounderContext<C_DST>& context)
+auto ground_common(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg)
-                 { return make_view(Data<ArithmeticOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).get_index()), context.destination); },
+    return visit([&](auto&& arg) { return Data<ArithmeticOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).first); },
                  element.get_variant());
 }
 }

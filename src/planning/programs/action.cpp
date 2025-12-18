@@ -32,54 +32,54 @@ namespace tyr::planning
 static View<Index<Program>, Repository>
 create(const LiftedTask& task, ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions_mapping, Repository& repository)
 {
-    auto merge_cache = MergeCache<OverlayRepository<Repository>, Repository>();
+    auto merge_cache = MergeCache();
     auto builder = Builder();
-    auto context = MergeContext<OverlayRepository<Repository>, Repository>(builder, repository, merge_cache);
+    auto context = MergeContext(builder, repository, merge_cache);
     auto program_ptr = builder.get_builder<Program>();
     auto& program = *program_ptr;
     program.clear();
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<StaticTag>())
-        program.static_predicates.push_back(merge(predicate, context).get_index());
+        program.static_predicates.push_back(merge(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<FluentTag>())
-        program.fluent_predicates.push_back(merge(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<DerivedTag>())
-        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_derived_predicates())
-        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).first);
 
     for (const auto function : task.get_task().get_domain().get_functions<StaticTag>())
-        program.static_functions.push_back(merge(function, context).get_index());
+        program.static_functions.push_back(merge(function, context).first);
 
     for (const auto function : task.get_task().get_domain().get_functions<FluentTag>())
-        program.fluent_functions.push_back(merge(function, context).get_index());
+        program.fluent_functions.push_back(merge(function, context).first);
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-        program.objects.push_back(merge(object, context).get_index());
+        program.objects.push_back(merge(object, context).first);
     for (const auto object : task.get_task().get_objects())
-        program.objects.push_back(merge(object, context).get_index());
+        program.objects.push_back(merge(object, context).first);
 
     for (const auto atom : task.get_task().get_atoms<StaticTag>())
-        program.static_atoms.push_back(merge(atom, context).get_index());
+        program.static_atoms.push_back(merge(atom, context).first);
 
     for (const auto atom : task.get_task().get_atoms<FluentTag>())
-        program.fluent_atoms.push_back(merge(atom, context).get_index());
+        program.fluent_atoms.push_back(merge(atom, context).first);
 
     for (const auto fterm_value : task.get_task().get_fterm_values<StaticTag>())
-        program.static_fterm_values.push_back(merge(fterm_value, context).get_index());
+        program.static_fterm_values.push_back(merge(fterm_value, context).first);
 
     for (const auto action : task.get_task().get_domain().get_actions())
     {
-        const auto applicability_predicate = create_applicability_predicate(action, context);
+        const auto applicability_predicate = create_applicability_predicate(action, context).first;
 
-        predicate_to_actions_mapping[applicability_predicate].emplace_back(action);
+        predicate_to_actions_mapping[applicability_predicate].emplace_back(action.get_index());
 
-        program.fluent_predicates.push_back(applicability_predicate.get_index());
+        program.fluent_predicates.push_back(applicability_predicate);
 
         auto rule_ptr = builder.get_builder<Rule>();
         auto& rule = *rule_ptr;
@@ -90,37 +90,37 @@ create(const LiftedTask& task, ApplicableActionProgram::AppPredicateToActionsMap
         conj_cond.clear();
 
         for (const auto variable : action.get_variables())
-            conj_cond.variables.push_back(merge(variable, context).get_index());
+            conj_cond.variables.push_back(merge(variable, context).first);
 
         for (const auto literal : action.get_condition().get_literals<StaticTag>())
-            conj_cond.static_literals.push_back(merge(literal, context).get_index());
+            conj_cond.static_literals.push_back(merge(literal, context).first);
 
         for (const auto literal : action.get_condition().get_literals<FluentTag>())
-            conj_cond.fluent_literals.push_back(merge(literal, context).get_index());
+            conj_cond.fluent_literals.push_back(merge(literal, context).first);
 
         for (const auto literal : action.get_condition().get_literals<DerivedTag>())
-            conj_cond.fluent_literals.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(literal, context).get_index());
+            conj_cond.fluent_literals.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(literal, context).first);
 
         for (const auto numeric_constraint : action.get_condition().get_numeric_constraints())
-            conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context).get_data());
+            conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context));
 
         canonicalize(conj_cond);
         const auto new_conj_cond = repository.get_or_create(conj_cond, builder.get_buffer()).first;
 
-        rule.body = new_conj_cond.get_index();
+        rule.body = new_conj_cond;
 
-        const auto applicability_atom = create_applicability_atom(action, context);
+        const auto applicability_atom = create_applicability_atom(action, context).first;
 
-        rule.head = applicability_atom.get_index();
+        rule.head = applicability_atom;
 
         canonicalize(rule);
         const auto new_rule = repository.get_or_create(rule, builder.get_buffer()).first;
 
-        program.rules.push_back(new_rule.get_index());
+        program.rules.push_back(new_rule);
     }
 
     canonicalize(program);
-    return repository.get_or_create(program, builder.get_buffer()).first;
+    return make_view(repository.get_or_create(program, builder.get_buffer()).first, repository);
 }
 
 ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :

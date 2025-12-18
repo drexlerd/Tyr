@@ -106,7 +106,8 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
                                                                                *program_execution_context.repository,
                                                                                program_execution_context.binding };
 
-                    const auto ground_head = formalism::ground_datalog(rule_execution_context.rule.get_head(), ground_context_program);
+                    const auto ground_head = make_view(formalism::ground_datalog(rule_execution_context.rule.get_head(), ground_context_program).first,
+                                                       *program_execution_context.repository);
 
                     // Insert new fact into fact sets and assigment sets
                     if (!program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.contains(ground_head))

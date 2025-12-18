@@ -438,11 +438,7 @@ concept Context = requires(const T& a) {
     { get_repository(a) } -> IsRepository;
 };
 
-template<Context C_SRC, Context C_DST>
 class MergeCache;
-
-template<Context C_SRC, Context C_DST>
-class CompileCache;
 
 }
 

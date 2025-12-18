@@ -48,15 +48,13 @@ using IndexAtomVariant =
 using IndexLiteralVariant = std::
     variant<Index<formalism::Literal<formalism::StaticTag>>, Index<formalism::Literal<formalism::FluentTag>>, Index<formalism::Literal<formalism::DerivedTag>>>;
 
-template<formalism::Context C>
-using ViewGroundAtomVariant = std::variant<View<Index<formalism::GroundAtom<formalism::StaticTag>>, C>,
-                                           View<Index<formalism::GroundAtom<formalism::FluentTag>>, C>,
-                                           View<Index<formalism::GroundAtom<formalism::DerivedTag>>, C>>;
+using IndexGroundAtomVariant = std::variant<Index<formalism::GroundAtom<formalism::StaticTag>>,
+                                            Index<formalism::GroundAtom<formalism::FluentTag>>,
+                                            Index<formalism::GroundAtom<formalism::DerivedTag>>>;
 
-template<formalism::Context C>
-using ViewGroundLiteralVariant = std::variant<View<Index<formalism::GroundLiteral<formalism::StaticTag>>, C>,
-                                              View<Index<formalism::GroundLiteral<formalism::FluentTag>>, C>,
-                                              View<Index<formalism::GroundLiteral<formalism::DerivedTag>>, C>>;
+using IndexGroundLiteralVariant = std::variant<Index<formalism::GroundLiteral<formalism::StaticTag>>,
+                                               Index<formalism::GroundLiteral<formalism::FluentTag>>,
+                                               Index<formalism::GroundLiteral<formalism::DerivedTag>>>;
 
 using IndexGroundAtomOrFactVariant = std::variant<Index<formalism::GroundAtom<formalism::StaticTag>>,
                                                   Data<formalism::FDRFact<formalism::FluentTag>>,
@@ -299,7 +297,7 @@ private:
             function.name = element->get_name();
             function.arity = element->get_parameters().size();
             formalism::canonicalize(function);
-            return context.get_or_create(function, builder.get_buffer()).first.get_index();
+            return context.get_or_create(function, builder.get_buffer()).first;
         };
 
         if (element->get_name() == "total-cost")
@@ -318,7 +316,7 @@ private:
         object.clear();
         object.name = element->get_name();
         formalism::canonicalize(object);
-        return context.get_or_create(object, builder.get_buffer()).first.get_index();
+        return context.get_or_create(object, builder.get_buffer()).first;
     }
 
     template<formalism::Context C>
@@ -340,7 +338,7 @@ private:
             predicate.name = element->get_name();
             predicate.arity = element->get_parameters().size();
             formalism::canonicalize(predicate);
-            return context.get_or_create(predicate, builder.get_buffer()).first.get_index();
+            return context.get_or_create(predicate, builder.get_buffer()).first;
         };
 
         if (m_fluent_predicates.count(element->get_name()) && !m_derived_predicates.count(element->get_name()))
@@ -359,7 +357,7 @@ private:
         variable.clear();
         variable.name = element->get_name();
         formalism::canonicalize(variable);
-        return context.get_or_create(variable, builder.get_buffer()).first.get_index();
+        return context.get_or_create(variable, builder.get_buffer()).first;
     }
 
     /**
@@ -411,7 +409,7 @@ private:
             atom.predicate = predicate_index;
             atom.terms = this->translate_lifted(element->get_terms(), builder, context);
             formalism::canonicalize(atom);
-            return context.get_or_create(atom, builder.get_buffer()).first.get_index();
+            return context.get_or_create(atom, builder.get_buffer()).first;
         };
 
         return std::visit(
@@ -445,7 +443,7 @@ private:
             literal.atom = atom_index;
             literal.polarity = element->get_polarity();
             formalism::canonicalize(literal);
-            return context.get_or_create(literal, builder.get_buffer()).first.get_index();
+            return context.get_or_create(literal, builder.get_buffer()).first;
         };
 
         return std::visit(
@@ -483,8 +481,8 @@ private:
             binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
             binary.rhs = translate_lifted(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
-            return Data<formalism::FunctionExpression>(Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(
-                context.get_or_create(binary, builder.get_buffer()).first.get_index()));
+            return Data<formalism::FunctionExpression>(
+                Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first));
         };
 
         switch (element->get_binary_operator())
@@ -515,7 +513,7 @@ private:
             multi.args = translate_lifted(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
             return Data<formalism::FunctionExpression>(
-                Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(multi, builder.get_buffer()).first.get_index()));
+                Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(multi, builder.get_buffer()).first));
         };
 
         switch (element->get_multi_operator())
@@ -538,7 +536,7 @@ private:
         minus.arg = translate_lifted(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
         return Data<formalism::FunctionExpression>(
-            Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(minus, builder.get_buffer()).first.get_index()));
+            Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(minus, builder.get_buffer()).first));
     }
 
     template<formalism::Context C>
@@ -584,7 +582,7 @@ private:
             fterm.function = function_index;
             fterm.terms = this->translate_lifted(element->get_terms(), builder, context);
             formalism::canonicalize(fterm);
-            return context.get_or_create(fterm, builder.get_buffer()).first.get_index();
+            return context.get_or_create(fterm, builder.get_buffer()).first;
         };
 
         return std::visit(
@@ -620,8 +618,7 @@ private:
             formalism::canonicalize(binary);
             auto visitor = ArityVisitor();
             const auto arity = visitor.get(element);
-            return Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first.get_index(),
-                                                                                         arity);
+            return Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first, arity);
         };
 
         switch (element->get_binary_comparator())
@@ -712,7 +709,7 @@ private:
                     }
 
                     formalism::canonicalize(conj_condition);
-                    return context.get_or_create(conj_condition, builder.get_buffer()).first.get_index();
+                    return context.get_or_create(conj_condition, builder.get_buffer()).first;
                 }
                 else if constexpr (std::is_same_v<ConditionT, loki::ConditionLiteral>)
                 {
@@ -721,7 +718,7 @@ private:
                     func_insert_literal(index_literal_variant, conj_condition.static_literals, conj_condition.fluent_literals, conj_condition.derived_literals);
 
                     formalism::canonicalize(conj_condition);
-                    return context.get_or_create(conj_condition, builder.get_buffer()).first.get_index();
+                    return context.get_or_create(conj_condition, builder.get_buffer()).first;
                 }
                 else if constexpr (std::is_same_v<ConditionT, loki::ConditionNumericConstraint>)
                 {
@@ -730,7 +727,7 @@ private:
                     conj_condition.numeric_constraints.push_back(numeric_constraint);
 
                     formalism::canonicalize(conj_condition);
-                    return context.get_or_create(conj_condition, builder.get_buffer()).first.get_index();
+                    return context.get_or_create(conj_condition, builder.get_buffer()).first;
                 }
                 else
                 {
@@ -758,7 +755,7 @@ private:
             numeric_effect.fterm = fterm_index;
             numeric_effect.fexpr = this->translate_lifted(element->get_function_expression(), builder, context);
             formalism::canonicalize(numeric_effect);
-            return context.get_or_create(numeric_effect, builder.get_buffer()).first.get_index();
+            return context.get_or_create(numeric_effect, builder.get_buffer()).first;
         };
 
         auto build_numeric_effect_term = [&](auto fact_tag, auto fterm_index) -> IndexNumericEffectVariant
@@ -868,7 +865,7 @@ private:
                             auto& conj_cond = *conj_cond_ptr;
                             conj_cond.clear();
                             formalism::canonicalize(conj_cond);
-                            return context.get_or_create(conj_cond, builder.get_buffer()).first.get_index();
+                            return context.get_or_create(conj_cond, builder.get_buffer()).first;
                         }
                     },
                     tmp_effect->get_effect());
@@ -994,7 +991,7 @@ private:
             conj_effect.numeric_effects = cond_effect_fluent_numeric_effects;
             conj_effect.auxiliary_numeric_effect = cond_effect_auxiliary_numeric_effects;
             formalism::canonicalize(conj_effect);
-            const auto conj_effect_index = context.get_or_create(conj_effect, builder.get_buffer()).first.get_index();
+            const auto conj_effect_index = context.get_or_create(conj_effect, builder.get_buffer()).first;
 
             auto cond_effect_ptr = builder.template get_builder<formalism::ConditionalEffect>();
             auto& cond_effect = *cond_effect_ptr;
@@ -1003,7 +1000,7 @@ private:
             cond_effect.condition = cond_conjunctive_condition;
             cond_effect.effect = conj_effect_index;
             formalism::canonicalize(cond_effect);
-            const auto cond_effect_index = context.get_or_create(cond_effect, builder.get_buffer()).first.get_index();
+            const auto cond_effect_index = context.get_or_create(cond_effect, builder.get_buffer()).first;
 
             conditional_effects.push_back(cond_effect_index);
         }
@@ -1039,7 +1036,7 @@ private:
                 auto& conj_cond = *conj_cond_ptr;
                 conj_cond.clear();
                 formalism::canonicalize(conj_cond);
-                conjunctive_condition = context.get_or_create(conj_cond, builder.get_buffer()).first.get_index();
+                conjunctive_condition = context.get_or_create(conj_cond, builder.get_buffer()).first;
             }
             action.condition = conjunctive_condition;
 
@@ -1056,7 +1053,7 @@ private:
         m_param_map.pop_parameters(parameters);
 
         formalism::canonicalize(action);
-        return context.get_or_create(action, builder.get_buffer()).first.get_index();
+        return context.get_or_create(action, builder.get_buffer()).first;
     }
 
     template<formalism::Context C>
@@ -1090,7 +1087,7 @@ private:
         m_param_map.pop_parameters(parameters);
 
         formalism::canonicalize(axiom);
-        return context.get_or_create(axiom, builder.get_buffer()).first.get_index();
+        return context.get_or_create(axiom, builder.get_buffer()).first;
     }
 
     /**
@@ -1135,11 +1132,11 @@ private:
         binding.clear();
         binding.objects = element;
         formalism::canonicalize(binding);
-        return context.get_or_create(binding, builder.get_buffer()).first.get_index();
+        return context.get_or_create(binding, builder.get_buffer()).first;
     }
 
     template<formalism::Context C>
-    ViewGroundAtomVariant<C> translate_grounded(loki::Atom element, formalism::Builder& builder, C& context)
+    IndexGroundAtomVariant translate_grounded(loki::Atom element, formalism::Builder& builder, C& context)
     {
         auto index_predicate_variant = translate_common(element->get_predicate(), builder, context);
 
@@ -1157,7 +1154,7 @@ private:
         };
 
         return std::visit(
-            [&](auto&& arg) -> ViewGroundAtomVariant<C>
+            [&](auto&& arg) -> IndexGroundAtomVariant
             {
                 using T = std::decay_t<decltype(arg)>;
                 if constexpr (std::is_same_v<T, Index<formalism::Predicate<formalism::StaticTag>>>)
@@ -1187,7 +1184,7 @@ private:
                 if constexpr (std::is_same_v<T, View<Index<formalism::GroundAtom<formalism::StaticTag>>, C>>)
                     return arg.get_index();
                 else if constexpr (std::is_same_v<T, View<Index<formalism::GroundAtom<formalism::FluentTag>>, C>>)
-                    return fdr_context.get_fact(arg).get_data();
+                    return fdr_context.get_fact(arg);
                 else if constexpr (std::is_same_v<T, View<Index<formalism::GroundAtom<formalism::DerivedTag>>, C>>)
                     return arg.get_index();
                 else
@@ -1197,7 +1194,7 @@ private:
     }
 
     template<formalism::Context C>
-    ViewGroundLiteralVariant<C> translate_grounded(loki::Literal element, formalism::Builder& builder, C& context)
+    IndexGroundLiteralVariant translate_grounded(loki::Literal element, formalism::Builder& builder, C& context)
     {
         auto atom_variant = translate_grounded(element->get_atom(), builder, context);
 
@@ -1208,21 +1205,21 @@ private:
             auto literal_ptr = builder.template get_builder<formalism::GroundLiteral<Tag>>();
             auto& literal = *literal_ptr;
             literal.clear();
-            literal.atom = atom.get_index();
+            literal.atom = atom;
             literal.polarity = element->get_polarity();
             formalism::canonicalize(literal);
             return context.get_or_create(literal, builder.get_buffer()).first;
         };
 
         return std::visit(
-            [&](auto&& arg) -> ViewGroundLiteralVariant<C>
+            [&](auto&& arg) -> IndexGroundLiteralVariant
             {
                 using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, View<Index<formalism::GroundAtom<formalism::StaticTag>>, C>>)
+                if constexpr (std::is_same_v<T, Index<formalism::GroundAtom<formalism::StaticTag>>>)
                     return build_literal(formalism::StaticTag {}, arg);
-                else if constexpr (std::is_same_v<T, View<Index<formalism::GroundAtom<formalism::FluentTag>>, C>>)
+                else if constexpr (std::is_same_v<T, Index<formalism::GroundAtom<formalism::FluentTag>>>)
                     return build_literal(formalism::FluentTag {}, arg);
-                else if constexpr (std::is_same_v<T, View<Index<formalism::GroundAtom<formalism::DerivedTag>>, C>>)
+                else if constexpr (std::is_same_v<T, Index<formalism::GroundAtom<formalism::DerivedTag>>>)
                     return build_literal(formalism::DerivedTag {}, arg);
                 else
                     static_assert(dependent_false<T>::value, "Missing case for type");
@@ -1242,12 +1239,12 @@ private:
             [&](auto&& arg) -> IndexGroundLiteralOrFactVariant
             {
                 using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, View<Index<formalism::GroundLiteral<formalism::StaticTag>>, C>>)
-                    return arg.get_index();
-                else if constexpr (std::is_same_v<T, View<Index<formalism::GroundLiteral<formalism::FluentTag>>, C>>)
-                    return fdr_context.get_fact(arg).get_data();
-                else if constexpr (std::is_same_v<T, View<Index<formalism::GroundLiteral<formalism::DerivedTag>>, C>>)
-                    return arg.get_index();
+                if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::StaticTag>>>)
+                    return arg;
+                else if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::FluentTag>>>)
+                    return fdr_context.get_fact(arg);
+                else if constexpr (std::is_same_v<T, Index<formalism::GroundLiteral<formalism::DerivedTag>>>)
+                    return arg;
                 else
                     static_assert(dependent_false<T>::value, "Missing case for type");
             },
@@ -1273,8 +1270,8 @@ private:
             binary.lhs = translate_grounded(element->get_left_function_expression(), builder, context);
             binary.rhs = translate_grounded(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
-            return Data<formalism::GroundFunctionExpression>(Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(
-                context.get_or_create(binary, builder.get_buffer()).first.get_index()));
+            return Data<formalism::GroundFunctionExpression>(
+                Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first));
         };
 
         switch (element->get_binary_operator())
@@ -1304,8 +1301,8 @@ private:
             multi.clear();
             multi.args = translate_grounded(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
-            return Data<formalism::GroundFunctionExpression>(Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(
-                context.get_or_create(multi, builder.get_buffer()).first.get_index()));
+            return Data<formalism::GroundFunctionExpression>(
+                Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(context.get_or_create(multi, builder.get_buffer()).first));
         };
 
         switch (element->get_multi_operator())
@@ -1327,8 +1324,8 @@ private:
         minus.clear();
         minus.arg = translate_grounded(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
-        return Data<formalism::GroundFunctionExpression>(Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(
-            context.get_or_create(minus, builder.get_buffer()).first.get_index()));
+        return Data<formalism::GroundFunctionExpression>(
+            Data<formalism::ArithmeticOperator<Data<formalism::GroundFunctionExpression>>>(context.get_or_create(minus, builder.get_buffer()).first));
     }
 
     template<formalism::Context C>
@@ -1374,7 +1371,7 @@ private:
             fterm.function = function_index;
             fterm.binding = to_binding(this->translate_grounded(element->get_terms(), builder, context), builder, context);
             formalism::canonicalize(fterm);
-            return context.get_or_create(fterm, builder.get_buffer()).first.get_index();
+            return context.get_or_create(fterm, builder.get_buffer()).first;
         };
 
         return std::visit(
@@ -1408,7 +1405,7 @@ private:
             fterm_value.fterm = fterm_index;
             fterm_value.value = element->get_number();
             formalism::canonicalize(fterm_value);
-            return context.get_or_create(fterm_value, builder.get_buffer()).first.get_index();
+            return context.get_or_create(fterm_value, builder.get_buffer()).first;
         };
 
         return std::visit(
@@ -1443,9 +1440,8 @@ private:
             formalism::canonicalize(binary);
             auto visitor = ArityVisitor();
             const auto arity = visitor.get(element);
-            return Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>(
-                context.get_or_create(binary, builder.get_buffer()).first.get_index(),
-                arity);
+            return Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first,
+                                                                                               arity);
         };
 
         switch (element->get_binary_comparator())
@@ -1537,7 +1533,7 @@ private:
                     }
 
                     formalism::canonicalize(conj_condition);
-                    return context.get_or_create(conj_condition, builder.get_buffer()).first.get_index();
+                    return context.get_or_create(conj_condition, builder.get_buffer()).first;
                 }
                 else if constexpr (std::is_same_v<ConditionT, loki::ConditionLiteral>)
                 {
@@ -1546,7 +1542,7 @@ private:
                     func_insert_literal(index_literal_variant, conj_condition.static_literals, conj_condition.fluent_facts, conj_condition.derived_literals);
 
                     formalism::canonicalize(conj_condition);
-                    return context.get_or_create(conj_condition, builder.get_buffer()).first.get_index();
+                    return context.get_or_create(conj_condition, builder.get_buffer()).first;
                 }
                 else if constexpr (std::is_same_v<ConditionT, loki::ConditionNumericConstraint>)
                 {
@@ -1555,7 +1551,7 @@ private:
                     conj_condition.numeric_constraints.push_back(numeric_constraint);
 
                     formalism::canonicalize(conj_condition);
-                    return context.get_or_create(conj_condition, builder.get_buffer()).first.get_index();
+                    return context.get_or_create(conj_condition, builder.get_buffer()).first;
                 }
                 else
                 {
@@ -1591,7 +1587,7 @@ private:
         }
 
         formalism::canonicalize(metric);
-        return context.get_or_create(metric, builder.get_buffer()).first.get_index();
+        return context.get_or_create(metric, builder.get_buffer()).first;
     }
 
 public:

@@ -38,7 +38,8 @@ TEST(TyrTests, TyrFormalismRepository)
     predicate_builder.arity = 2;
 
     canonicalize(predicate_builder);
-    auto [predicate_0, predicate_success_0] = repository.get_or_create(predicate_builder, buffer);
+    const auto [predicate_index_0, predicate_success_0] = repository.get_or_create(predicate_builder, buffer);
+    const auto predicate_0 = make_view(predicate_index_0, repository);
 
     EXPECT_TRUE(predicate_success_0);
     EXPECT_EQ(predicate_0.get_index().get_value(), 0);
@@ -50,7 +51,8 @@ TEST(TyrTests, TyrFormalismRepository)
     predicate_builder.arity = 3;
 
     canonicalize(predicate_builder);
-    auto [predicate_1, predicate_success_1] = repository.get_or_create(predicate_builder, buffer);
+    const auto [predicate_index_1, predicate_success_1] = repository.get_or_create(predicate_builder, buffer);
+    const auto predicate_1 = make_view(predicate_index_1, repository);
 
     EXPECT_TRUE(predicate_success_1);
     EXPECT_EQ(predicate_1.get_index().get_value(), 1);
@@ -62,7 +64,8 @@ TEST(TyrTests, TyrFormalismRepository)
     predicate_builder.arity = 3;
 
     canonicalize(predicate_builder);
-    auto [predicate_2, predicate_success_2] = repository.get_or_create(predicate_builder, buffer);
+    const auto [predicate_index_2, predicate_success_2] = repository.get_or_create(predicate_builder, buffer);
+    const auto predicate_2 = make_view(predicate_index_2, repository);
 
     EXPECT_FALSE(predicate_success_2);
     EXPECT_EQ(predicate_2.get_index().get_value(), 1);
@@ -72,19 +75,22 @@ TEST(TyrTests, TyrFormalismRepository)
     // Create objects
     object_builder.name = "a";
     canonicalize(object_builder);
-    auto [object_0, object_success_0] = repository.get_or_create(object_builder, buffer);
+    const auto [object_index_0, object_success_0] = repository.get_or_create(object_builder, buffer);
+    const auto object_0 = make_view(object_index_0, repository);
     EXPECT_TRUE(object_success_0);
     EXPECT_EQ(object_0.get_name(), object_builder.name);
 
     object_builder.name = "b";
     canonicalize(object_builder);
-    auto [object_1, object_success_1] = repository.get_or_create(object_builder, buffer);
+    const auto [object_index_1, object_success_1] = repository.get_or_create(object_builder, buffer);
+    const auto object_1 = make_view(object_index_1, repository);
     EXPECT_TRUE(object_success_1);
     EXPECT_EQ(object_1.get_name(), object_builder.name);
 
     object_builder.name = "c";
     canonicalize(object_builder);
-    auto [object_2, object_success_2] = repository.get_or_create(object_builder, buffer);
+    const auto [object_index_2, object_success_2] = repository.get_or_create(object_builder, buffer);
+    const auto object_2 = make_view(object_index_2, repository);
     EXPECT_TRUE(object_success_2);
     EXPECT_EQ(object_2.get_name(), object_builder.name);
 
@@ -117,15 +123,18 @@ TEST(TyrTests, TyrFormalismView)
     predicate_builder.name = "predicate_0";
     predicate_builder.arity = 2;
     canonicalize(predicate_builder);
-    auto [predicate_0, predicate_success_0] = repository.get_or_create(predicate_builder, buffer);
+    const auto [predicate_index_0, predicate_success_0] = repository.get_or_create(predicate_builder, buffer);
+    const auto predicate_0 = make_view(predicate_index_0, repository);
 
     // Create objects
     object_builder.name = "a";
     canonicalize(object_builder);
-    auto [object_0, object_success_0] = repository.get_or_create(object_builder, buffer);
+    const auto [object_index_0, object_success_0] = repository.get_or_create(object_builder, buffer);
+    const auto object_0 = make_view(object_index_0, repository);
     object_builder.name = "b";
     canonicalize(object_builder);
-    auto [object_1, object_success_1] = repository.get_or_create(object_builder, buffer);
+    const auto [object_index_1, object_success_1] = repository.get_or_create(object_builder, buffer);
+    const auto object_1 = make_view(object_index_1, repository);
 
     // Create atom
     atom_builder.terms.clear();

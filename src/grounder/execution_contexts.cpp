@@ -152,8 +152,7 @@ void TaskToTaskExecutionContext::clear() noexcept { merge_cache.clear(); }
  * ProgramExecutionContext
  */
 
-static View<Index<GroundConjunctiveCondition>, Repository>
-ground_nullary_condition(View<Index<ConjunctiveCondition>, Repository> condition, Builder& builder, Repository& context)
+static auto ground_nullary_condition(View<Index<ConjunctiveCondition>, Repository> condition, Builder& builder, Repository& context)
 {
     auto conj_cond_ptr = builder.get_builder<GroundConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
@@ -164,18 +163,18 @@ ground_nullary_condition(View<Index<ConjunctiveCondition>, Repository> condition
 
     for (const auto literal : condition.get_literals<StaticTag>())
         if (literal.get_atom().get_predicate().get_arity() == 0)
-            conj_cond.static_literals.push_back(ground_datalog(literal, grounder_context).get_index());
+            conj_cond.static_literals.push_back(ground_datalog(literal, grounder_context).first);
 
     for (const auto literal : condition.get_literals<FluentTag>())
         if (literal.get_atom().get_predicate().get_arity() == 0)
-            conj_cond.fluent_literals.push_back(ground_datalog(literal, grounder_context).get_index());
+            conj_cond.fluent_literals.push_back(ground_datalog(literal, grounder_context).first);
 
     for (const auto numeric_constraint : condition.get_numeric_constraints())
         if (numeric_constraint.get_arity() == 0)
-            conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, grounder_context).get_data());
+            conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, grounder_context));
 
     canonicalize(conj_cond);
-    return context.get_or_create(conj_cond, builder.get_buffer()).first;
+    return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
 ProgramExecutionContext::ProgramExecutionContext(View<Index<Program>, Repository> program,
@@ -203,7 +202,7 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<Program>, Repository
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
         rule_execution_contexts.emplace_back(program.get_rules()[i],
-                                             ground_nullary_condition(program.get_rules()[i].get_body(), builder, *repository),
+                                             make_view(ground_nullary_condition(program.get_rules()[i].get_body(), builder, *repository).first, *repository),
                                              domains.rule_domains[i],
                                              facts_execution_context.assignment_sets.static_sets,
                                              *repository);

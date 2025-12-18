@@ -38,25 +38,25 @@ TEST(TyrTests, TyrPlanningGroundTaskLayout)
     variable.domain_size = 64;  // 6 bits
     canonicalize(variable);
     const auto variable_0 = repository.get_or_create(variable, builder.get_buffer()).first;
-    variables.push_back(variable_0.get_index());
+    variables.push_back(variable_0);
 
     // high + low
     variable.domain_size = 64;  // 6 bits
     canonicalize(variable);
     const auto variable_1 = repository.get_or_create(variable, builder.get_buffer()).first;
-    variables.push_back(variable_1.get_index());
+    variables.push_back(variable_1);
 
     // high right aligned
     variable.domain_size = 16;  // 4 bits
     canonicalize(variable);
     const auto variable_2 = repository.get_or_create(variable, builder.get_buffer()).first;
-    variables.push_back(variable_2.get_index());
+    variables.push_back(variable_2);
 
     // high left aligned after full block
     variable.domain_size = 32;  // 5 bits
     canonicalize(variable);
     const auto variable_3 = repository.get_or_create(variable, builder.get_buffer()).first;
-    variables.push_back(variable_3.get_index());
+    variables.push_back(variable_3);
 
     auto variables_layout = create_layouts<FluentTag, Repository, uint8_t>(make_view(variables, repository));
 

@@ -146,18 +146,18 @@ public:
     Repository() = default;
 
     template<typename T>
-    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const noexcept
+    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
     {
         const auto& indexed_hash_set = get_container<T>(m_repository);
 
         if (const auto ptr = indexed_hash_set.find(builder))
-            return View<Index<T>, Repository>(ptr->index, *this);
+            return ptr->index;
 
         return std::nullopt;
     }
 
     template<typename T, bool AssignIndex = true>
-    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
+    std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& indexed_hash_set = get_container<T>(m_repository);
 
@@ -166,7 +166,7 @@ public:
 
         const auto [ptr, success] = indexed_hash_set.insert(builder, buf);
 
-        return std::make_pair(View<Index<T>, Repository>(ptr->index, *this), success);
+        return std::make_pair(ptr->index, success);
     }
 
     /// @brief Access the element with the given index.

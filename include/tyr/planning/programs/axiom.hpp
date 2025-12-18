@@ -35,9 +35,7 @@ class AxiomEvaluatorProgram
 {
 public:
     // Mapping from program fluent predicate to task derived predicate
-    using PredicateToPredicateMapping =
-        UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
-                     View<Index<formalism::Predicate<formalism::DerivedTag>>, formalism::OverlayRepository<formalism::Repository>>>;
+    using PredicateToPredicateMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, Index<formalism::Predicate<formalism::DerivedTag>>>;
 
     explicit AxiomEvaluatorProgram(const LiftedTask& task);
 

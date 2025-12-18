@@ -37,7 +37,7 @@
 namespace tyr::formalism
 {
 
-template<typename Derived, Context C>
+template<typename Derived>
 class FDRContextMixin
 {
 private:
@@ -46,44 +46,44 @@ private:
     constexpr auto& self() { return static_cast<Derived&>(*this); }
 
 public:
-    View<Data<FDRFact<FluentTag>>, C> get_fact(View<Index<GroundAtom<FluentTag>>, C> atom) { return self().get_fact_impl(atom); }
+    Data<FDRFact<FluentTag>> get_fact(Index<GroundAtom<FluentTag>> atom) { return self().get_fact_impl(atom); }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact(View<Index<GroundLiteral<FluentTag>>, C> literal) { return self().get_fact_impl(literal); }
+    Data<FDRFact<FluentTag>> get_fact(Index<GroundLiteral<FluentTag>> literal) { return self().get_fact_impl(literal); }
 };
 
 template<Context C>
-class BinaryFDRContext : public FDRContextMixin<BinaryFDRContext<C>, C>
+class BinaryFDRContext : public FDRContextMixin<BinaryFDRContext<C>>
 {
 public:
     explicit BinaryFDRContext(C& context) : m_context(context), m_variables(), m_mapping() {}
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom)
+    Data<FDRFact<FluentTag>> get_fact_impl(Index<GroundAtom<FluentTag>> atom)
     {
         if (auto it = m_mapping.find(atom); it != m_mapping.end())
             return it->second;
 
         m_builder.clear();
         m_builder.domain_size = 2;
-        m_builder.atoms.push_back(atom.get_index());
+        m_builder.atoms.push_back(atom);
         canonicalize(m_builder);
-        const auto var_index = m_context.get_or_create(m_builder, m_buffer).first.get_index();
+        const auto var_index = m_context.get_or_create(m_builder, m_buffer).first;
 
         m_variables.push_back(var_index);
-        const auto fact = make_view(Data<FDRFact<FluentTag>>(var_index, FDRValue { 1 }), m_context);
+        const auto fact = Data<FDRFact<FluentTag>>(var_index, FDRValue { 1 });
         m_mapping.emplace(atom, fact);
 
         return fact;
     }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal)
+    Data<FDRFact<FluentTag>> get_fact_impl(Index<GroundLiteral<FluentTag>> literal)
     {
-        auto pos_fact = this->get_fact(literal.get_atom());
+        auto literal_view = make_view(literal, m_context);
+        auto pos_fact = this->get_fact(literal_view.get_atom().get_index());
 
-        if (literal.get_polarity())
+        if (literal_view.get_polarity())
             return pos_fact;
 
-        const auto var_index = pos_fact.get_variable().get_index();
-        return make_view(Data<FDRFact<FluentTag>>(var_index, FDRValue { 0 }), m_context);
+        return Data<FDRFact<FluentTag>>(make_view(pos_fact, m_context).get_variable().get_index(), FDRValue { 0 });
     }
 
     View<IndexList<FDRVariable<FluentTag>>, C> get_variables() const { return make_view(m_variables, m_context); }
@@ -93,11 +93,11 @@ private:
     Data<FDRVariable<FluentTag>> m_builder;
     buffer::Buffer m_buffer;
     IndexList<FDRVariable<FluentTag>> m_variables;
-    UnorderedMap<View<Index<GroundAtom<FluentTag>>, C>, View<Data<FDRFact<FluentTag>>, C>> m_mapping;
+    UnorderedMap<Index<GroundAtom<FluentTag>>, Data<FDRFact<FluentTag>>> m_mapping;
 };
 
 template<Context C>
-class GeneralFDRContext : public FDRContextMixin<GeneralFDRContext<C>, C>
+class GeneralFDRContext : public FDRContextMixin<GeneralFDRContext<C>>
 {
 public:
     // Create mapping based on mutexes.
@@ -117,23 +117,24 @@ public:
                 variable.atoms.push_back(atom.get_index());
             canonicalize(variable);
             const auto new_variable = context.get_or_create(variable, buffer).first;
-            m_variables.push_back(new_variable.get_index());
+            m_variables.push_back(new_variable);
             for (uint_t i = 0; i < group.size(); ++i)
-                m_mapping.emplace(group[i], make_view(Data<FDRFact<FluentTag>>(new_variable.get_index(), FDRValue { i + 1 }), context));
+                m_mapping.emplace(group[i].get_index(), Data<FDRFact<FluentTag>>(new_variable, FDRValue { i + 1 }));
         }
     }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundAtom<FluentTag>>, C> atom) const { return m_mapping.at(atom); }
+    Data<FDRFact<FluentTag>> get_fact_impl(Index<GroundAtom<FluentTag>> atom) const { return m_mapping.at(atom); }
 
-    View<Data<FDRFact<FluentTag>>, C> get_fact_impl(View<Index<GroundLiteral<FluentTag>>, C> literal) const
+    Data<FDRFact<FluentTag>> get_fact_impl(Index<GroundLiteral<FluentTag>> literal) const
     {
-        auto pos_fact = this->get_fact(literal.get_atom());
+        auto literal_view = make_view(literal, m_context);
+        auto pos_fact = this->get_fact(literal_view.get_atom());
 
-        if (literal.get_polarity())
+        if (literal_view.get_polarity())
             return pos_fact;
 
         const auto var_index = pos_fact.get_variable().get_index();
-        return make_view(Data<FDRFact<FluentTag>>(var_index, FDRValue { 0 }), m_context);
+        return Data<FDRFact<FluentTag>>(var_index, FDRValue { 0 });
     }
 
     View<IndexList<FDRVariable<FluentTag>>, C> get_variables() const { return make_view(m_variables, m_context); }
@@ -141,12 +142,11 @@ public:
 private:
     C& m_context;
     IndexList<FDRVariable<FluentTag>> m_variables;
-    UnorderedMap<View<Index<GroundAtom<FluentTag>>, C>, View<Data<FDRFact<FluentTag>>, C>> m_mapping;
+    UnorderedMap<Index<GroundAtom<FluentTag>>, Data<FDRFact<FluentTag>>> m_mapping;
 };
 
-template<typename T, typename C>
-concept FDRContext = requires(T& a, View<Index<GroundAtom<FluentTag>>, C> atom, View<Index<GroundLiteral<FluentTag>>, C> literal) {
-    requires Context<C>;
+template<typename T>
+concept FDRContext = requires(T& a, Index<GroundAtom<FluentTag>> atom, Index<GroundLiteral<FluentTag>> literal) {
     { a.get_fact(atom) };
     { a.get_fact(literal) };
 };

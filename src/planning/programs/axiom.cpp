@@ -28,24 +28,23 @@ using namespace tyr::formalism;
 namespace tyr::planning
 {
 static void process_axiom_body(View<Index<FDRConjunctiveCondition>, OverlayRepository<Repository>> axiom_body,
-                               MergeContext<OverlayRepository<Repository>, Repository>& context,
+                               MergeContext<Repository>& context,
                                Data<ConjunctiveCondition>& conj_cond)
 {
     for (const auto literal : axiom_body.get_literals<StaticTag>())
-        conj_cond.static_literals.push_back(merge(literal, context).get_index());
+        conj_cond.static_literals.push_back(merge(literal, context).first);
 
     for (const auto literal : axiom_body.get_literals<FluentTag>())
-        conj_cond.fluent_literals.push_back(merge(literal, context).get_index());
+        conj_cond.fluent_literals.push_back(merge(literal, context).first);
 
     for (const auto literal : axiom_body.get_literals<DerivedTag>())
-        conj_cond.fluent_literals.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(literal, context).get_index());
+        conj_cond.fluent_literals.push_back(merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(literal, context).first);
 
     for (const auto numeric_constraint : axiom_body.get_numeric_constraints())
-        conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context).get_data());
+        conj_cond.numeric_constraints.push_back(merge(numeric_constraint, context));
 }
 
-View<Index<Rule>, Repository> static create_axiom_rule(View<Index<Axiom>, OverlayRepository<Repository>> axiom,
-                                                       MergeContext<OverlayRepository<Repository>, Repository>& context)
+static auto create_axiom_rule(View<Index<Axiom>, OverlayRepository<Repository>> axiom, MergeContext<Repository>& context)
 {
     auto rule_ptr = context.builder.get_builder<Rule>();
     auto& rule = *rule_ptr;
@@ -56,87 +55,87 @@ View<Index<Rule>, Repository> static create_axiom_rule(View<Index<Axiom>, Overla
     conj_cond.clear();
 
     for (const auto variable : axiom.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).get_index());
+        conj_cond.variables.push_back(merge(variable, context).first);
 
     process_axiom_body(axiom.get_body(), context, conj_cond);
 
     canonicalize(conj_cond);
     const auto new_conj_cond = context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first;
 
-    rule.body = new_conj_cond.get_index();
+    rule.body = new_conj_cond;
 
-    const auto new_head = merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(axiom.get_head(), context);
+    const auto new_head = merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(axiom.get_head(), context).first;
 
-    rule.head = new_head.get_index();
+    rule.head = new_head;
 
     canonicalize(rule);
-    return context.destination.get_or_create(rule, context.builder.get_buffer()).first;
+    return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
 static View<Index<Program>, Repository>
 create(const LiftedTask& task, AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate_mapping, Repository& repository)
 {
-    auto merge_cache = MergeCache<OverlayRepository<Repository>, Repository>();
+    auto merge_cache = MergeCache();
     auto builder = Builder();
-    auto context = MergeContext<OverlayRepository<Repository>, Repository>(builder, repository, merge_cache);
+    auto context = MergeContext<Repository>(builder, repository, merge_cache);
     auto program_ptr = builder.get_builder<Program>();
     auto& program = *program_ptr;
     program.clear();
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<StaticTag>())
-        program.static_predicates.push_back(merge(predicate, context).get_index());
+        program.static_predicates.push_back(merge(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<FluentTag>())
-        program.fluent_predicates.push_back(merge(predicate, context).get_index());
+        program.fluent_predicates.push_back(merge(predicate, context).first);
 
     for (const auto predicate : task.get_task().get_domain().get_predicates<DerivedTag>())
     {
-        const auto new_predicate = merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context);
+        const auto new_predicate = merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).first;
 
-        predicate_to_predicate_mapping.emplace(new_predicate, predicate);
+        predicate_to_predicate_mapping.emplace(new_predicate, predicate.get_index());
 
-        program.fluent_predicates.push_back(new_predicate.get_index());
+        program.fluent_predicates.push_back(new_predicate);
     }
 
     for (const auto predicate : task.get_task().get_derived_predicates())
     {
-        const auto new_predicate = merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context);
+        const auto new_predicate = merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(predicate, context).first;
 
-        predicate_to_predicate_mapping.emplace(new_predicate, predicate);
+        predicate_to_predicate_mapping.emplace(new_predicate, predicate.get_index());
 
-        program.fluent_predicates.push_back(new_predicate.get_index());
+        program.fluent_predicates.push_back(new_predicate);
     }
 
     for (const auto function : task.get_task().get_domain().get_functions<StaticTag>())
-        program.static_functions.push_back(merge(function, context).get_index());
+        program.static_functions.push_back(merge(function, context).first);
 
     for (const auto function : task.get_task().get_domain().get_functions<FluentTag>())
-        program.fluent_functions.push_back(merge(function, context).get_index());
+        program.fluent_functions.push_back(merge(function, context).first);
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_task().get_domain().get_constants())
-        program.objects.push_back(merge(object, context).get_index());
+        program.objects.push_back(merge(object, context).first);
     for (const auto object : task.get_task().get_objects())
-        program.objects.push_back(merge(object, context).get_index());
+        program.objects.push_back(merge(object, context).first);
 
     for (const auto atom : task.get_task().get_atoms<StaticTag>())
-        program.static_atoms.push_back(merge(atom, context).get_index());
+        program.static_atoms.push_back(merge(atom, context).first);
 
     for (const auto atom : task.get_task().get_atoms<FluentTag>())
-        program.fluent_atoms.push_back(merge(atom, context).get_index());
+        program.fluent_atoms.push_back(merge(atom, context).first);
 
     for (const auto fterm_value : task.get_task().get_fterm_values<StaticTag>())
-        program.static_fterm_values.push_back(merge(fterm_value, context).get_index());
+        program.static_fterm_values.push_back(merge(fterm_value, context).first);
 
     for (const auto axiom : task.get_task().get_domain().get_axioms())
-        program.rules.push_back(create_axiom_rule(axiom, context).get_index());
+        program.rules.push_back(create_axiom_rule(axiom, context).first);
 
     for (const auto axiom : task.get_task().get_axioms())
-        program.rules.push_back(create_axiom_rule(axiom, context).get_index());
+        program.rules.push_back(create_axiom_rule(axiom, context).first);
 
     canonicalize(program);
-    return repository.get_or_create(program, builder.get_buffer()).first;
+    return make_view(repository.get_or_create(program, builder.get_buffer()).first, context.destination);
 }
 
 AxiomEvaluatorProgram::AxiomEvaluatorProgram(const LiftedTask& task) :

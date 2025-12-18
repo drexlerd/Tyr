@@ -53,7 +53,7 @@ static void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluen
 
     for (auto i = fluent_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = fluent_atoms.find_next(i))
         axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(
-            merge(make_view(Index<GroundAtom<FluentTag>>(i), atoms_context), merge_context));
+            make_view(merge(make_view(Index<GroundAtom<FluentTag>>(i), atoms_context), merge_context).first, merge_context.destination));
 }
 
 static void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
@@ -64,8 +64,10 @@ static void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& deri
     auto merge_context = MergeContext { axiom_context.builder, *axiom_context.repository, axiom_context.task_to_program_execution_context.merge_cache };
 
     for (auto i = derived_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms.find_next(i))
-        axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(
-            merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(make_view(Index<GroundAtom<DerivedTag>>(i), atoms_context), merge_context));
+        axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(make_view(
+            merge<DerivedTag, OverlayRepository<Repository>, Repository, FluentTag>(make_view(Index<GroundAtom<DerivedTag>>(i), atoms_context), merge_context)
+                .first,
+            merge_context.destination));
 }
 
 static void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
@@ -79,7 +81,7 @@ static void insert_numeric_variables_to_fact_set(const std::vector<float_t>& num
     {
         if (!std::isnan(numeric_variables[i]))
             axiom_context.facts_execution_context.fact_sets.fluent_sets.function.insert(
-                merge(make_view(Index<GroundFunctionTerm<FluentTag>>(i), numeric_variables_context), merge_context),
+                make_view(merge(make_view(Index<GroundFunctionTerm<FluentTag>>(i), numeric_variables_context), merge_context).first, merge_context.destination),
                 numeric_variables[i]);
     }
 }
@@ -144,12 +146,12 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_predicate_mapping, then facts of the predicate
     for (const auto fact : axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
     {
-        if (axiom_program.get_predicate_to_predicate_mapping().contains(fact.get_predicate()))
+        if (axiom_program.get_predicate_to_predicate_mapping().contains(fact.get_predicate().get_index()))
         {
             // TODO: pass the predicate mapping here so that we can skip merging the predicate :)
-            const auto ground_atom = merge<FluentTag, Repository, OverlayRepository<Repository>, DerivedTag>(fact, merge_context);
+            const auto ground_atom = merge<FluentTag, Repository, OverlayRepository<Repository>, DerivedTag>(fact, merge_context).first;
 
-            set(ground_atom.get_index().get_value(), derived_atoms);
+            set(ground_atom.get_value(), derived_atoms);
         }
     }
 }
@@ -173,17 +175,21 @@ static void read_solution_and_instantiate_labeled_successor_nodes(
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
     for (const auto fact : action_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
     {
-        if (action_program.get_predicate_to_actions_mapping().contains(fact.get_predicate()))
+        if (action_program.get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
         {
-            for (const auto action : action_program.get_predicate_to_actions_mapping().at(fact.get_predicate()))
+            for (const auto action_index : action_program.get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
             {
-                const auto action_index = action.get_index().get_value();
-
-                action_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
                 auto grounder_context = GrounderContext { action_context.builder, task_repository, action_context.program_to_task_execution_context.binding };
 
-                const auto ground_action =
-                    ground_planning(action, grounder_context, parameter_domains_per_cond_effect_per_action[action_index], assign, fdr_context);
+                const auto action = make_view(action_index, grounder_context.destination);
+
+                action_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
+
+                const auto ground_action_index =
+                    ground_planning(action, grounder_context, parameter_domains_per_cond_effect_per_action[action_index.get_value()], assign, fdr_context)
+                        .first;
+
+                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
 
                 effect_families.clear();
                 if (is_applicable(ground_action, state_context, effect_families))
@@ -499,17 +505,20 @@ GroundTaskPtr LiftedTask::get_ground_task()
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_actions_mapping, then facts of the predicate
     for (const auto fact : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
     {
-        if (m_ground_program.get_predicate_to_actions_mapping().contains(fact.get_predicate()))
+        if (m_ground_program.get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
         {
             ground_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
             auto grounder_context = GrounderContext { ground_context.builder, *m_overlay_repository, ground_context.program_to_task_execution_context.binding };
 
-            for (const auto action : m_ground_program.get_predicate_to_actions_mapping().at(fact.get_predicate()))
+            for (const auto action_index : m_ground_program.get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
             {
-                const auto action_index = action.get_index().get_value();
+                const auto action = make_view(action_index, grounder_context.destination);
 
-                const auto ground_action =
-                    ground_planning(action, grounder_context, m_parameter_domains_per_cond_effect_per_action[action_index], assign, m_fdr_context);
+                const auto ground_action_index =
+                    ground_planning(action, grounder_context, m_parameter_domains_per_cond_effect_per_action[action_index.get_value()], assign, m_fdr_context)
+                        .first;
+
+                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
 
                 if (is_statically_applicable(ground_action, initial_state_context))
                 {
@@ -547,14 +556,18 @@ GroundTaskPtr LiftedTask::get_ground_task()
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_axioms_mapping, then facts of the predicate
     for (const auto fact : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
     {
-        if (m_ground_program.get_predicate_to_axioms_mapping().contains(fact.get_predicate()))
+        if (m_ground_program.get_predicate_to_axioms_mapping().contains(fact.get_predicate().get_index()))
         {
             ground_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
             auto grounder_context = GrounderContext { ground_context.builder, *m_overlay_repository, ground_context.program_to_task_execution_context.binding };
 
-            for (const auto axiom : m_ground_program.get_predicate_to_axioms_mapping().at(fact.get_predicate()))
+            for (const auto axiom_index : m_ground_program.get_predicate_to_axioms_mapping().at(fact.get_predicate().get_index()))
             {
-                const auto ground_axiom = ground_planning(axiom, grounder_context, m_fdr_context);
+                const auto axiom = make_view(axiom_index, grounder_context.destination);
+
+                const auto ground_axiom_index = ground_planning(axiom, grounder_context, m_fdr_context).first;
+
+                const auto ground_axiom = make_view(ground_axiom_index, grounder_context.destination);
 
                 if (is_statically_applicable(ground_axiom, initial_state_context))
                 {

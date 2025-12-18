@@ -35,11 +35,9 @@ class GroundTaskProgram
 {
 public:
     // Mapping from program rule to task action; there may be multiple actions
-    using AppPredicateToActionsMapping = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
-                                                      std::vector<View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>>>>;
+    using AppPredicateToActionsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, std::vector<Index<formalism::Action>>>;
 
-    using AppPredicateToAxiomsMapping = UnorderedMap<View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository>,
-                                                     std::vector<View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>>>>;
+    using AppPredicateToAxiomsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, std::vector<Index<formalism::Axiom>>>;
 
     explicit GroundTaskProgram(const LiftedTask& task);
 
