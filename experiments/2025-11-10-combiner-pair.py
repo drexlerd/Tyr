@@ -41,7 +41,7 @@ ATTRIBUTES = [
     Attribute("coverage", min_wins=False),
 ]
 
-exp = Experiment("6_10")
+exp = Experiment("6_11")
 
 def rename_algorithm(properties):
     """Rename algorithm dynamically during fetching."""
@@ -60,7 +60,7 @@ def rename_algorithm(properties):
     return properties
 
 exp.add_fetcher("../6-2025-11-10-ground_task-combined-033ced75ce2d3d8c85122119f77de42b3a94c99a-eval", filter=rename_algorithm)
-exp.add_fetcher("../10-2025-11-10-ground_task-combined-630e9afb3b9e823affa9922639122e2ab4a1d773-eval")
+exp.add_fetcher("../11-2025-11-10-ground_task-combined-ff6dca5ffafe65cf7ab3059e6781ce688e999dfd-eval")
 
 exp.add_report(BaseReport(attributes=ATTRIBUTES, filter_algorithm=["old-ground_task-1", "ground_task-1", "old-ground_task-2", "ground_task-2", "old-ground_task-4", "ground_task-4", "old-ground_task-8", "ground_task-8"]))
 

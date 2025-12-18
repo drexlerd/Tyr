@@ -83,13 +83,13 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
     /// --- Rule stage
     const auto ground_head = create_nullary_ground_head_in_stage(rule_execution_context.rule.get_head(), ground_context_stage).first;
 
-    if (!rule_stage_execution_context.ground_heads.contains(ground_head))
-    {
-        /// --- Rule
-        auto ground_context_rule =
-            GrounderContext { thread_execution_context.builder, rule_execution_context.overlay_repository, rule_stage_execution_context.binding };
+    if (rule_stage_execution_context.ground_heads.contains(ground_head))
+        return;
 
-        auto ground_rule = make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository);
+    if (const auto it = rule_stage_execution_context.ground_heads_inapplicable.find(ground_head);
+        it != rule_stage_execution_context.ground_heads_inapplicable.end())
+    {
+        const auto ground_rule = make_view(it->second, *rule_stage_execution_context.repository);
 
         if (is_applicable(ground_rule, fact_execution_context.fact_sets))
         {
@@ -97,6 +97,28 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
 
             rule_stage_execution_context.ground_heads.insert(ground_head);
             rule_execution_context.ground_heads.push_back(ground_head);
+        }
+    }
+    else
+    {
+        /// --- Rule
+        auto ground_context_rule =
+            GrounderContext { thread_execution_context.builder, *rule_stage_execution_context.repository, rule_stage_execution_context.binding };
+
+        const auto ground_rule_index = ground_datalog(rule_execution_context.rule, ground_context_rule).first;
+
+        const auto ground_rule = make_view(ground_rule_index, *rule_stage_execution_context.repository);
+
+        if (is_applicable(ground_rule, fact_execution_context.fact_sets))
+        {
+            // std::cout << ground_rule << std::endl;
+
+            rule_stage_execution_context.ground_heads.insert(ground_head);
+            rule_execution_context.ground_heads.push_back(ground_head);
+        }
+        else
+        {
+            rule_stage_execution_context.ground_heads_inapplicable.emplace(ground_head, ground_rule_index);
         }
     }
 }
@@ -118,13 +140,13 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
                                                                    ground_context_stage)
                                      .first;
 
-        if (!rule_stage_execution_context.ground_heads.contains(ground_head))
-        {
-            /// --- Rule
-            auto ground_context_rule =
-                GrounderContext { thread_execution_context.builder, rule_execution_context.overlay_repository, rule_stage_execution_context.binding };
+        if (rule_stage_execution_context.ground_heads.contains(ground_head))
+            continue;
 
-            auto ground_rule = make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository);
+        if (const auto it = rule_stage_execution_context.ground_heads_inapplicable.find(ground_head);
+            it != rule_stage_execution_context.ground_heads_inapplicable.end())
+        {
+            const auto ground_rule = make_view(it->second, *rule_stage_execution_context.repository);
 
             if (is_applicable(ground_rule, fact_execution_context.fact_sets))
             {
@@ -132,6 +154,28 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
 
                 rule_stage_execution_context.ground_heads.insert(ground_head);
                 rule_execution_context.ground_heads.push_back(ground_head);
+            }
+        }
+        else
+        {
+            /// --- Rule
+            auto ground_context_rule =
+                GrounderContext { thread_execution_context.builder, *rule_stage_execution_context.repository, rule_stage_execution_context.binding };
+
+            const auto ground_rule_index = ground_datalog(rule_execution_context.rule, ground_context_rule).first;
+
+            const auto ground_rule = make_view(ground_rule_index, *rule_stage_execution_context.repository);
+
+            if (is_applicable(ground_rule, fact_execution_context.fact_sets))
+            {
+                // std::cout << ground_rule << std::endl;
+
+                rule_stage_execution_context.ground_heads.insert(ground_head);
+                rule_execution_context.ground_heads.push_back(ground_head);
+            }
+            else
+            {
+                rule_stage_execution_context.ground_heads_inapplicable.emplace(ground_head, ground_rule_index);
             }
         }
     }
@@ -145,35 +189,57 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
     auto ground_context_stage =
         GrounderContext { thread_execution_context.builder, *rule_stage_execution_context.repository, rule_stage_execution_context.binding };
 
-    kpkc::for_each_k_clique(
-        rule_execution_context.consistency_graph,
-        rule_execution_context.kpkc_workspace,
-        [&](auto&& clique)
-        {
-            /// --- Rule stage
-            const auto ground_head = create_general_ground_head_in_stage(clique,
-                                                                         rule_execution_context.static_consistency_graph,
-                                                                         rule_execution_context.rule.get_head(),
-                                                                         ground_context_stage)
-                                         .first;
+    kpkc::for_each_k_clique(rule_execution_context.consistency_graph,
+                            rule_execution_context.kpkc_workspace,
+                            [&](auto&& clique)
+                            {
+                                /// --- Rule stage
+                                const auto ground_head = create_general_ground_head_in_stage(clique,
+                                                                                             rule_execution_context.static_consistency_graph,
+                                                                                             rule_execution_context.rule.get_head(),
+                                                                                             ground_context_stage)
+                                                             .first;
 
-            if (!rule_stage_execution_context.ground_heads.contains(ground_head))
-            {
-                /// --- Rule
-                auto ground_context_rule =
-                    GrounderContext { thread_execution_context.builder, rule_execution_context.overlay_repository, rule_stage_execution_context.binding };
+                                if (rule_stage_execution_context.ground_heads.contains(ground_head))
+                                    return;
 
-                auto ground_rule = make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository);
+                                if (const auto it = rule_stage_execution_context.ground_heads_inapplicable.find(ground_head);
+                                    it != rule_stage_execution_context.ground_heads_inapplicable.end())
+                                {
+                                    const auto ground_rule = make_view(it->second, *rule_stage_execution_context.repository);
 
-                if (is_applicable(ground_rule, fact_execution_context.fact_sets))
-                {
-                    // std::cout << ground_rule << std::endl;
+                                    if (is_applicable(ground_rule, fact_execution_context.fact_sets))
+                                    {
+                                        // std::cout << ground_rule << std::endl;
 
-                    rule_stage_execution_context.ground_heads.insert(ground_head);
-                    rule_execution_context.ground_heads.push_back(ground_head);
-                }
-            }
-        });
+                                        rule_stage_execution_context.ground_heads.insert(ground_head);
+                                        rule_execution_context.ground_heads.push_back(ground_head);
+                                    }
+                                }
+                                else
+                                {
+                                    /// --- Rule
+                                    auto ground_context_rule = GrounderContext { thread_execution_context.builder,
+                                                                                 *rule_stage_execution_context.repository,
+                                                                                 rule_stage_execution_context.binding };
+
+                                    const auto ground_rule_index = ground_datalog(rule_execution_context.rule, ground_context_rule).first;
+
+                                    const auto ground_rule = make_view(ground_rule_index, *rule_stage_execution_context.repository);
+
+                                    if (is_applicable(ground_rule, fact_execution_context.fact_sets))
+                                    {
+                                        // std::cout << ground_rule << std::endl;
+
+                                        rule_stage_execution_context.ground_heads.insert(ground_head);
+                                        rule_execution_context.ground_heads.push_back(ground_head);
+                                    }
+                                    else
+                                    {
+                                        rule_stage_execution_context.ground_heads_inapplicable.emplace(ground_head, ground_rule_index);
+                                    }
+                                }
+                            });
 }
 
 void ground(const FactsExecutionContext& fact_execution_context,

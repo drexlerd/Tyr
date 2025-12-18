@@ -264,6 +264,37 @@ inline auto create_cond_effect_rule(View<Index<formalism::Action>, formalism::Ov
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
+inline auto create_full_cond_effect_rule(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
+                                         View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
+                                         View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
+                                         formalism::MergeContext<formalism::Repository>& context)
+{
+    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto& rule = *rule_ptr;
+    rule.clear();
+
+    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
+    conj_cond.clear();
+
+    for (const auto variable : action.get_variables())
+        conj_cond.variables.push_back(merge(variable, context).first);
+    for (const auto variable : cond_eff.get_variables())
+        conj_cond.variables.push_back(merge(variable, context).first);
+    append_from_condition(action.get_condition(), context, conj_cond);
+    append_from_condition(cond_eff.get_condition(), context, conj_cond);
+
+    canonicalize(conj_cond);
+    const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
+
+    rule.variables = new_conj_cond.get_variables().get_data();
+    rule.body = new_conj_cond.get_index();
+    rule.head = effect.get_index();
+
+    canonicalize(rule);
+    return context.destination.get_or_create(rule, context.builder.get_buffer());
+}
+
 inline auto create_applicability_predicate(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
                                            formalism::MergeContext<formalism::Repository>& context)
 {

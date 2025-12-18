@@ -24,6 +24,7 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/grounder_planning.hpp"
+#include "tyr/formalism/merge_datalog.hpp"
 #include "tyr/formalism/merge_planning.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
