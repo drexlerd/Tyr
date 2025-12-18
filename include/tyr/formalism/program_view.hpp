@@ -38,7 +38,7 @@ private:
     Index<formalism::Program> m_handle;
 
 public:
-    View(Index<formalism::Program> data, const C& context) : m_context(&context), m_handle(data) {}
+    View(Index<formalism::Program> data, const C& context) noexcept : m_context(&context), m_handle(data) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
@@ -62,11 +62,11 @@ public:
         return make_view(get_data().template get_atoms<T>(), *m_context);
     }
     template<formalism::FactKind T>
-    auto get_fterm_values() const
+    auto get_fterm_values() const noexcept
     {
         return make_view(get_data().template get_fterm_values<T>(), *m_context);
     }
-    auto get_rules() const { return make_view(get_data().rules, *m_context); }
+    auto get_rules() const noexcept { return make_view(get_data().rules, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

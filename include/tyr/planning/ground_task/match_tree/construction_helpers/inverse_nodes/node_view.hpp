@@ -29,7 +29,7 @@
 
 namespace tyr
 {
-template<typename Tag, typename C>
+template<typename Tag, planning::match_tree::Context C>
 class View<Data<planning::match_tree::InverseNode<Tag>>, C>
 {
 private:
@@ -37,9 +37,9 @@ private:
     Data<planning::match_tree::InverseNode<Tag>> m_handle;
 
 public:
-    View(Data<planning::match_tree::InverseNode<Tag>> data, const C& context) : m_context(&context), m_handle(data) {}
+    View(Data<planning::match_tree::InverseNode<Tag>> data, const C& context) noexcept : m_context(&context), m_handle(data) {}
 
-    const auto& get_data() const { return m_handle; }
+    const auto& get_data() const noexcept { return m_handle; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 

@@ -32,9 +32,9 @@ private:
     Data<formalism::GroundNumericEffectOperator<T>> m_handle;
 
 public:
-    View(Data<formalism::GroundNumericEffectOperator<T>> data, const C& context) : m_context(&context), m_handle(data) {}
+    View(Data<formalism::GroundNumericEffectOperator<T>> data, const C& context) noexcept : m_context(&context), m_handle(data) {}
 
-    const auto& get_data() const { return m_handle; }
+    const auto& get_data() const noexcept { return m_handle; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 

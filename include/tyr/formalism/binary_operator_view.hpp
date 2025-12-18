@@ -35,21 +35,21 @@ private:
 public:
     using OpType = Op;
 
-    View(Index<formalism::BinaryOperator<Op, T>> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::BinaryOperator<Op, T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_lhs() const
+    auto get_lhs() const noexcept
     {
         if constexpr (ViewConcept<T, C>)
             return make_view(get_data().lhs, *m_context);
         else
             return get_data().lhs;
     }
-    auto get_rhs() const
+    auto get_rhs() const noexcept
     {
         if constexpr (ViewConcept<T, C>)
             return make_view(get_data().rhs, *m_context);

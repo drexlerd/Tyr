@@ -20,6 +20,7 @@
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
+#include "tyr/common/types_utils.hpp"
 
 #include <cista/containers/variant.h>
 
@@ -32,7 +33,7 @@ class View<::cista::offset::variant<T...>, C>
 public:
     using Variant = ::cista::offset::variant<T...>;
 
-    View(const Variant& handle, const C& context) : m_context(&context), m_handle(&handle) {}
+    View(const Variant& handle, const C& context) noexcept : m_context(&context), m_handle(&handle) {}
 
     const Variant& index_variant() const noexcept { return *m_handle; }
 
@@ -43,20 +44,16 @@ public:
     }
 
     template<typename U>
-    decltype(auto) get() const
+    decltype(auto) get() const noexcept
     {
         if constexpr (ViewConcept<U, C>)
-        {
-            return View<U, C>(std::get<U>(index_variant()), get_context());
-        }
+            return make_view(std::get<U>(index_variant()), get_context());
         else
-        {
             return std::get<U>(index_variant());
-        }
     }
 
     template<typename F>
-    decltype(auto) apply(F&& f) const
+    decltype(auto) apply(F&& f) const noexcept
     {
         return std::visit(
             [&](auto&& arg) -> decltype(auto)
@@ -64,13 +61,9 @@ public:
                 using U = std::decay_t<decltype(arg)>;
 
                 if constexpr (ViewConcept<U, C>)
-                {
-                    return std::forward<F>(f)(View<U, C>(arg, get_context()));
-                }
+                    return std::forward<F>(f)(make_view(arg, get_context()));
                 else
-                {
                     return std::forward<F>(f)(arg);
-                }
             },
             index_variant());
     }
@@ -85,13 +78,13 @@ private:
 };
 
 template<typename Visitor, typename C, typename... T>
-constexpr auto visit(Visitor&& vis, View<::cista::offset::variant<T...>, C>&& v)
+constexpr auto visit(Visitor&& vis, View<::cista::offset::variant<T...>, C>&& v) noexcept
 {
     return v.apply(std::forward<Visitor>(vis));
 }
 
 template<typename Visitor, typename C, typename... T>
-constexpr auto visit(Visitor&& vis, const View<::cista::offset::variant<T...>, C>& v)
+constexpr auto visit(Visitor&& vis, const View<::cista::offset::variant<T...>, C>& v) noexcept
 {
     return v.apply(vis);
 }

@@ -20,6 +20,7 @@
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
+#include "tyr/common/types_utils.hpp"
 
 #include <cista/containers/vector.h>
 #include <cstddef>
@@ -34,33 +35,25 @@ class View<::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Alloca
 public:
     using Container = ::cista::basic_vector<T, Ptr, IndexPointers, TemplateSizeType, Allocator>;
 
-    View(const Container& handle, const C& context) : m_context(&context), m_handle(&handle) {}
+    View(const Container& handle, const C& context) noexcept : m_context(&context), m_handle(&handle) {}
 
     size_t size() const noexcept { return get_data().size(); }
     bool empty() const noexcept { return get_data().empty(); }
 
-    decltype(auto) operator[](size_t i) const
+    decltype(auto) operator[](size_t i) const noexcept
     {
         if constexpr (ViewConcept<T, C>)
-        {
-            return View<T, C>(get_data()[i], get_context());
-        }
+            return make_view(get_data()[i], get_context());
         else
-        {
             return get_data()[i];
-        }
     }
 
-    decltype(auto) front() const
+    decltype(auto) front() const noexcept
     {
         if constexpr (ViewConcept<T, C>)
-        {
-            return View<T, C>(get_data().front(), get_context());
-        }
+            return make_view(get_data().front(), get_context());
         else
-        {
             return get_data().front();
-        }
     }
 
     struct const_iterator
@@ -73,28 +66,24 @@ public:
         using iterator_category = std::random_access_iterator_tag;
         using iterator_concept = std::random_access_iterator_tag;
 
-        const_iterator() : ctx(nullptr), ptr(nullptr) {}
-        const_iterator(const T* ptr, const C& ctx) : ctx(&ctx), ptr(ptr) {}
+        const_iterator() noexcept : ctx(nullptr), ptr(nullptr) {}
+        const_iterator(const T* ptr, const C& ctx) noexcept : ctx(&ctx), ptr(ptr) {}
 
-        decltype(auto) operator*() const
+        decltype(auto) operator*() const noexcept
         {
             if constexpr (ViewConcept<T, C>)
-            {
-                return View<T, C>(*ptr, *ctx);
-            }
+                return make_view(*ptr, *ctx);
             else
-            {
                 return *ptr;
-            }
         }
 
         // ++
-        const_iterator& operator++()
+        const_iterator& operator++() noexcept
         {
             ++ptr;
             return *this;
         }
-        const_iterator operator++(int)
+        const_iterator operator++(int) noexcept
         {
             auto tmp = *this;
             ++(*this);
@@ -102,12 +91,12 @@ public:
         }
 
         // --
-        const_iterator& operator--()
+        const_iterator& operator--() noexcept
         {
             --ptr;
             return *this;
         }
-        const_iterator operator--(int)
+        const_iterator operator--(int) noexcept
         {
             auto tmp = *this;
             --(*this);
@@ -115,44 +104,44 @@ public:
         }
 
         // += / -=
-        const_iterator& operator+=(difference_type n)
+        const_iterator& operator+=(difference_type n) noexcept
         {
             ptr += n;
             return *this;
         }
-        const_iterator& operator-=(difference_type n)
+        const_iterator& operator-=(difference_type n) noexcept
         {
             ptr -= n;
             return *this;
         }
 
         // + / -
-        friend const_iterator operator+(const_iterator it, difference_type n)
+        friend const_iterator operator+(const_iterator it, difference_type n) noexcept
         {
             it += n;
             return it;
         }
 
-        friend const_iterator operator+(difference_type n, const_iterator it)
+        friend const_iterator operator+(difference_type n, const_iterator it) noexcept
         {
             it += n;
             return it;
         }
 
-        friend const_iterator operator-(const_iterator it, difference_type n)
+        friend const_iterator operator-(const_iterator it, difference_type n) noexcept
         {
             it -= n;
             return it;
         }
 
         // iterator - iterator
-        friend difference_type operator-(const_iterator lhs, const_iterator rhs) { return lhs.ptr - rhs.ptr; }
+        friend difference_type operator-(const_iterator lhs, const_iterator rhs) noexcept { return lhs.ptr - rhs.ptr; }
 
         // []
-        auto operator[](difference_type n) const
+        auto operator[](difference_type n) const noexcept
         {
             if constexpr (ViewConcept<T, C>)
-                return View<T, C>(*(ptr + n), *ctx);
+                return make_view(*(ptr + n), *ctx);
             else
                 return *(ptr + n);
         }
@@ -171,13 +160,13 @@ public:
         friend bool operator>=(const const_iterator& lhs, const const_iterator& rhs) noexcept { return !(lhs < rhs); }
     };
 
-    const_iterator begin() const { return const_iterator { get_data().data(), get_context() }; }
+    const_iterator begin() const noexcept { return const_iterator { get_data().data(), get_context() }; }
 
-    const_iterator end() const { return const_iterator { get_data().data() + get_data().size(), get_context() }; }
+    const_iterator end() const noexcept { return const_iterator { get_data().data() + get_data().size(), get_context() }; }
 
-    const auto& get_data() const { return *m_handle; }
-    const auto& get_context() const { return *m_context; }
-    const auto& get_handle() const { return m_handle; }
+    const auto& get_data() const noexcept { return *m_handle; }
+    const auto& get_context() const noexcept { return *m_context; }
+    const auto& get_handle() const noexcept { return m_handle; }
 
 private:
     const C* m_context;

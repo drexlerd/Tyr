@@ -35,15 +35,15 @@ private:
     Index<formalism::Atom<T>> m_handle;
 
 public:
-    View(Index<formalism::Atom<T>> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::Atom<T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
-    auto get_index() const { return m_handle; }
-    auto get_predicate() const { return make_view(get_data().predicate, *m_context); }
-    auto get_terms() const { return make_view(get_data().terms, *m_context); }
+    auto get_index() const noexcept { return m_handle; }
+    auto get_predicate() const noexcept { return make_view(get_data().predicate, *m_context); }
+    auto get_terms() const noexcept { return make_view(get_data().terms, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

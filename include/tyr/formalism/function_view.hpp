@@ -32,15 +32,15 @@ private:
     Index<formalism::Function<T>> m_handle;
 
 public:
-    View(Index<formalism::Function<T>> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::Function<T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    const auto& get_name() const { return get_data().name; }
-    auto get_arity() const { return get_data().arity; }
+    const auto& get_name() const noexcept { return get_data().name; }
+    auto get_arity() const noexcept { return get_data().arity; }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

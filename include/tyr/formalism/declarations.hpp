@@ -389,7 +389,7 @@ concept RepositoryAccess = requires(const Repo& r, Index<Tag> idx) {
 };
 
 template<typename T>
-concept IsRepository =
+concept RepositoryConcept =
     RepositoryAccess<T, Variable> && RepositoryAccess<T, Object> && RepositoryAccess<T, Predicate<StaticTag>> && RepositoryAccess<T, Predicate<FluentTag>>
     && RepositoryAccess<T, Atom<StaticTag>> && RepositoryAccess<T, Atom<FluentTag>> && RepositoryAccess<T, GroundAtom<StaticTag>>
     && RepositoryAccess<T, GroundAtom<FluentTag>> && RepositoryAccess<T, Literal<StaticTag>> && RepositoryAccess<T, Literal<FluentTag>>
@@ -435,7 +435,7 @@ inline const OverlayRepository<C>& get_repository(const OverlayRepository<C>& co
 
 template<typename T>
 concept Context = requires(const T& a) {
-    { get_repository(a) } -> IsRepository;
+    { get_repository(a) } -> RepositoryConcept;
 };
 
 class MergeCache;

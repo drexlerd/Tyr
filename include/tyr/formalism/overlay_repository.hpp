@@ -85,11 +85,11 @@ public:
 };
 
 // Domain + Task
-static_assert(IsRepository<OverlayRepository<Repository>>);
+static_assert(RepositoryConcept<OverlayRepository<Repository>>);
 static_assert(Context<OverlayRepository<Repository>>);
 
 // Domain + Task + Worker threads
-static_assert(IsRepository<OverlayRepository<OverlayRepository<Repository>>>);
+static_assert(RepositoryConcept<OverlayRepository<OverlayRepository<Repository>>>);
 static_assert(Context<OverlayRepository<OverlayRepository<Repository>>>);
 
 }

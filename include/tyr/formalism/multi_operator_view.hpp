@@ -36,14 +36,14 @@ private:
 public:
     using OpType = Op;
 
-    View(Index<formalism::MultiOperator<Op, T>> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::MultiOperator<Op, T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_args() const { return make_view(get_data().args, *m_context); }
+    auto get_args() const noexcept { return make_view(get_data().args, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

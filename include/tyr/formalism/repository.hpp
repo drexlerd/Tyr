@@ -204,7 +204,7 @@ public:
     }
 };
 
-static_assert(IsRepository<Repository>);
+static_assert(RepositoryConcept<Repository>);
 
 static_assert(Context<Repository>);
 

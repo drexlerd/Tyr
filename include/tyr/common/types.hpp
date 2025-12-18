@@ -76,13 +76,13 @@ concept Indexable = requires(T a) {
 
 /// @brief Helper to create a view
 template<typename T, typename C>
-auto make_view(const T& element, const C& context)
+auto make_view(const T& element, const C& context) noexcept
 {
     return View<T, C>(element, context);
 }
 
 template<typename T, typename C>
-auto make_view(T&& element, C&& context)
+auto make_view(T&& element, C&& context) noexcept
 {
     using TT = std::remove_cvref_t<T>;
     using CC = std::remove_cvref_t<C>;

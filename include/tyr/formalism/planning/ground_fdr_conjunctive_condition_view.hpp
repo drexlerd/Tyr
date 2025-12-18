@@ -35,19 +35,19 @@ private:
     Index<formalism::GroundFDRConjunctiveCondition> m_handle;
 
 public:
-    View(Index<formalism::GroundFDRConjunctiveCondition> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::GroundFDRConjunctiveCondition> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
     template<formalism::FactKind T>
-    auto get_facts() const
+    auto get_facts() const noexcept
     {
         return make_view(get_data().template get_facts<T>(), *m_context);
     }
-    auto get_numeric_constraints() const { return make_view(get_data().numeric_constraints, *m_context); }
+    auto get_numeric_constraints() const noexcept { return make_view(get_data().numeric_constraints, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

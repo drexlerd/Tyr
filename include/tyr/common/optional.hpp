@@ -20,6 +20,7 @@
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
+#include "tyr/common/types_utils.hpp"
 
 #include <cista/containers/optional.h>
 
@@ -32,7 +33,7 @@ class View<::cista::optional<T>, C>
 public:
     using Optional = ::cista::optional<T>;
 
-    View(const Optional& handle, const C& context) : m_context(&context), m_handle(&handle) {}
+    View(const Optional& handle, const C& context) noexcept : m_context(&context), m_handle(&handle) {}
 
     const auto& get_data() const noexcept { return *m_handle; }
     const auto& get_context() const noexcept { return *m_context; }
@@ -45,29 +46,21 @@ public:
     decltype(auto) value() const
     {
         if constexpr (ViewConcept<T, C>)
-        {
-            return View<T, C>(**m_handle, *m_context);
-        }
+            return make_view(**m_handle, *m_context);
         else
-        {
             return m_handle->value();
-        }
     }
 
-    decltype(auto) operator*() const { return value(); }
+    decltype(auto) operator*() const noexcept { return value(); }
 
     auto operator->() const
     {
         if constexpr (ViewConcept<T, C>)
-        {
             static_assert(!ViewConcept<T, C>,
                           "operator-> is not supported when T is viewable; "
-                          "call .value() first to get a View<T, C>.");
-        }
+                          "call .value() first to get a make_view.");
         else
-        {
             return &m_handle->value();
-        }
     }
 
 private:

@@ -69,21 +69,21 @@ private:
 public:
     explicit Repository(const C& formalism_repository) : m_formalism_repository(formalism_repository) {}
 
-    const C& get_formalism_repository() const noexcept { return formalism_repository; }
+    const C& get_formalism_repository() const noexcept { return m_formalism_repository; }
 
     template<typename T>
-    std::optional<View<Index<T>, Repository<Tag>>> find(const Data<T>& builder) const noexcept
+    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
     {
         const auto& indexed_hash_set = get_container<T>(m_repository);
 
         if (const auto ptr = indexed_hash_set.find(builder))
-            return make_view(ptr->index, *this);
+            return ptr->index;
 
         return std::nullopt;
     }
 
     template<typename T, bool AssignIndex = true>
-    std::pair<View<Index<T>, Repository<Tag>>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
+    std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& indexed_hash_set = get_container<T>(m_repository);
 
@@ -92,7 +92,7 @@ public:
 
         const auto [ptr, success] = indexed_hash_set.insert(builder, buf);
 
-        return std::make_pair(make_view(ptr->index, *this), success);
+        return std::make_pair(ptr->index, success);
     }
 
     /// @brief Access the element with the given index.
@@ -130,7 +130,7 @@ public:
     }
 };
 
-// static_assert(IsRepository<Repository>);
+// static_assert(RepositoryConcept<Repository>);
 
 // static_assert(Context<Repository>);
 

@@ -36,21 +36,21 @@ private:
     Index<formalism::FDRConjunctiveCondition> m_handle;
 
 public:
-    View(Index<formalism::FDRConjunctiveCondition> handle, const C& context) : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::FDRConjunctiveCondition> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
-    const auto& get_data() const { return get_repository(*m_context)[m_handle]; }
+    const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
     auto get_variables() const noexcept { return make_view(get_data().variables, *m_context); }
     template<formalism::FactKind T>
-    auto get_literals() const
+    auto get_literals() const noexcept
     {
         return make_view(get_data().template get_literals<T>(), *m_context);
     }
     auto get_numeric_constraints() const { return make_view(get_data().numeric_constraints, *m_context); }
-    auto get_arity() const { return get_data().variables.size(); }
+    auto get_arity() const noexcept { return get_data().variables.size(); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
