@@ -172,8 +172,7 @@ auto ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC
 template<Context C_SRC, Context C_DST>
 auto ground_common(View<Data<BooleanOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).first, element.get_arity()); },
-                 element.get_variant());
+    return visit([&](auto&& arg) { return Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).first); }, element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST>

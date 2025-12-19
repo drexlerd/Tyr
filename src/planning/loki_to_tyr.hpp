@@ -616,9 +616,7 @@ private:
             binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
             binary.rhs = translate_lifted(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
-            auto visitor = ArityVisitor();
-            const auto arity = visitor.get(element);
-            return Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first, arity);
+            return Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first);
         };
 
         switch (element->get_binary_comparator())
@@ -1438,10 +1436,7 @@ private:
             binary.lhs = translate_grounded(element->get_left_function_expression(), builder, context);
             binary.rhs = translate_grounded(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
-            auto visitor = ArityVisitor();
-            const auto arity = visitor.get(element);
-            return Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first,
-                                                                                               arity);
+            return Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first);
         };
 
         switch (element->get_binary_comparator())

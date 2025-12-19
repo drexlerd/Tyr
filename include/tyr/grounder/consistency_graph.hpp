@@ -203,6 +203,22 @@ private:
 
     std::vector<std::vector<uint_t>> m_partitions;
 };
+
+extern std::pair<Index<formalism::GroundConjunctiveCondition>, bool>
+create_ground_nullary_condition(View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
+                                formalism::Builder& builder,
+                                formalism::Repository& context);
+
+extern std::pair<Index<formalism::ConjunctiveCondition>, bool>
+create_arity_geq_k_overapproximation_conjunctive_condition(size_t k,
+                                                           View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
+                                                           formalism::Builder& builder,
+                                                           formalism::Repository& context);
+
+extern std::pair<Index<formalism::ConjunctiveCondition>, bool>
+create_overapproximation_conflicting_conjunctive_condition(View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
+                                                           formalism::Builder& builder,
+                                                           formalism::Repository& context);
 }
 
 #endif

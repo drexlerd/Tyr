@@ -322,7 +322,7 @@ auto merge(View<Data<ArithmeticOperator<T>>, C_SRC> element, MergeContext<C_DST>
 template<typename T, Context C_SRC, Context C_DST>
 auto merge(View<Data<BooleanOperator<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return Data<BooleanOperator<T>>(merge(arg, context).first, element.get_arity()); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<BooleanOperator<T>>(merge(arg, context).first); }, element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST>

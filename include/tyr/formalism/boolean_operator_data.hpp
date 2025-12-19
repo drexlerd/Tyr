@@ -36,15 +36,14 @@ struct Data<formalism::BooleanOperator<T>>
                                              Index<formalism::BinaryOperator<formalism::OpGt, T>>>;
 
     Variant value;
-    uint_t arity;
 
     Data() = default;
-    Data(Variant value, uint_t arity) : value(value), arity(arity) {}
+    Data(Variant value) : value(value) {}
 
     void clear() noexcept { tyr::clear(value); }
 
-    auto cista_members() const noexcept { return std::tie(value, arity); }
-    auto identifying_members() const noexcept { return std::tie(value, arity); }
+    auto cista_members() const noexcept { return std::tie(value); }
+    auto identifying_members() const noexcept { return std::tie(value); }
 };
 }
 

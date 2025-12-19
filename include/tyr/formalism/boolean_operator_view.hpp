@@ -39,7 +39,6 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_variant() const noexcept { return make_view(m_handle.value, *m_context); }
-    auto get_arity() const noexcept { return m_handle.arity; }
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 }
