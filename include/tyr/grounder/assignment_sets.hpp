@@ -21,10 +21,15 @@
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
+#include "tyr/formalism/formatter.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 #include "tyr/grounder/assignment.hpp"
 #include "tyr/grounder/fact_sets.hpp"
+#include "tyr/grounder/formatter.hpp"
 
+#include <algorithm>
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>
 #include <limits>
@@ -34,6 +39,18 @@
 namespace tyr::grounder
 {
 
+static bool contains(const analysis::DomainListList& parameter_domains, const VertexAssignment& assignment)
+{
+    const auto& domain = parameter_domains[uint_t(assignment.index)];
+    return std::find(domain.begin(), domain.end(), assignment.object) != domain.end();
+}
+
+static bool contains(const analysis::DomainListList& parameter_domains, const EdgeAssignment& assignment)
+{
+    return contains(parameter_domains, VertexAssignment(assignment.first_index, assignment.first_object))
+           && contains(parameter_domains, VertexAssignment(assignment.second_index, assignment.second_object));
+}
+
 struct PerfectAssignmentHash
 {
     size_t m_num_assignments;                      ///< The number of type legal [i/o] including a sentinel for each i
@@ -41,13 +58,81 @@ struct PerfectAssignmentHash
     std::vector<uint_t> m_offsets;                 ///< The offsets of i
     analysis::DomainListList m_parameter_domains;
 
-    PerfectAssignmentHash(const analysis::DomainListList& parameter_domains, size_t num_objects);
+    PerfectAssignmentHash(const analysis::DomainListList& parameter_domains, size_t num_objects) :
+        m_num_assignments(0),
+        m_remapping(),
+        m_offsets(),
+        m_parameter_domains(parameter_domains)
+    {
+        const auto num_parameters = parameter_domains.size();
 
-    size_t get_assignment_rank(const VertexAssignment& assignment) const noexcept;
+        m_remapping.resize(num_parameters + 1);
+        m_offsets.resize(num_parameters + 1);
 
-    size_t get_assignment_rank(const EdgeAssignment& assignment) const noexcept;
+        m_remapping[0].resize(1, 0);  // 0 is sentinel to map to 0
+        m_offsets[0] = m_num_assignments++;
 
-    size_t size() const noexcept;
+        for (uint_t i = 0; i < num_parameters; ++i)
+        {
+            m_remapping[i + 1].resize(num_objects + 1, 0);  // 0 is sentinel to map to 0
+            m_offsets[i + 1] = m_num_assignments++;
+
+            const auto& parameter_domain = parameter_domains[i];
+            auto new_index = uint_t { 0 };
+            for (const auto object_index : parameter_domain)
+            {
+                m_remapping[i + 1][uint_t(object_index) + 1] = ++new_index;
+                ++m_num_assignments;
+            }
+        }
+    }
+
+    /// @brief
+    /// @tparam Checked = true enables an assertion that checks whether an assignment is part of the hash function.
+    /// This assertion checks that the object in the vertex assignment is part of the parameter domain.
+    /// @param assignment
+    /// @return
+    template<bool Checked>
+    size_t get_rank(const VertexAssignment& assignment) const noexcept
+    {
+        assert(assignment.is_valid());
+        if constexpr (Checked)
+            assert(contains(m_parameter_domains, assignment));
+
+        const auto o = m_remapping[uint_t(assignment.index) + 1][uint_t(assignment.object) + 1];
+
+        const auto result = m_offsets[uint_t(assignment.index) + 1] + o;
+
+        assert(result < m_num_assignments);
+
+        return result;
+    }
+    /// @brief
+    /// @tparam Checked = true enables an assertion that checks whether an assignment is part of the hash function.
+    /// This assertion checks that each vertex assignment in the edge assignment is is part of the hash function.
+    /// @param assignment
+    /// @return
+    template<bool Checked>
+    size_t get_rank(const EdgeAssignment& assignment) const noexcept
+    {
+        assert(assignment.is_valid());
+        if constexpr (Checked)
+            assert(contains(m_parameter_domains, assignment));
+
+        const auto o1 = m_remapping[uint_t(assignment.first_index) + 1][uint_t(assignment.first_object) + 1];
+        const auto o2 = m_remapping[uint_t(assignment.second_index) + 1][uint_t(assignment.second_object) + 1];
+
+        const auto j1 = m_offsets[uint_t(assignment.first_index) + 1] + o1;
+        const auto j2 = m_offsets[uint_t(assignment.second_index) + 1] + o2;
+
+        const auto result = j1 * m_num_assignments + j2;
+
+        assert(result < m_num_assignments * m_num_assignments);
+
+        return result;
+    }
+
+    size_t size() const noexcept { return m_num_assignments * m_num_assignments; }
 };
 
 template<formalism::FactKind T, formalism::Context C>
@@ -60,17 +145,49 @@ private:
     boost::dynamic_bitset<> m_set;
 
 public:
-    PredicateAssignmentSet(View<Index<formalism::Predicate<T>>, C> predicate, const analysis::DomainListList& parameter_domains, size_t num_objects);
+    PredicateAssignmentSet(View<Index<formalism::Predicate<T>>, C> predicate, const analysis::DomainListList& parameter_domains, size_t num_objects) :
+        m_predicate(predicate.get_index()),
+        m_hash(PerfectAssignmentHash(parameter_domains, num_objects)),
+        m_set(m_hash.size(), false)
+    {
+    }
 
-    void reset() noexcept;
+    void reset() noexcept { m_set.reset(); }
 
-    void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom);
+    void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom)
+    {
+        const auto arity = ground_atom.get_predicate().get_arity();
+        const auto objects = ground_atom.get_binding().get_objects();
 
-    bool operator[](const VertexAssignment& assignment) const noexcept;
-    bool operator[](const EdgeAssignment& assignment) const noexcept;
+        assert(ground_atom.get_predicate().get_index() == m_predicate);
 
-    size_t size() const noexcept;
-    const PerfectAssignmentHash& get_hash() const noexcept;
+        for (uint_t first_index = 0; first_index < arity; ++first_index)
+        {
+            const auto first_object = objects[first_index];
+
+            // Complete vertex.
+            m_set.set(m_hash.get_rank<false>(VertexAssignment(formalism::ParameterIndex(first_index), first_object.get_index())));
+
+            for (uint_t second_index = first_index + 1; second_index < arity; ++second_index)
+            {
+                const auto second_object = objects[second_index];
+
+                // Ordered complete edge.
+                m_set.set(m_hash.get_rank<false>(EdgeAssignment(formalism::ParameterIndex(first_index),
+                                                                first_object.get_index(),
+                                                                formalism::ParameterIndex(second_index),
+                                                                second_object.get_index())));
+            }
+        }
+    }
+
+    bool operator[](const VertexAssignment& assignment) const noexcept { return m_set.test(m_hash.template get_rank<false>(assignment)); }
+    bool operator[](const EdgeAssignment& assignment) const noexcept { return m_set.test(m_hash.template get_rank<false>(assignment)); }
+    bool at(const VertexAssignment& assignment) const noexcept { return m_set.test(m_hash.template get_rank<true>(assignment)); }
+    bool at(const EdgeAssignment& assignment) const noexcept { return m_set.test(m_hash.template get_rank<true>(assignment)); }
+
+    size_t size() const noexcept { return m_set.size(); }
+    const PerfectAssignmentHash& get_hash() const noexcept { return m_hash; }
 };
 
 template<formalism::FactKind T, formalism::Context C>
@@ -82,17 +199,40 @@ private:
 public:
     PredicateAssignmentSets() = default;
 
-    PredicateAssignmentSets(View<IndexList<formalism::Predicate<T>>, C> predicates, const analysis::DomainListListList& predicate_domains, size_t num_objects);
+    PredicateAssignmentSets(View<IndexList<formalism::Predicate<T>>, C> predicates, const analysis::DomainListListList& predicate_domains, size_t num_objects) :
+        m_sets()
+    {
+        /* Validate inputs. */
+        for (uint_t i = 0; i < predicates.size(); ++i)
+        {
+            assert(predicates[i].get_index().get_value() == i);
+        }
 
-    void reset() noexcept;
+        /* Initialize sets. */
+        for (const auto predicate : predicates)
+            m_sets.emplace_back(PredicateAssignmentSet<T, C>(predicate, predicate_domains[predicate.get_index().get_value()], num_objects));
+    }
 
-    void insert(View<IndexList<formalism::GroundAtom<T>>, C> ground_atoms);
+    void reset() noexcept
+    {
+        for (auto& set : m_sets)
+            set.reset();
+    }
 
-    void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom);
+    void insert(View<IndexList<formalism::GroundAtom<T>>, C> ground_atoms)
+    {
+        for (const auto ground_atom : ground_atoms)
+            m_sets[ground_atom.get_predicate().get_index().get_value()].insert(ground_atom);
+    }
 
-    const PredicateAssignmentSet<T, C>& get_set(Index<formalism::Predicate<T>> index) const noexcept;
+    void insert(View<Index<formalism::GroundAtom<T>>, C> ground_atom) { m_sets[ground_atom.get_predicate().get_index().get_value()].insert(ground_atom); }
 
-    size_t size() const noexcept;
+    const PredicateAssignmentSet<T, C>& get_set(Index<formalism::Predicate<T>> index) const noexcept { return m_sets[index.get_value()]; }
+
+    size_t size() const noexcept
+    {
+        return std::accumulate(m_sets.begin(), m_sets.end(), size_t { 0 }, [](auto&& lhs, auto&& rhs) { return lhs + rhs.size(); });
+    }
 };
 
 template<formalism::FactKind T, formalism::Context C>
@@ -107,20 +247,59 @@ private:
 public:
     FunctionAssignmentSet() = default;
 
-    FunctionAssignmentSet(View<Index<formalism::Function<T>>, C> function, const analysis::DomainListList& parameter_domains, size_t num_objects);
+    FunctionAssignmentSet(View<Index<formalism::Function<T>>, C> function, const analysis::DomainListList& parameter_domains, size_t num_objects) :
+        m_function(function.get_index()),
+        m_hash(PerfectAssignmentHash(parameter_domains, num_objects)),
+        m_set(m_hash.size(), ClosedInterval<float_t>())
+    {
+    }
 
-    void reset() noexcept;
+    void reset() noexcept { std::fill(m_set.begin(), m_set.end(), ClosedInterval<float_t>()); }
 
-    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value);
+    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value)
+    {
+        const auto arity = function_term.get_function().get_arity();
+        const auto arguments = function_term.get_binding().get_objects();
 
-    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> fterm_value);
+        assert(function_term.get_function().get_index() == m_function);
 
-    ClosedInterval<float_t> operator[](const EmptyAssignment& assignment) const noexcept;
-    ClosedInterval<float_t> operator[](const VertexAssignment& assignment) const noexcept;
-    ClosedInterval<float_t> operator[](const EdgeAssignment& assignment) const noexcept;
+        auto& empty_assignment_bound = m_set[EmptyAssignment::rank];
+        empty_assignment_bound = hull(empty_assignment_bound, ClosedInterval<float_t>(value, value));
 
-    size_t size() const noexcept;
-    const PerfectAssignmentHash& get_hash() const noexcept;
+        for (uint_t first_index = 0; first_index < arity; ++first_index)
+        {
+            const auto first_object = arguments[first_index];
+
+            // Complete vertex.
+            auto& single_assignment_bound = m_set[m_hash.get_rank<false>(VertexAssignment(formalism::ParameterIndex(first_index), first_object.get_index()))];
+            single_assignment_bound = hull(single_assignment_bound, ClosedInterval<float_t>(value, value));
+
+            for (uint_t second_index = first_index + 1; second_index < arity; ++second_index)
+            {
+                const auto second_object = arguments[second_index];
+
+                // Ordered complete edge.
+                auto& double_assignment_bound = m_set[m_hash.get_rank<false>(EdgeAssignment(formalism::ParameterIndex(first_index),
+                                                                                            first_object.get_index(),
+                                                                                            formalism::ParameterIndex(second_index),
+                                                                                            second_object.get_index()))];
+                double_assignment_bound = hull(double_assignment_bound, ClosedInterval<float_t>(value, value));
+            }
+        }
+    }
+
+    void insert(View<Index<formalism::GroundFunctionTermValue<T>>, C> fterm_value) { insert(fterm_value.get_fterm(), fterm_value.get_value()); }
+
+    ClosedInterval<float_t> operator[](const EmptyAssignment& assignment) const noexcept { return m_set[EmptyAssignment::rank]; }
+    ClosedInterval<float_t> operator[](const VertexAssignment& assignment) const noexcept { return m_set[m_hash.template get_rank<false>(assignment)]; }
+    ClosedInterval<float_t> operator[](const EdgeAssignment& assignment) const noexcept { return m_set[m_hash.template get_rank<false>(assignment)]; }
+
+    ClosedInterval<float_t> at(const EmptyAssignment& assignment) const noexcept { return m_set[EmptyAssignment::rank]; }
+    ClosedInterval<float_t> at(const VertexAssignment& assignment) const noexcept { return m_set[m_hash.template get_rank<true>(assignment)]; }
+    ClosedInterval<float_t> at(const EdgeAssignment& assignment) const noexcept { return m_set[m_hash.template get_rank<true>(assignment)]; }
+
+    size_t size() const noexcept { return m_set.size(); }
+    const PerfectAssignmentHash& get_hash() const noexcept { return m_hash; }
 };
 
 template<formalism::FactKind T, formalism::Context C>
@@ -132,19 +311,47 @@ private:
 public:
     FunctionAssignmentSets() = default;
 
-    FunctionAssignmentSets(View<IndexList<formalism::Function<T>>, C> functions, const analysis::DomainListListList& function_domains, size_t num_objects);
+    FunctionAssignmentSets(View<IndexList<formalism::Function<T>>, C> functions, const analysis::DomainListListList& function_domains, size_t num_objects) :
+        m_sets()
+    {
+        /* Validate inputs. */
+        for (uint_t i = 0; i < functions.size(); ++i)
+            assert(functions[i].get_index().get_value() == i);
 
-    void reset() noexcept;
+        /* Initialize sets. */
+        for (const auto function : functions)
+            m_sets.emplace_back(FunctionAssignmentSet<T, C>(function, function_domains[function.get_index().get_value()], num_objects));
+    }
 
-    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value);
+    void reset() noexcept
+    {
+        for (auto& set : m_sets)
+            set.reset();
+    }
 
-    void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, C> function_terms, const std::vector<float_t>& values);
+    void insert(View<Index<formalism::GroundFunctionTerm<T>>, C> function_term, float_t value)
+    {
+        m_sets[function_term.get_function().get_index().get_value()].insert(function_term, value);
+    }
 
-    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> fterm_values);
+    void insert(View<IndexList<formalism::GroundFunctionTerm<T>>, C> function_terms, const std::vector<float_t>& values)
+    {
+        for (size_t i = 0; i < function_terms.size(); ++i)
+            m_sets[function_terms[i].get_function().get_index().get_value()].insert(function_terms[i], values[i]);
+    }
 
-    const FunctionAssignmentSet<T, C>& get_set(Index<formalism::Function<T>> index) const noexcept;
+    void insert(View<IndexList<formalism::GroundFunctionTermValue<T>>, C> fterm_values)
+    {
+        for (size_t i = 0; i < fterm_values.size(); ++i)
+            m_sets[fterm_values[i].get_fterm().get_function().get_index().get_value()].insert(fterm_values[i]);
+    }
 
-    size_t size() const noexcept;
+    const FunctionAssignmentSet<T, C>& get_set(Index<formalism::Function<T>> index) const noexcept { return m_sets[index.get_value()]; }
+
+    size_t size() const noexcept
+    {
+        return std::accumulate(m_sets.begin(), m_sets.end(), size_t { 0 }, [](auto&& lhs, auto&& rhs) { return lhs + rhs.size(); });
+    }
 };
 
 template<formalism::FactKind T, formalism::Context C>
@@ -184,9 +391,34 @@ struct AssignmentSets
     TaggedAssignmentSets<formalism::StaticTag, C> static_sets;
     TaggedAssignmentSets<formalism::FluentTag, C> fluent_sets;
 
-    AssignmentSets(View<Index<formalism::Program>, C> program, const analysis::ProgramVariableDomains& domains);
+    AssignmentSets(View<Index<formalism::Program>, C> program, const analysis::ProgramVariableDomains& domains) :
+        static_sets(program.template get_predicates<formalism::StaticTag>(),
+                    program.template get_functions<formalism::StaticTag>(),
+                    domains.static_predicate_domains,
+                    domains.static_function_domains,
+                    program.get_objects().size()),
+        fluent_sets(program.template get_predicates<formalism::FluentTag>(),
+                    program.template get_functions<formalism::FluentTag>(),
+                    domains.fluent_predicate_domains,
+                    domains.fluent_function_domains,
+                    program.get_objects().size())
+    {
+    }
 
-    AssignmentSets(View<Index<formalism::Program>, C> program, const analysis::ProgramVariableDomains& domains, const FactSets<C>& fact_sets);
+    AssignmentSets(View<Index<formalism::Program>, C> program, const analysis::ProgramVariableDomains& domains, const FactSets<C>& fact_sets) :
+        static_sets(program.template get_predicates<formalism::StaticTag>(),
+                    program.template get_functions<formalism::StaticTag>(),
+                    domains.static_predicate_domains,
+                    domains.static_function_domains,
+                    program.get_objects().size()),
+        fluent_sets(program.template get_predicates<formalism::FluentTag>(),
+                    program.template get_functions<formalism::FluentTag>(),
+                    domains.fluent_predicate_domains,
+                    domains.fluent_function_domains,
+                    program.get_objects().size())
+    {
+        insert(fact_sets);
+    }
 
     template<formalism::FactKind T>
     void reset() noexcept

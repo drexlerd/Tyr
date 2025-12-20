@@ -334,11 +334,11 @@ bool Vertex<C>::consistent_literals(View<IndexList<Literal<T>>, C> literals, con
         const auto atom = literal.get_atom();
         const auto predicate = atom.get_predicate();
 
-        assert(predicate.get_arity() >= 1);  ///< We test nullary literals separately
+        assert(effective_arity(literal) >= 1);  ///< We test nullary literals separately
 
         const auto negated = !literal.get_polarity();
 
-        assert(!negated || predicate.get_arity() == 1);  ///< Can only handly unary negated literals due to overapproximation
+        assert(!negated || effective_arity(literal) == 1);  ///< Can only handly unary negated literals due to overapproximation
 
         const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate.get_index());
         const auto terms = atom.get_terms();
@@ -347,19 +347,11 @@ bool Vertex<C>::consistent_literals(View<IndexList<Literal<T>>, C> literals, con
         {
             assert(assignment.is_valid());
 
-            const auto true_assignment = predicate_assignment_set[assignment];
-
-            // std::cout << "Vertex Assignment: " << assignment << " rank: " << predicate_assignment_set.get_hash().get_assignment_rank(assignment) << " "
-            //           << true_assignment << std::endl;
+            const auto true_assignment = predicate_assignment_set.at(assignment);
 
             if (negated == true_assignment)
-            {
-                // std::cout << "Inconsistent literal: " << literal << std::endl;
                 return false;
-            }
         }
-
-        // std::cout << "Consistent literal: " << literal << std::endl;
     }
 
     return true;
@@ -369,12 +361,6 @@ template bool Vertex<Repository>::consistent_literals(View<IndexList<Literal<Sta
                                                       const PredicateAssignmentSets<StaticTag, Repository>& predicate_assignment_sets) const noexcept;
 template bool Vertex<Repository>::consistent_literals(View<IndexList<Literal<FluentTag>>, Repository> literals,
                                                       const PredicateAssignmentSets<FluentTag, Repository>& predicate_assignment_sets) const noexcept;
-template bool Vertex<OverlayRepository<Repository>>::consistent_literals(
-    View<IndexList<Literal<StaticTag>>, OverlayRepository<Repository>> literals,
-    const PredicateAssignmentSets<StaticTag, OverlayRepository<Repository>>& predicate_assignment_sets) const noexcept;
-template bool Vertex<OverlayRepository<Repository>>::consistent_literals(
-    View<IndexList<Literal<FluentTag>>, OverlayRepository<Repository>> literals,
-    const PredicateAssignmentSets<FluentTag, OverlayRepository<Repository>>& predicate_assignment_sets) const noexcept;
 
 template<Context C>
 bool Vertex<C>::consistent_numeric_constraints(View<DataList<BooleanOperator<Data<FunctionExpression>>>, C> numeric_constraints,
@@ -382,7 +368,7 @@ bool Vertex<C>::consistent_numeric_constraints(View<DataList<BooleanOperator<Dat
 {
     for (const auto numeric_constraint : numeric_constraints)
     {
-        assert(max_arity(numeric_constraint).get_arity() >= 1);  ///< We test nullary constraints separately.
+        assert(effective_arity(numeric_constraint) >= 1);  ///< We test nullary constraints separately.
 
         if (!is_satisfiable(numeric_constraint, *this, assignment_sets))
             return false;
@@ -459,11 +445,11 @@ bool Edge<C>::consistent_literals(View<IndexList<Literal<T>>, C> literals, const
         const auto atom = literal.get_atom();
         const auto predicate = atom.get_predicate();
 
-        assert(predicate.get_arity() >= 2);  ///< We test nullary and unary literals separately.
+        assert(effective_arity(literal) >= 2);  ///< We test nullary and unary literals separately.
 
         const auto negated = !literal.get_polarity();
 
-        assert(!negated || predicate.get_arity() == 2);  ///< Can only handly binary negated literals due to overapproximation
+        assert(!negated || effective_arity(literal) == 2);  ///< Can only handly binary negated literals due to overapproximation
 
         const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate.get_index());
         const auto terms = atom.get_terms();
@@ -474,19 +460,11 @@ bool Edge<C>::consistent_literals(View<IndexList<Literal<T>>, C> literals, const
         {
             assert(assignment.is_valid());
 
-            const auto true_assignment = predicate_assignment_set[assignment];
-
-            // std::cout << "Edge Assignment: " << assignment << " rank: " << predicate_assignment_set.get_hash().get_assignment_rank(assignment) << " "
-            //           << true_assignment << std::endl;
+            const auto true_assignment = predicate_assignment_set.at(assignment);
 
             if (negated == true_assignment)
-            {
-                // std::cout << "Inconsistent literal: " << literal << std::endl;
                 return false;
-            }
         }
-
-        // std::cout << "Consistent literal: " << literal << std::endl;
     }
 
     return true;
@@ -509,7 +487,7 @@ bool Edge<C>::consistent_numeric_constraints(View<DataList<BooleanOperator<Data<
 {
     for (const auto numeric_constraint : numeric_constraints)
     {
-        assert(max_arity(numeric_constraint).get_arity() >= 2);  ///< We test nullary and unary constraints separately.
+        assert(effective_arity(numeric_constraint) >= 2);  ///< We test nullary and unary constraints separately.
 
         if (!is_satisfiable(numeric_constraint, *this, assignment_sets))
             return false;
@@ -576,14 +554,13 @@ template class Edge<OverlayRepository<Repository>>;
  * StaticConsistencyGraph
  */
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
+template<Context C>
 std::pair<details::Vertices<C>, std::vector<std::vector<uint_t>>>
-StaticConsistencyGraph<C, ConditionTag>::compute_vertices(ConditionView<ConditionTag, C> condition,
-                                                          const analysis::DomainListList& parameter_domains,
-                                                          uint_t begin_parameter_index,
-                                                          uint_t end_parameter_index,
-                                                          const TaggedAssignmentSets<StaticTag, C>& static_assignment_sets)
+StaticConsistencyGraph<C>::compute_vertices(View<Index<ConjunctiveCondition>, C> condition,
+                                            const analysis::DomainListList& parameter_domains,
+                                            uint_t begin_parameter_index,
+                                            uint_t end_parameter_index,
+                                            const TaggedAssignmentSets<StaticTag, C>& static_assignment_sets)
 {
     auto vertices = details::Vertices<C> {};
 
@@ -616,12 +593,11 @@ StaticConsistencyGraph<C, ConditionTag>::compute_vertices(ConditionView<Conditio
     return { std::move(vertices), std::move(partitions) };
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
+template<Context C>
 std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>>
-StaticConsistencyGraph<C, ConditionTag>::compute_edges(ConditionView<ConditionTag, C> condition,
-                                                       const TaggedAssignmentSets<StaticTag, C>& static_assignment_sets,
-                                                       const details::Vertices<C>& vertices)
+StaticConsistencyGraph<C>::compute_edges(View<Index<ConjunctiveCondition>, C> condition,
+                                         const TaggedAssignmentSets<StaticTag, C>& static_assignment_sets,
+                                         const details::Vertices<C>& vertices)
 {
     auto sources = std::vector<uint_t> {};
 
@@ -661,15 +637,14 @@ StaticConsistencyGraph<C, ConditionTag>::compute_edges(ConditionView<ConditionTa
     return { std::move(sources), std::move(target_offsets), std::move(targets) };
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-StaticConsistencyGraph<C, ConditionTag>::StaticConsistencyGraph(ConditionView<ConditionTag, C> condition,
-                                                                ConditionView<ConditionTag, C> arity_geq_1_overapproximation_condition,
-                                                                ConditionView<ConditionTag, C> arity_geq_2_overapproximation_condition,
-                                                                const analysis::DomainListList& parameter_domains,
-                                                                uint_t begin_parameter_index,
-                                                                uint_t end_parameter_index,
-                                                                const TaggedAssignmentSets<StaticTag, C>& static_assignment_sets) :
+template<Context C>
+StaticConsistencyGraph<C>::StaticConsistencyGraph(View<Index<ConjunctiveCondition>, C> condition,
+                                                  View<Index<ConjunctiveCondition>, C> arity_geq_1_overapproximation_condition,
+                                                  View<Index<ConjunctiveCondition>, C> arity_geq_2_overapproximation_condition,
+                                                  const analysis::DomainListList& parameter_domains,
+                                                  uint_t begin_parameter_index,
+                                                  uint_t end_parameter_index,
+                                                  const TaggedAssignmentSets<StaticTag, C>& static_assignment_sets) :
     m_condition(condition),
     m_arity_geq_1_overapproximation_condition(arity_geq_1_overapproximation_condition),
     m_arity_geq_2_overapproximation_condition(arity_geq_2_overapproximation_condition)
@@ -686,114 +661,99 @@ StaticConsistencyGraph<C, ConditionTag>::StaticConsistencyGraph(ConditionView<Co
     m_targets = std::move(targets_);
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-const details::Vertex<C>& StaticConsistencyGraph<C, ConditionTag>::get_vertex(uint_t index) const noexcept
+template<Context C>
+const details::Vertex<C>& StaticConsistencyGraph<C>::get_vertex(uint_t index) const noexcept
 {
     return m_vertices[index];
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-size_t StaticConsistencyGraph<C, ConditionTag>::get_num_vertices() const noexcept
+template<Context C>
+size_t StaticConsistencyGraph<C>::get_num_vertices() const noexcept
 {
     return m_vertices.size();
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-size_t StaticConsistencyGraph<C, ConditionTag>::get_num_edges() const noexcept
+template<Context C>
+size_t StaticConsistencyGraph<C>::get_num_edges() const noexcept
 {
     return m_targets.size();
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-ConditionView<ConditionTag, C> StaticConsistencyGraph<C, ConditionTag>::get_condition() const noexcept
+template<Context C>
+View<Index<ConjunctiveCondition>, C> StaticConsistencyGraph<C>::get_condition() const noexcept
 {
     return m_condition;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-const std::vector<std::vector<uint_t>>& StaticConsistencyGraph<C, ConditionTag>::get_partitions() const noexcept
+template<Context C>
+const std::vector<std::vector<uint_t>>& StaticConsistencyGraph<C>::get_partitions() const noexcept
 {
     return m_partitions;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-const StaticConsistencyGraph<C, ConditionTag>& StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::get_graph() const noexcept
+template<Context C>
+const StaticConsistencyGraph<C>& StaticConsistencyGraph<C>::EdgeIterator::get_graph() const noexcept
 {
     assert(m_graph);
     return *m_graph;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-void StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::advance() noexcept
+template<Context C>
+void StaticConsistencyGraph<C>::EdgeIterator::advance() noexcept
 {
     if (++m_targets_pos >= get_graph().m_target_offsets[m_sources_pos])
         ++m_sources_pos;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_sources_pos(0), m_targets_pos(0)
+template<Context C>
+StaticConsistencyGraph<C>::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_sources_pos(0), m_targets_pos(0)
 {
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::EdgeIterator(const StaticConsistencyGraph<C, ConditionTag>& graph, bool begin) noexcept :
+template<Context C>
+StaticConsistencyGraph<C>::EdgeIterator::EdgeIterator(const StaticConsistencyGraph<C>& graph, bool begin) noexcept :
     m_graph(&graph),
     m_sources_pos(begin ? 0 : graph.m_sources.size()),
     m_targets_pos(begin ? 0 : graph.m_targets.size())
 {
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::value_type StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::operator*() const noexcept
+template<Context C>
+StaticConsistencyGraph<C>::EdgeIterator::value_type StaticConsistencyGraph<C>::EdgeIterator::operator*() const noexcept
 {
     assert(m_sources_pos < get_graph().m_sources.size());
     assert(m_targets_pos < get_graph().m_targets.size());
     return details::Edge(get_graph().m_vertices[get_graph().m_sources[m_sources_pos]], get_graph().m_vertices[get_graph().m_targets[m_targets_pos]]);
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-StaticConsistencyGraph<C, ConditionTag>::EdgeIterator& StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::operator++() noexcept
+template<Context C>
+StaticConsistencyGraph<C>::EdgeIterator& StaticConsistencyGraph<C>::EdgeIterator::operator++() noexcept
 {
     advance();
     return *this;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-StaticConsistencyGraph<C, ConditionTag>::EdgeIterator StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::operator++(int) noexcept
+template<Context C>
+StaticConsistencyGraph<C>::EdgeIterator StaticConsistencyGraph<C>::EdgeIterator::operator++(int) noexcept
 {
     EdgeIterator tmp = *this;
     ++(*this);
     return tmp;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-bool StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::operator==(const StaticConsistencyGraph<C, ConditionTag>::EdgeIterator& other) const noexcept
+template<Context C>
+bool StaticConsistencyGraph<C>::EdgeIterator::operator==(const StaticConsistencyGraph<C>::EdgeIterator& other) const noexcept
 {
     return m_targets_pos == other.m_targets_pos && m_sources_pos == other.m_sources_pos;
 }
 
-template<Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
-bool StaticConsistencyGraph<C, ConditionTag>::EdgeIterator::operator!=(const StaticConsistencyGraph<C, ConditionTag>::EdgeIterator& other) const noexcept
+template<Context C>
+bool StaticConsistencyGraph<C>::EdgeIterator::operator!=(const StaticConsistencyGraph<C>::EdgeIterator& other) const noexcept
 {
     return !(*this == other);
 }
 
-template class StaticConsistencyGraph<Repository, ConjunctiveCondition>;
-template class StaticConsistencyGraph<OverlayRepository<Repository>, FDRConjunctiveCondition>;
+template class StaticConsistencyGraph<Repository>;
 
 namespace details
 {
@@ -809,7 +769,7 @@ compute_tightest_closed_interval_helper(ClosedInterval<float_t> bounds, const Fu
     {
         assert(assignment.is_valid());
 
-        bounds = intersect(bounds, sets[assignment]);
+        bounds = intersect(bounds, sets.at(assignment));
         if (empty(bounds))
             break;  // early exit
     }
@@ -944,15 +904,15 @@ create_ground_nullary_condition(View<Index<ConjunctiveCondition>, Repository> co
     auto grounder_context = GrounderContext { builder, context, binding_empty };
 
     for (const auto literal : condition.get_literals<StaticTag>())
-        if (literal.get_atom().get_predicate().get_arity() == 0)
+        if (effective_arity(literal) == 0)
             conj_cond.static_literals.push_back(ground_datalog(literal, grounder_context).first);
 
     for (const auto literal : condition.get_literals<FluentTag>())
-        if (literal.get_atom().get_predicate().get_arity() == 0)
+        if (effective_arity(literal) == 0)
             conj_cond.fluent_literals.push_back(ground_datalog(literal, grounder_context).first);
 
     for (const auto numeric_constraint : condition.get_numeric_constraints())
-        if (max_arity(numeric_constraint).is_nullary())
+        if (effective_arity(numeric_constraint) == 0)
             conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, grounder_context));
 
     canonicalize(conj_cond);
@@ -968,18 +928,19 @@ std::pair<Index<ConjunctiveCondition>, bool> create_arity_geq_k_overapproximatio
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
+    for (const auto variable : condition.get_variables())
+        conj_cond.variables.push_back(variable.get_index());
+
     for (const auto literal : condition.get_literals<StaticTag>())
-        if ((!literal.get_polarity() && literal.get_atom().get_predicate().get_arity() == k)
-            || (literal.get_polarity() && literal.get_atom().get_predicate().get_arity() >= k))
+        if ((!literal.get_polarity() && effective_arity(literal) == k) || (literal.get_polarity() && effective_arity(literal) >= k))
             conj_cond.static_literals.push_back(literal.get_index());
 
     for (const auto literal : condition.get_literals<FluentTag>())
-        if ((!literal.get_polarity() && literal.get_atom().get_predicate().get_arity() == k)
-            || (literal.get_polarity() && literal.get_atom().get_predicate().get_arity() >= k))
+        if ((!literal.get_polarity() && effective_arity(literal) == k) || (literal.get_polarity() && effective_arity(literal) >= k))
             conj_cond.fluent_literals.push_back(literal.get_index());
 
     for (const auto numeric_constraint : condition.get_numeric_constraints())
-        if (max_arity(numeric_constraint).get_arity() >= k)
+        if (effective_arity(numeric_constraint) >= k)
             conj_cond.numeric_constraints.push_back(numeric_constraint.get_data());
 
     canonicalize(conj_cond);
@@ -993,16 +954,19 @@ create_overapproximation_conflicting_conjunctive_condition(View<Index<Conjunctiv
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
+    for (const auto variable : condition.get_variables())
+        conj_cond.variables.push_back(variable.get_index());
+
     for (const auto literal : condition.get_literals<StaticTag>())
-        if (literal.get_atom().get_predicate().get_arity() > 2)
+        if (effective_arity(literal) > 2)
             conj_cond.static_literals.push_back(literal.get_index());
 
     for (const auto literal : condition.get_literals<FluentTag>())
-        if (literal.get_atom().get_predicate().get_arity() > 2)
+        if (effective_arity(literal) > 2)
             conj_cond.fluent_literals.push_back(literal.get_index());
 
     for (const auto numeric_constraint : condition.get_numeric_constraints())
-        if (max_arity(numeric_constraint).get_arity() >= 2)
+        if (effective_arity(numeric_constraint) > 2)
             conj_cond.numeric_constraints.push_back(numeric_constraint.get_data());
 
     canonicalize(conj_cond);

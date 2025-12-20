@@ -83,7 +83,7 @@ struct RuleExecutionContext
     const View<Index<formalism::ConjunctiveCondition>, formalism::Repository> arity_geq_1_overapproximation_condition;
     const View<Index<formalism::ConjunctiveCondition>, formalism::Repository> arity_geq_2_overapproximation_condition;
     const View<Index<formalism::ConjunctiveCondition>, formalism::Repository> conflicting_overapproximation_condition;
-    const StaticConsistencyGraph<formalism::Repository, formalism::ConjunctiveCondition> static_consistency_graph;
+    const StaticConsistencyGraph<formalism::Repository> static_consistency_graph;
 
     kpkc::DenseKPartiteGraph consistency_graph;
     kpkc::Workspace kpkc_workspace;

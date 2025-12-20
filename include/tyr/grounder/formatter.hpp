@@ -33,8 +33,8 @@ std::ostream& print(std::ostream& os, const grounder::details::Vertex<C>& el);
 template<formalism::Context C>
 std::ostream& print(std::ostream& os, const grounder::details::Edge<C>& el);
 
-template<formalism::Context C, class ConditionTag>
-std::ostream& print(std::ostream& os, const grounder::StaticConsistencyGraph<C, ConditionTag>& el);
+template<formalism::Context C>
+std::ostream& print(std::ostream& os, const grounder::StaticConsistencyGraph<C>& el);
 
 namespace grounder
 {
@@ -51,8 +51,8 @@ extern std::ostream& operator<<(std::ostream& os, const VertexAssignment& el);
 
 extern std::ostream& operator<<(std::ostream& os, const EdgeAssignment& el);
 
-template<formalism::Context C, class ConditionTag>
-std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph<C, ConditionTag>& el);
+template<formalism::Context C>
+std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph<C>& el);
 }  // end namespace grounder
 }
 

@@ -87,7 +87,7 @@ static auto create_nullary_ground_head_in_stage(View<Index<Atom<FluentTag>>, Rep
 }
 
 static auto create_unary_ground_head_in_stage(uint_t vertex_index,
-                                              const StaticConsistencyGraph<Repository, ConjunctiveCondition>& consistency_graph,
+                                              const StaticConsistencyGraph<Repository>& consistency_graph,
                                               View<Index<Atom<FluentTag>>, Repository> head,
                                               GrounderContext<Repository>& context)
 {
@@ -101,7 +101,7 @@ static auto create_unary_ground_head_in_stage(uint_t vertex_index,
 }
 
 static auto create_general_ground_head_in_stage(const std::vector<uint_t>& clique,
-                                                const StaticConsistencyGraph<Repository, ConjunctiveCondition>& consistency_graph,
+                                                const StaticConsistencyGraph<Repository>& consistency_graph,
                                                 View<Index<Atom<FluentTag>>, Repository> head,
                                                 GrounderContext<Repository>& context)
 {
@@ -133,13 +133,11 @@ void ground_nullary_case(const FactsExecutionContext& fact_execution_context,
         auto ground_context_rule =
             GrounderContext { thread_execution_context.builder, rule_execution_context.overlay_repository, rule_stage_execution_context.binding };
 
-        if (is_valid_binding(rule_execution_context.rule.get_body(), fact_execution_context.fact_sets, ground_context_rule))
+        if (is_valid_binding(rule_execution_context.conflicting_overapproximation_condition, fact_execution_context.fact_sets, ground_context_rule))
         {
             // Ensure that ground rule is truly applicable
             assert(is_applicable(make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository),
                                  fact_execution_context.fact_sets));
-
-            // std::cout << ground_rule << std::endl;
 
             rule_stage_execution_context.ground_heads.insert(ground_head);
             rule_execution_context.ground_heads.push_back(ground_head);
@@ -170,14 +168,12 @@ void ground_unary_case(const FactsExecutionContext& fact_execution_context,
             auto ground_context_rule =
                 GrounderContext { thread_execution_context.builder, rule_execution_context.overlay_repository, rule_stage_execution_context.binding };
 
-            if (is_valid_binding(rule_execution_context.rule.get_body(), fact_execution_context.fact_sets, ground_context_rule))
+            if (is_valid_binding(rule_execution_context.conflicting_overapproximation_condition, fact_execution_context.fact_sets, ground_context_rule))
             {
                 // Ensure that ground rule is truly applicable
                 assert(
                     is_applicable(make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository),
                                   fact_execution_context.fact_sets));
-
-                // std::cout << ground_rule << std::endl;
 
                 rule_stage_execution_context.ground_heads.insert(ground_head);
                 rule_execution_context.ground_heads.push_back(ground_head);
@@ -214,36 +210,6 @@ void ground_general_case(const FactsExecutionContext& fact_execution_context,
 
                 if (is_valid_binding(rule_execution_context.conflicting_overapproximation_condition, fact_execution_context.fact_sets, ground_context_rule))
                 {
-                    std::cout << "rule: " << rule_execution_context.rule.get_index() << std::endl;
-                    std::cout << rule_execution_context.rule << std::endl;
-                    std::cout << "nullary_condition: " << std::endl;
-                    std::cout << rule_execution_context.nullary_condition << std::endl;
-                    std::cout << "arity_geq_1_overapproximation_condition: " << std::endl;
-                    std::cout << rule_execution_context.arity_geq_1_overapproximation_condition << std::endl;
-                    std::cout << "arity_geq_2_overapproximation_condition: " << std::endl;
-                    std::cout << rule_execution_context.arity_geq_2_overapproximation_condition << std::endl;
-                    std::cout << "conflicting_overapproximation_condition: " << std::endl;
-                    std::cout << rule_execution_context.conflicting_overapproximation_condition << std::endl;
-                    std::cout << rule_execution_context.static_consistency_graph << std::endl;
-
-                    if (!is_applicable(
-                            make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository),
-                            fact_execution_context.fact_sets))
-                    {
-                        std::cout << make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first,
-                                               rule_execution_context.overlay_repository)
-                                  << std::endl;
-                    }
-
-                    std::cout << "static facts: " << std::endl;
-                    std::cout << fact_execution_context.fact_sets.static_sets.predicate.get_facts() << std::endl;
-                    std::cout << "fluent facts: " << std::endl;
-                    std::cout << fact_execution_context.fact_sets.fluent_sets.predicate.get_facts() << std::endl;
-                    std::cout << "ground rule: " << std::endl;
-
-                    std::cout << make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository)
-                              << std::endl;
-
                     // Ensure that ground rule is truly applicable
                     assert(is_applicable(
                         make_view(ground_datalog(rule_execution_context.rule, ground_context_rule).first, rule_execution_context.overlay_repository),

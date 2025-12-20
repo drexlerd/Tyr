@@ -55,7 +55,8 @@ TEST(TyrTests, TyrGrounderAssignmentHash)
     auto domains = analysis::DomainListList { { o_39 }, { o_3, o_4 }, { o_40 } };
     auto hash = PerfectAssignmentHash(domains, num_objects);
 
-    EXPECT_NE(hash.get_assignment_rank(EdgeAssignment(p_0, o_39, p_1, o_15)), hash.get_assignment_rank(EdgeAssignment(p_0, o_39, p_1, o_14)));
+    // Both are mapped to the same index. We now have assertions that guard against this unintended behavior, resulting from illformed variable domain analysis.
+    EXPECT_EQ(hash.get_rank<true>(EdgeAssignment(p_0, o_39, p_1, o_15)), hash.get_rank<true>(EdgeAssignment(p_0, o_39, p_1, o_14)));
 }
 
 TEST(TyrTests, TyrGrounderAssignmentSets)

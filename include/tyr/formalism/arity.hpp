@@ -22,90 +22,124 @@
 
 namespace tyr::formalism
 {
-struct MaxArityResult
-{
-    size_t constraint = 0;
-    size_t fterm = 0;
-
-    friend MaxArityResult max_arity(const MaxArityResult& lhs, const MaxArityResult& rhs) noexcept
-    {
-        return MaxArityResult { std::max(lhs.constraint, rhs.constraint), std::max(lhs.fterm, rhs.fterm) };
-    }
-
-    size_t get_arity() const noexcept { return std::max(constraint, fterm); }
-    bool is_nullary() const noexcept { return constraint == 0 && fterm == 0; }
-};
-
-inline MaxArityResult max_arity(float_t element);
+inline size_t effective_arity(float_t element);
 
 template<ArithmeticOpKind O, Context C>
-MaxArityResult max_arity(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C> element);
+size_t effective_arity(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C> element);
 
 template<OpKind O, Context C>
-MaxArityResult max_arity(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C> element);
+size_t effective_arity(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C> element);
 
 template<ArithmeticOpKind O, Context C>
-MaxArityResult max_arity(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C> element);
+size_t effective_arity(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C> element);
 
 template<FactKind T, Context C>
-MaxArityResult max_arity(View<Index<FunctionTerm<T>>, C> element);
+size_t effective_arity(View<Index<FunctionTerm<T>>, C> element);
 
 template<Context C>
-MaxArityResult max_arity(View<Data<FunctionExpression>, C> element);
+size_t effective_arity(View<Data<FunctionExpression>, C> element);
 
 template<Context C>
-MaxArityResult max_arity(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C> element);
+size_t effective_arity(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C> element);
 
 template<Context C>
-MaxArityResult max_arity(View<Data<BooleanOperator<Data<FunctionExpression>>>, C> element);
+size_t effective_arity(View<Data<BooleanOperator<Data<FunctionExpression>>>, C> element);
 
-inline MaxArityResult max_arity(float_t element) { return MaxArityResult(); }
+inline size_t effective_arity(float_t element) { return 0; }
 
 template<ArithmeticOpKind O, Context C>
-MaxArityResult max_arity(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C> element)
+size_t effective_arity(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C> element)
 {
-    return max_arity(element.get_arg());
+    return effective_arity(element.get_arg());
 }
 
 template<OpKind O, Context C>
-MaxArityResult max_arity(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C> element)
+size_t effective_arity(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C> element)
 {
-    return max_arity(max_arity(element.get_lhs()), max_arity(element.get_rhs()));
+    return std::max(effective_arity(element.get_lhs()), effective_arity(element.get_rhs()));
 }
 
 template<ArithmeticOpKind O, Context C>
-MaxArityResult max_arity(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C> element)
+size_t effective_arity(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C> element)
 {
     const auto child_fexprs = element.get_args();
 
     return std::accumulate(std::next(child_fexprs.begin()),  // Start from the second expression
                            child_fexprs.end(),
-                           max_arity(child_fexprs.front()),
-                           [&](const auto& value, const auto& child_expr) { return max_arity(value, max_arity(child_expr)); });
+                           effective_arity(child_fexprs.front()),
+                           [&](const auto& value, const auto& child_expr) { return std::max(value, effective_arity(child_expr)); });
 }
 
 template<FactKind T, Context C>
-MaxArityResult max_arity(View<Index<FunctionTerm<T>>, C> element)
+size_t effective_arity(View<Index<FunctionTerm<T>>, C> element)
 {
-    return MaxArityResult { 0, element.get_function().get_arity() };
+    auto arity = 0;
+
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, View<Index<Object>, C>>) {}
+                else if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    ++arity;
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    return arity;
 }
 
 template<Context C>
-MaxArityResult max_arity(View<Data<FunctionExpression>, C> element)
+size_t effective_arity(View<Data<FunctionExpression>, C> element)
 {
-    return visit([&](auto&& arg) { return max_arity(arg); }, element.get_variant());
+    return visit([&](auto&& arg) { return effective_arity(arg); }, element.get_variant());
 }
 
 template<Context C>
-MaxArityResult max_arity(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C> element)
+size_t effective_arity(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C> element)
 {
-    return visit([&](auto&& arg) { return max_arity(arg); }, element.get_variant());
+    return visit([&](auto&& arg) { return effective_arity(arg); }, element.get_variant());
 }
 
 template<Context C>
-MaxArityResult max_arity(View<Data<BooleanOperator<Data<FunctionExpression>>>, C> element)
+size_t effective_arity(View<Data<BooleanOperator<Data<FunctionExpression>>>, C> element)
 {
-    return visit([&](auto&& arg) { return max_arity(arg); }, element.get_variant());
+    return visit([&](auto&& arg) { return effective_arity(arg); }, element.get_variant());
+}
+
+template<FactKind T, Context C>
+size_t effective_arity(View<Index<Atom<T>>, C> element)
+{
+    size_t arity = 0;
+
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, View<Index<Object>, C>>) {}
+                else if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    ++arity;
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    return arity;
+}
+
+template<FactKind T, Context C>
+size_t effective_arity(View<Index<Literal<T>>, C> element)
+{
+    return effective_arity(element.get_atom());
 }
 }
 

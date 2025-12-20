@@ -95,14 +95,13 @@ template<formalism::Context C>
 using Vertices = std::vector<Vertex<C>>;
 }
 
-template<formalism::Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
+template<formalism::Context C>
 class StaticConsistencyGraph
 {
 private:
     /// @brief Helper to initialize vertices.
     std::pair<details::Vertices<C>, std::vector<std::vector<uint_t>>>
-    compute_vertices(ConditionView<ConditionTag, C> condition,
+    compute_vertices(View<Index<formalism::ConjunctiveCondition>, C> condition,
                      const analysis::DomainListList& parameter_domains,
                      uint_t begin_parameter_index,
                      uint_t end_parameter_index,
@@ -110,14 +109,14 @@ private:
 
     /// @brief Helper to initialize edges.
     std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>>
-    compute_edges(ConditionView<ConditionTag, C> condition,
+    compute_edges(View<Index<formalism::ConjunctiveCondition>, C> condition,
                   const TaggedAssignmentSets<formalism::StaticTag, C>& static_assignment_sets,
                   const details::Vertices<C>& vertices);
 
 public:
-    StaticConsistencyGraph(ConditionView<ConditionTag, C> condition,
-                           ConditionView<ConditionTag, C> arity_geq_1_overapproximation_condition,
-                           ConditionView<ConditionTag, C> arity_geq_2_overapproximation_condition,
+    StaticConsistencyGraph(View<Index<formalism::ConjunctiveCondition>, C> condition,
+                           View<Index<formalism::ConjunctiveCondition>, C> arity_geq_1_overapproximation_condition,
+                           View<Index<formalism::ConjunctiveCondition>, C> arity_geq_2_overapproximation_condition,
                            const analysis::DomainListList& parameter_domains,
                            uint_t begin_parameter_index,
                            uint_t end_parameter_index,
@@ -185,13 +184,13 @@ public:
     size_t get_num_vertices() const noexcept;
     size_t get_num_edges() const noexcept;
 
-    ConditionView<ConditionTag, C> get_condition() const noexcept;
+    View<Index<formalism::ConjunctiveCondition>, C> get_condition() const noexcept;
     const std::vector<std::vector<uint_t>>& get_partitions() const noexcept;
 
 private:
-    ConditionView<ConditionTag, C> m_condition;
-    ConditionView<ConditionTag, C> m_arity_geq_1_overapproximation_condition;
-    ConditionView<ConditionTag, C> m_arity_geq_2_overapproximation_condition;
+    View<Index<formalism::ConjunctiveCondition>, C> m_condition;
+    View<Index<formalism::ConjunctiveCondition>, C> m_arity_geq_1_overapproximation_condition;
+    View<Index<formalism::ConjunctiveCondition>, C> m_arity_geq_2_overapproximation_condition;
 
     /* The data member of the consistency graph. */
     details::Vertices<C> m_vertices;

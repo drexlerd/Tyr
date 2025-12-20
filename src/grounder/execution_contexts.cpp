@@ -122,8 +122,6 @@ RuleExecutionContext::RuleExecutionContext(View<Index<Rule>, Repository> rule,
     binding(),
     ground_heads()
 {
-    std::cout << rule.get_index() << std::endl;
-    std::cout << parameter_domains << std::endl;
 }
 
 void RuleExecutionContext::clear() noexcept
@@ -134,7 +132,6 @@ void RuleExecutionContext::clear() noexcept
 
 void RuleExecutionContext::initialize(const AssignmentSets<Repository>& assignment_sets)
 {
-    std::cout << "initialize_dense_graph_and_workspace: " << rule.get_index() << std::endl;
     grounder::kpkc::initialize_dense_graph_and_workspace(static_consistency_graph, assignment_sets, consistency_graph, kpkc_workspace);
 }
 
@@ -189,6 +186,19 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<Program>, Repository
 {
     for (uint_t i = 0; i < program.get_rules().size(); ++i)
     {
+        std::cout << domains.rule_domains[i] << std::endl;
+        std::cout << make_view(create_ground_nullary_condition(program.get_rules()[i].get_body(), builder, *repository).first, *repository) << std::endl;
+        std::cout << make_view(create_arity_geq_k_overapproximation_conjunctive_condition(1, program.get_rules()[i].get_body(), builder, *repository).first,
+                               *repository)
+                  << std::endl;
+        std::cout << make_view(create_arity_geq_k_overapproximation_conjunctive_condition(2, program.get_rules()[i].get_body(), builder, *repository).first,
+                               *repository)
+                  << std::endl;
+        std::cout << make_view(create_overapproximation_conflicting_conjunctive_condition(program.get_rules()[i].get_body(), builder, *repository).first,
+                               *repository)
+                  << std::endl
+                  << std::endl;
+
         rule_execution_contexts.emplace_back(
             program.get_rules()[i],
             make_view(create_ground_nullary_condition(program.get_rules()[i].get_body(), builder, *repository).first, *repository),

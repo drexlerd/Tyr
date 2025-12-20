@@ -24,8 +24,8 @@
 namespace tyr::grounder::kpkc
 {
 
-template<formalism::Context C, class ConditionTag>
-DenseKPartiteGraph allocate_dense_graph(const StaticConsistencyGraph<C, ConditionTag>& sparse_graph)
+template<formalism::Context C>
+DenseKPartiteGraph allocate_dense_graph(const StaticConsistencyGraph<C>& sparse_graph)
 {
     auto graph = DenseKPartiteGraph();
 
@@ -50,10 +50,10 @@ DenseKPartiteGraph allocate_dense_graph(const StaticConsistencyGraph<C, Conditio
     return graph;
 }
 
-template DenseKPartiteGraph allocate_dense_graph(const StaticConsistencyGraph<formalism::Repository, formalism::ConjunctiveCondition>& sparse_graph);
+template DenseKPartiteGraph allocate_dense_graph(const StaticConsistencyGraph<formalism::Repository>& sparse_graph);
 
-template<formalism::Context C, class ConditionTag>
-Workspace allocate_workspace(const StaticConsistencyGraph<C, ConditionTag>& sparse_graph)
+template<formalism::Context C>
+Workspace allocate_workspace(const StaticConsistencyGraph<C>& sparse_graph)
 {
     auto workspace = Workspace();
 
@@ -88,10 +88,10 @@ Workspace allocate_workspace(const StaticConsistencyGraph<C, ConditionTag>& spar
     return workspace;
 }
 
-template Workspace allocate_workspace(const StaticConsistencyGraph<formalism::Repository, formalism::ConjunctiveCondition>& sparse_graph);
+template Workspace allocate_workspace(const StaticConsistencyGraph<formalism::Repository>& sparse_graph);
 
-template<formalism::Context C, class ConditionTag>
-void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<C, ConditionTag>& sparse_graph,
+template<formalism::Context C>
+void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<C>& sparse_graph,
                                           const AssignmentSets<C>& assignment_sets,
                                           DenseKPartiteGraph& ref_graph,
                                           Workspace& ref_workspace)
@@ -104,7 +104,6 @@ void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<C, Condit
     {
         ref_workspace.consistent_vertices.set(vertex.get_index());
         ref_workspace.consistent_vertices_vec.push_back(vertex.get_index());
-        // std::cout << "Consistent vertex: " << vertex << std::endl;
     }
 
     // Clear the adj matrix
@@ -122,7 +121,6 @@ void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<C, Condit
         auto& second_row = ref_graph.adjacency_matrix[second_index];
         first_row.set(second_index);
         second_row.set(first_index);
-        // std::cout << "Consistent edge: " << edge << std::endl;
     }
 
     // Initialize compatible vertices: Set bits for depth = 0 because kpkc copies depth i into depth i + 1 before recursive call.
@@ -135,7 +133,7 @@ void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<C, Condit
     ref_workspace.partition_bits.reset();
 }
 
-template void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<formalism::Repository, formalism::ConjunctiveCondition>& sparse_graph,
+template void initialize_dense_graph_and_workspace(const StaticConsistencyGraph<formalism::Repository>& sparse_graph,
                                                    const AssignmentSets<formalism::Repository>& assignment_sets,
                                                    DenseKPartiteGraph& ref_graph,
                                                    Workspace& ref_workspace);

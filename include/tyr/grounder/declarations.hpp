@@ -48,19 +48,7 @@ struct TaggedFactSets;
 template<formalism::Context C>
 struct FactSets;
 
-template<class ConditionTag, formalism::Context C>
-using ConditionView = View<Index<ConditionTag>, C>;
-
-template<class ConditionTag, class C>
-concept ConjunctiveConditionConcept = requires(const ConditionView<ConditionTag, C>& v) {
-    { v.get_arity() } -> std::convertible_to<std::size_t>;
-    v.get_numeric_constraints();
-    v.template get_literals<formalism::StaticTag>();
-    v.template get_literals<formalism::FluentTag>();
-};
-
-template<formalism::Context C, class ConditionTag>
-    requires ConjunctiveConditionConcept<ConditionTag, C>
+template<formalism::Context C>
 class StaticConsistencyGraph;
 
 namespace details

@@ -135,7 +135,7 @@ ApplicableActionProgram::ApplicableActionProgram(const LiftedTask& task) :
     m_strata(analysis::compute_rule_stratification(m_program)),
     m_listeners(analysis::compute_listeners(m_strata))
 {
-    std::cout << m_program << std::endl;
+    // std::cout << m_program << std::endl;
 }
 
 const ApplicableActionProgram::AppPredicateToActionsMapping& ApplicableActionProgram::get_predicate_to_actions_mapping() const noexcept

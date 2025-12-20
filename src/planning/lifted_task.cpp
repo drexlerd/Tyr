@@ -356,8 +356,6 @@ StateIndex LiftedTask::register_state(const UnpackedState<LiftedTask>& state)
 
 void LiftedTask::compute_extended_state(UnpackedState<LiftedTask>& unpacked_state)
 {
-    std::cout << "compute_extended_state start" << std::endl;
-
     auto& fluent_atoms = unpacked_state.template get_atoms<FluentTag>();
     auto& derived_atoms = unpacked_state.template get_atoms<DerivedTag>();
 
@@ -366,8 +364,6 @@ void LiftedTask::compute_extended_state(UnpackedState<LiftedTask>& unpacked_stat
     solve_bottom_up(m_axiom_context);
 
     read_derived_atoms_from_program_context(m_axiom_program, derived_atoms, *m_overlay_repository, m_axiom_context);
-
-    std::cout << "compute_extended_state end" << std::endl;
 }
 
 Node<LiftedTask> LiftedTask::get_initial_node()
@@ -409,8 +405,6 @@ LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node)
 void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
                                              std::vector<std::pair<View<Index<GroundAction>, OverlayRepository<Repository>>, Node<LiftedTask>>>& out_nodes)
 {
-    std::cout << "get_labeled_successor_nodes start" << std::endl;
-
     out_nodes.clear();
 
     const auto state = node.get_state();
@@ -430,8 +424,6 @@ void LiftedTask::get_labeled_successor_nodes(const Node<LiftedTask>& node,
                                                           m_action_program,
                                                           m_parameter_domains_per_cond_effect_per_action,
                                                           out_nodes);
-
-    std::cout << "get_labeled_successor_nodes end" << std::endl;
 }
 
 GroundTaskPtr LiftedTask::get_ground_task()

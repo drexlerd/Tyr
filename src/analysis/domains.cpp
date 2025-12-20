@@ -117,6 +117,122 @@ void insert_into_function_domain_sets(View<IndexList<formalism::GroundFunctionTe
 }
 
 /**
+ * Insert constants
+ */
+
+template<formalism::Context C>
+void insert_constants_into_parameter_domain(View<Data<formalism::FunctionExpression>, C> element, DomainSetListList& function_domain_sets);
+
+static void insert_constants_into_parameter_domain(float_t, DomainSetListList&) {}
+
+template<formalism::OpKind O, formalism::Context C>
+void insert_constants_into_parameter_domain(View<Index<formalism::UnaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
+                                            DomainSetListList& function_domain_sets)
+{
+    insert_constants_into_parameter_domain(element.get_arg(), function_domain_sets);
+}
+
+template<formalism::OpKind O, formalism::Context C>
+void insert_constants_into_parameter_domain(View<Index<formalism::BinaryOperator<O, Data<formalism::FunctionExpression>>>, C> element,
+                                            DomainSetListList& function_domain_sets)
+{
+    insert_constants_into_parameter_domain(element.get_lhs(), function_domain_sets);
+    insert_constants_into_parameter_domain(element.get_rhs(), function_domain_sets);
+}
+
+template<formalism::OpKind O, formalism::Context C>
+void insert_constants_into_parameter_domain(View<Index<formalism::MultiOperator<O, Data<formalism::FunctionExpression>>>, C> element,
+                                            DomainSetListList& function_domain_sets)
+{
+    for (const auto arg : element.get_args())
+        insert_constants_into_parameter_domain(arg, function_domain_sets);
+}
+
+template<formalism::FactKind T, formalism::Context C>
+void insert_constants_into_parameter_domain(View<Index<formalism::Atom<T>>, C> element, DomainSetListList& predicate_domain_sets)
+{
+    const auto predicate = element.get_predicate();
+
+    auto pos = size_t { 0 };
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, C>>)
+                {
+                    auto& predicate_domain = predicate_domain_sets[predicate.get_index().value][pos];
+                    predicate_domain.insert(arg.get_index());
+                }
+                else if constexpr (std::is_same_v<Alternative, formalism::ParameterIndex>) {}
+                else
+                {
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+                }
+            },
+            term.get_variant());
+        ++pos;
+    }
+}
+
+template<formalism::FactKind T, formalism::Context C>
+void insert_constants_into_parameter_domain(View<Index<formalism::FunctionTerm<T>>, C> element, DomainSetListList& function_domain_sets)
+{
+    const auto function = element.get_function();
+
+    auto pos = size_t { 0 };
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, View<Index<formalism::Object>, C>>)
+                {
+                    auto& function_domain = function_domain_sets[function.get_index().value][pos];
+                    function_domain.insert(arg.get_index());
+                }
+                else if constexpr (std::is_same_v<Alternative, formalism::ParameterIndex>) {}
+                else
+                {
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+                }
+            },
+            term.get_variant());
+        ++pos;
+    }
+}
+
+template<formalism::Context C>
+void insert_constants_into_parameter_domain(View<Index<formalism::FunctionTerm<formalism::FluentTag>>, C> element, DomainSetListList& function_domain_sets)
+{
+    // Dont restrict for fluent fterm
+}
+
+template<formalism::Context C>
+void insert_constants_into_parameter_domain(View<Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>, C> element,
+                                            DomainSetListList& function_domain_sets)
+{
+    visit([&](auto&& arg) { insert_constants_into_parameter_domain(arg, function_domain_sets); }, element.get_variant());
+}
+
+template<formalism::Context C>
+void insert_constants_into_parameter_domain(View<Data<formalism::FunctionExpression>, C> element, DomainSetListList& function_domain_sets)
+{
+    visit([&](auto&& arg) { insert_constants_into_parameter_domain(arg, function_domain_sets); }, element.get_variant());
+}
+
+template<formalism::Context C>
+void insert_constants_into_parameter_domain(View<Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, C> element,
+                                            DomainSetListList& function_domain_sets)
+{
+    visit([&](auto&& arg) { insert_constants_into_parameter_domain(arg, function_domain_sets); }, element.get_variant());
+}
+
+/**
  * Restrict
  */
 
@@ -211,9 +327,9 @@ void restrict_parameter_domain(View<Index<formalism::FunctionTerm<T>>, C> elemen
                 {
                     const auto parameter_index = uint_t(arg);
                     auto& parameter_domain = parameter_domains[parameter_index];
-                    const auto& predicate_domain = function_domain_sets[function.get_index().value][pos];
+                    const auto& function_domain = function_domain_sets[function.get_index().value][pos];
 
-                    intersect_inplace(parameter_domain, predicate_domain);
+                    intersect_inplace(parameter_domain, function_domain);
                 }
                 else
                 {
@@ -511,6 +627,16 @@ ProgramVariableDomains compute_variable_domains(View<Index<formalism::Program>, 
     insert_into_function_domain_sets(program.get_fterm_values<formalism::StaticTag>(), static_function_domain_sets);
     insert_into_function_domain_sets(program.get_fterm_values<formalism::FluentTag>(), fluent_function_domain_sets);
 
+    // Important not to forget constants in schemas
+    for (const auto rule : program.get_rules())
+    {
+        for (const auto literal : rule.get_body().get_literals<formalism::StaticTag>())
+            insert_constants_into_parameter_domain(literal.get_atom(), static_predicate_domain_sets);
+
+        for (const auto op : rule.get_body().get_numeric_constraints())
+            insert_constants_into_parameter_domain(op, static_function_domain_sets);
+    }
+
     ///--- Step 3: Compute rule parameter domains as tightest bound from the previously computed domains of the static predicates.
 
     auto rule_domain_sets = DomainSetListList();
@@ -607,6 +733,43 @@ TaskVariableDomains compute_variable_domains(View<Index<formalism::Task>, formal
     auto fluent_function_domain_sets = initialize_function_domain_sets(task.get_domain().get_functions<formalism::FluentTag>());
     insert_into_function_domain_sets(task.get_fterm_values<formalism::StaticTag>(), static_function_domain_sets);
     insert_into_function_domain_sets(task.get_fterm_values<formalism::FluentTag>(), fluent_function_domain_sets);
+
+    // Important not to forget constants in schemas
+    for (const auto action : task.get_domain().get_actions())
+    {
+        for (const auto literal : action.get_condition().get_literals<formalism::StaticTag>())
+            insert_constants_into_parameter_domain(literal.get_atom(), static_predicate_domain_sets);
+
+        for (const auto op : action.get_condition().get_numeric_constraints())
+            insert_constants_into_parameter_domain(op, static_function_domain_sets);
+
+        for (const auto c_effect : action.get_effects())
+        {
+            for (const auto literal : c_effect.get_condition().get_literals<formalism::StaticTag>())
+                insert_constants_into_parameter_domain(literal.get_atom(), static_predicate_domain_sets);
+
+            for (const auto op : c_effect.get_condition().get_numeric_constraints())
+                insert_constants_into_parameter_domain(op, static_function_domain_sets);
+        }
+    }
+
+    for (const auto axiom : task.get_domain().get_axioms())
+    {
+        for (const auto literal : axiom.get_body().get_literals<formalism::StaticTag>())
+            insert_constants_into_parameter_domain(literal.get_atom(), static_predicate_domain_sets);
+
+        for (const auto op : axiom.get_body().get_numeric_constraints())
+            insert_constants_into_parameter_domain(op, static_function_domain_sets);
+    }
+
+    for (const auto axiom : task.get_axioms())
+    {
+        for (const auto literal : axiom.get_body().get_literals<formalism::StaticTag>())
+            insert_constants_into_parameter_domain(literal.get_atom(), static_predicate_domain_sets);
+
+        for (const auto op : axiom.get_body().get_numeric_constraints())
+            insert_constants_into_parameter_domain(op, static_function_domain_sets);
+    }
 
     ///--- Step 3: Compute rule parameter domains as tightest bound from the previously computed domains of the static predicates.
 
