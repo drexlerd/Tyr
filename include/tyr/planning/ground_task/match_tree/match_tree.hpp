@@ -92,38 +92,31 @@ struct AtomStackEntry
 };
 
 template<typename Tag>
-bool explored(const AtomStackEntry<Tag>& el) noexcept
-{
-    return (el.true_elements.empty() || el.true_child.has_value()) && (el.false_elements.empty() || el.false_child.has_value())
-           && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
-}
-
-template<typename Tag>
 struct FactStackEntry
 {
     BaseEntry<Tag> base;
 
     Index<formalism::FDRVariable<formalism::FluentTag>> fact;
-    std::vector<std::span<Index<Tag>>> elements_per_value;
+    std::vector<uint_t> fact_to_child;
+    std::vector<std::span<Index<Tag>>> child_elements;
     std::span<Index<Tag>> dontcare_elements;
 
-    std::vector<std::optional<Data<Node<Tag>>>> children;
+    std::vector<Data<Node<Tag>>> children;
     std::optional<Data<Node<Tag>>> dontcare_child;
 
-    FactStackEntry(BaseEntry<Tag> base, std::vector<std::span<Index<Tag>>> elements_per_value, Index<formalism::FDRVariable<formalism::FluentTag>> fact) :
+    FactStackEntry(BaseEntry<Tag> base,
+                   std::vector<uint_t> fact_to_child,
+                   std::vector<std::span<Index<Tag>>> child_elements,
+                   Index<formalism::FDRVariable<formalism::FluentTag>> fact) :
         base(base),
         fact(fact),
-        elements_per_value(std::move(elements_per_value)),
-        children()
+        fact_to_child(std::move(fact_to_child)),
+        child_elements(std::move(child_elements)),
+        children(),
+        dontcare_child(std::nullopt)
     {
     }
 };
-
-template<typename Tag>
-bool explored(const FactStackEntry<Tag>& el) noexcept
-{
-    return el.children.size() == el.elements_per_value.size() && (dontcare_elements.empty() || dontcare_child.has_value());
-}
 
 template<typename Tag>
 struct ConstraintStackEntry
@@ -155,12 +148,6 @@ struct ConstraintStackEntry
 };
 
 template<typename Tag>
-bool explored(const ConstraintStackEntry<Tag>& el) noexcept
-{
-    return (el.true_elements.empty() || el.true_child.has_value()) && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
-}
-
-template<typename Tag>
 struct GeneratorStackEntry
 {
     BaseEntry<Tag> base;
@@ -173,13 +160,93 @@ struct GeneratorStackEntry
 };
 
 template<typename Tag>
+using StackEntry = std::variant<AtomStackEntry<Tag>, FactStackEntry<Tag>, ConstraintStackEntry<Tag>, GeneratorStackEntry<Tag>>;
+
+template<typename Tag>
+bool explored(const AtomStackEntry<Tag>& el) noexcept
+{
+    return (el.true_elements.empty() || el.true_child.has_value()) && (el.false_elements.empty() || el.false_child.has_value())
+           && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
+}
+
+template<typename Tag>
+std::optional<StackEntry<Tag>> next_entry(const AtomStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+Data<Node<Tag>> get_result(const AtomStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+void push_result(AtomStackEntry<Tag>& element, Data<Node<Tag>> node)
+{
+}
+
+template<typename Tag>
+bool explored(const FactStackEntry<Tag>& el) noexcept
+{
+    return el.children.size() == el.fact_to_child.size() && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
+}
+
+template<typename Tag>
+std::optional<StackEntry<Tag>> next_entry(const FactStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+Data<Node<Tag>> get_result(const FactStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+void push_result(FactStackEntry<Tag>& element, Data<Node<Tag>> node)
+{
+}
+
+template<typename Tag>
+bool explored(const ConstraintStackEntry<Tag>& el) noexcept
+{
+    return (el.true_elements.empty() || el.true_child.has_value()) && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
+}
+
+template<typename Tag>
+std::optional<StackEntry<Tag>> next_entry(const ConstraintStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+Data<Node<Tag>> get_result(const ConstraintStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+void push_result(ConstraintStackEntry<Tag>& element, Data<Node<Tag>> node)
+{
+}
+
+template<typename Tag>
 bool explored(const GeneratorStackEntry<Tag>& el) noexcept
 {
     return el.node.has_value();
 }
 
 template<typename Tag>
-using StackEntry = std::variant<AtomStackEntry<Tag>, FactStackEntry<Tag>, ConstraintStackEntry<Tag>, GeneratorStackEntry<Tag>>;
+std::optional<StackEntry<Tag>> next_entry(const GeneratorStackEntry<Tag>& element)
+{
+    return std::nullopt;
+}
+
+template<typename Tag>
+Data<Node<Tag>> get_result(const GeneratorStackEntry<Tag>& element)
+{
+}
+
+template<typename Tag>
+void push_result(GeneratorStackEntry<Tag>& element, Data<Node<Tag>> node)
+{
+}
 
 template<formalism::Context C>
 auto get_condition(View<Index<formalism::GroundAxiom>, C> element)
@@ -307,39 +374,33 @@ public:
 
         while (!stack.empty())
         {
-            auto entry = stack.back();
-            stack.pop_back();
+            auto& entry = stack.back();
+
+            std::optional<Data<Node<Tag>>> produced;
+            std::optional<StackEntry<Tag>> next;
 
             std::visit(
-                [&](auto&& arg)
+                [&](auto& frame)
                 {
-                    using Alternative = std::decay_t<decltype(arg)>;
-
-                    // Push
-                    if constexpr (std::same_as<Alternative, AtomStackEntry<Tag>>)
-                    {
-                        if (explored(arg))
-                            return;
-                    }
-                    else if constexpr (std::same_as<Alternative, FactStackEntry<Tag>>)
-                    {
-                        if (explored(arg))
-                            return;
-                    }
-                    else if constexpr (std::same_as<Alternative, ConstraintStackEntry<Tag>>)
-                    {
-                        if (explored(arg))
-                            return;
-                    }
-                    else if constexpr (std::same_as<Alternative, GeneratorStackEntry<Tag>>)
-                    {
-                        if (explored(arg))
-                            return;
-                    }
+                    if (!explored(frame))
+                        next = next_entry(frame);
                     else
-                        static_assert(dependent_false<Alternative>::value, "Missing case");
+                        produced = get_result(frame);
                 },
                 entry);
+
+            if (next)
+            {
+                stack.push_back(std::move(next.value()));
+                continue;
+            }
+
+            stack.pop_back();
+
+            if (stack.empty())
+                m_root = std::move(*produced);
+            else
+                std::visit([&](auto& parent) { push_result(parent, std::move(produced.value())); }, stack.back());
         }
     }
 

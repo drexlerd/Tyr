@@ -255,8 +255,8 @@ GroundTask::GroundTask(DomainPtr domain,
     m_overlay_repository(std::move(overlay_repository)),
     m_fdr_task(fdr_task),
     m_fdr_context(fdr_context),
-    m_fluent_layout(create_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(m_fdr_task.get_fluent_variables())),
-    m_action_match_tree(match_tree::MatchTree<GroundAction>::create(m_fdr_task.get_ground_actions()))
+    m_fluent_layout(create_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(m_fdr_task.get_fluent_variables()))
+//,    m_action_match_tree(match_tree::MatchTree<GroundAction>::create(m_fdr_task.get_ground_actions()))
 
 {
     // std::cout << m_fdr_task << std::endl;

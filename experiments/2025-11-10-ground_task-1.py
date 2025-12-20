@@ -48,7 +48,7 @@ if REMOTE:
         setup=TetralithEnvironment.DEFAULT_SETUP,
         memory_per_cpu="2840M",
         cpus_per_task=3,  # 3*2840 >= 8000
-        extra_options="#SBATCH --account=naiss2025-22-1245")
+        extra_options="#SBATCH --account=naiss2025-5-382")
     
 else:
     ENV = LocalEnvironment(processes=6)
@@ -68,7 +68,7 @@ if REMOTE:
         ("mine-pddl", SUITE_MINEPDDL),
         ("mine-pddl-numeric", SUITE_MINEPDDL)
     ]
-    TIME_LIMIT = 5 * 60
+    TIME_LIMIT = 10 * 60
 else:
     SUITES = [
         #("cnot-synthesis", SUITE_CNOT_SYNTHESIS_TEST),
