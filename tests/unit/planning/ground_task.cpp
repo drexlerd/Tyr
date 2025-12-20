@@ -35,6 +35,16 @@ static GroundTaskPtr compute_ground_task(const fs::path& domain_filepath, const 
 
 static fs::path absolute(const std::string& subdir) { return fs::path(std::string(DATA_DIR)) / subdir; }
 
+TEST(TyrTests, TyrPlanningGroundTaskAgricola)
+{
+    auto ground_task = compute_ground_task(absolute("agricola/domain.pddl"), absolute("agricola/test_problem.pddl"));
+
+    EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 141);
+    EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+    EXPECT_EQ(ground_task->get_num_actions(), 12443);
+    EXPECT_EQ(ground_task->get_num_axioms(), 0);
+}
+
 TEST(TyrTests, TyrPlanningGroundTaskAirport)
 {
     auto ground_task = compute_ground_task(absolute("airport/domain.pddl"), absolute("airport/test_problem.pddl"));
@@ -205,6 +215,26 @@ TEST(TyrTests, TyrPlanningGroundTaskMiconicSimpleadl)
     EXPECT_EQ(ground_task->get_num_axioms(), 0);
 }
 
+TEST(TyrTests, TyrPlanningGroundTaskParcprinter)
+{
+    auto ground_task = compute_ground_task(absolute("parcprinter/domain.pddl"), absolute("parcprinter/test_problem.pddl"));
+
+    EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 43);
+    EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+    EXPECT_EQ(ground_task->get_num_actions(), 25);
+    EXPECT_EQ(ground_task->get_num_axioms(), 0);
+}
+
+TEST(TyrTests, TyrPlanningGroundTaskPathways)
+{
+    auto ground_task = compute_ground_task(absolute("pathways/domain.pddl"), absolute("pathways/test_problem.pddl"));
+
+    EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 47);
+    EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
+    EXPECT_EQ(ground_task->get_num_actions(), 78);
+    EXPECT_EQ(ground_task->get_num_axioms(), 0);
+}
+
 TEST(TyrTests, TyrPlanningGroundTaskPhilosophers)
 {
     auto ground_task = compute_ground_task(absolute("philosophers/domain.pddl"), absolute("philosophers/test_problem.pddl"));
@@ -213,6 +243,16 @@ TEST(TyrTests, TyrPlanningGroundTaskPhilosophers)
     EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 21);
     EXPECT_EQ(ground_task->get_num_actions(), 34);
     EXPECT_EQ(ground_task->get_num_axioms(), 34);
+}
+
+TEST(TyrTests, TyrPlanningGroundTaskPsrMiddle)
+{
+    auto ground_task = compute_ground_task(absolute("psr-middle/domain.pddl"), absolute("psr-middle/test_problem.pddl"));
+
+    EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 14);
+    EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 363);
+    EXPECT_EQ(ground_task->get_num_actions(), 28);
+    EXPECT_EQ(ground_task->get_num_axioms(), 467);
 }
 
 TEST(TyrTests, TyrPlanningGroundTaskPushworld)
@@ -339,9 +379,9 @@ TEST(TyrTests, TyrPlanningGroundTaskWoodworking)
 {
     auto ground_task = compute_ground_task(absolute("woodworking/domain.pddl"), absolute("woodworking/test_problem.pddl"));
 
-    EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 19);
+    EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 52);
     EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
-    EXPECT_EQ(ground_task->get_num_actions(), 57);
+    EXPECT_EQ(ground_task->get_num_actions(), 198);
     EXPECT_EQ(ground_task->get_num_axioms(), 0);
 }
 
