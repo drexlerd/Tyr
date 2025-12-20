@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_REPOSITORY_HPP_
-#define TYR_FORMALISM_REPOSITORY_HPP_
+#ifndef TYR_PLANNING_GROUND_TASK_MATCH_TREE_REPOSITORY_HPP_
+#define TYR_PLANNING_GROUND_TASK_MATCH_TREE_REPOSITORY_HPP_
 
 // Include specialization headers first
 #include "tyr/planning/ground_task/match_tree/nodes/atom_data.hpp"
@@ -39,7 +39,6 @@
 #include <cassert>
 #include <optional>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 namespace tyr::planning::match_tree

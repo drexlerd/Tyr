@@ -26,6 +26,7 @@
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task/layout.hpp"
+#include "tyr/planning/ground_task/match_tree/match_tree.hpp"
 #include "tyr/planning/ground_task/node.hpp"
 #include "tyr/planning/ground_task/packed_state.hpp"
 #include "tyr/planning/ground_task/state.hpp"
@@ -77,6 +78,9 @@ private:
     formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> m_fdr_context;
 
     FDRVariablesLayout<formalism::FluentTag, uint_t> m_fluent_layout;
+
+    match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
+    std::vector<match_tree::MatchTreePtr<formalism::GroundAction>> m_axiom_strata_match_tree;
 };
 
 }

@@ -20,13 +20,177 @@
 
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/ground_task/match_tree/builder.hpp"
 #include "tyr/planning/ground_task/match_tree/declarations.hpp"
+#include "tyr/planning/ground_task/match_tree/nodes/node_data.hpp"
 #include "tyr/planning/ground_task/match_tree/repository.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 
+#include <deque>
+
 namespace tyr::planning::match_tree
 {
-/* MatchTree */
+
+using PreconditionVariant = std::variant<Index<formalism::GroundAtom<formalism::DerivedTag>>,
+                                         Index<formalism::FDRVariable<formalism::FluentTag>>,
+                                         Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>>;
+
+template<typename Tag>
+struct Occurrence
+{
+    Index<Tag> element;
+    std::variant<std::monostate, bool, formalism::FDRValue> detail;
+};
+
+template<typename Tag>
+using PostingList = std::vector<Occurrence<Tag>>;
+
+template<typename Tag>
+using PreconditionOccurences = UnorderedMap<PreconditionVariant, PostingList<Tag>>;
+
+template<typename Tag>
+using PreconditionDetails = UnorderedMap<Index<Tag>, UnorderedMap<PreconditionVariant, std::variant<bool, formalism::FDRValue>>>;
+
+template<typename Tag>
+struct BaseEntry
+{
+    size_t depth;
+    std::span<const Index<Tag>> elements;
+
+    BaseEntry(size_t depth, std::span<const Index<Tag>> elements) : depth(depth), elements(elements) {}
+};
+
+template<typename Tag>
+struct AtomStackEntry
+{
+    BaseEntry<Tag> base;
+
+    Index<formalism::GroundAtom<formalism::DerivedTag>> atom;
+    std::optional<Data<Node<Tag>>> true_child;
+    std::optional<Data<Node<Tag>>> false_child;
+    std::optional<Data<Node<Tag>>> dontcare_child;
+
+    AtomStackEntry(BaseEntry<Tag> base, Index<formalism::GroundAtom<formalism::DerivedTag>> atom) :
+        base(base),
+        atom(atom),
+        true_child(),
+        false_child(),
+        dontcare_child()
+    {
+    }
+};
+
+template<typename Tag>
+struct FactStackEntry
+{
+    BaseEntry<Tag> base;
+
+    Index<formalism::FDRVariable<formalism::FluentTag>> fact;
+    std::vector<Data<Node<Tag>>> children;
+
+    FactStackEntry(BaseEntry<Tag> base, Index<formalism::FDRVariable<formalism::FluentTag>> fact) : base(base), fact(fact), children() {}
+};
+
+template<typename Tag>
+struct ConstraintStackEntry
+{
+    BaseEntry<Tag> base;
+
+    Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> constraint;
+    std::optional<Data<Node<Tag>>> true_child;
+    std::optional<Data<Node<Tag>>> dontcare_child;
+
+    ConstraintStackEntry(BaseEntry<Tag> base, Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> constraint) :
+        base(base),
+        constraint(constraint),
+        true_child(),
+        dontcare_child()
+    {
+    }
+};
+
+template<typename Tag>
+struct GeneratorStackEntry
+{
+    BaseEntry<Tag> base;
+
+    explicit GeneratorStackEntry(BaseEntry<Tag> base) : base(base) {}
+};
+
+template<typename Tag>
+using StackEntry = std::variant<AtomStackEntry<Tag>, FactStackEntry<Tag>, ConstraintStackEntry<Tag>, GeneratorStackEntry<Tag>>;
+
+template<formalism::Context C>
+auto get_condition(View<Index<formalism::GroundAxiom>, C> element)
+{
+    return element.get_body();
+}
+
+template<formalism::Context C>
+auto get_condition(View<Index<formalism::GroundAction>, C> element)
+{
+    return element.get_condition();
+}
+
+template<typename Tag>
+static std::optional<StackEntry<Tag>>
+try_create_atom_stack_entry(Index<formalism::GroundAtom<formalism::DerivedTag>> atom, BaseEntry<Tag> base, const PreconditionDetails<Tag>& details)
+{
+}
+
+template<typename Tag>
+static std::optional<StackEntry<Tag>>
+try_create_fact_stack_entry(Index<formalism::FDRVariable<formalism::FluentTag>> variable, BaseEntry<Tag> base, const PreconditionDetails<Tag>& details)
+{
+}
+
+template<typename Tag>
+static std::optional<StackEntry<Tag>> try_create_constraint_stack_entry(Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> constraint,
+                                                                        BaseEntry<Tag> base,
+                                                                        const PreconditionDetails<Tag>& details)
+{
+}
+
+template<typename Tag>
+static StackEntry<Tag> create_generator_stack_entry(BaseEntry<Tag> base)
+{
+}
+
+template<typename Tag>
+static std::optional<StackEntry<Tag>> try_create_selector_stack_entry(BaseEntry<Tag> base,
+                                                                      const std::vector<std::pair<PreconditionVariant, PostingList<Tag>>>& sorted_preconditions,
+                                                                      const PreconditionDetails<Tag>& details)
+{
+    return std::visit(
+        [&](auto&& arg)
+        {
+            using Alternative = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::same_as<Alternative, Index<formalism::FDRVariable<formalism::FluentTag>>>)
+                return try_create_fact_stack_entry(arg, base, details);
+            else if constexpr (std::same_as<Alternative, Index<formalism::GroundAtom<formalism::DerivedTag>>>)
+                return try_create_atom_stack_entry(arg, base, details);
+            else if constexpr (std::same_as<Alternative, Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>>>)
+                return try_create_constraint_stack_entry(arg, base, details);
+            else
+                static_assert(dependent_false<Alternative>::value, "Missing case");
+        },
+        sorted_preconditions[base.depth].first);
+}
+
+template<typename Tag>
+static StackEntry<Tag> create_stack_entry(BaseEntry<Tag> base,
+                                          const std::vector<std::pair<PreconditionVariant, PostingList<Tag>>>& sorted_preconditions,
+                                          const PreconditionDetails<Tag>& details)
+{
+    if (!base.elements.empty())
+        for (; base.depth < sorted_preconditions.size(); ++base.depth)
+            if (auto entry = try_create_selector_stack_entry(base, sorted_preconditions, details))
+                return entry.value();
+
+    return create_generator_stack_entry(base);
+}
+
 template<typename Tag>
 class MatchTree
 {
@@ -35,16 +199,63 @@ private:
 
     RepositoryPtr<formalism::OverlayRepository<formalism::Repository>, Tag> m_context;
 
-    Index<Node<Tag>> m_root;
+    Data<Node<Tag>> m_root;
 
-    std::vector<Index<Node<Tag>>> m_evaluate_stack;  ///< temporary during evaluation.
-
-    template<formalism::Context C>
-    MatchTree(View<IndexList<Tag>, C> elements);
+    std::vector<Data<Node<Tag>>> m_evaluate_stack;  ///< temporary during evaluation.
 
 public:
     template<formalism::Context C>
-    static std::unique_ptr<MatchTree<Tag>> create(View<IndexList<Tag>, C> elements);
+    MatchTree(View<IndexList<Tag>, C> elements) :
+        m_elements(elements.get_data()),
+        m_context(std::make_unique<Repository<formalism::OverlayRepository<formalism::Repository>, Tag>>(elements.get_context())),
+        m_root(),
+        m_evaluate_stack()
+    {
+        auto occurences = PreconditionOccurences<Tag> {};
+        auto details = PreconditionDetails<Tag> {};
+
+        for (const auto element : elements)
+        {
+            const auto condition = get_condition(element);
+
+            for (const auto fact : condition.template get_facts<formalism::FluentTag>())
+            {
+                const auto key = fact.get_variable().get_index();
+                occurences[key].push_back({ element.get_index(), fact.get_value() });
+            }
+
+            for (const auto literal : condition.template get_facts<formalism::DerivedTag>())
+            {
+                const auto key = literal.get_atom().get_index();
+                occurences[key].push_back({ element.get_index(), literal.get_polarity() });
+            }
+
+            for (const auto constraint : condition.get_numeric_constraints())
+            {
+                const auto key = constraint.get_data();
+                occurences[key].push_back({ element.get_index(), std::monostate {} });
+            }
+        }
+
+        std::vector<std::pair<PreconditionVariant, PostingList<Tag>>> sorted_preconditions(occurences.begin(), occurences.end());
+
+        std::sort(sorted_preconditions.begin(), sorted_preconditions.end(), [](const auto& a, const auto& b) { return a.second.size() > b.second.size(); });
+
+        auto stack = std::deque<StackEntry<Tag>> {};
+        stack.emplace_back(create_stack_entry(BaseEntry<Tag>(size_t(0), std::span(m_elements.begin(), m_elements.end())), sorted_preconditions, details));
+
+        while (!stack.empty())
+        {
+            auto entry = stack.back();
+            stack.pop_back();
+        }
+    }
+
+    template<formalism::Context C>
+    static MatchTreePtr<Tag> create(View<IndexList<Tag>, C> elements)
+    {
+        return std::make_unique<MatchTree<Tag>>(elements);
+    }
 
     // Uncopieable and unmoveable to prohibit invalidating spans on m_elements.
     MatchTree(const MatchTree& other) = delete;

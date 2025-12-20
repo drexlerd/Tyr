@@ -30,7 +30,7 @@
 #include "tyr/common/unique_object_pool.hpp"
 #include "tyr/planning/ground_task/match_tree/declarations.hpp"
 
-namespace tyr::planning
+namespace tyr::planning::match_tree
 {
 template<typename Tag>
 struct Builder
