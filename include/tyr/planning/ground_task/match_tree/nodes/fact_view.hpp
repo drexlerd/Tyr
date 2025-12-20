@@ -43,8 +43,7 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_fact() const noexcept { return make_view(get_data().fact, m_context->get_formalism_repository()); }
-    auto get_true_child() const noexcept { return make_view(get_data().true_child, *m_context); }
-    auto get_false_child() const noexcept { return make_view(get_data().false_child, *m_context); }
+    auto get_children() const noexcept { return make_view(get_data().children, *m_context); }
     auto get_dontcare_child() const noexcept { return make_view(get_data().dontcare_child, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }

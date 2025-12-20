@@ -55,9 +55,9 @@ template<typename Tag>
 struct BaseEntry
 {
     size_t depth;
-    std::span<const Index<Tag>> elements;
+    std::span<Index<Tag>> elements;
 
-    BaseEntry(size_t depth, std::span<const Index<Tag>> elements) : depth(depth), elements(elements) {}
+    BaseEntry(size_t depth, std::span<Index<Tag>> elements) : depth(depth), elements(elements) {}
 };
 
 template<typename Tag>
@@ -66,19 +66,37 @@ struct AtomStackEntry
     BaseEntry<Tag> base;
 
     Index<formalism::GroundAtom<formalism::DerivedTag>> atom;
+    std::span<Index<Tag>> true_elements;
+    std::span<Index<Tag>> false_elements;
+    std::span<Index<Tag>> dontcare_elements;
+
     std::optional<Data<Node<Tag>>> true_child;
     std::optional<Data<Node<Tag>>> false_child;
     std::optional<Data<Node<Tag>>> dontcare_child;
 
-    AtomStackEntry(BaseEntry<Tag> base, Index<formalism::GroundAtom<formalism::DerivedTag>> atom) :
+    AtomStackEntry(BaseEntry<Tag> base,
+                   Index<formalism::GroundAtom<formalism::DerivedTag>> atom,
+                   std::span<Index<Tag>> true_elements,
+                   std::span<Index<Tag>> false_elements,
+                   std::span<Index<Tag>> dontcare_elements) :
         base(base),
         atom(atom),
-        true_child(),
-        false_child(),
-        dontcare_child()
+        true_elements(true_elements),
+        false_elements(false_elements),
+        dontcare_elements(dontcare_elements),
+        true_child(std::nullopt),
+        false_child(std::nullopt),
+        dontcare_child(std::nullopt)
     {
     }
 };
+
+template<typename Tag>
+bool explored(const AtomStackEntry<Tag>& el) noexcept
+{
+    return (el.true_elements.empty() || el.true_child.has_value()) && (el.false_elements.empty() || el.false_child.has_value())
+           && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
+}
 
 template<typename Tag>
 struct FactStackEntry
@@ -86,10 +104,26 @@ struct FactStackEntry
     BaseEntry<Tag> base;
 
     Index<formalism::FDRVariable<formalism::FluentTag>> fact;
-    std::vector<Data<Node<Tag>>> children;
+    std::vector<std::span<Index<Tag>>> elements_per_value;
+    std::span<Index<Tag>> dontcare_elements;
 
-    FactStackEntry(BaseEntry<Tag> base, Index<formalism::FDRVariable<formalism::FluentTag>> fact) : base(base), fact(fact), children() {}
+    std::vector<std::optional<Data<Node<Tag>>>> children;
+    std::optional<Data<Node<Tag>>> dontcare_child;
+
+    FactStackEntry(BaseEntry<Tag> base, std::vector<std::span<Index<Tag>>> elements_per_value, Index<formalism::FDRVariable<formalism::FluentTag>> fact) :
+        base(base),
+        fact(fact),
+        elements_per_value(std::move(elements_per_value)),
+        children()
+    {
+    }
 };
+
+template<typename Tag>
+bool explored(const FactStackEntry<Tag>& el) noexcept
+{
+    return el.children.size() == el.elements_per_value.size() && (dontcare_elements.empty() || dontcare_child.has_value());
+}
 
 template<typename Tag>
 struct ConstraintStackEntry
@@ -97,25 +131,52 @@ struct ConstraintStackEntry
     BaseEntry<Tag> base;
 
     Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> constraint;
+    std::span<Index<Tag>> true_elements;
+    std::span<Index<Tag>> dontcare_elements;
+
     std::optional<Data<Node<Tag>>> true_child;
     std::optional<Data<Node<Tag>>> dontcare_child;
 
-    ConstraintStackEntry(BaseEntry<Tag> base, Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> constraint) :
+    bool need_true;
+    bool need_dontcare;
+
+    ConstraintStackEntry(BaseEntry<Tag> base,
+                         Data<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> constraint,
+                         std::span<Index<Tag>> true_elements,
+                         std::span<Index<Tag>> dontcare_elements) :
         base(base),
         constraint(constraint),
-        true_child(),
-        dontcare_child()
+        true_elements(true_elements),
+        dontcare_elements(dontcare_elements),
+        true_child(std::nullopt),
+        dontcare_child(std::nullopt)
     {
     }
 };
+
+template<typename Tag>
+bool explored(const ConstraintStackEntry<Tag>& el) noexcept
+{
+    return (el.true_elements.empty() || el.true_child.has_value()) && (el.dontcare_elements.empty() || el.dontcare_child.has_value());
+}
 
 template<typename Tag>
 struct GeneratorStackEntry
 {
     BaseEntry<Tag> base;
 
-    explicit GeneratorStackEntry(BaseEntry<Tag> base) : base(base) {}
+    std::span<Index<Tag>> elements;
+
+    std::optional<Data<Node<Tag>>> node;
+
+    explicit GeneratorStackEntry(BaseEntry<Tag> base, std::span<Index<Tag>> elements) : base(base), elements(elements), node(std::nullopt) {}
 };
+
+template<typename Tag>
+bool explored(const GeneratorStackEntry<Tag>& el) noexcept
+{
+    return el.node.has_value();
+}
 
 template<typename Tag>
 using StackEntry = std::variant<AtomStackEntry<Tag>, FactStackEntry<Tag>, ConstraintStackEntry<Tag>, GeneratorStackEntry<Tag>>;
@@ -248,6 +309,37 @@ public:
         {
             auto entry = stack.back();
             stack.pop_back();
+
+            std::visit(
+                [&](auto&& arg)
+                {
+                    using Alternative = std::decay_t<decltype(arg)>;
+
+                    // Push
+                    if constexpr (std::same_as<Alternative, AtomStackEntry<Tag>>)
+                    {
+                        if (explored(arg))
+                            return;
+                    }
+                    else if constexpr (std::same_as<Alternative, FactStackEntry<Tag>>)
+                    {
+                        if (explored(arg))
+                            return;
+                    }
+                    else if constexpr (std::same_as<Alternative, ConstraintStackEntry<Tag>>)
+                    {
+                        if (explored(arg))
+                            return;
+                    }
+                    else if constexpr (std::same_as<Alternative, GeneratorStackEntry<Tag>>)
+                    {
+                        if (explored(arg))
+                            return;
+                    }
+                    else
+                        static_assert(dependent_false<Alternative>::value, "Missing case");
+                },
+                entry);
         }
     }
 
