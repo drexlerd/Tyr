@@ -19,49 +19,59 @@
 
 #include "tyr/formalism/formatter.hpp"
 
+using namespace tyr::formalism;
+
 namespace tyr::grounder
 {
 
-RuleSchedulerStratum::RuleSchedulerStratum(const analysis::RuleStratum& rules,
-                                           const analysis::ListenerStratum& listeners,
-                                           const formalism::Repository& context) :
+RuleSchedulerStratum::RuleSchedulerStratum(const analysis::RuleStratum& rules, const analysis::ListenerStratum& listeners, const Repository& context) :
     m_rules(rules),
     m_listeners(listeners),
     m_context(context),
+    m_active_predicates(),
     m_active_set(),
     m_active()
 {
+    for (const auto rule : rules)
+    {
+        const auto predicate = uint_t(make_view(rule, context).get_head().get_predicate().get_index());
+        if (predicate >= m_active_predicates.size())
+            m_active_predicates.resize(predicate + 1, false);
+    }
 }
 
 void RuleSchedulerStratum::activate_all()
 {
-    m_active_set.clear();
+    m_active.clear();
     for (const auto rule : m_rules)
-        m_active_set.insert(rule);
+        m_active.push_back(rule);
 }
 
-void RuleSchedulerStratum::clear() noexcept { m_active_set.clear(); }
+void RuleSchedulerStratum::on_start_iteration() noexcept { m_active_predicates.reset(); }
 
-void RuleSchedulerStratum::on_generate(Index<formalism::Predicate<formalism::FluentTag>> predicate)
+void RuleSchedulerStratum::on_generate(Index<Predicate<FluentTag>> predicate)
 {
-    if (const auto it = m_listeners.find(predicate); it != m_listeners.end())
-        for (const auto rule : it->second)
-            m_active_set.insert(rule);
+    assert(uint_t(predicate) < m_active_predicates.size());
+
+    m_active_predicates.set(uint_t(predicate));
 }
 
-View<IndexList<formalism::Rule>, formalism::Repository> RuleSchedulerStratum::active_rules()
+void RuleSchedulerStratum::on_finish_iteration()
 {
+    m_active_set.clear();
+    for (auto i = m_active_predicates.find_first(); i != boost::dynamic_bitset<>::npos; i = m_active_predicates.find_next(i))
+        if (const auto it = m_listeners.find(Index<Predicate<FluentTag>>(i)); it != m_listeners.end())
+            for (const auto rule : it->second)
+                m_active_set.insert(rule);
+
     m_active.clear();
     for (const auto rule : m_active_set)
         m_active.push_back(rule);
-
-    m_active_set.clear();
-
-    return make_view(m_active, m_context);
 }
 
-RuleSchedulerStrata
-create_rule_scheduler_strata(const analysis::RuleStrata& rules, const analysis::ListenerStrata& listeners, const formalism::Repository& context)
+View<IndexList<Rule>, Repository> RuleSchedulerStratum::get_active_rules() { return make_view(m_active, m_context); }
+
+RuleSchedulerStrata create_rule_scheduler_strata(const analysis::RuleStrata& rules, const analysis::ListenerStrata& listeners, const Repository& context)
 {
     assert(rules.data.size() == listeners.data.size());
 

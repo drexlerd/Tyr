@@ -43,8 +43,8 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
          * Parallel evaluation.
          */
 
-        const auto active_rules = scheduler.active_rules();
-        scheduler.clear();
+        const auto active_rules = scheduler.get_active_rules();
+        scheduler.on_start_iteration();
 
         const uint_t num_rules = active_rules.size();
 
@@ -130,6 +130,8 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
             if (!discovered_new_fact)
                 break;  ///< Reached fixed point
         }
+
+        scheduler.on_finish_iteration();
     }
 }
 

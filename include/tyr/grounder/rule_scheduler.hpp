@@ -25,6 +25,8 @@
 #include "tyr/analysis/listeners.hpp"
 #include "tyr/analysis/stratification.hpp"
 
+#include <boost/dynamic_bitset.hpp>
+
 namespace tyr::grounder
 {
 
@@ -33,19 +35,22 @@ class RuleSchedulerStratum
 public:
     RuleSchedulerStratum(const analysis::RuleStratum& rules, const analysis::ListenerStratum& listeners, const formalism::Repository& context);
 
-    void clear() noexcept;
-
     void activate_all();
+
+    void on_start_iteration() noexcept;
 
     void on_generate(Index<formalism::Predicate<formalism::FluentTag>> predicate);
 
-    View<IndexList<formalism::Rule>, formalism::Repository> active_rules();
+    void on_finish_iteration();
+
+    View<IndexList<formalism::Rule>, formalism::Repository> get_active_rules();
 
 private:
     const analysis::RuleStratum& m_rules;
     const analysis::ListenerStratum& m_listeners;
     const formalism::Repository& m_context;
 
+    boost::dynamic_bitset<> m_active_predicates;
     UnorderedSet<Index<formalism::Rule>> m_active_set;  ///< build active set
     IndexList<formalism::Rule> m_active;                ///< final active set
 };
