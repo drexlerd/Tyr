@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
-#define TYR_ANALYSIS_STRATIFICATION_HPP_
+#ifndef TYR_PLANNING_GROUND_TASK_STRATIFICATION_HPP_
+#define TYR_PLANNING_GROUND_TASK_STRATIFICATION_HPP_
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
@@ -24,22 +24,22 @@
 
 #include <vector>
 
-namespace tyr::analysis
+namespace tyr::planning
 {
 
-using RuleStratum = IndexList<formalism::Rule>;
+using GroundAxiomStratum = IndexList<formalism::GroundAxiom>;
 
-struct RuleStrata
+struct GroundAxiomStrata
 {
-    std::vector<RuleStratum> data;
+    std::vector<GroundAxiomStratum> data;
 };
 
 /// @brief Compute the rule stratification for the rules in the given program.
 /// An implementation of Algorithm 1 by Thiébaux-et-al-ijcai2003
 /// Source: https://users.cecs.anu.edu.au/~thiebaux/papers/ijcai03.pdf
-/// @param program is the program
-/// @return is the RuleStrata
-extern RuleStrata compute_rule_stratification(View<Index<formalism::Program>, formalism::Repository> program);
+/// @param task is the task
+/// @return is the GroundAxiomStrata
+extern GroundAxiomStrata compute_ground_axiom_stratification(View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> task);
 }
 
 #endif

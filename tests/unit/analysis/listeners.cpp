@@ -31,7 +31,7 @@ TEST(TyrTests, TyrAnalysisListenerStrata)
     auto [program, repository] = create_example_problem();
 
     auto rule_strata = analysis::compute_rule_stratification(program);
-    auto listeners = analysis::compute_listeners(rule_strata);
+    auto listeners = analysis::compute_listeners(rule_strata, program.get_context());
 
     for (const auto& listeners_in_stratum : listeners.data)
     {

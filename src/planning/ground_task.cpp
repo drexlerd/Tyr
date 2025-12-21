@@ -21,6 +21,7 @@
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/merge_planning.hpp"
+#include "tyr/planning/ground_task/stratification.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 
 using namespace tyr::formalism;
@@ -243,22 +244,42 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
                                                      make_view(axioms, *task_overlay_repository),
                                                      *overlay_repository);
 
-    return std::make_shared<GroundTask>(domain, repository, overlay_repository, fdr_task, fdr_context);
+    auto fluent_layout = create_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(fdr_task.get_fluent_variables());
+
+    auto action_match_tree = match_tree::MatchTree<GroundAction>::create(fdr_task.get_ground_actions().get_data(), fdr_task.get_context());
+
+    auto axiom_strata = compute_ground_axiom_stratification(fdr_task);
+
+    auto axiom_match_tree_strata = std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> {};
+    for (const auto& stratum : axiom_strata.data)
+        axiom_match_tree_strata.emplace_back(match_tree::MatchTree<GroundAxiom>::create(stratum, fdr_task.get_context()));
+
+    return std::make_shared<GroundTask>(domain,
+                                        repository,
+                                        overlay_repository,
+                                        fdr_task,
+                                        fdr_context,
+                                        std::move(fluent_layout),
+                                        std::move(action_match_tree),
+                                        std::move(axiom_match_tree_strata));
 }
 
 GroundTask::GroundTask(DomainPtr domain,
                        RepositoryPtr m_repository,
                        OverlayRepositoryPtr<Repository> overlay_repository,
                        View<Index<FDRTask>, OverlayRepository<Repository>> fdr_task,
-                       GeneralFDRContext<OverlayRepository<Repository>> fdr_context) :
+                       GeneralFDRContext<OverlayRepository<Repository>> fdr_context,
+                       FDRVariablesLayout<formalism::FluentTag, uint_t> fluent_layout,
+                       match_tree::MatchTreePtr<formalism::GroundAction> action_match_tree,
+                       std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata) :
     m_domain(std::move(domain)),
     m_repository(std::move(m_repository)),
     m_overlay_repository(std::move(overlay_repository)),
     m_fdr_task(fdr_task),
     m_fdr_context(fdr_context),
-    m_fluent_layout(create_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(m_fdr_task.get_fluent_variables())),
-    m_action_match_tree(match_tree::MatchTree<GroundAction>::create(m_fdr_task.get_ground_actions()))
-
+    m_fluent_layout(std::move(fluent_layout)),
+    m_action_match_tree(std::move(action_match_tree)),
+    m_axiom_match_tree_strata(std::move(axiom_match_tree_strata))
 {
     // std::cout << m_fdr_task << std::endl;
 }

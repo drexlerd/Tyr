@@ -42,7 +42,10 @@ public:
                formalism::RepositoryPtr m_repository,
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> fdr_task,
-               formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context);
+               formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context,
+               FDRVariablesLayout<formalism::FluentTag, uint_t> fluent_layout,
+               match_tree::MatchTreePtr<formalism::GroundAction> action_match_tree,
+               std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata);
 
     static std::shared_ptr<GroundTask> create(DomainPtr domain,
                                               formalism::RepositoryPtr repository,
@@ -76,11 +79,9 @@ private:
     formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
     View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> m_fdr_task;
     formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> m_fdr_context;
-
     FDRVariablesLayout<formalism::FluentTag, uint_t> m_fluent_layout;
-
     match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
-    std::vector<match_tree::MatchTreePtr<formalism::GroundAction>> m_axiom_strata_match_tree;
+    std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> m_axiom_match_tree_strata;
 };
 
 }

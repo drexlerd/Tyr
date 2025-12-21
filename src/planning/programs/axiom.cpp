@@ -145,7 +145,7 @@ AxiomEvaluatorProgram::AxiomEvaluatorProgram(const LiftedTask& task) :
     m_program(create(task, m_prediate_to_predicate, *m_repository)),
     m_domains(analysis::compute_variable_domains(m_program)),
     m_strata(analysis::compute_rule_stratification(m_program)),
-    m_listeners(analysis::compute_listeners(m_strata))
+    m_listeners(analysis::compute_listeners(m_strata, m_program.get_context()))
 {
     // std::cout << m_program << std::endl;
 }

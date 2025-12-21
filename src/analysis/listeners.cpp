@@ -23,10 +23,12 @@
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
 
+using namespace tyr::formalism;
+
 namespace tyr::analysis
 {
 
-ListenerStrata compute_listeners(const RuleStrata& strata)
+ListenerStrata compute_listeners(const RuleStrata& strata, const formalism::Repository& context)
 {
     auto listeners = ListenerStrata();
 
@@ -35,9 +37,9 @@ ListenerStrata compute_listeners(const RuleStrata& strata)
         auto listeners_in_stratum = ListenerStratum {};
 
         for (const auto rule : stratum)
-            for (const auto literal : rule.get_body().get_literals<formalism::FluentTag>())
+            for (const auto literal : make_view(rule, context).get_body().get_literals<FluentTag>())
                 if (literal.get_polarity())
-                    listeners_in_stratum[literal.get_atom().get_predicate()].insert(rule);
+                    listeners_in_stratum[literal.get_atom().get_predicate().get_index()].insert(rule);
 
         listeners.data.push_back(std::move(listeners_in_stratum));
     }

@@ -536,9 +536,9 @@ private:
 
 public:
     template<formalism::Context C>
-    MatchTree(View<IndexList<Tag>, C> elements) :
-        m_elements(elements.get_data()),
-        m_context(std::make_unique<Repository<formalism::OverlayRepository<formalism::Repository>, Tag>>(elements.get_context())),
+    MatchTree(IndexList<Tag> elements_, const C& context_) :
+        m_elements(std::move(elements_)),
+        m_context(std::make_unique<Repository<formalism::OverlayRepository<formalism::Repository>, Tag>>(context_)),
         m_root(),
         m_evaluate_stack()
     {
@@ -547,31 +547,31 @@ public:
 
         std::cout << "Num elements: " << m_elements.size() << std::endl;
 
-        for (const auto element : elements)
+        for (const auto element : m_elements)
         {
-            const auto condition = get_condition(element);
+            const auto condition = get_condition(make_view(element, context_));
 
-            details.try_emplace(element.get_index());  //
+            details.try_emplace(element);  //
 
             for (const auto fact : condition.template get_facts<formalism::FluentTag>())
             {
                 const auto key = fact.get_variable().get_index();
-                occurences[key].push_back(element.get_index());
-                details[element.get_index()][key] = fact.get_value();
+                occurences[key].push_back(element);
+                details[element][key] = fact.get_value();
             }
 
             for (const auto literal : condition.template get_facts<formalism::DerivedTag>())
             {
                 const auto key = literal.get_atom().get_index();
-                occurences[key].push_back(element.get_index());
-                details[element.get_index()][key] = literal.get_polarity();
+                occurences[key].push_back(element);
+                details[element][key] = literal.get_polarity();
             }
 
             for (const auto constraint : condition.get_numeric_constraints())
             {
                 const auto key = constraint.get_data();
-                occurences[key].push_back(element.get_index());
-                details[element.get_index()][key] = std::monostate {};
+                occurences[key].push_back(element);
+                details[element][key] = std::monostate {};
             }
         }
 
@@ -583,10 +583,8 @@ public:
         // std::cout << sorted_preconditions << std::endl;
 
         auto stack = std::deque<StackEntry<Tag>> {};
-        auto initial_entry = try_create_stack_entry(BaseEntry<Tag>(size_t(0), std::span(m_elements.begin(), m_elements.end())),
-                                                    sorted_preconditions,
-                                                    details,
-                                                    elements.get_context());
+        auto initial_entry =
+            try_create_stack_entry(BaseEntry<Tag>(size_t(0), std::span(m_elements.begin(), m_elements.end())), sorted_preconditions, details, context_);
         if (!initial_entry)
             return;
 
@@ -612,7 +610,7 @@ public:
                     if (!explored(frame))
                     {
                         // std::cout << "next_entry" << std::endl;
-                        next = next_entry(frame, sorted_preconditions, details, elements.get_context());
+                        next = next_entry(frame, sorted_preconditions, details, context_);
                     }
                     else
                     {
@@ -652,9 +650,9 @@ public:
     }
 
     template<formalism::Context C>
-    static MatchTreePtr<Tag> create(View<IndexList<Tag>, C> elements)
+    static MatchTreePtr<Tag> create(IndexList<Tag> elements, const C& context)
     {
-        return std::make_unique<MatchTree<Tag>>(elements);
+        return std::make_unique<MatchTree<Tag>>(elements, context);
     }
 
     // Uncopieable and unmoveable to prohibit invalidating spans on m_elements.

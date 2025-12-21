@@ -119,7 +119,7 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
 
                         const auto ground_head_program = make_view(ground_head_index_program, *program_execution_context.repository);
 
-                        scheduler.on_generate(ground_head_program.get_predicate());
+                        scheduler.on_generate(ground_head_program.get_predicate().get_index());
 
                         program_execution_context.facts_execution_context.fact_sets.fluent_sets.predicate.insert(ground_head_program);
                         program_execution_context.facts_execution_context.assignment_sets.fluent_sets.predicate.insert(ground_head_program);

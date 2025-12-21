@@ -37,16 +37,16 @@ void RuleSchedulerStratum::activate_all()
 {
     m_active_set.clear();
     for (const auto rule : m_rules)
-        m_active_set.insert(rule.get_index());
+        m_active_set.insert(rule);
 }
 
 void RuleSchedulerStratum::clear() noexcept { m_active_set.clear(); }
 
-void RuleSchedulerStratum::on_generate(View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository> predicate)
+void RuleSchedulerStratum::on_generate(Index<formalism::Predicate<formalism::FluentTag>> predicate)
 {
     if (const auto it = m_listeners.find(predicate); it != m_listeners.end())
         for (const auto rule : it->second)
-            m_active_set.insert(rule.get_index());
+            m_active_set.insert(rule);
 }
 
 View<IndexList<formalism::Rule>, formalism::Repository> RuleSchedulerStratum::active_rules()

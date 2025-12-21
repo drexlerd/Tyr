@@ -43,7 +43,7 @@ TEST(TyrTests, TyrGrounderGenerator)
 
     auto domains = analysis::compute_variable_domains(program);
     auto strata = analysis::compute_rule_stratification(program);
-    auto listeners = analysis::compute_listeners(strata);
+    auto listeners = analysis::compute_listeners(strata, program.get_context());
 
     /**
      * Allocation 1: Execution contexts

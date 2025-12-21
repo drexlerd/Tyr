@@ -37,7 +37,7 @@ public:
 
     void activate_all();
 
-    void on_generate(View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::Repository> predicate);
+    void on_generate(Index<formalism::Predicate<formalism::FluentTag>> predicate);
 
     View<IndexList<formalism::Rule>, formalism::Repository> active_rules();
 
