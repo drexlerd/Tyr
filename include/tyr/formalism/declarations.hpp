@@ -438,6 +438,16 @@ concept Context = requires(const T& a) {
     { get_repository(a) } -> RepositoryConcept;
 };
 
+using DomainRepo = Repository;
+using DomainRepoPtr = std::shared_ptr<DomainRepo>;
+using TaskRepo = OverlayRepository<DomainRepo>;
+using TaskRepoPtr = std::shared_ptr<TaskRepo>;
+
+using ProgramRepo = Repository;
+using ProgramRepoPtr = std::shared_ptr<ProgramRepo>;
+using ThreadRepo = OverlayRepository<ProgramRepo>;
+using ThreadRepoPtr = std::shared_ptr<ThreadRepo>;
+
 class MergeCache;
 
 }

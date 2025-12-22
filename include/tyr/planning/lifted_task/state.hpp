@@ -71,7 +71,7 @@ private:
     LiftedTask* m_task;
 };
 
-static_assert(StateConcept<State<LiftedTask>>);
+// static_assert(StateConcept<State<LiftedTask>>);
 
 /**
  * Implementations

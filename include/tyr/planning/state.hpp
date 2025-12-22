@@ -28,7 +28,13 @@
 namespace tyr::planning
 {
 
-template<typename T>
+template<typename Task>
+class State
+{
+    static_assert(dependent_false<Task>::value, "State is not defined for type T.");
+};
+
+template<typename T, typename Task>
 concept StateConcept = requires(T& a,
                                 const T& b,
                                 Index<formalism::FDRVariable<formalism::FluentTag>> variable,
@@ -43,15 +49,10 @@ concept StateConcept = requires(T& a,
     { b.get(fluent_fterm) } -> std::same_as<float_t>;
     { b.test(static_atom) } -> std::same_as<bool>;
     { b.test(derived_atom) } -> std::same_as<bool>;
-    { a.get_task() } -> std::same_as<typename T::TaskType&>;
-    { b.get_task() } -> std::same_as<const typename T::TaskType&>;
+    { a.get_task() } -> std::same_as<Task&>;
+    { b.get_task() } -> std::same_as<Task&>;
 };
 
-template<typename Task>
-class State
-{
-    static_assert(dependent_false<Task>::value, "State is not defined for type T.");
-};
 }
 
 #endif
