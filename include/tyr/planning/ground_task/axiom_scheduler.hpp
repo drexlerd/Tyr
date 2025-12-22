@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_RULE_SCHEDULER_HPP_
-#define TYR_GROUNDER_RULE_SCHEDULER_HPP_
+#ifndef TYR_PLANNING_GROUND_TASK_AXIOM_SCHEDULER_HPP_
+#define TYR_PLANNING_GROUND_TASK_AXIOM_SCHEDULER_HPP_
 
 #include "tyr/formalism/ground_atom_index.hpp"
 #include "tyr/formalism/ground_atom_view.hpp"

@@ -254,6 +254,10 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
     for (const auto& stratum : axiom_strata.data)
         axiom_match_tree_strata.emplace_back(match_tree::MatchTree<GroundAxiom>::create(stratum, fdr_task.get_context()));
 
+    auto axiom_listener_strata = compute_listeners(axiom_strata, fdr_task.get_context());
+
+    auto axiom_scheduler_strata = create_axiom_scheduler_strata(axiom_strata, axiom_listener_strata, fdr_task.get_context());
+
     return std::make_shared<GroundTask>(domain,
                                         repository,
                                         overlay_repository,
@@ -261,7 +265,9 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
                                         fdr_context,
                                         std::move(fluent_layout),
                                         std::move(action_match_tree),
-                                        std::move(axiom_match_tree_strata));
+                                        std::move(axiom_match_tree_strata),
+                                        std::move(axiom_listener_strata),
+                                        std::move(axiom_scheduler_strata));
 }
 
 GroundTask::GroundTask(DomainPtr domain,
@@ -271,7 +277,9 @@ GroundTask::GroundTask(DomainPtr domain,
                        GeneralFDRContext<OverlayRepository<Repository>> fdr_context,
                        FDRVariablesLayout<formalism::FluentTag, uint_t> fluent_layout,
                        match_tree::MatchTreePtr<formalism::GroundAction> action_match_tree,
-                       std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata) :
+                       std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata,
+                       GroundAxiomListenerStrata axiom_listener_strata,
+                       GroundAxiomSchedulerStrata axiom_scheduler_strata) :
     m_domain(std::move(domain)),
     m_repository(std::move(m_repository)),
     m_overlay_repository(std::move(overlay_repository)),
@@ -280,6 +288,8 @@ GroundTask::GroundTask(DomainPtr domain,
     m_fluent_layout(std::move(fluent_layout)),
     m_action_match_tree(std::move(action_match_tree)),
     m_axiom_match_tree_strata(std::move(axiom_match_tree_strata)),
+    m_axiom_listener_strata(std::move(axiom_listener_strata)),
+    m_axiom_scheduler_strata(std::move(axiom_scheduler_strata)),
     m_applicable_actions()
 {
     // std::cout << m_fdr_task << std::endl;
