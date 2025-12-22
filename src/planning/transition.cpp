@@ -31,6 +31,8 @@
 #include "tyr/planning/applicability.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task.hpp"
+#include "tyr/planning/ground_task/node.hpp"
+#include "tyr/planning/ground_task/state.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
@@ -93,5 +95,7 @@ Node<Task> apply_action(const StateContext<Task>& state_context,
 }
 
 template Node<LiftedTask> apply_action(const StateContext<LiftedTask>& state_context,
+                                       View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
+template Node<GroundTask> apply_action(const StateContext<GroundTask>& state_context,
                                        View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
 }

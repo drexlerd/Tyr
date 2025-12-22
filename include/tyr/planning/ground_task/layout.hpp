@@ -174,7 +174,7 @@ struct FDRVariablesLayout
 };
 
 template<formalism::FactKind T, formalism::Context C, std::unsigned_integral Block>
-FDRVariablesLayout<T, Block> create_layouts(View<IndexList<formalism::FDRVariable<T>>, C> variables)
+FDRVariablesLayout<T, Block> create_variable_layouts(View<IndexList<formalism::FDRVariable<T>>, C> variables)
 {
     constexpr size_t W = std::numeric_limits<Block>::digits;
 
@@ -279,6 +279,36 @@ FDRVariablesLayout<T, Block> create_layouts(View<IndexList<formalism::FDRVariabl
     return FDRVariablesLayout<T, Block> { layouts, total_blocks };
 }
 
+template<std::unsigned_integral Block>
+struct BitReference
+{
+    Block* data;
+    size_t bit;
+
+    BitReference(size_t bit, Block* data) noexcept : data(data), bit(bit) {}
+
+    static constexpr size_t bits_per_block = std::numeric_limits<Block>::digits;
+
+    static constexpr size_t block_index(size_t bit) { return bit / bits_per_block; }
+    static constexpr size_t bit_index(size_t bit) { return bit % bits_per_block; }
+
+    BitReference& operator=(bool value)
+    {
+        Block& block = data[block_index(bit)];
+        const Block mask = Block(1) << bit_index(bit);
+
+        if (value)
+            block |= mask;
+        else
+            block &= ~mask;
+
+        return *this;
+    }
+
+    BitReference& operator=(const BitReference& other) noexcept { return *this = static_cast<bool>(other); }
+
+    explicit operator bool() const noexcept { return ((data[block_index(bit)] >> bit_index(bit)) & Block(1)) != 0; }
+};
 }
 
 #endif

@@ -30,11 +30,11 @@ inline bool test(size_t pos, const boost::dynamic_bitset<>& bitset) noexcept
     return bitset.test(pos);
 }
 
-inline void set(size_t pos, boost::dynamic_bitset<>& bitset)
+inline void set(size_t pos, bool value, boost::dynamic_bitset<>& bitset)
 {
     if (pos >= bitset.size())
         bitset.resize(pos + 1, false);
-    bitset.set(pos);
+    bitset[pos] = value;
 }
 }
 

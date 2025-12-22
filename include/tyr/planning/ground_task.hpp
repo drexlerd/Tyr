@@ -19,6 +19,8 @@
 #define TYR_PLANNING_GROUND_TASK_HPP_
 
 #include "tyr/common/common.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
+#include "tyr/common/vector.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/fdr_context.hpp"
@@ -79,20 +81,20 @@ public:
 
     const auto& get_static_atoms_bitset() const noexcept { return m_static_atoms_bitset; }
     const auto& get_static_numeric_variables() const noexcept { return m_static_numeric_variables; }
-    bool test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const
-    {
-        if (index.get_value() >= m_static_atoms_bitset.size())
-            return false;
-        return m_static_atoms_bitset.test(index.get_value());
-    }
+    bool test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const { return tyr::test(uint_t(index), m_static_atoms_bitset); }
     float_t get(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const
     {
-        if (index.get_value() >= m_static_numeric_variables.size())
-            return std::numeric_limits<float_t>::quiet_NaN();
-        return m_static_numeric_variables[index.get_value()];
+        return tyr::get(uint_t(index), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
     }
 
+    const auto& get_domain() const noexcept { return m_domain; }
+
+    auto get_task() const noexcept { return m_fdr_task; }
+
+    auto& get_repository() noexcept { return m_overlay_repository; }
     const auto& get_repository() const noexcept { return m_overlay_repository; }
+
+    auto& get_unpacked_state_pool() noexcept { return m_unpacked_state_pool; }
 
     const auto& get_axiom_match_tree_strata() const noexcept { return m_axiom_match_tree_strata; }
 

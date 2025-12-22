@@ -44,4 +44,8 @@ template float_t evaluate_metric(View<::cista::optional<Index<formalism::Metric>
                                  View<::cista::optional<Index<formalism::GroundFunctionTermValue<formalism::AuxiliaryTag>>>,
                                       formalism::OverlayRepository<formalism::Repository>> auxiliary_fterm_value,
                                  const StateContext<LiftedTask>& state_context);
+template float_t evaluate_metric(View<::cista::optional<Index<formalism::Metric>>, formalism::OverlayRepository<formalism::Repository>> metric,
+                                 View<::cista::optional<Index<formalism::GroundFunctionTermValue<formalism::AuxiliaryTag>>>,
+                                      formalism::OverlayRepository<formalism::Repository>> auxiliary_fterm_value,
+                                 const StateContext<GroundTask>& state_context);
 }

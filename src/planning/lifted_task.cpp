@@ -317,10 +317,10 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(task))
 {
     for (const auto atom : m_task.template get_atoms<formalism::StaticTag>())
-        set(atom.get_index().get_value(), m_static_atoms_bitset);
+        set(uint_t(atom.get_index()), true, m_static_atoms_bitset);
 
     for (const auto fterm_value : m_task.template get_fterm_values<formalism::StaticTag>())
-        set(fterm_value.get_fterm().get_index().get_value(), fterm_value.get_value(), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
+        set(uint_t(fterm_value.get_fterm().get_index()), fterm_value.get_value(), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
 }
 
 State<LiftedTask> LiftedTask::get_state(StateIndex state_index)

@@ -103,7 +103,7 @@ inline formalism::FDRValue UnpackedState<LiftedTask>::get(Index<formalism::FDRVa
 inline void UnpackedState<LiftedTask>::set(Data<formalism::FDRFact<formalism::FluentTag>> fact)
 {
     assert(uint_t(fact.value) < 2);  // can only handle binary using bitsets
-    tyr::set(bool(uint_t(fact.value)), m_fluent_atoms);
+    tyr::set(uint_t(fact.variable), bool(uint_t(fact.value)), m_fluent_atoms);
 }
 
 // Fluent numeric variables
@@ -123,7 +123,7 @@ inline bool UnpackedState<LiftedTask>::test(Index<formalism::GroundAtom<formalis
     return tyr::test(uint_t(index), m_derived_atoms);
 }
 
-inline void UnpackedState<LiftedTask>::set(Index<formalism::GroundAtom<formalism::DerivedTag>> index) { tyr::set(uint_t(index), m_derived_atoms); }
+inline void UnpackedState<LiftedTask>::set(Index<formalism::GroundAtom<formalism::DerivedTag>> index) { tyr::set(uint_t(index), true, m_derived_atoms); }
 
 inline void UnpackedState<LiftedTask>::clear()
 {

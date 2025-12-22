@@ -255,7 +255,7 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
                                                      make_view(axioms, *task_overlay_repository),
                                                      *overlay_repository);
 
-    auto fluent_layout = create_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(fdr_task.get_fluent_variables());
+    auto fluent_layout = create_variable_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(fdr_task.get_fluent_variables());
 
     auto action_match_tree = match_tree::MatchTree<GroundAction>::create(fdr_task.get_ground_actions().get_data(), fdr_task.get_context());
 
@@ -304,10 +304,10 @@ GroundTask::GroundTask(DomainPtr domain,
     // std::cout << m_fdr_task << std::endl;
 
     for (const auto atom : m_fdr_task.template get_atoms<formalism::StaticTag>())
-        set(atom.get_index().get_value(), m_static_atoms_bitset);
+        set(uint_t(atom.get_index()), true, m_static_atoms_bitset);
 
     for (const auto fterm_value : m_fdr_task.template get_fterm_values<formalism::StaticTag>())
-        set(fterm_value.get_fterm().get_index().get_value(), fterm_value.get_value(), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
+        set(uint_t(fterm_value.get_fterm().get_index()), fterm_value.get_value(), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
 }
 
 Node<GroundTask> GroundTask::get_initial_node()
@@ -335,6 +335,10 @@ Node<GroundTask> GroundTask::get_initial_node()
 
     return Node<GroundTask>(state_index, state_metric, *this);
 }
+
+State<GroundTask> GroundTask::get_state(StateIndex state_index) {}
+
+StateIndex GroundTask::register_state(const UnpackedState<GroundTask>& state) {}
 
 void GroundTask::compute_extended_state(UnpackedState<GroundTask>& unpacked_state)
 {

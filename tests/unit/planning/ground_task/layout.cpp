@@ -58,7 +58,7 @@ TEST(TyrTests, TyrPlanningGroundTaskLayout)
     const auto variable_3 = repository.get_or_create(variable, builder.get_buffer()).first;
     variables.push_back(variable_3);
 
-    auto variables_layout = create_layouts<FluentTag, Repository, uint8_t>(make_view(variables, repository));
+    auto variables_layout = create_variable_layouts<FluentTag, Repository, uint8_t>(make_view(variables, repository));
 
     EXPECT_EQ(variables_layout.total_blocks, 3);
 

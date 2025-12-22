@@ -27,7 +27,7 @@
 
 namespace tyr::planning
 {
-extern void evaluate_axioms_bottomup(UnpackedState<GroundTask>& state, const GroundTask& task, IndexList<formalism::GroundAxiom>& applicable_axioms);
+extern void evaluate_axioms_bottomup(UnpackedState<GroundTask>& state, GroundTask& task, IndexList<formalism::GroundAxiom>& applicable_axioms);
 }
 
 #endif

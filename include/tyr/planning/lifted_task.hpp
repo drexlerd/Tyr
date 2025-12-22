@@ -25,6 +25,8 @@
 //
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/common.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
+#include "tyr/common/vector.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -83,17 +85,10 @@ public:
 
     const auto& get_static_atoms_bitset() const noexcept { return m_static_atoms_bitset; }
     const auto& get_static_numeric_variables() const noexcept { return m_static_numeric_variables; }
-    bool test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const
-    {
-        if (index.get_value() >= m_static_atoms_bitset.size())
-            return false;
-        return m_static_atoms_bitset.test(index.get_value());
-    }
+    bool test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const { return tyr::test(uint_t(index), m_static_atoms_bitset); }
     float_t get(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const
     {
-        if (index.get_value() >= m_static_numeric_variables.size())
-            return std::numeric_limits<float_t>::quiet_NaN();
-        return m_static_numeric_variables[index.get_value()];
+        return tyr::get(uint_t(index), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
     }
 
 private:
