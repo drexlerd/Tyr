@@ -18,6 +18,7 @@
 #ifndef TYR_PLANNING_GROUND_TASK_HPP_
 #define TYR_PLANNING_GROUND_TASK_HPP_
 
+#include "tyr/common/bit_packed_layout.hpp"
 #include "tyr/common/common.hpp"
 #include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/vector.hpp"
@@ -28,7 +29,6 @@
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"
-#include "tyr/planning/ground_task/layout.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"
 #include "tyr/planning/ground_task/node.hpp"
 #include "tyr/planning/ground_task/packed_state.hpp"
@@ -48,7 +48,8 @@ public:
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> fdr_task,
                formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context,
-               FDRVariablesLayout<formalism::FluentTag, uint_t> fluent_layout,
+               BitPackedArrayLayout<uint_t> fluent_layout,
+               BitsetLayout<uint_t> derived_layout,
                match_tree::MatchTreePtr<formalism::GroundAction> action_match_tree,
                std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata);
 
@@ -105,7 +106,8 @@ private:
     formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
     View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> m_fdr_task;
     formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> m_fdr_context;
-    FDRVariablesLayout<formalism::FluentTag, uint_t> m_fluent_layout;
+    BitPackedArrayLayout<uint_t> m_fluent_layout;
+    BitsetLayout<uint_t> m_derived_layout;
     match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
     std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> m_axiom_match_tree_strata;
 

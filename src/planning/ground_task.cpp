@@ -255,7 +255,21 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
                                                      make_view(axioms, *task_overlay_repository),
                                                      *overlay_repository);
 
-    auto fluent_layout = create_variable_layouts<FluentTag, OverlayRepository<Repository>, uint_t>(fdr_task.get_fluent_variables());
+    auto ranges = std::vector<uint_t> {};
+    for (const auto variable : fdr_task.get_fluent_variables())
+    {
+        // Ensure fluent variable indice are dense, i.e., 0,1,2,...
+        assert(uint_t(variable.get_index()) == ranges.size());
+        ranges.push_back(variable.get_domain_size());
+    }
+
+    auto fluent_layout = create_bit_packed_array_layout(ranges);
+
+    // Ensure derived atom indices are dense, i.e., 0,1,2,...
+    for (uint_t i = 0; i < fdr_task.get_atoms<DerivedTag>().size(); ++i)
+        assert(i == uint_t(fdr_task.get_atoms<DerivedTag>()[i].get_index()));
+
+    auto derived_layout = create_bitset_layout<uint_t>(fdr_task.get_atoms<DerivedTag>().size());
 
     auto action_match_tree = match_tree::MatchTree<GroundAction>::create(fdr_task.get_ground_actions().get_data(), fdr_task.get_context());
 
@@ -271,6 +285,7 @@ std::shared_ptr<GroundTask> GroundTask::create(DomainPtr domain,
                                         fdr_task,
                                         fdr_context,
                                         std::move(fluent_layout),
+                                        derived_layout,
                                         std::move(action_match_tree),
                                         std::move(axiom_match_tree_strata));
 }
@@ -280,7 +295,8 @@ GroundTask::GroundTask(DomainPtr domain,
                        OverlayRepositoryPtr<Repository> overlay_repository,
                        View<Index<FDRTask>, OverlayRepository<Repository>> fdr_task,
                        GeneralFDRContext<OverlayRepository<Repository>> fdr_context,
-                       FDRVariablesLayout<formalism::FluentTag, uint_t> fluent_layout,
+                       BitPackedArrayLayout<uint_t> fluent_layout,
+                       BitsetLayout<uint_t> derived_layout,
                        match_tree::MatchTreePtr<formalism::GroundAction> action_match_tree,
                        std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata) :
     m_domain(std::move(domain)),
@@ -289,6 +305,7 @@ GroundTask::GroundTask(DomainPtr domain,
     m_fdr_task(fdr_task),
     m_fdr_context(fdr_context),
     m_fluent_layout(std::move(fluent_layout)),
+    m_derived_layout(derived_layout),
     m_action_match_tree(std::move(action_match_tree)),
     m_axiom_match_tree_strata(std::move(axiom_match_tree_strata)),
     m_uint_nodes(),

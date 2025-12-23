@@ -15,23 +15,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_GROUND_TASK_LAYOUT_HPP_
-#define TYR_PLANNING_GROUND_TASK_LAYOUT_HPP_
-
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/planning/fdr_fact_data.hpp"
-#include "tyr/formalism/planning/fdr_value.hpp"
-#include "tyr/formalism/planning/fdr_variable_view.hpp"
+#ifndef TYR_BIT_PACKED_LAYOUT_HPP_
+#define TYR_BIT_PACKED_LAYOUT_HPP_
 
 #include <bit>  // std::bit_width, std::countr_zero
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <type_traits>
 #include <vector>
 
-namespace tyr::planning
+namespace tyr
 {
 
 template<std::unsigned_integral Block>
@@ -56,22 +52,21 @@ struct PortionMap
     ValuePortion<Block> value;
 };
 
-template<formalism::FactKind T, std::unsigned_integral Block>
-struct VariableLayout
+template<std::unsigned_integral Block>
+struct BitPackedElementLayout
 {
-    Index<formalism::FDRVariable<T>> variable;
     size_t base_word_index;
     PortionMap<Block> high;
     PortionMap<Block> low;
 };
 
-template<formalism::FactKind T, std::unsigned_integral Block>
-using VariableLayoutList = std::vector<VariableLayout<T, Block>>;
+template<std::unsigned_integral Block>
+using BitPackedElementLayoutList = std::vector<BitPackedElementLayout<Block>>;
 
-template<formalism::FactKind T, std::unsigned_integral Block>
+template<std::unsigned_integral Block>
 struct VariableReference
 {
-    const VariableLayout<T, Block>* layout;
+    const BitPackedElementLayout<Block>* layout;
     Block* data;
 
     static void assert_portion_ok(const PortionMap<Block>& p) noexcept
@@ -94,7 +89,7 @@ struct VariableReference
         assert(((p.value.mask >> p.value.rshift) & Block { 1 }) != 0);
     }
 
-    static void assert_layout_ok(const VariableLayout<T, Block>& l) noexcept
+    static void assert_layout_ok(const BitPackedElementLayout<Block>& l) noexcept
     {
         assert_portion_ok(l.high);
         assert_portion_ok(l.low);
@@ -128,53 +123,39 @@ struct VariableReference
         w = (w & ~p.data.mask) | field;
     }
 
-    VariableReference& operator=(Data<formalism::FDRFact<T>> fact) noexcept
-    {
-        assert(fact.variable == layout->variable);
-
-        *this = fact.value;
-
-        return *this;
-    }
-
-    VariableReference& operator=(formalism::FDRValue value) noexcept
+    VariableReference& operator=(Block value) noexcept
     {
         assert_layout_ok(*layout);
 
-        const Block v = static_cast<Block>(uint_t(value));
-
         const size_t base = layout->base_word_index;
-        write_portion(layout->high, data, base, v);
-        write_portion(layout->low, data, base, v);
+        write_portion(layout->high, data, base, value);
+        write_portion(layout->low, data, base, value);
 
         return *this;
     }
 
-    explicit operator Data<formalism::FDRFact<T>>() const noexcept { return Data<formalism::FDRFact<T>>(layout->variable, formalism::FDRValue(*this)); }
-
-    explicit operator formalism::FDRValue() const noexcept
+    explicit operator Block() const noexcept
     {
         assert_layout_ok(*layout);
 
         const size_t base = layout->base_word_index;
 
-        const Block v = read_portion(layout->high, data, base) | read_portion(layout->low, data, base);
-
-        return formalism::FDRValue(v);
+        return read_portion(layout->high, data, base) | read_portion(layout->low, data, base);
     }
 
-    VariableReference(const VariableLayout<T, Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }
+    VariableReference(const BitPackedElementLayout<Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }
 };
 
-template<formalism::FactKind T, std::unsigned_integral Block>
-struct FDRVariablesLayout
+template<std::unsigned_integral Block>
+struct BitPackedArrayLayout
 {
-    VariableLayoutList<T, Block> layouts;
+    BitPackedElementLayoutList<Block> layouts;
+    size_t total_bits;
     size_t total_blocks;
 };
 
-template<formalism::FactKind T, formalism::Context C, std::unsigned_integral Block>
-FDRVariablesLayout<T, Block> create_variable_layouts(View<IndexList<formalism::FDRVariable<T>>, C> variables)
+template<std::unsigned_integral Block>
+BitPackedArrayLayout<Block> create_bit_packed_array_layout(const std::vector<Block>& ranges)
 {
     constexpr size_t W = std::numeric_limits<Block>::digits;
 
@@ -187,22 +168,19 @@ FDRVariablesLayout<T, Block> create_variable_layouts(View<IndexList<formalism::F
         return (Block { 1 } << n) - 1;
     };
 
-    VariableLayoutList<T, Block> layouts;
+    BitPackedElementLayoutList<Block> layouts;
 
     size_t word_index = 0;  // index in Block[] (or Block[] if Block==Block)
     size_t bit_pos = 0;     // next free bit in current block [0, W)
 
-    for (const auto& variable : variables)
+    for (const auto& range : ranges)
     {
-        const auto index = variable.get_index();
-        const size_t domain_size = static_cast<size_t>(variable.get_domain_size());
-        assert(domain_size >= 1);
+        assert(range >= 1);
 
         // bits needed to represent values in [0, domain_size-1]
-        const size_t bits = (domain_size <= 1) ? 0u : static_cast<size_t>(std::bit_width(domain_size - 1));
+        const size_t bits = (range <= 1) ? 0u : static_cast<size_t>(std::bit_width(static_cast<size_t>(range - 1)));
 
-        VariableLayout<T, Block> L;
-        L.variable = index;
+        BitPackedElementLayout<Block> L;
         L.base_word_index = word_index;
 
         // Default: "absent" portions (mask==0)
@@ -276,7 +254,7 @@ FDRVariablesLayout<T, Block> create_variable_layouts(View<IndexList<formalism::F
 
     const size_t total_blocks = word_index + (bit_pos != 0 ? 1 : 0);
 
-    return FDRVariablesLayout<T, Block> { layouts, total_blocks };
+    return BitPackedArrayLayout<Block> { layouts, word_index * W + bit_pos, total_blocks };
 }
 
 template<std::unsigned_integral Block>
@@ -309,6 +287,21 @@ struct BitReference
 
     explicit operator bool() const noexcept { return ((data[block_index(bit)] >> bit_index(bit)) & Block(1)) != 0; }
 };
+
+template<std::unsigned_integral Block>
+struct BitsetLayout
+{
+    size_t total_bits;
+    size_t total_blocks;
+};
+
+template<std::unsigned_integral Block>
+BitsetLayout<Block> create_bitset_layout(size_t num_bits)
+{
+    constexpr size_t W = std::numeric_limits<Block>::digits;
+    const size_t num_blocks = (num_bits + W - 1) / W;
+    return BitsetLayout<Block>(num_bits, num_blocks);
+}
 }
 
 #endif
