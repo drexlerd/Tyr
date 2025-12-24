@@ -38,8 +38,7 @@ StateRepository<LiftedTask>::StateRepository(LiftedTask& task, formalism::Binary
 
 State<LiftedTask> StateRepository<LiftedTask>::get_initial_state()
 {
-    auto unpacked_state = m_unpacked_state_pool.get_or_allocate();
-    unpacked_state->clear_unextended_part();
+    auto unpacked_state = get_unregistered_state();
 
     for (const auto atom : m_task.get_task().get_atoms<FluentTag>())
         unpacked_state->set(m_fdr_context.get_fact(atom.get_index()));
@@ -56,9 +55,7 @@ State<LiftedTask> StateRepository<LiftedTask>::get_registered_state(StateIndex s
 {
     const auto& packed_state = m_packed_states[state_index];
 
-    auto unpacked_state = m_unpacked_state_pool.get_or_allocate();
-
-    unpacked_state->clear();
+    auto unpacked_state = get_unregistered_state();
 
     unpacked_state->get_index() = state_index;
     fill_atoms(packed_state.template get_atoms<formalism::FluentTag>(),
@@ -74,7 +71,13 @@ State<LiftedTask> StateRepository<LiftedTask>::get_registered_state(StateIndex s
     return State<LiftedTask>(m_task, std::move(unpacked_state));
 }
 
-SharedObjectPoolPtr<UnpackedState<LiftedTask>> StateRepository<LiftedTask>::get_unregistered_state() { return m_unpacked_state_pool.get_or_allocate(); }
+SharedObjectPoolPtr<UnpackedState<LiftedTask>> StateRepository<LiftedTask>::get_unregistered_state()
+{
+    auto state = m_unpacked_state_pool.get_or_allocate();
+    state->clear();
+
+    return state;
+}
 
 State<LiftedTask> StateRepository<LiftedTask>::register_state(SharedObjectPoolPtr<UnpackedState<LiftedTask>> state)
 {

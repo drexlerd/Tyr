@@ -49,7 +49,7 @@ static auto create_derived_layout(View<Index<formalism::FDRTask>, formalism::Ove
 
 StateRepository<GroundTask>::StateRepository(GroundTask& task, formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context) :
     m_task(task),
-    m_fdr_context(fdr_context),
+    m_fdr_context(std::move(fdr_context)),
     m_fluent_layout(create_fluent_layout(m_task.get_task())),
     m_derived_layout(create_derived_layout(m_task.get_task())),
     m_uint_nodes(),
@@ -66,11 +66,7 @@ StateRepository<GroundTask>::StateRepository(GroundTask& task, formalism::Genera
 
 State<GroundTask> StateRepository<GroundTask>::get_initial_state()
 {
-    auto unpacked_state = m_unpacked_state_pool.get_or_allocate();
-    unpacked_state->clear();
-
-    unpacked_state->resize_fluent_facts(m_task.get_task().get_fluent_variables().size());
-    unpacked_state->resize_derived_atoms(m_task.get_task().get_atoms<DerivedTag>().size());
+    auto unpacked_state = get_unregistered_state();
 
     for (const auto fact : m_task.get_task().get_fluent_facts())
         unpacked_state->set(fact.get_data());
@@ -87,11 +83,7 @@ State<GroundTask> StateRepository<GroundTask>::get_registered_state(StateIndex s
 {
     const auto& packed_state = m_packed_states[state_index];
 
-    auto unpacked_state = m_unpacked_state_pool.get_or_allocate();
-    unpacked_state->clear();
-
-    unpacked_state->resize_fluent_facts(m_task.get_task().get_fluent_variables().size());
-    unpacked_state->resize_derived_atoms(m_task.get_task().get_atoms<DerivedTag>().size());
+    auto unpacked_state = get_unregistered_state();
 
     unpacked_state->get_index() = state_index;
     const auto fluent_ptr = m_fluent_repository[packed_state.get_facts<FluentTag>()];
@@ -109,7 +101,16 @@ State<GroundTask> StateRepository<GroundTask>::get_registered_state(StateIndex s
     return State<GroundTask>(m_task, std::move(unpacked_state));
 }
 
-SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_unregistered_state() { return m_unpacked_state_pool.get_or_allocate(); }
+SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_unregistered_state()
+{
+    auto state = m_unpacked_state_pool.get_or_allocate();
+    state->clear();
+
+    state->resize_fluent_facts(m_task.get_task().get_fluent_variables().size());
+    state->resize_derived_atoms(m_task.get_task().get_atoms<DerivedTag>().size());
+
+    return state;
+}
 
 State<GroundTask> StateRepository<GroundTask>::register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state)
 {

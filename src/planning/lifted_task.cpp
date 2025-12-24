@@ -135,7 +135,6 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
                                                     OverlayRepository<Repository>& task_repository,
                                                     ProgramExecutionContext& axiom_context)
 {
-    unpacked_state.clear_extended_part();
     axiom_context.program_to_task_execution_context.clear();
 
     /// --- Initialize derived atoms in unpacked state

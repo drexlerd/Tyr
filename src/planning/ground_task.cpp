@@ -317,11 +317,7 @@ State<GroundTask> GroundTask::get_state(StateIndex state_index) { return m_state
 
 State<GroundTask> GroundTask::register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state) { return m_state_repository.register_state(state); }
 
-void GroundTask::compute_extended_state(UnpackedState<GroundTask>& unpacked_state)
-{
-    unpacked_state.clear_extended_part();
-    evaluate_axioms_bottomup(unpacked_state, *this, m_applicable_axioms);
-}
+void GroundTask::compute_extended_state(UnpackedState<GroundTask>& unpacked_state) { evaluate_axioms_bottomup(unpacked_state, *this, m_applicable_axioms); }
 
 std::vector<LabeledNode<GroundTask>> GroundTask::get_labeled_successor_nodes(const Node<GroundTask>& node)
 {

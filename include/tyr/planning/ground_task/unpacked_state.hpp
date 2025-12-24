@@ -142,11 +142,11 @@ inline void UnpackedState<GroundTask>::clear()
 
 inline void UnpackedState<GroundTask>::clear_unextended_part()
 {
-    std::fill(m_fluent_values.begin(), m_fluent_values.end(), formalism::FDRValue::none());
+    m_fluent_values.clear();
     m_numeric_variables.clear();
 }
 
-inline void UnpackedState<GroundTask>::clear_extended_part() { m_derived_atoms.reset(); }
+inline void UnpackedState<GroundTask>::clear_extended_part() { m_derived_atoms.clear(); }
 
 inline void UnpackedState<GroundTask>::assign_unextended_part(const UnpackedState<GroundTask>& other)
 {

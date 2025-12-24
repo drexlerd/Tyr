@@ -66,7 +66,7 @@ We obtain a lifted task by parsing the PDDL. Then, we translate the lifted task 
 auto parser = tyr::formalism::Parser("domain.pddl");
 auto task = parser.parse_task("problem.pddl");
 
-// Get the initial node (sparse state + metric value)
+// Get the initial node (state + metric value)
 auto initial_node = task.get_initial_node();
 
 // Get the labeled successor nodes (sequence of ground action + node)
@@ -74,7 +74,7 @@ auto successor_nodes = initial_node.get_labeled_successor_nodes();
 
 ```
 
-## 4.1 Grounded Planning (Semi-finished)
+## 4.1 Grounded Planning (Finished)
 
 From the lifted task and using program P1, we can compute a ground task that overapproximates the delete-free reachable ground atoms, actions, and axioms. From those, we derived mutex groups, enabling us to form a more compact finite-domain representation (FDR). The remaining interface remains identical, but uses FDR instead of a sparse state representation.
 
@@ -87,7 +87,7 @@ auto task = parser.parse_task("problem.pddl");
 // Ground the task
 auto ground_task = task.get_ground_task();
 
-// Get the initial node (FDR state + metric value)
+// Get the initial node (state + metric value)
 auto initial_node = ground_task.get_initial_node();
 
 // Get the labeled successor nodes (sequence of ground action + node)
