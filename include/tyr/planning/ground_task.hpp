@@ -116,6 +116,7 @@ private:
      */
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;
     valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
+    std::vector<uint_t> m_nodes_buffer;
     IndexedHashSet<PackedState<GroundTask>, StateIndex> m_packed_states;
     SegmentedArrayRepository<uint_t> m_fluent_repository;
     SegmentedArrayRepository<uint_t> m_derived_repository;

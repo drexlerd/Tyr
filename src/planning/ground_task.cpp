@@ -311,6 +311,7 @@ GroundTask::GroundTask(DomainPtr domain,
     m_axiom_match_tree_strata(std::move(axiom_match_tree_strata)),
     m_uint_nodes(),
     m_float_nodes(),
+    m_nodes_buffer(),
     m_packed_states(),
     m_fluent_repository(m_fluent_layout.total_blocks),
     m_derived_repository(m_derived_layout.total_blocks),
@@ -380,8 +381,7 @@ State<GroundTask> GroundTask::get_state(StateIndex state_index)
     for (uint_t i = 0; i < m_derived_layout.total_bits; ++i)
         derived_atoms[i] = bool(BitReference(i, derived_ptr));
 
-    thread_local auto buffer = std::vector<uint_t> {};
-    fill_numeric_variables(packed_state.get_numeric_variables(), m_uint_nodes, m_float_nodes, buffer, unpacked_state->get_numeric_variables());
+    fill_numeric_variables(packed_state.get_numeric_variables(), m_uint_nodes, m_float_nodes, m_nodes_buffer, unpacked_state->get_numeric_variables());
 
     return State<GroundTask>(*this, std::move(unpacked_state));
 }
@@ -401,8 +401,7 @@ void GroundTask::register_state(UnpackedState<GroundTask>& state)
         BitReference(i, m_derived_buffer.data()) = state.get_derived_atoms().test(i);
     const auto derived_atoms_index = m_derived_repository.insert(m_derived_buffer);
 
-    thread_local auto buffer = std::vector<uint_t> {};
-    auto numeric_variables_slot = create_numeric_variables_slot(state.get_numeric_variables(), buffer, m_uint_nodes, m_float_nodes);
+    auto numeric_variables_slot = create_numeric_variables_slot(state.get_numeric_variables(), m_nodes_buffer, m_uint_nodes, m_float_nodes);
 
     state.set(
         m_packed_states.insert(PackedState<GroundTask>(StateIndex(m_packed_states.size()), fluent_facts_index, derived_atoms_index, numeric_variables_slot)));

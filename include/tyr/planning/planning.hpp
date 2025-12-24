@@ -25,10 +25,12 @@
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/ground_task/node.hpp"
 #include "tyr/planning/ground_task/state.hpp"
+#include "tyr/planning/ground_task/state_repository.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
 #include "tyr/planning/lifted_task/state.hpp"
+#include "tyr/planning/lifted_task/state_repository.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 #include "tyr/planning/packed_state.hpp"
 #include "tyr/planning/parser.hpp"
@@ -36,5 +38,6 @@
 #include "tyr/planning/programs/axiom.hpp"
 #include "tyr/planning/programs/ground.hpp"
 #include "tyr/planning/state_index.hpp"
+#include "tyr/planning/state_repository.hpp"
 
 #endif

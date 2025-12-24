@@ -102,6 +102,7 @@ private:
     // States
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;
     valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
+    std::vector<uint_t> m_nodes_buffer;
     IndexedHashSet<PackedState<LiftedTask>, StateIndex> m_packed_states;
     SharedObjectPool<UnpackedState<LiftedTask>> m_unpacked_state_pool;
     boost::dynamic_bitset<> m_static_atoms_bitset;

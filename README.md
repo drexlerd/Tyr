@@ -1,9 +1,7 @@
 
 # Tyr
 
-Tyr aims to become a weighted, annotated, and parallelizable datalog solver with a grounder based on k-clique enumeration in k-partite graphs (KPKC) with a focus on AI planning. It is currently unknown whether the KPKC grounder can efficiently support object creation, and hence, Tyr does not support arithmetic expressions in rule heads. However, it supports simple arithmetic expressions in rule bodies, which are sufficient for deciding whether a ground action in numeric planning is applicable. 
-
-Tyr also aims to provides a PDDL interface, that employs the parallelized datalog solver to address three foundational problems within planning through compilations into datalog: 1) task grounding, 2) lifted axiom evaluation, 3) enumerating applicable actions in a state. Tyr's strongly typed and templated design enforces a clear separation between grounded and lifted planning for prototyping approaches to sequential or parallelized planning and evaluating them on both paradigms. For lifted states, Tyr employs a sparse representation, and for grounded planning, it employs a finite-domain representation.
+Tyr aims to become a weighted, annotated, and parallelizable datalog solver with a grounder based on k-clique enumeration in k-partite graphs (KPKC) with a focus on AI planning. Tyr also provides a PDDL interface, that employs the parallelized datalog solver to address three foundational problems within planning through compilations into datalog: 1) task grounding, 2) lifted axiom evaluation, 3) enumerating applicable actions in a state. For lifted states, Tyr employs a sparse representation, and for grounded planning, it employs a finite-domain representation.
 
 
 # Key Features

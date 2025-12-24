@@ -247,6 +247,7 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_fdr_context(std::move(fdr_context)),
     m_uint_nodes(),
     m_float_nodes(),
+    m_nodes_buffer(),
     m_packed_states(),
     m_unpacked_state_pool(),
     m_static_atoms_bitset(),
@@ -280,23 +281,25 @@ State<LiftedTask> LiftedTask::get_state(StateIndex state_index)
     auto unpacked_state = m_unpacked_state_pool.get_or_allocate();
     unpacked_state->clear();
 
-    thread_local auto buffer = std::vector<uint_t> {};
-
     unpacked_state->get_index() = state_index;
-    fill_atoms(packed_state.template get_atoms<formalism::FluentTag>(), m_uint_nodes, buffer, unpacked_state->template get_atoms<formalism::FluentTag>());
-    fill_atoms(packed_state.template get_atoms<formalism::DerivedTag>(), m_uint_nodes, buffer, unpacked_state->template get_atoms<formalism::DerivedTag>());
-    fill_numeric_variables(packed_state.get_numeric_variables(), m_uint_nodes, m_float_nodes, buffer, unpacked_state->get_numeric_variables());
+    fill_atoms(packed_state.template get_atoms<formalism::FluentTag>(),
+               m_uint_nodes,
+               m_nodes_buffer,
+               unpacked_state->template get_atoms<formalism::FluentTag>());
+    fill_atoms(packed_state.template get_atoms<formalism::DerivedTag>(),
+               m_uint_nodes,
+               m_nodes_buffer,
+               unpacked_state->template get_atoms<formalism::DerivedTag>());
+    fill_numeric_variables(packed_state.get_numeric_variables(), m_uint_nodes, m_float_nodes, m_nodes_buffer, unpacked_state->get_numeric_variables());
 
     return State<LiftedTask>(*this, std::move(unpacked_state));
 }
 
 void LiftedTask::register_state(UnpackedState<LiftedTask>& state)
 {
-    thread_local auto buffer = std::vector<uint_t> {};
-
-    auto fluent_atoms = create_atoms_slot(state.template get_atoms<formalism::FluentTag>(), buffer, m_uint_nodes);
-    auto derived_atoms = create_atoms_slot(state.template get_atoms<formalism::DerivedTag>(), buffer, m_uint_nodes);
-    auto numeric_variables = create_numeric_variables_slot(state.get_numeric_variables(), buffer, m_uint_nodes, m_float_nodes);
+    auto fluent_atoms = create_atoms_slot(state.template get_atoms<formalism::FluentTag>(), m_nodes_buffer, m_uint_nodes);
+    auto derived_atoms = create_atoms_slot(state.template get_atoms<formalism::DerivedTag>(), m_nodes_buffer, m_uint_nodes);
+    auto numeric_variables = create_numeric_variables_slot(state.get_numeric_variables(), m_nodes_buffer, m_uint_nodes, m_float_nodes);
 
     state.set(m_packed_states.insert(PackedState<LiftedTask>(StateIndex(m_packed_states.size()), fluent_atoms, derived_atoms, numeric_variables)));
 }
