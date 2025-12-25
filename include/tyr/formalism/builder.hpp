@@ -28,10 +28,20 @@
 
 namespace tyr::formalism
 {
-struct Builder
+class Builder
 {
+public:
     Builder() = default;
 
+    template<typename T>
+    [[nodiscard]] auto get_builder()
+    {
+        return get_container<T>(m_builder).get_or_allocate();
+    }
+
+    auto& get_buffer() noexcept { return buffer; }
+
+private:
     /**
      * Datalog
      */
@@ -141,15 +151,7 @@ struct Builder
 
     BuilderStorage m_builder;
 
-    template<typename T>
-    [[nodiscard]] auto get_builder()
-    {
-        return get_container<T>(m_builder).get_or_allocate();
-    }
-
     buffer::Buffer buffer;
-
-    auto& get_buffer() noexcept { return buffer; }
 };
 
 }

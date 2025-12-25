@@ -170,7 +170,11 @@ bool is_applicable_if_fires(View<Index<formalism::GroundConditionalEffect>, C> e
                             const StateContext<Task>& context,
                             formalism::EffectFamilyList& ref_fluent_effect_families)
 {
-    return is_applicable(element.get_effect(), context, ref_fluent_effect_families) || !is_applicable(element.get_condition(), context);
+    if (!is_applicable(element.get_condition(), context))
+        return true;
+
+    // Important: only modify effect families if condition is satisfied
+    return is_applicable(element.get_effect(), context, ref_fluent_effect_families);
 }
 
 /**
@@ -289,15 +293,18 @@ bool is_applicable(View<Index<formalism::GroundConjunctiveEffect>, C> element,
            && (!element.get_auxiliary_numeric_effect().has_value() || is_applicable(element.get_auxiliary_numeric_effect().value(), context));
 }
 
-// GroundConditionalEffect
+// GroundConditionalEffectList
 
 template<typename Task, formalism::Context C>
-bool is_applicable(View<Index<formalism::GroundConditionalEffect>, C> element,
-                   const StateContext<Task>& context,
-                   formalism::EffectFamilyList& ref_fluent_effect_families)
+bool are_applicable_if_fires(View<IndexList<formalism::GroundConditionalEffect>, C> elements,
+                             const StateContext<Task>& context,
+                             formalism::EffectFamilyList& out_fluent_effect_families)
 {
-    return is_applicable(element.get_condition(), context, ref_fluent_effect_families)  //
-           && is_applicable(element.get_effect(), context, ref_fluent_effect_families);
+    out_fluent_effect_families.clear();
+
+    return std::all_of(elements.begin(),
+                       elements.end(),
+                       [&](auto&& cond_effect) { return is_applicable_if_fires(cond_effect, context, out_fluent_effect_families); });
 }
 
 // GroundAction
@@ -305,10 +312,7 @@ bool is_applicable(View<Index<formalism::GroundConditionalEffect>, C> element,
 template<typename Task, formalism::Context C>
 bool is_applicable(View<Index<formalism::GroundAction>, C> element, const StateContext<Task>& context, formalism::EffectFamilyList& out_fluent_effect_families)
 {
-    return is_applicable(element.get_condition(), context)
-           && std::all_of(element.get_effects().begin(),
-                          element.get_effects().end(),
-                          [&](auto&& cond_effect) { return is_applicable_if_fires(cond_effect, context, out_fluent_effect_families); });
+    return is_applicable(element.get_condition(), context) && are_applicable_if_fires(element.get_effects(), context, out_fluent_effect_families);
 }
 
 // GroundAxiom
@@ -323,42 +327,94 @@ bool is_applicable(View<Index<formalism::GroundAxiom>, C> element, const StateCo
  * is_statically_applicable
  */
 
-// GroundConjunctiveCondition
-
 template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundConjunctiveCondition>, C> element, const StateContext<Task>& context)
+bool is_statically_applicable(View<Index<formalism::GroundLiteral<formalism::StaticTag>>, C> element, const Task& task)
 {
-    return is_applicable(element.template get_literals<formalism::StaticTag>(), context);
+    return task.test(element.get_atom().get_index()) == element.get_polarity();
 }
 
 template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundFDRConjunctiveCondition>, C> element, const StateContext<Task>& context)
+bool is_statically_applicable(View<IndexList<formalism::GroundLiteral<formalism::StaticTag>>, C> elements, const Task& task)
 {
-    return is_applicable(element.template get_facts<formalism::StaticTag>(), context);
+    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_statically_applicable(arg, task); });
 }
 
-// GroundRule
+// GroundFDRConjunctiveCondition
 
 template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundRule>, C> element, const StateContext<Task>& context)
+bool is_statically_applicable(View<Index<formalism::GroundFDRConjunctiveCondition>, C> element, const Task& task)
 {
-    return is_statically_applicable(element.get_body(), context);
+    return is_statically_applicable(element.template get_facts<formalism::StaticTag>(), task);
 }
 
 // GroundAction
 
 template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundAction>, C> element, const StateContext<Task>& context)
+bool is_statically_applicable(View<Index<formalism::GroundAction>, C> element, const Task& task)
 {
-    return is_statically_applicable(element.get_condition(), context);
+    return is_statically_applicable(element.get_condition(), task);
 }
 
 // GroundAxiom
 
 template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundAxiom>, C> element, const StateContext<Task>& context)
+bool is_statically_applicable(View<Index<formalism::GroundAxiom>, C> element, const Task& task)
 {
-    return is_statically_applicable(element.get_body(), context);
+    return is_statically_applicable(element.get_body(), task);
+}
+
+/**
+ * is_consistent
+ */
+
+// GroundFDRConjunctiveCondition
+
+template<formalism::Context C>
+bool is_consistent(View<Index<formalism::GroundFDRConjunctiveCondition>, C> element,
+                   UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue>& fluent_assign,
+                   UnorderedMap<Index<formalism::GroundAtom<formalism::DerivedTag>>, bool>& derived_assign)
+{
+    for (const auto fact : element.template get_facts<formalism::FluentTag>())
+    {
+        if (const auto it = fluent_assign.find(fact.get_variable().get_index()); it != fluent_assign.end() && it->second != fact.get_value())
+            return false;
+        else
+            fluent_assign.emplace(fact.get_variable().get_index(), fact.get_value());
+    }
+
+    for (const auto literal : element.template get_facts<formalism::DerivedTag>())
+    {
+        if (const auto it = derived_assign.find(literal.get_atom().get_index()); it != derived_assign.end() && it->second != literal.get_polarity())
+            return false;
+        else
+            derived_assign.emplace(literal.get_atom().get_index(), literal.get_polarity());
+    }
+
+    return true;
+}
+
+// GroundAction
+
+template<formalism::Context C>
+bool is_consistent(View<Index<formalism::GroundAction>, C> element,
+                   UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue>& out_fluent_assign,
+                   UnorderedMap<Index<formalism::GroundAtom<formalism::DerivedTag>>, bool>& out_derived_assign)
+{
+    out_fluent_assign.clear();
+    out_derived_assign.clear();
+    return is_consistent(element.get_condition(), out_fluent_assign, out_derived_assign);
+}
+
+// GroundAxiom
+
+template<formalism::Context C>
+bool is_consistent(View<Index<formalism::GroundAxiom>, C> element,
+                   UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue>& out_fluent_assign,
+                   UnorderedMap<Index<formalism::GroundAtom<formalism::DerivedTag>>, bool>& out_derived_assign)
+{
+    out_fluent_assign.clear();
+    out_derived_assign.clear();
+    return is_consistent(element.get_body(), out_fluent_assign, out_derived_assign);
 }
 
 }

@@ -1538,9 +1538,11 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::GroundFDRConj
 template<formalism::Context C>
 std::ostream& print(std::ostream& os, const View<Index<formalism::GroundFDRConjunctiveCondition>, C>& el)
 {
-    os << "FDRConjunctiveCondition(\n";
+    os << "GroundFDRConjunctiveCondition(\n";
     {
         IndentScope scope(os);
+
+        os << print_indent << "static literals = " << el.template get_facts<formalism::StaticTag>() << "\n";
 
         os << print_indent << "fluent facts = " << el.template get_facts<formalism::FluentTag>() << "\n";
 

@@ -89,7 +89,7 @@ State<GroundTask> StateRepository<GroundTask>::get_registered_state(StateIndex s
     const auto fluent_ptr = m_fluent_repository[packed_state.get_facts<FluentTag>()];
     auto& fluent_values = unpacked_state->get_fluent_values();
     for (uint_t i = 0; i < m_fluent_layout.layouts.size(); ++i)
-        fluent_values[i] = FDRValue { uint_t(VariableReference(m_fluent_layout.layouts[i], fluent_ptr)) };
+        fluent_values[i] = FDRValue { uint_t(BitPackedElementReference(m_fluent_layout.layouts[i], fluent_ptr)) };
 
     const auto derived_ptr = m_derived_repository[packed_state.get_facts<DerivedTag>()];
     auto& derived_atoms = unpacked_state->get_derived_atoms();
@@ -119,7 +119,7 @@ State<GroundTask> StateRepository<GroundTask>::register_state(SharedObjectPoolPt
 
     std::fill(m_fluent_buffer.begin(), m_fluent_buffer.end(), uint_t(0));
     for (uint_t i = 0; i < m_fluent_layout.layouts.size(); ++i)
-        VariableReference(m_fluent_layout.layouts[i], m_fluent_buffer.data()) = uint_t(state->get_fluent_values()[i]);
+        BitPackedElementReference(m_fluent_layout.layouts[i], m_fluent_buffer.data()) = uint_t(state->get_fluent_values()[i]);
     const auto fluent_facts_index = m_fluent_repository.insert(m_fluent_buffer);
 
     std::fill(m_derived_buffer.begin(), m_derived_buffer.end(), uint_t(0));

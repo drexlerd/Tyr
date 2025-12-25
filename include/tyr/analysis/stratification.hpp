@@ -18,11 +18,12 @@
 #ifndef TYR_ANALYSIS_STRATIFICATION_HPP_
 #define TYR_ANALYSIS_STRATIFICATION_HPP_
 
-#include "tyr/common/declarations.hpp"
-#include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/common/formatter.hpp"        // for operator<<
+#include "tyr/common/types.hpp"            // for IndexList
+#include "tyr/formalism/declarations.hpp"  // for Program (ptr only), Rule
+#include "tyr/formalism/rule_index.hpp"    // for Index
 
-#include <vector>
+#include <vector>  // for vector
 
 namespace tyr::analysis
 {

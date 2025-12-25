@@ -35,6 +35,7 @@
 
 #include <deque>
 #include <iostream>
+#include <variant>
 
 namespace tyr::planning::match_tree
 {
@@ -607,7 +608,6 @@ public:
 
             std::optional<Data<Node<Tag>>> produced;
             std::optional<StackEntry<Tag>> next;
-            bool entry_explored = false;
 
             std::visit(
                 [&](auto& frame)
@@ -621,7 +621,6 @@ public:
                     {
                         // std::cout << "get_result" << std::endl;
                         produced = get_result(frame, result_context);
-                        entry_explored = true;
                     }
                 },
                 entry);

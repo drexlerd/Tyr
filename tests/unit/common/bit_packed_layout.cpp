@@ -34,7 +34,7 @@ TEST(TyrTests, TyrCommonBitPackedLayout)
     auto state = std::vector<uint8_t>(variables_layout.total_blocks, 0);
 
     // Create a reference
-    auto ref_fact_0 = VariableReference(variables_layout.layouts[0], state.data());
+    auto ref_fact_0 = BitPackedElementReference(variables_layout.layouts[0], state.data());
 
     EXPECT_EQ(uint8_t(ref_fact_0), uint8_t { 0 });
 
@@ -56,7 +56,7 @@ TEST(TyrTests, TyrCommonBitPackedLayout2)
 
     // Create a reference
     {
-        auto ref = VariableReference(variables_layout.layouts[0], state.data());
+        auto ref = BitPackedElementReference(variables_layout.layouts[0], state.data());
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
         ref = uint32_t { 1 };
         EXPECT_EQ(uint32_t(ref), uint32_t { 1 });
@@ -64,7 +64,7 @@ TEST(TyrTests, TyrCommonBitPackedLayout2)
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
     }
     {
-        auto ref = VariableReference(variables_layout.layouts[1], state.data());
+        auto ref = BitPackedElementReference(variables_layout.layouts[1], state.data());
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
         ref = uint32_t { 1 };
         EXPECT_EQ(uint32_t(ref), uint32_t { 1 });
@@ -72,7 +72,7 @@ TEST(TyrTests, TyrCommonBitPackedLayout2)
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
     }
     {
-        auto ref = VariableReference(variables_layout.layouts[0], state.data());
+        auto ref = BitPackedElementReference(variables_layout.layouts[0], state.data());
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
         ref = uint32_t { 1 };
         EXPECT_EQ(uint32_t(ref), uint32_t { 1 });
@@ -80,7 +80,7 @@ TEST(TyrTests, TyrCommonBitPackedLayout2)
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
     }
     {
-        auto ref = VariableReference(variables_layout.layouts[2], state.data());
+        auto ref = BitPackedElementReference(variables_layout.layouts[2], state.data());
         EXPECT_EQ(uint32_t(ref), uint32_t { 0 });
         ref = uint32_t { 1 };
         EXPECT_EQ(uint32_t(ref), uint32_t { 1 });

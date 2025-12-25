@@ -71,10 +71,17 @@ void process_effects(View<Index<GroundAction>, OverlayRepository<Repository>> ac
 template<typename Task>
 bool SuccessorGenerator::is_applicable(View<Index<GroundAction>, OverlayRepository<Repository>> action, const StateContext<Task>& state)
 {
-    m_effect_families.clear();
+    if (tyr::planning::are_applicable_if_fires(action.get_effects(), state, m_effect_families)
+        != tyr::planning::is_applicable(action, state, m_effect_families))
+    {
+        std::cout << action << std::endl;
+    }
 
-    // TODO: only check effect applicability
-    return tyr::planning::is_applicable(action, state, m_effect_families);
+    // Ensure that condition applicability was verified already.
+    assert(tyr::planning::are_applicable_if_fires(action.get_effects(), state, m_effect_families)
+           == tyr::planning::is_applicable(action, state, m_effect_families));
+
+    return are_applicable_if_fires(action.get_effects(), state, m_effect_families);
 }
 
 template bool SuccessorGenerator::is_applicable(View<Index<GroundAction>, OverlayRepository<Repository>> action, const StateContext<LiftedTask>& state);

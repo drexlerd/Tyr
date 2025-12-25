@@ -165,10 +165,8 @@ static void read_solution_and_instantiate_labeled_successor_nodes(const StateCon
 {
     out_nodes.clear();
 
-    auto& assign = action_context.planning_execution_context.assign;
+    auto& fluent_assign = action_context.planning_execution_context.fluent_assign;
     auto& iter_workspace = action_context.planning_execution_context.iter_workspace;
-
-    action_context.task_to_task_execution_context.clear();
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
     for (const auto fact : action_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
@@ -186,7 +184,7 @@ static void read_solution_and_instantiate_labeled_successor_nodes(const StateCon
                 const auto ground_action_index = ground_planning(action,
                                                                  grounder_context,
                                                                  parameter_domains_per_cond_effect_per_action[action_index.get_value()],
-                                                                 assign,
+                                                                 fluent_assign,
                                                                  iter_workspace,
                                                                  fdr_context)
                                                      .first;
@@ -351,13 +349,9 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
     ground_context.program_to_task_execution_context.clear();
 
-    const auto initial_node = get_initial_node();
-    const auto initial_state = initial_node.get_state();
-    const auto initial_state_context = StateContext(*this, initial_state.get_unpacked_state(), 0);
-
-    auto& assign = ground_context.planning_execution_context.assign;
+    auto& fluent_assign = ground_context.planning_execution_context.fluent_assign;
+    auto& derived_assign = ground_context.planning_execution_context.derived_assign;
     auto& iter_workspace = ground_context.planning_execution_context.iter_workspace;
-    ground_context.task_to_task_execution_context.clear();
 
     /// --- Ground Atoms
 
@@ -395,14 +389,14 @@ GroundTaskPtr LiftedTask::get_ground_task()
                 const auto ground_action_index = ground_planning(action,
                                                                  grounder_context,
                                                                  m_parameter_domains_per_cond_effect_per_action[action_index.get_value()],
-                                                                 assign,
+                                                                 fluent_assign,
                                                                  iter_workspace,
                                                                  m_state_repository.get_fdr_context())
                                                      .first;
 
                 const auto ground_action = make_view(ground_action_index, grounder_context.destination);
 
-                if (is_statically_applicable(ground_action, initial_state_context))
+                if (is_statically_applicable(ground_action, *this) && is_consistent(ground_action, fluent_assign, derived_assign))
                 {
                     ground_actions_set.insert(ground_action.get_index());
 
@@ -451,7 +445,7 @@ GroundTaskPtr LiftedTask::get_ground_task()
 
                 const auto ground_axiom = make_view(ground_axiom_index, grounder_context.destination);
 
-                if (is_statically_applicable(ground_axiom, initial_state_context))
+                if (is_statically_applicable(ground_axiom, *this) && is_consistent(ground_axiom, fluent_assign, derived_assign))
                 {
                     ground_axioms_set.insert(ground_axiom.get_index());
 

@@ -18,6 +18,7 @@
 #ifndef TYR_GROUNDER_KPKC_UTILS_HPP_
 #define TYR_GROUNDER_KPKC_UTILS_HPP_
 
+#include "tyr/formalism/declarations.hpp"
 #include "tyr/grounder/declarations.hpp"
 #include "tyr/grounder/kpkc_data.hpp"
 

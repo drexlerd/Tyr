@@ -119,7 +119,7 @@ struct FactSets
     template<formalism::FactKind T>
     void reset() noexcept
     {
-        get<T>().template reset();
+        get<T>().reset();
     }
 
     void reset() noexcept

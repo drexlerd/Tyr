@@ -17,19 +17,27 @@
 
 #include "tyr/solver/bottom_up.hpp"
 
-#include "tyr/analysis/analysis.hpp"
-#include "tyr/common/chrono.hpp"
-#include "tyr/common/declarations.hpp"
-#include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/grounder_datalog.hpp"
+#include "tyr/common/chrono.hpp"           // for StopwatchScope
+#include "tyr/common/comparators.hpp"      // for operator!=, opera...
+#include "tyr/common/config.hpp"           // for uint_t
+#include "tyr/common/formatter.hpp"        // for operator<<
+#include "tyr/common/types.hpp"            // for make_view, IndexList
+#include "tyr/common/vector.hpp"           // for View
+#include "tyr/formalism/merge_common.hpp"  // for merge, MergeContext
 #include "tyr/formalism/views.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
-#include "tyr/grounder/generator.hpp"
+#include "tyr/grounder/assignment_sets.hpp"     // for AssignmentSets
+#include "tyr/grounder/execution_contexts.hpp"  // for ProgramExecutionC...
+#include "tyr/grounder/fact_sets.hpp"           // for FactSets, Predica...
+#include "tyr/grounder/generator.hpp"           // for ground
+#include "tyr/grounder/rule_scheduler.hpp"      // for RuleSchedulerStratum
 
-#include <oneapi/tbb/enumerable_thread_specific.h>
-#include <oneapi/tbb/parallel_for.h>
+#include <cista/containers/hash_storage.h>          // for operator!=
+#include <gtl/phmap.hpp>                            // for operator!=
+#include <memory>                                   // for __shared_ptr_access
+#include <oneapi/tbb/enumerable_thread_specific.h>  // for enumerable_thread...
+#include <oneapi/tbb/parallel_for.h>                // for parallel_for
+#include <utility>                                  // for pair
+#include <vector>                                   // for vector
 
 namespace tyr::solver
 {

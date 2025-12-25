@@ -17,12 +17,18 @@
 
 #include "tyr/analysis/stratification.hpp"
 
-#include "tyr/common/equal_to.hpp"
-#include "tyr/common/hash.hpp"
-#include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
+#include "tyr/common/declarations.hpp"   // for UnorderedMap
+#include "tyr/common/equal_to.hpp"       // for EqualTo
+#include "tyr/common/hash.hpp"           // for Hash
+#include "tyr/common/index_mixins.hpp"   // for operator!=
+#include "tyr/common/vector.hpp"         // for View
+#include "tyr/formalism/repository.hpp"  // for Repository
 #include "tyr/formalism/views.hpp"
+
+#include <algorithm>      // for all_of, any_of
+#include <gtl/phmap.hpp>  // for flat_hash_map
+#include <stdexcept>      // for runtime_error
+#include <utility>        // for move
 
 using namespace tyr::formalism;
 

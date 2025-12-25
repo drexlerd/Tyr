@@ -17,6 +17,8 @@
 
 #include "tyr/planning/domain.hpp"
 
+#include <utility>
+
 namespace tyr::planning
 {
 

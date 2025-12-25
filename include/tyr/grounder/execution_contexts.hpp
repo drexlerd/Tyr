@@ -198,7 +198,8 @@ struct ThreadExecutionContext
 
 struct PlanningExecutionContext
 {
-    UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> assign;
+    UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> fluent_assign;
+    UnorderedMap<Index<formalism::GroundAtom<formalism::DerivedTag>>, bool> derived_assign;
     itertools::cartesian_set::Workspace<Index<formalism::Object>> iter_workspace;
 
     PlanningExecutionContext() = default;
@@ -219,16 +220,6 @@ struct TaskToProgramExecutionContext
     TaskToProgramExecutionContext() = default;
 
     formalism::MergeCache merge_cache;
-
-    void clear() noexcept;
-};
-
-struct TaskToTaskExecutionContext
-{
-    TaskToTaskExecutionContext() = default;
-
-    formalism::MergeCache merge_cache;
-    IndexList<formalism::Object> binding;
 
     void clear() noexcept;
 };
@@ -257,7 +248,6 @@ struct ProgramExecutionContext
     PlanningExecutionContext planning_execution_context;
 
     ProgramToTaskExecutionContext program_to_task_execution_context;
-    TaskToTaskExecutionContext task_to_task_execution_context;
     TaskToProgramExecutionContext task_to_program_execution_context;
 
     struct Statistics

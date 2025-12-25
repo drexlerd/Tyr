@@ -67,7 +67,7 @@ template<std::unsigned_integral Block>
 using BitPackedElementLayoutList = std::vector<BitPackedElementLayout<Block>>;
 
 template<std::unsigned_integral Block>
-struct VariableReference
+struct BitPackedElementReference
 {
     const BitPackedElementLayout<Block>* layout;
     Block* data;
@@ -126,7 +126,7 @@ struct VariableReference
         w = (w & ~p.data.mask) | field;
     }
 
-    VariableReference& operator=(Block value) noexcept
+    BitPackedElementReference& operator=(Block value) noexcept
     {
         assert_layout_ok(*layout);
 
@@ -146,7 +146,7 @@ struct VariableReference
         return read_portion(layout->high, data, base) | read_portion(layout->low, data, base);
     }
 
-    VariableReference(const BitPackedElementLayout<Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }
+    BitPackedElementReference(const BitPackedElementLayout<Block>& layout, Block* data) : layout(&layout), data(data) { assert_layout_ok(layout); }
 };
 
 template<std::unsigned_integral Block>

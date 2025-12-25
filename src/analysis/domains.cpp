@@ -17,11 +17,23 @@
 
 #include "tyr/analysis/domains.hpp"
 
+#include "tyr/common/config.hpp"
+#include "tyr/common/formatter.hpp"
+#include "tyr/common/index_mixins.hpp"
+#include "tyr/common/types.hpp"
 #include "tyr/common/unordered_set.hpp"
-#include "tyr/formalism/formatter.hpp"
+#include "tyr/common/variant.hpp"
+#include "tyr/common/vector.hpp"
+#include "tyr/formalism/datas.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/repository.hpp"
 #include "tyr/formalism/views.hpp"
+
+#include <algorithm>
+#include <assert.h>
+#include <gtl/phmap.hpp>
+#include <stddef.h>
+#include <type_traits>
 
 using namespace tyr::formalism;
 

@@ -17,14 +17,19 @@
 
 #include "tyr/grounder/formatter.hpp"
 
+#include "tyr/common/formatter.hpp"  // for to_string
 #include "tyr/formalism/views.hpp"
-#include "tyr/grounder/assignment.hpp"
+#include "tyr/grounder/assignment.hpp"  // for EdgeAssignment, VertexAssignment
 #include "tyr/grounder/consistency_graph.hpp"
+#include "tyr/grounder/formatter.hpp"
 
-#include <fmt/core.h>
-#include <fmt/ostream.h>
-#include <fmt/ranges.h>
-#include <ostream>
+#include <fmt/base.h>     // for vformat_to
+#include <fmt/format.h>   // for format
+#include <fmt/ostream.h>  // for print
+#include <fmt/ranges.h>   // for join
+#include <ostream>        // for ostream
+#include <ranges>         // for transform, views
+#include <string>         // for basic_string
 
 namespace tyr
 {

@@ -17,11 +17,21 @@
 
 #include "tyr/analysis/listeners.hpp"
 
-#include "tyr/analysis/stratification.hpp"
-#include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/views.hpp"
+#include "tyr/analysis/stratification.hpp"               // for RuleStrata
+#include "tyr/common/index_mixins.hpp"                   // for operator!=
+#include "tyr/common/types.hpp"                          // for make_view
+#include "tyr/common/vector.hpp"                         // for View
+#include "tyr/formalism/atom_view.hpp"                   // for View
+#include "tyr/formalism/conjunctive_condition_view.hpp"  // for View
+#include "tyr/formalism/literal_index.hpp"               // for Index
+#include "tyr/formalism/literal_view.hpp"                // for View
+#include "tyr/formalism/predicate_view.hpp"              // for View
+#include "tyr/formalism/repository.hpp"                  // for Repository
+#include "tyr/formalism/rule_view.hpp"                   // for View
+
+#include <cista/containers/vector.h>  // for basic_vector
+#include <gtl/phmap.hpp>              // for flat_hash_set
+#include <utility>                    // for move
 
 using namespace tyr::formalism;
 

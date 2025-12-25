@@ -19,7 +19,10 @@
 #define TYR_GROUNDER_FORMATTER_HPP_
 
 #include "tyr/common/formatter.hpp"
+#include "tyr/formalism/declarations.hpp"  // for Context
 #include "tyr/grounder/declarations.hpp"
+
+#include <iosfwd>  // for ostream
 
 namespace tyr
 {

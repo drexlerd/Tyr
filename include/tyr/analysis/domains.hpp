@@ -18,14 +18,15 @@
 #ifndef TYR_ANALYSIS_DOMAINS_HPP_
 #define TYR_ANALYSIS_DOMAINS_HPP_
 
-#include "tyr/common/declarations.hpp"
-#include "tyr/common/equal_to.hpp"
-#include "tyr/common/hash.hpp"
+#include "tyr/common/declarations.hpp"  // for UnorderedSet
+#include "tyr/common/equal_to.hpp"      // for EqualTo
+#include "tyr/common/hash.hpp"          // for Hash
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/declarations.hpp"  // for Object, Program (ptr only)
+#include "tyr/formalism/object_index.hpp"  // for Index
 
-#include <unordered_set>
-#include <vector>
+#include <utility>  // for pair
+#include <vector>   // for vector
 
 namespace tyr::analysis
 {

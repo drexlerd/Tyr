@@ -18,14 +18,20 @@
 #ifndef TYR_GROUNDER_RULE_SCHEDULER_HPP_
 #define TYR_GROUNDER_RULE_SCHEDULER_HPP_
 
-#include "tyr/formalism/predicate_view.hpp"
-#include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/rule_view.hpp"
-//
-#include "tyr/analysis/listeners.hpp"
-#include "tyr/analysis/stratification.hpp"
+#include "tyr/analysis/listeners.hpp"       // for ListenerStratum
+#include "tyr/analysis/stratification.hpp"  // for RuleStratum, Rule...
+#include "tyr/common/declarations.hpp"      // for UnorderedSet
+#include "tyr/common/equal_to.hpp"          // for EqualTo
+#include "tyr/common/formatter.hpp"         // for operator<<
+#include "tyr/common/hash.hpp"              // for Hash
+#include "tyr/common/types.hpp"             // for IndexList
+#include "tyr/common/vector.hpp"            // for View
+#include "tyr/formalism/declarations.hpp"   // for FluentTag (ptr only)
+#include "tyr/formalism/repository.hpp"     // for Repository
+#include "tyr/formalism/rule_index.hpp"     // for Index
 
-#include <boost/dynamic_bitset.hpp>
+#include <boost/dynamic_bitset/dynamic_bitset.hpp>  // for dynamic_bitset
+#include <vector>                                   // for vector
 
 namespace tyr::grounder
 {

@@ -157,12 +157,6 @@ void ProgramToTaskExecutionContext::clear() noexcept { merge_cache.clear(); }
 void TaskToProgramExecutionContext::clear() noexcept { merge_cache.clear(); }
 
 /**
- * TaskToTaskExecutionContext
- */
-
-void TaskToTaskExecutionContext::clear() noexcept { merge_cache.clear(); }
-
-/**
  * ProgramExecutionContext
  */
 
@@ -184,7 +178,6 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<Program>, Repository
     thread_execution_contexts(),
     planning_execution_context(),
     program_to_task_execution_context(),
-    task_to_task_execution_context(),
     task_to_program_execution_context()
 {
     for (uint_t i = 0; i < program.get_rules().size(); ++i)

@@ -140,7 +140,7 @@ TEST(TyrTests, TyrPlanningGroundTaskFerry)
 
     EXPECT_EQ(ground_task->get_num_atoms<FluentTag>(), 9);
     EXPECT_EQ(ground_task->get_num_atoms<DerivedTag>(), 0);
-    EXPECT_EQ(ground_task->get_num_actions(), 12);
+    EXPECT_EQ(ground_task->get_num_actions(), 10);
     EXPECT_EQ(ground_task->get_num_axioms(), 0);
     EXPECT_EQ(ground_task->get_initial_node().get_labeled_successor_nodes().size(), 3);
 }

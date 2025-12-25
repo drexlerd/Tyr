@@ -17,28 +17,39 @@
 
 #include "tyr/planning/formatter.hpp"
 
-#include "tyr/common/formatter.hpp"
-#include "tyr/common/iostream.hpp"
-#include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
+#include "tyr/common/comparators.hpp"                // for operator!=
+#include "tyr/common/config.hpp"                     // for uint_t, flo...
+#include "tyr/common/formatter.hpp"                  // for operator<<
+#include "tyr/common/iostream.hpp"                   // for print_indent
+#include "tyr/common/types.hpp"                      // for make_view
+#include "tyr/common/variant.hpp"                    // for visit
+#include "tyr/formalism/formatter.hpp"               // for operator<<
+#include "tyr/formalism/overlay_repository.hpp"      // for OverlayRepo...
+#include "tyr/formalism/planning/fdr_fact_data.hpp"  // for Data
+#include "tyr/formalism/planning/fdr_value.hpp"      // for FDRValue
+#include "tyr/formalism/repository.hpp"              // for Repository
 #include "tyr/formalism/views.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/domain.hpp"
-#include "tyr/planning/ground_task.hpp"
-#include "tyr/planning/ground_task/node.hpp"
-#include "tyr/planning/ground_task/state.hpp"
+#include "tyr/planning/domain.hpp"             // for Domain
+#include "tyr/planning/ground_task.hpp"        // for GroundTask
+#include "tyr/planning/ground_task/node.hpp"   // for Node
+#include "tyr/planning/ground_task/state.hpp"  // for State
 #include "tyr/planning/ground_task/unpacked_state.hpp"
-#include "tyr/planning/lifted_task.hpp"
-#include "tyr/planning/lifted_task/node.hpp"
-#include "tyr/planning/lifted_task/state.hpp"
+#include "tyr/planning/lifted_task.hpp"        // for LiftedTask
+#include "tyr/planning/lifted_task/node.hpp"   // for Node
+#include "tyr/planning/lifted_task/state.hpp"  // for State
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 
-#include <boost/dynamic_bitset.hpp>
-#include <fmt/core.h>
-#include <fmt/ostream.h>
-#include <fmt/ranges.h>
-#include <ostream>
+#include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
+#include <cmath>                     // for isnan
+#include <fmt/base.h>                // for vformat_to
+#include <fmt/ostream.h>             // for print
+#include <memory>                    // for __shared_pt...
+#include <ostream>                   // for char_traits
+#include <string>                    // for basic_string
+#include <tuple>                     // for operator==
+#include <utility>                   // for pair
+#include <vector>                    // for vector
 
 namespace tyr
 {

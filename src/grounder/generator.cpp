@@ -17,18 +17,38 @@
 
 #include "tyr/grounder/generator.hpp"
 
-#include "tyr/formalism/formatter.hpp"
-#include "tyr/formalism/grounder_datalog.hpp"
-#include "tyr/formalism/merge_datalog.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
+#include "tyr/common/comparators.hpp"                    // for opera...
+#include "tyr/common/config.hpp"                         // for uint_t
+#include "tyr/common/equal_to.hpp"                       // for EqualTo
+#include "tyr/common/formatter.hpp"                      // for opera...
+#include "tyr/common/hash.hpp"                           // for Hash
+#include "tyr/common/types.hpp"                          // for View
+#include "tyr/common/vector.hpp"                         // for opera...
+#include "tyr/formalism/conjunctive_condition_view.hpp"  // for View
+#include "tyr/formalism/declarations.hpp"                // for Context
+#include "tyr/formalism/formatter.hpp"                   // for opera...
+#include "tyr/formalism/grounder_common.hpp"             // for Groun...
+#include "tyr/formalism/grounder_datalog.hpp"            // for groun...
+#include "tyr/formalism/repository.hpp"                  // for Repos...
 #include "tyr/formalism/views.hpp"
-#include "tyr/grounder/applicability.hpp"
+#include "tyr/grounder/applicability.hpp"      // for is_ap...
+#include "tyr/grounder/consistency_graph.hpp"  // for Vertex
 #include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/grounder/execution_contexts.hpp"  // for RuleE...
 #include "tyr/grounder/fact_sets.hpp"
 #include "tyr/grounder/formatter.hpp"
-#include "tyr/grounder/kpkc.hpp"
+#include "tyr/grounder/generator.hpp"
+#include "tyr/grounder/kpkc.hpp"       // for for_e...
+#include "tyr/grounder/kpkc_data.hpp"  // for Works...
+
+#include <algorithm>                        // for all_of
+#include <assert.h>                         // for assert
+#include <cista/containers/hash_storage.h>  // for opera...
+#include <cista/containers/variant.h>       // for visit
+#include <memory>                           // for __sha...
+#include <tuple>                            // for opera...
+#include <utility>                          // for pair
+#include <vector>                           // for vector
 
 using namespace tyr::formalism;
 
