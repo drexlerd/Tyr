@@ -18,6 +18,7 @@
 #ifndef TYR_PLANNING_APPLICABILITY_HPP_
 #define TYR_PLANNING_APPLICABILITY_HPP_
 
+#include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
@@ -27,6 +28,7 @@
 #include "tyr/planning/node.hpp"
 
 #include <algorithm>
+#include <boost/dynamic_bitset.hpp>
 #include <concepts>
 #include <iterator>
 #include <limits>
@@ -327,40 +329,40 @@ bool is_applicable(View<Index<formalism::GroundAxiom>, C> element, const StateCo
  * is_statically_applicable
  */
 
-template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundLiteral<formalism::StaticTag>>, C> element, const Task& task)
+template<formalism::Context C>
+bool is_statically_applicable(View<Index<formalism::GroundLiteral<formalism::StaticTag>>, C> element, const boost::dynamic_bitset<>& static_atoms)
 {
-    return task.test(element.get_atom().get_index()) == element.get_polarity();
+    return tyr::test(uint_t(element.get_atom().get_index()), static_atoms) == element.get_polarity();
 }
 
-template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<IndexList<formalism::GroundLiteral<formalism::StaticTag>>, C> elements, const Task& task)
+template<formalism::Context C>
+bool is_statically_applicable(View<IndexList<formalism::GroundLiteral<formalism::StaticTag>>, C> elements, const boost::dynamic_bitset<>& static_atoms)
 {
-    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_statically_applicable(arg, task); });
+    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_statically_applicable(arg, static_atoms); });
 }
 
 // GroundFDRConjunctiveCondition
 
-template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundFDRConjunctiveCondition>, C> element, const Task& task)
+template<formalism::Context C>
+bool is_statically_applicable(View<Index<formalism::GroundFDRConjunctiveCondition>, C> element, const boost::dynamic_bitset<>& static_atoms)
 {
-    return is_statically_applicable(element.template get_facts<formalism::StaticTag>(), task);
+    return is_statically_applicable(element.template get_facts<formalism::StaticTag>(), static_atoms);
 }
 
 // GroundAction
 
-template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundAction>, C> element, const Task& task)
+template<formalism::Context C>
+bool is_statically_applicable(View<Index<formalism::GroundAction>, C> element, const boost::dynamic_bitset<>& static_atoms)
 {
-    return is_statically_applicable(element.get_condition(), task);
+    return is_statically_applicable(element.get_condition(), static_atoms);
 }
 
 // GroundAxiom
 
-template<typename Task, formalism::Context C>
-bool is_statically_applicable(View<Index<formalism::GroundAxiom>, C> element, const Task& task)
+template<formalism::Context C>
+bool is_statically_applicable(View<Index<formalism::GroundAxiom>, C> element, const boost::dynamic_bitset<>& static_atoms)
 {
-    return is_statically_applicable(element.get_body(), task);
+    return is_statically_applicable(element.get_body(), static_atoms);
 }
 
 /**

@@ -35,7 +35,6 @@
 #include "tyr/planning/lifted_task/state_repository.hpp"
 #include "tyr/planning/programs/action.hpp"
 #include "tyr/planning/programs/axiom.hpp"
-#include "tyr/planning/programs/ground.hpp"
 #include "tyr/planning/state_index.hpp"
 
 namespace tyr::planning
@@ -65,7 +64,6 @@ public:
     GroundTaskPtr get_ground_task();
 
     const ApplicableActionProgram& get_action_program() const;
-    const GroundTaskProgram& get_ground_program() const;
 
     /**
      * Getters
@@ -108,7 +106,6 @@ private:
 
     // Programs
     ApplicableActionProgram m_action_program;
-    GroundTaskProgram m_ground_program;
 
     // Execution contexts
     grounder::ProgramExecutionContext m_action_context;

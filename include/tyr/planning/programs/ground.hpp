@@ -39,7 +39,7 @@ public:
 
     using AppPredicateToAxiomsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, std::vector<Index<formalism::Axiom>>>;
 
-    explicit GroundTaskProgram(const LiftedTask& task);
+    explicit GroundTaskProgram(View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task);
 
     const AppPredicateToActionsMapping& get_predicate_to_actions_mapping() const noexcept;
     const AppPredicateToAxiomsMapping& get_predicate_to_axioms_mapping() const noexcept;

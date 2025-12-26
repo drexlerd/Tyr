@@ -15,39 +15,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_DECLARATIONS_HPP_
-#define TYR_PLANNING_DECLARATIONS_HPP_
+#ifndef TYR_PLANNING_LIFTED_TASK_TASK_GROUNDER_HPP_
+#define TYR_PLANNING_LIFTED_TASK_TASK_GROUNDER_HPP_
 
-#include <concepts>
-#include <memory>
+#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/planning/declarations.hpp"
+#include "tyr/planning/programs/ground.hpp"
 
 namespace tyr::planning
 {
-class LiftedTask;
-using LiftedTaskPtr = std::shared_ptr<LiftedTask>;
-class GroundTask;
-using GroundTaskPtr = std::shared_ptr<GroundTask>;
-class Domain;
-using DomainPtr = std::shared_ptr<Domain>;
 
-template<typename Task>
-class Node;
-template<typename Task>
-class PackedState;
-template<typename Task>
-class UnpackedState;
-template<typename Task>
-class State;
+extern GroundTaskPtr ground_task(DomainPtr domain,
+                                 View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
+                                 formalism::OverlayRepository<formalism::Repository>& task_repository,
+                                 StateRepository<LiftedTask>& state_repository,
+                                 const boost::dynamic_bitset<>& static_atoms);
 
-template<typename Task>
-struct StateContext;
-
-template<typename Task>
-class SuccessorGenerator;
-template<typename Task>
-class StateRepository;
-template<typename Task>
-class AxiomEvaluator;
 }
 
 #endif

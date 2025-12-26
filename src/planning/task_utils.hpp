@@ -18,6 +18,7 @@
 #ifndef TYR_SRC_PLANNING_TASK_UTILS_HPP_
 #define TYR_SRC_PLANNING_TASK_UTILS_HPP_
 
+#include "tyr/analysis/domains.hpp"
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/merge_datalog.hpp"
 #include "tyr/formalism/merge_planning.hpp"
@@ -170,6 +171,39 @@ inline void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_stat
     insert_numeric_variables_to_fact_set(unpacked_state.get_numeric_variables(), atoms_context, action_context);
 
     insert_fact_sets_into_assignment_sets(action_context);
+}
+
+inline std::vector<analysis::DomainListListList>
+compute_parameter_domains_per_cond_effect_per_action(View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>>& task)
+{
+    auto result = std::vector<analysis::DomainListListList> {};
+
+    const auto variable_domains = analysis::compute_variable_domains(task);
+
+    for (uint_t action_index = 0; action_index < task.get_domain().get_actions().size(); ++action_index)
+    {
+        const auto action = task.get_domain().get_actions()[action_index];
+
+        auto parameter_domains_per_cond_effect = analysis::DomainListListList {};
+
+        for (uint_t cond_effect_index = 0; cond_effect_index < action.get_effects().size(); ++cond_effect_index)
+        {
+            const auto cond_effect = action.get_effects()[cond_effect_index];
+
+            assert(variable_domains.action_domains[action_index].second[cond_effect_index].size() == action.get_arity() + cond_effect.get_arity());
+
+            auto parameter_domains = analysis::DomainListList {};
+
+            for (uint_t i = action.get_arity(); i < action.get_arity() + cond_effect.get_arity(); ++i)
+                parameter_domains.push_back(variable_domains.action_domains[action_index].second[cond_effect_index][i]);
+
+            parameter_domains_per_cond_effect.push_back(std::move(parameter_domains));
+        }
+
+        result.push_back(std::move(parameter_domains_per_cond_effect));
+    }
+
+    return result;
 }
 }
 
