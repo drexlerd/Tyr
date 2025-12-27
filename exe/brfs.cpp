@@ -33,34 +33,14 @@ enum SearchNodeStatus : uint8_t
 
 struct SearchNode
 {
-    tyr::float_t g_value;
+    tyr::uint_t g_value;
     planning::StateIndex parent;
     SearchNodeStatus status;
 };
 
-struct QueueEntry
-{
-    using KeyType = std::pair<tyr::float_t, SearchNodeStatus>;
-    using ItemType = std::pair<tyr::float_t, planning::StateIndex>;
-
-    tyr::float_t f_value;
-    planning::StateIndex state;
-    SearchNodeStatus status;
-
-    KeyType get_key() const { return std::make_pair(f_value, status); }
-    ItemType get_item() const { return std::make_pair(f_value, state); }
-};
-
-struct EntryComparator
-{
-    bool operator()(const QueueEntry& l, const QueueEntry& r) { return l.get_key() > r.get_key(); }
-};
-
-using Openlist = std::priority_queue<QueueEntry, std::vector<QueueEntry>, EntryComparator>;
-
 inline auto& get_or_create_search_node(planning::StateIndex state, SegmentedVector<SearchNode>& search_nodes)
 {
-    static auto default_node = SearchNode { std::numeric_limits<tyr::float_t>::infinity(), planning::StateIndex(), SearchNodeStatus::NEW };
+    static auto default_node = SearchNode { tyr::uint_t(0), planning::StateIndex(), SearchNodeStatus::NEW };
 
     while (uint_t(state) >= search_nodes.size())
     {
@@ -71,7 +51,7 @@ inline auto& get_or_create_search_node(planning::StateIndex state, SegmentedVect
 
 int main(int argc, char** argv)
 {
-    auto program = argparse::ArgumentParser("AStar search.");
+    auto program = argparse::ArgumentParser("BrFS search.");
     program.add_argument("-D", "--domain-filepath").required().help("The path to the PDDL domain file.");
     program.add_argument("-P", "--problem-filepath").required().help("The path to the PDDL problem file.");
     program.add_argument("-N", "--num-worker-threads").default_value(size_t(1)).scan<'u', size_t>().help("The number of worker threads.");
@@ -105,32 +85,75 @@ int main(int argc, char** argv)
 
     auto initial_node = successor_generator.get_initial_node();
 
-    auto queue = Openlist();
+    auto queue = std::deque<planning::StateIndex>();
 
     auto search_nodes = SegmentedVector<SearchNode> {};
 
-    const auto initial_f_value = initial_node.get_metric() + 0.;
-    queue.emplace(initial_f_value, initial_node.get_state().get_index(), SearchNodeStatus::NEW);
+    queue.emplace_back(initial_node.get_state().get_index());
 
     auto& initial_search_node = get_or_create_search_node(initial_node.get_state().get_index(), search_nodes);
-    initial_search_node.g_value = initial_node.get_metric();
+    initial_search_node.status = SearchNodeStatus::OPEN;
+    initial_search_node.g_value = 0;
 
     auto labeled_succ_nodes = std::vector<planning::LabeledNode<planning::LiftedTask>> {};
 
+    auto g_value = uint_t(0);
+    auto num_expanded = size_t(0);
+    auto num_generated = size_t(0);
+    auto found_solution = bool(false);
+
     while (!queue.empty())
     {
-        auto entry = queue.top();
-        queue.pop();
+        auto state_index = queue.front();
+        queue.pop_front();
 
-        const auto& search_node = get_or_create_search_node(entry.state, search_nodes);
+        ++num_expanded;
 
-        auto node = planning::Node<planning::LiftedTask>(successor_generator.get_state(entry.state), search_node.g_value);
+        const auto& search_node = get_or_create_search_node(state_index, search_nodes);
+
+        if (search_node.g_value > g_value)
+        {
+            std::cout << "Finished g-layer: " << search_node.g_value << " with num expanded = " << num_expanded << " and num generated = " << num_generated
+                      << std::endl;
+            g_value = search_node.g_value;
+        }
+
+        auto node = planning::Node<planning::LiftedTask>(successor_generator.get_state(state_index), search_node.g_value);
 
         labeled_succ_nodes.clear();
         successor_generator.get_labeled_successor_nodes(node, labeled_succ_nodes);
 
-        for (const auto& labeled_succ_node : labeled_succ_nodes) {}
+        for (const auto& labeled_succ_node : labeled_succ_nodes)
+        {
+            auto& labeled_succ_search_node = get_or_create_search_node(labeled_succ_node.node.get_state().get_index(), search_nodes);
+
+            ++num_generated;
+
+            if (labeled_succ_search_node.status != SearchNodeStatus::NEW)
+                continue;
+
+            labeled_succ_search_node.status = SearchNodeStatus::OPEN;
+            labeled_succ_search_node.parent = state_index;
+            labeled_succ_search_node.g_value = search_node.g_value + 1;
+
+            if (planning::is_applicable(
+                    lifted_task->get_task().get_goal(),
+                    planning::StateContext { *lifted_task, labeled_succ_node.node.get_state().get_unpacked_state(), labeled_succ_search_node.g_value }))
+            {
+                std::cout << "Solution found!" << std::endl;
+                std::cout << "Plan length: " << labeled_succ_search_node.g_value << std::endl;
+                found_solution = true;
+                break;
+            }
+
+            queue.emplace_back(labeled_succ_node.node.get_state().get_index());
+        }
+        if (found_solution)
+            break;
     }
+
+    std::cout << "Num expanded: " << num_expanded << std::endl;
+    std::cout << "Num generated: " << num_generated << std::endl;
 
     return 0;
 }
