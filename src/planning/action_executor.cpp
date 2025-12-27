@@ -29,10 +29,12 @@
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/ground_task/node.hpp"
 #include "tyr/planning/ground_task/state.hpp"
+#include "tyr/planning/ground_task/state_repository.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
 #include "tyr/planning/lifted_task/state.hpp"
+#include "tyr/planning/lifted_task/state_repository.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 
 using namespace tyr::formalism;
@@ -71,12 +73,6 @@ void process_effects(View<Index<GroundAction>, OverlayRepository<Repository>> ac
 template<typename Task>
 bool ActionExecutor::is_applicable(View<Index<GroundAction>, OverlayRepository<Repository>> action, const StateContext<Task>& state)
 {
-    if (tyr::planning::are_applicable_if_fires(action.get_effects(), state, m_effect_families)
-        != tyr::planning::is_applicable(action, state, m_effect_families))
-    {
-        std::cout << action << std::endl;
-    }
-
     // Ensure that condition applicability was verified already.
     assert(tyr::planning::are_applicable_if_fires(action.get_effects(), state, m_effect_families)
            == tyr::planning::is_applicable(action, state, m_effect_families));
@@ -88,7 +84,9 @@ template bool ActionExecutor::is_applicable(View<Index<GroundAction>, OverlayRep
 template bool ActionExecutor::is_applicable(View<Index<GroundAction>, OverlayRepository<Repository>> action, const StateContext<GroundTask>& state);
 
 template<typename Task>
-Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context, View<Index<GroundAction>, OverlayRepository<Repository>> action)
+Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context,
+                                        View<Index<GroundAction>, OverlayRepository<Repository>> action,
+                                        StateRepository<Task>& state_repository)
 {
     m_del_effects.clear();
     m_add_effects.clear();
@@ -96,7 +94,7 @@ Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context,
     auto tmp_state_context = state_context;
     auto& task = tmp_state_context.task;
 
-    auto succ_unpacked_state_ptr = task.get_state_repository().get_unregistered_state();
+    auto succ_unpacked_state_ptr = state_repository.get_unregistered_state();
     auto& succ_unpacked_state = *succ_unpacked_state_ptr;
     succ_unpacked_state.assign_unextended_part(tmp_state_context.unpacked_state);
 
@@ -107,9 +105,7 @@ Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context,
     for (const auto fact : m_add_effects)
         succ_unpacked_state.set(fact);
 
-    task.compute_extended_state(succ_unpacked_state);
-
-    auto succ_state = task.register_state(succ_unpacked_state_ptr);
+    auto succ_state = state_repository.register_state(succ_unpacked_state_ptr);
 
     auto succ_state_context = StateContext { task, succ_unpacked_state, tmp_state_context.auxiliary_value };
     if (task.get_task().get_metric())
@@ -121,7 +117,9 @@ Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context,
 }
 
 template Node<LiftedTask> ActionExecutor::apply_action(const StateContext<LiftedTask>& state_context,
-                                                       View<Index<GroundAction>, OverlayRepository<Repository>> action);
+                                                       View<Index<GroundAction>, OverlayRepository<Repository>> action,
+                                                       StateRepository<LiftedTask>& state_repository);
 template Node<GroundTask> ActionExecutor::apply_action(const StateContext<GroundTask>& state_context,
-                                                       View<Index<GroundAction>, OverlayRepository<Repository>> action);
+                                                       View<Index<GroundAction>, OverlayRepository<Repository>> action,
+                                                       StateRepository<GroundTask>& state_repository);
 }

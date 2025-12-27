@@ -18,19 +18,19 @@
 #ifndef TYR_PLANNING_GROUND_TASK_HPP_
 #define TYR_PLANNING_GROUND_TASK_HPP_
 
-#include "tyr/common/common.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/common/config.hpp"           // for float_t, uint_t
+#include "tyr/common/dynamic_bitset.hpp"   // for test
+#include "tyr/common/vector.hpp"           // for get
+#include "tyr/formalism/declarations.hpp"  // for OverlayRepos...
 #include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/views.hpp"
-#include "tyr/planning/action_executor.hpp"
+#include "tyr/formalism/planning/fdr_context.hpp"
+#include "tyr/formalism/views.hpp"  // for View
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/ground_task/match_tree/match_tree.hpp"
-#include "tyr/planning/ground_task/node.hpp"
-#include "tyr/planning/ground_task/packed_state.hpp"
-#include "tyr/planning/ground_task/state.hpp"
-#include "tyr/planning/ground_task/state_repository.hpp"
-#include "tyr/planning/ground_task/unpacked_state.hpp"
+
+#include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
+#include <limits>                    // for numeric_limits
+#include <stddef.h>                  // for size_t
+#include <vector>                    // for vector
 
 namespace tyr::planning
 {
@@ -42,31 +42,7 @@ public:
                formalism::RepositoryPtr m_repository,
                formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
                View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> fdr_task,
-               formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context,
-               match_tree::MatchTreePtr<formalism::GroundAction> action_match_tree,
-               std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>>&& axiom_match_tree_strata);
-
-    static std::shared_ptr<GroundTask> create(DomainPtr domain,
-                                              formalism::RepositoryPtr repository,
-                                              formalism::OverlayRepositoryPtr<formalism::Repository> overlay_repository,
-                                              View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
-                                              IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms,
-                                              IndexList<formalism::GroundAtom<formalism::DerivedTag>> derived_atoms,
-                                              IndexList<formalism::GroundFunctionTerm<formalism::FluentTag>> fluent_fterms,
-                                              IndexList<formalism::GroundAction> actions,
-                                              IndexList<formalism::GroundAxiom> axioms);
-
-    State<GroundTask> get_state(StateIndex state_index);
-
-    State<GroundTask> register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state);
-
-    void compute_extended_state(UnpackedState<GroundTask>& unpacked_state);
-
-    Node<GroundTask> get_initial_node();
-
-    std::vector<LabeledNode<GroundTask>> get_labeled_successor_nodes(const Node<GroundTask>& node);
-
-    void get_labeled_successor_nodes(const Node<GroundTask>& node, std::vector<LabeledNode<GroundTask>>& out_nodes);
+               formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context);
 
     template<formalism::FactKind T>
     size_t get_num_atoms() const noexcept;
@@ -88,30 +64,14 @@ public:
     auto& get_repository() noexcept { return m_overlay_repository; }
     const auto& get_repository() const noexcept { return m_overlay_repository; }
 
-    auto& get_state_repository() noexcept { return m_state_repository; }
-    const auto& get_state_repository() const noexcept { return m_state_repository; }
-
-    const auto& get_axiom_match_tree_strata() const noexcept { return m_axiom_match_tree_strata; }
-
 private:
     DomainPtr m_domain;
 
     formalism::RepositoryPtr m_repository;
     formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
     View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> m_fdr_task;
-    match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
-    std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> m_axiom_match_tree_strata;
-
-    // States
-    StateRepository<GroundTask> m_state_repository;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
-
-    // Transition
-    ActionExecutor m_successor_generator;
-
-    IndexList<formalism::GroundAction> m_applicable_actions;
-    IndexList<formalism::GroundAxiom> m_applicable_axioms;
 };
 
 }

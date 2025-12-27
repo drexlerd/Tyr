@@ -22,19 +22,19 @@
 #include "tyr/planning/ground_task/state.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 //
-#include "tyr/common/bit_packed_layout.hpp"
-#include "tyr/common/config.hpp"
-#include "tyr/common/indexed_hash_set.hpp"
-#include "tyr/common/segmented_array_repository.hpp"
-#include "tyr/common/shared_object_pool.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/planning/fdr_context.hpp"
-#include "tyr/planning/declarations.hpp"
-#include "tyr/planning/state_index.hpp"
-#include "tyr/planning/state_repository.hpp"
 
+#include "tyr/common/bit_packed_layout.hpp"           // for BitPackedArra...
+#include "tyr/common/config.hpp"                      // for uint_t, float_t
+#include "tyr/common/indexed_hash_set.hpp"            // for IndexedHashSet
+#include "tyr/common/segmented_array_repository.hpp"  // for SegmentedArra...
+#include "tyr/common/shared_object_pool.hpp"          // for SharedObjectPool
+#include "tyr/planning/declarations.hpp"              // for GroundTask
+#include "tyr/planning/state_index.hpp"
+
+#include <memory>  // for shared_ptr
 #include <valla/valla.hpp>
 #include <vector>
+#include <vector>  // for vector
 
 namespace tyr::planning
 {
@@ -43,7 +43,7 @@ template<>
 class StateRepository<GroundTask>
 {
 public:
-    explicit StateRepository(GroundTask& task, formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context);
+    explicit StateRepository(std::shared_ptr<GroundTask> task);
 
     State<GroundTask> get_initial_state();
 
@@ -54,8 +54,7 @@ public:
     State<GroundTask> register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state);
 
 private:
-    GroundTask& m_task;
-    formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> m_fdr_context;
+    std::shared_ptr<GroundTask> m_task;
     BitPackedArrayLayout<uint_t> m_fluent_layout;
     BitsetLayout<uint_t> m_derived_layout;
 
@@ -68,6 +67,8 @@ private:
     std::vector<uint_t> m_fluent_buffer;
     std::vector<uint_t> m_derived_buffer;
     SharedObjectPool<UnpackedState<GroundTask>> m_unpacked_state_pool;
+
+    std::shared_ptr<AxiomEvaluator<GroundTask>> m_axiom_evaluator;
 };
 
 }

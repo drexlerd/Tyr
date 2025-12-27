@@ -35,7 +35,6 @@
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/ground_task/axiom_evaluator.hpp"
-#include "tyr/planning/ground_task/axiom_stratification.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
 #include "tyr/planning/lifted_task/packed_state.hpp"
@@ -273,21 +272,7 @@ static auto create_fdr_task(DomainPtr domain,
                                                      make_view(axioms, task.get_context()),
                                                      *overlay_repository);
 
-    auto action_match_tree = match_tree::MatchTree<GroundAction>::create(fdr_task.get_ground_actions().get_data(), fdr_task.get_context());
-
-    auto axiom_strata = compute_ground_axiom_stratification(fdr_task);
-
-    auto axiom_match_tree_strata = std::vector<match_tree::MatchTreePtr<GroundAxiom>> {};
-    for (const auto& stratum : axiom_strata.data)
-        axiom_match_tree_strata.emplace_back(match_tree::MatchTree<GroundAxiom>::create(stratum, fdr_task.get_context()));
-
-    return std::make_shared<GroundTask>(domain,
-                                        repository,
-                                        overlay_repository,
-                                        fdr_task,
-                                        fdr_context,
-                                        std::move(action_match_tree),
-                                        std::move(axiom_match_tree_strata));
+    return std::make_shared<GroundTask>(domain, repository, overlay_repository, fdr_task, fdr_context);
 }
 
 GroundTaskPtr ground_task(DomainPtr domain,

@@ -48,7 +48,7 @@ concept StateConcept = requires(const T& cs,
     { cs.get(fluent_fterm) } -> std::same_as<float_t>;
     { cs.test(static_atom) } -> std::same_as<bool>;
     { cs.test(derived_atom) } -> std::same_as<bool>;
-    { cs.get_task() } -> std::same_as<Task&>;
+    { cs.get_task() } -> std::same_as<const Task&>;
 };
 
 }

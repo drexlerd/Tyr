@@ -18,24 +18,19 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_HPP_
 #define TYR_PLANNING_LIFTED_TASK_HPP_
 
-#include "tyr/planning/lifted_task/node.hpp"
-#include "tyr/planning/lifted_task/packed_state.hpp"
-#include "tyr/planning/lifted_task/state.hpp"
-#include "tyr/planning/lifted_task/unpacked_state.hpp"
-//
-#include "tyr/analysis/domains.hpp"
-#include "tyr/common/common.hpp"
+#include "tyr/common/config.hpp"           // for float_t, uint_t
+#include "tyr/common/dynamic_bitset.hpp"   // for test
+#include "tyr/common/vector.hpp"           // for get
+#include "tyr/formalism/declarations.hpp"  // for OverlayRepos...
 #include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/repository.hpp"
-#include "tyr/formalism/views.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
-#include "tyr/planning/action_executor.hpp"
+#include "tyr/formalism/planning/fdr_context.hpp"
+#include "tyr/formalism/views.hpp"  // for View
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/lifted_task/axiom_evaluator.hpp"
-#include "tyr/planning/lifted_task/state_repository.hpp"
-#include "tyr/planning/programs/action.hpp"
-#include "tyr/planning/programs/axiom.hpp"
-#include "tyr/planning/state_index.hpp"
+
+#include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
+#include <limits>                    // for numeric_limits
+#include <memory>                    // for shared_ptr
+#include <vector>                    // for vector
 
 namespace tyr::planning
 {
@@ -49,21 +44,7 @@ public:
                View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
                std::shared_ptr<formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>>> fdr_context);
 
-    State<LiftedTask> get_state(StateIndex state_index);
-
-    State<LiftedTask> register_state(SharedObjectPoolPtr<UnpackedState<LiftedTask>> state);
-
-    void compute_extended_state(UnpackedState<LiftedTask>& unpacked_state);
-
-    std::vector<LabeledNode<LiftedTask>> get_labeled_successor_nodes(const Node<LiftedTask>& node);
-
-    Node<LiftedTask> get_initial_node();
-
-    void get_labeled_successor_nodes(const Node<LiftedTask>& node, std::vector<LabeledNode<LiftedTask>>& out_nodes);
-
     GroundTaskPtr get_ground_task();
-
-    const ApplicableActionProgram& get_action_program() const;
 
     /**
      * Getters
@@ -73,11 +54,10 @@ public:
 
     auto get_task() const noexcept { return m_task; }
 
+    const auto& get_fdr_context() const noexcept { return m_fdr_context; }
+
     auto& get_repository() noexcept { return m_overlay_repository; }
     const auto& get_repository() const noexcept { return m_overlay_repository; }
-
-    auto& get_state_repository() noexcept { return m_state_repository; }
-    const auto& get_state_repository() const noexcept { return m_state_repository; }
 
     const auto& get_static_atoms_bitset() const noexcept { return m_static_atoms_bitset; }
     const auto& get_static_numeric_variables() const noexcept { return m_static_numeric_variables; }
@@ -88,30 +68,13 @@ public:
     }
 
 private:
-    // Inputs
     DomainPtr m_domain;
     formalism::RepositoryPtr m_repository;
     formalism::OverlayRepositoryPtr<formalism::Repository> m_overlay_repository;
     View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> m_task;
     std::shared_ptr<formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>>> m_fdr_context;
-
-    // States
-    StateRepository<LiftedTask> m_state_repository;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
-
-    // Transition
-    ActionExecutor m_successor_generator;
-
-    AxiomEvaluator<LiftedTask> m_axiom_evaluator;
-
-    // Programs
-    ApplicableActionProgram m_action_program;
-
-    // Execution contexts
-    grounder::ProgramExecutionContext m_action_context;
-
-    std::vector<analysis::DomainListListList> m_parameter_domains_per_cond_effect_per_action;
 };
 
 }

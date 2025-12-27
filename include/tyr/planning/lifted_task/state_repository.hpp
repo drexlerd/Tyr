@@ -22,17 +22,15 @@
 #include "tyr/planning/lifted_task/state.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 //
-#include "tyr/common/config.hpp"
-#include "tyr/common/indexed_hash_set.hpp"
-#include "tyr/common/shared_object_pool.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/planning/fdr_context.hpp"
-#include "tyr/planning/declarations.hpp"
-#include "tyr/planning/state_index.hpp"
-#include "tyr/planning/state_repository.hpp"
+#include "tyr/common/config.hpp"              // for uint_t, float_t
+#include "tyr/common/indexed_hash_set.hpp"    // for IndexedHashSet
+#include "tyr/common/shared_object_pool.hpp"  // for SharedObjectPool
+#include "tyr/planning/state_index.hpp"       // for StateIndex
 
+#include <memory>  // for shared_ptr
 #include <valla/valla.hpp>
 #include <vector>
+#include <vector>  // for vector
 
 namespace tyr::planning
 {
@@ -41,7 +39,7 @@ template<>
 class StateRepository<LiftedTask>
 {
 public:
-    explicit StateRepository(LiftedTask& task, std::shared_ptr<formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>>> fdr_context);
+    explicit StateRepository(std::shared_ptr<LiftedTask> task);
 
     State<LiftedTask> get_initial_state();
 
@@ -52,13 +50,15 @@ public:
     State<LiftedTask> register_state(SharedObjectPoolPtr<UnpackedState<LiftedTask>> state);
 
 private:
-    LiftedTask& m_task;
-    std::shared_ptr<formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>>> m_fdr_context;
+    std::shared_ptr<LiftedTask> m_task;
+
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;
     valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
     std::vector<uint_t> m_nodes_buffer;
     IndexedHashSet<PackedState<LiftedTask>, StateIndex> m_packed_states;
     SharedObjectPool<UnpackedState<LiftedTask>> m_unpacked_state_pool;
+
+    std::shared_ptr<AxiomEvaluator<LiftedTask>> m_axiom_evaluator;
 };
 
 }

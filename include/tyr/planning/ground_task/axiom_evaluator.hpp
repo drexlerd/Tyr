@@ -18,22 +18,32 @@
 #ifndef TYR_PLANNING_GROUND_TASK_AXIOM_EVALUATOR_HPP_
 #define TYR_PLANNING_GROUND_TASK_AXIOM_EVALUATOR_HPP_
 
-#include "tyr/common/types.hpp"
-#include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/formalism/views.hpp"
-#include "tyr/planning/axiom_evaluator.hpp"
+#include "tyr/common/formatter.hpp"                       // for oper...
+#include "tyr/common/types.hpp"                           // for Inde...
+#include "tyr/formalism/planning/ground_axiom_index.hpp"  // for Index
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/ground_task/unpacked_state.hpp"
+#include "tyr/planning/ground_task/match_tree/declarations.hpp"  // for Matc...
+#include "tyr/planning/ground_task/match_tree/match_tree.hpp"
+
+#include <memory>  // for shar...
+#include <vector>  // for vector
 
 namespace tyr::planning
 {
 template<>
 class AxiomEvaluator<GroundTask>
 {
-};
+public:
+    explicit AxiomEvaluator(std::shared_ptr<GroundTask> task);
 
-extern void evaluate_axioms_bottomup(UnpackedState<GroundTask>& state, GroundTask& task, IndexList<formalism::GroundAxiom>& applicable_axioms);
+    void compute_extended_state(UnpackedState<GroundTask>& unpacked_state);
+
+private:
+    std::shared_ptr<GroundTask> m_task;
+
+    std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> m_axiom_match_tree_strata;
+    IndexList<formalism::GroundAxiom> m_applicable_axioms;
+};
 }
 
 #endif

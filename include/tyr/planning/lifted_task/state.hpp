@@ -35,7 +35,7 @@ class State<LiftedTask>
 public:
     using TaskType = LiftedTask;
 
-    State(LiftedTask& task, SharedObjectPoolPtr<UnpackedState<LiftedTask>> unpacked) noexcept;
+    State(const LiftedTask& task, SharedObjectPoolPtr<UnpackedState<LiftedTask>> unpacked) noexcept;
 
     /**
      * StateConcept
@@ -51,7 +51,7 @@ public:
 
     bool test(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const;
 
-    LiftedTask& get_task() const noexcept;
+    const LiftedTask& get_task() const noexcept;
 
     const UnpackedState<LiftedTask>& get_unpacked_state() const noexcept;
 
@@ -67,14 +67,14 @@ public:
 
 private:
     SharedObjectPoolPtr<UnpackedState<LiftedTask>> m_unpacked;
-    LiftedTask* m_task;
+    const LiftedTask* m_task;
 };
 
 /**
  * Implementations
  */
 
-inline State<LiftedTask>::State(LiftedTask& task, SharedObjectPoolPtr<UnpackedState<LiftedTask>> unpacked) noexcept :
+inline State<LiftedTask>::State(const LiftedTask& task, SharedObjectPoolPtr<UnpackedState<LiftedTask>> unpacked) noexcept :
     m_unpacked(std::move(unpacked)),
     m_task(&task)
 {
@@ -88,7 +88,7 @@ inline float_t State<LiftedTask>::get(Index<formalism::GroundFunctionTerm<formal
 
 inline bool State<LiftedTask>::test(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const { return m_unpacked->test(index); }
 
-inline LiftedTask& State<LiftedTask>::get_task() const noexcept { return *m_task; }
+inline const LiftedTask& State<LiftedTask>::get_task() const noexcept { return *m_task; }
 
 inline const UnpackedState<LiftedTask>& State<LiftedTask>::get_unpacked_state() const noexcept { return *m_unpacked; }
 }

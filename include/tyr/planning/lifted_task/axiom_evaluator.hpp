@@ -21,8 +21,9 @@
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/planning/axiom_evaluator.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/lifted_task/unpacked_state.hpp"
 #include "tyr/planning/programs/axiom.hpp"
+
+#include <memory>
 
 namespace tyr::planning
 {
@@ -31,14 +32,12 @@ template<>
 class AxiomEvaluator<LiftedTask>
 {
 public:
-    explicit AxiomEvaluator(View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
-                            formalism::OverlayRepositoryPtr<formalism::Repository> repository);
+    explicit AxiomEvaluator(std::shared_ptr<LiftedTask> task);
 
     void compute_extended_state(UnpackedState<LiftedTask>& unpacked_state);
 
 private:
-    View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> m_task;
-    formalism::OverlayRepositoryPtr<formalism::Repository> m_repository;
+    std::shared_ptr<LiftedTask> m_task;
 
     AxiomEvaluatorProgram m_axiom_program;
     grounder::ProgramExecutionContext m_axiom_context;

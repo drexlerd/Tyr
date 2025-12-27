@@ -37,7 +37,8 @@ public:
 
     template<typename Task>
     Node<Task> apply_action(const StateContext<Task>& state_context,
-                            View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action);
+                            View<Index<formalism::GroundAction>, formalism::OverlayRepository<formalism::Repository>> action,
+                            StateRepository<Task>& state_repository);
 
 private:
     DataList<formalism::FDRFact<formalism::FluentTag>> m_del_effects;

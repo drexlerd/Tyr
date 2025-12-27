@@ -18,7 +18,13 @@
 #ifndef TYR_PLANNING_GROUND_TASK_SUCCESSOR_GENERATOR_HPP_
 #define TYR_PLANNING_GROUND_TASK_SUCCESSOR_GENERATOR_HPP_
 
+#include "tyr/planning/ground_task/node.hpp"   // for Node
+#include "tyr/planning/ground_task/state.hpp"  // for State
+//
+#include "tyr/formalism/planning/ground_action_index.hpp"  // for Index
+#include "tyr/planning/action_executor.hpp"
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/ground_task/match_tree/declarations.hpp"  // for Matc...
 #include "tyr/planning/successor_generator.hpp"
 
 namespace tyr::planning
@@ -27,6 +33,26 @@ namespace tyr::planning
 template<>
 class SuccessorGenerator<GroundTask>
 {
+public:
+    explicit SuccessorGenerator(std::shared_ptr<GroundTask> task);
+
+    Node<GroundTask> get_initial_node();
+
+    std::vector<LabeledNode<GroundTask>> get_labeled_successor_nodes(const Node<GroundTask>& node);
+
+    void get_labeled_successor_nodes(const Node<GroundTask>& node, std::vector<LabeledNode<GroundTask>>& out_nodes);
+
+    State<GroundTask> get_state(StateIndex state_index);
+
+private:
+    std::shared_ptr<GroundTask> m_task;
+
+    match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
+    IndexList<formalism::GroundAction> m_applicable_actions;
+
+    std::shared_ptr<StateRepository<GroundTask>> m_state_repository;
+
+    ActionExecutor m_executor;
 };
 
 }

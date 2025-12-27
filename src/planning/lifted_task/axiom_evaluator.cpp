@@ -15,10 +15,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/lifted_task/axiom_evaluator.hpp"
+#include "../task_utils.hpp"           // for insert_fact_s...
+#include "tyr/common/comparators.hpp"  // for operator!=
+#include "tyr/common/equal_to.hpp"     // for EqualTo
+#include "tyr/common/formatter.hpp"    // for operator<<
+#include "tyr/common/hash.hpp"         // for Hash
+#include "tyr/common/vector.hpp"       // for View
+#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/merge_common.hpp"        // for MergeContext
+#include "tyr/formalism/merge_planning.hpp"      // for merge
+#include "tyr/formalism/overlay_repository.hpp"  // for OverlayReposi...
+#include "tyr/formalism/repository.hpp"          // for Repository
+#include "tyr/formalism/views.hpp"
+#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/grounder/fact_sets.hpp"    // for FactSets, Pre...
+#include "tyr/planning/lifted_task.hpp"  // for LiftedTask
+#include "tyr/planning/lifted_task.hpp"
+#include "tyr/planning/lifted_task/unpacked_state.hpp"  // for UnpackedState
+#include "tyr/solver/bottom_up.hpp"                     // for solve_bottom_up
 
-#include "../task_utils.hpp"
-#include "tyr/solver/bottom_up.hpp"
+#include <cista/containers/hash_storage.h>  // for operator!=
+#include <gtl/phmap.hpp>                    // for operator!=
+#include <utility>                          // for pair
 
 using namespace tyr::formalism;
 using namespace tyr::grounder;
@@ -63,11 +81,9 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
     }
 }
 
-AxiomEvaluator<LiftedTask>::AxiomEvaluator(View<Index<formalism::Task>, formalism::OverlayRepository<formalism::Repository>> task,
-                                           formalism::OverlayRepositoryPtr<formalism::Repository> repository) :
+AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task) :
     m_task(task),
-    m_repository(repository),
-    m_axiom_program(task),
+    m_axiom_program(task->get_task()),
     m_axiom_context(m_axiom_program.get_program(),
                     m_axiom_program.get_repository(),
                     m_axiom_program.get_domains(),
@@ -78,11 +94,11 @@ AxiomEvaluator<LiftedTask>::AxiomEvaluator(View<Index<formalism::Task>, formalis
 
 void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask>& unpacked_state)
 {
-    insert_unextended_state(unpacked_state, *m_repository, m_axiom_context);
+    insert_unextended_state(unpacked_state, *m_task->get_repository(), m_axiom_context);
 
     solve_bottom_up(m_axiom_context);
 
-    read_derived_atoms_from_program_context(m_axiom_program, unpacked_state, *m_repository, m_axiom_context);
+    read_derived_atoms_from_program_context(m_axiom_program, unpacked_state, *m_task->get_repository(), m_axiom_context);
 }
 
 }

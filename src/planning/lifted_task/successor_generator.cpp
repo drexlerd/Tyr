@@ -1,0 +1,124 @@
+/*
+ * Copyright (C) 2025 Dominik Drexler
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "tyr/planning/lifted_task/successor_generator.hpp"
+
+#include "../metric.hpp"
+#include "../task_utils.hpp"
+#include "tyr/formalism/grounder_planning.hpp"
+#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/planning/declarations.hpp"
+#include "tyr/planning/ground_task/match_tree/match_tree.hpp"
+#include "tyr/planning/lifted_task.hpp"
+#include "tyr/planning/lifted_task/axiom_evaluator.hpp"
+#include "tyr/planning/lifted_task/state_repository.hpp"
+#include "tyr/planning/programs/action.hpp"
+#include "tyr/planning/successor_generator.hpp"
+#include "tyr/solver/bottom_up.hpp"
+
+using namespace tyr::formalism;
+using namespace tyr::grounder;
+using namespace tyr::solver;
+
+namespace tyr::planning
+{
+
+SuccessorGenerator<LiftedTask>::SuccessorGenerator(std::shared_ptr<LiftedTask> task) :
+    m_task(task),
+    m_action_program(m_task->get_task()),
+    m_action_context(m_action_program.get_program(),
+                     m_action_program.get_repository(),
+                     m_action_program.get_domains(),
+                     m_action_program.get_strata(),
+                     m_action_program.get_listeners()),
+    m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(task->get_task())),
+    m_state_repository(std::make_shared<StateRepository<LiftedTask>>(task)),
+    m_executor()
+{
+}
+
+Node<LiftedTask> SuccessorGenerator<LiftedTask>::get_initial_node()
+{
+    auto initial_state = m_state_repository->get_initial_state();
+
+    const auto state_context = StateContext<LiftedTask>(*m_task, initial_state.get_unpacked_state(), 0);
+
+    const auto state_metric = evaluate_metric(m_task->get_task().get_metric(), m_task->get_task().get_auxiliary_fterm_value(), state_context);
+
+    return Node<LiftedTask>(std::move(initial_state), state_metric);
+}
+
+std::vector<LabeledNode<LiftedTask>> SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<LiftedTask>& node)
+{
+    auto result = std::vector<LabeledNode<LiftedTask>> {};
+
+    get_labeled_successor_nodes(node, result);
+
+    return result;
+}
+
+void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<LiftedTask>& node, std::vector<LabeledNode<LiftedTask>>& out_nodes)
+{
+    out_nodes.clear();
+
+    const auto state = node.get_state();
+
+    insert_extended_state(state.get_unpacked_state(), *m_task->get_repository(), m_action_context);
+
+    solve_bottom_up(m_action_context);
+
+    const auto state_context = StateContext<LiftedTask>(*m_task, state.get_unpacked_state(), node.get_metric());
+
+    out_nodes.clear();
+
+    auto& fluent_assign = m_action_context.planning_execution_context.fluent_assign;
+    auto& iter_workspace = m_action_context.planning_execution_context.iter_workspace;
+
+    /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
+    for (const auto fact : m_action_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
+    {
+        if (m_action_program.get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
+        {
+            for (const auto action_index : m_action_program.get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
+            {
+                auto grounder_context =
+                    GrounderContext { m_action_context.builder, *m_task->get_repository(), m_action_context.program_to_task_execution_context.binding };
+
+                const auto action = make_view(action_index, grounder_context.destination);
+
+                m_action_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
+
+                const auto ground_action_index = ground_planning(action,
+                                                                 grounder_context,
+                                                                 m_parameter_domains_per_cond_effect_per_action[action_index.get_value()],
+                                                                 fluent_assign,
+                                                                 iter_workspace,
+                                                                 *m_task->get_fdr_context())
+                                                     .first;
+
+                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
+
+                if (m_executor.is_applicable(ground_action, state_context))
+                    out_nodes.emplace_back(ground_action, m_executor.apply_action(state_context, ground_action, *m_state_repository));
+            }
+        }
+    }
+}
+
+State<LiftedTask> SuccessorGenerator<LiftedTask>::get_state(StateIndex state_index) { return m_state_repository->get_registered_state(state_index); }
+
+}

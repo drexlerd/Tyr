@@ -33,7 +33,7 @@ class State<GroundTask>
 public:
     using TaskType = GroundTask;
 
-    State(GroundTask& task, SharedObjectPoolPtr<UnpackedState<GroundTask>> unpacked) noexcept;
+    State(const GroundTask& task, SharedObjectPoolPtr<UnpackedState<GroundTask>> unpacked) noexcept;
 
     /**
      * StateConcept
@@ -49,7 +49,7 @@ public:
 
     bool test(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const;
 
-    GroundTask& get_task() const noexcept;
+    const GroundTask& get_task() const noexcept;
 
     const UnpackedState<GroundTask>& get_unpacked_state() const noexcept;
 
@@ -67,14 +67,14 @@ public:
 
 private:
     SharedObjectPoolPtr<UnpackedState<GroundTask>> m_unpacked;
-    GroundTask* m_task;
+    const GroundTask* m_task;
 };
 
 /**
  * Implemntations
  */
 
-inline State<GroundTask>::State(GroundTask& task, SharedObjectPoolPtr<UnpackedState<GroundTask>> unpacked) noexcept :
+inline State<GroundTask>::State(const GroundTask& task, SharedObjectPoolPtr<UnpackedState<GroundTask>> unpacked) noexcept :
     m_unpacked(std::move(unpacked)),
     m_task(&task)
 {
@@ -88,7 +88,7 @@ inline float_t State<GroundTask>::get(Index<formalism::GroundFunctionTerm<formal
 
 inline bool State<GroundTask>::test(Index<formalism::GroundAtom<formalism::DerivedTag>> index) const { return m_unpacked->test(index); }
 
-inline GroundTask& State<GroundTask>::get_task() const noexcept { return *m_task; }
+inline const GroundTask& State<GroundTask>::get_task() const noexcept { return *m_task; }
 
 inline const UnpackedState<GroundTask>& State<GroundTask>::get_unpacked_state() const noexcept { return *m_unpacked; }
 

@@ -17,8 +17,23 @@
 
 #include "tyr/planning/ground_task/state_repository.hpp"
 
-#include "../task_utils.hpp"
-#include "tyr/planning/ground_task.hpp"
+#include "../task_utils.hpp"                             // for create...
+#include "tyr/common/comparators.hpp"                    // for operat...
+#include "tyr/common/vector.hpp"                         // for View
+#include "tyr/formalism/declarations.hpp"                // for Index
+#include "tyr/formalism/overlay_repository.hpp"          // for Overla...
+#include "tyr/formalism/views.hpp"                       // for View
+#include "tyr/planning/ground_task.hpp"                  // for Ground...
+#include "tyr/planning/ground_task/axiom_evaluator.hpp"  // for AxiomE...
+#include "tyr/planning/state_repository.hpp"
+
+#include <algorithm>                 // for fill
+#include <assert.h>                  // for assert
+#include <boost/dynamic_bitset.hpp>  // for dynami...
+#include <gtl/phmap.hpp>             // for operat...
+#include <tuple>                     // for operat...
+#include <utility>                   // for move
+#include <valla/slot.hpp>            // for Slot
 
 using namespace tyr::formalism;
 
@@ -47,11 +62,10 @@ static auto create_derived_layout(View<Index<formalism::FDRTask>, formalism::Ove
     return create_bitset_layout<uint_t>(fdr_task.get_atoms<DerivedTag>().size());
 }
 
-StateRepository<GroundTask>::StateRepository(GroundTask& task, formalism::GeneralFDRContext<formalism::OverlayRepository<formalism::Repository>> fdr_context) :
+StateRepository<GroundTask>::StateRepository(std::shared_ptr<GroundTask> task) :
     m_task(task),
-    m_fdr_context(std::move(fdr_context)),
-    m_fluent_layout(create_fluent_layout(m_task.get_task())),
-    m_derived_layout(create_derived_layout(m_task.get_task())),
+    m_fluent_layout(create_fluent_layout(m_task->get_task())),
+    m_derived_layout(create_derived_layout(m_task->get_task())),
     m_uint_nodes(),
     m_float_nodes(),
     m_nodes_buffer(),
@@ -60,7 +74,8 @@ StateRepository<GroundTask>::StateRepository(GroundTask& task, formalism::Genera
     m_derived_repository(m_derived_layout.total_blocks),
     m_fluent_buffer(m_fluent_layout.total_blocks),
     m_derived_buffer(m_derived_layout.total_blocks),
-    m_unpacked_state_pool()
+    m_unpacked_state_pool(),
+    m_axiom_evaluator(std::make_shared<AxiomEvaluator<GroundTask>>(task))
 {
 }
 
@@ -68,13 +83,11 @@ State<GroundTask> StateRepository<GroundTask>::get_initial_state()
 {
     auto unpacked_state = get_unregistered_state();
 
-    for (const auto fact : m_task.get_task().get_fluent_facts())
+    for (const auto fact : m_task->get_task().get_fluent_facts())
         unpacked_state->set(fact.get_data());
 
-    for (const auto fterm_value : m_task.get_task().get_fterm_values<FluentTag>())
+    for (const auto fterm_value : m_task->get_task().get_fterm_values<FluentTag>())
         unpacked_state->set(fterm_value.get_fterm().get_index(), fterm_value.get_value());
-
-    m_task.compute_extended_state(*unpacked_state);
 
     return register_state(unpacked_state);
 }
@@ -98,7 +111,7 @@ State<GroundTask> StateRepository<GroundTask>::get_registered_state(StateIndex s
 
     fill_numeric_variables(packed_state.get_numeric_variables(), m_uint_nodes, m_float_nodes, m_nodes_buffer, unpacked_state->get_numeric_variables());
 
-    return State<GroundTask>(m_task, std::move(unpacked_state));
+    return State<GroundTask>(*m_task, std::move(unpacked_state));
 }
 
 SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_unregistered_state()
@@ -106,14 +119,16 @@ SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_
     auto state = m_unpacked_state_pool.get_or_allocate();
     state->clear();
 
-    state->resize_fluent_facts(m_task.get_task().get_fluent_variables().size());
-    state->resize_derived_atoms(m_task.get_task().get_atoms<DerivedTag>().size());
+    state->resize_fluent_facts(m_task->get_task().get_fluent_variables().size());
+    state->resize_derived_atoms(m_task->get_task().get_atoms<DerivedTag>().size());
 
     return state;
 }
 
 State<GroundTask> StateRepository<GroundTask>::register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state)
 {
+    m_axiom_evaluator->compute_extended_state(*state);
+
     assert(m_fluent_buffer.size() == m_fluent_layout.total_blocks);
     assert(m_derived_buffer.size() == m_derived_layout.total_blocks);
 
@@ -132,7 +147,7 @@ State<GroundTask> StateRepository<GroundTask>::register_state(SharedObjectPoolPt
     state->set(
         m_packed_states.insert(PackedState<GroundTask>(StateIndex(m_packed_states.size()), fluent_facts_index, derived_atoms_index, numeric_variables_slot)));
 
-    return State<GroundTask>(m_task, std::move(state));
+    return State<GroundTask>(*m_task, std::move(state));
 }
 
 static_assert(StateRepositoryConcept<StateRepository<GroundTask>, GroundTask>);

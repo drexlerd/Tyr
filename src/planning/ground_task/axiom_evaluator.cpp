@@ -17,45 +17,56 @@
 
 #include "tyr/planning/ground_task/axiom_evaluator.hpp"
 
-#include "tyr/planning/ground_task.hpp"
-#include "tyr/planning/ground_task/match_tree/match_tree.hpp"
+#include "tyr/common/comparators.hpp"                         // for operator!=
+#include "tyr/common/config.hpp"                              // for float_t
+#include "tyr/formalism/overlay_repository.hpp"               // for Overlay...
+#include "tyr/formalism/repository.hpp"                       // for Repository
+#include "tyr/formalism/views.hpp"                            // for View
+#include "tyr/planning/applicability.hpp"                     // for StateCo...
+#include "tyr/planning/ground_task.hpp"                       // for GroundTask
+#include "tyr/planning/ground_task/axiom_stratification.hpp"  // for compute...
+#include "tyr/planning/ground_task/unpacked_state.hpp"
 
 using namespace tyr::formalism;
 
 namespace tyr::planning
 {
-static void evaluate_axioms_bottomup_for_strata(UnpackedState<GroundTask>& unextended_state,
-                                                GroundTask& task,
-                                                match_tree::MatchTree<formalism::GroundAxiom>& match_tree,
-                                                IndexList<formalism::GroundAxiom>& applicable_axioms)
+
+AxiomEvaluator<GroundTask>::AxiomEvaluator(std::shared_ptr<GroundTask> task) : m_task(task), m_axiom_match_tree_strata(), m_applicable_axioms()
 {
-    auto state_context = StateContext<GroundTask> { task, unextended_state, float_t(0) };
+    auto axiom_strata = compute_ground_axiom_stratification(task->get_task());
 
-    while (true)
+    for (const auto& stratum : axiom_strata.data)
+        m_axiom_match_tree_strata.emplace_back(match_tree::MatchTree<GroundAxiom>::create(stratum, task->get_task().get_context()));
+}
+
+void AxiomEvaluator<GroundTask>::compute_extended_state(UnpackedState<GroundTask>& unpacked_state)
+{
+    auto state_context = StateContext<GroundTask> { *m_task, unpacked_state, float_t(0) };
+
+    for (const auto& match_tree : m_axiom_match_tree_strata)
     {
-        auto discovered_new_atom = bool { false };
-
-        applicable_axioms.clear();
-        match_tree.generate(state_context, applicable_axioms);
-
-        for (const auto axiom : applicable_axioms)
+        while (true)
         {
-            const auto atom = make_view(axiom, *task.get_repository()).get_head().get_index();
+            auto discovered_new_atom = bool { false };
 
-            if (!unextended_state.test(atom))
-                discovered_new_atom = true;
+            m_applicable_axioms.clear();
+            match_tree->generate(state_context, m_applicable_axioms);
 
-            unextended_state.set(atom);
+            for (const auto axiom : m_applicable_axioms)
+            {
+                const auto atom = make_view(axiom, *m_task->get_repository()).get_head().get_index();
+
+                if (!unpacked_state.test(atom))
+                    discovered_new_atom = true;
+
+                unpacked_state.set(atom);
+            }
+
+            if (!discovered_new_atom)
+                break;
         }
-
-        if (!discovered_new_atom)
-            break;
     }
 }
 
-void evaluate_axioms_bottomup(UnpackedState<GroundTask>& unextended_state, GroundTask& task, IndexList<formalism::GroundAxiom>& applicable_axioms)
-{
-    for (const auto& match_tree : task.get_axiom_match_tree_strata())
-        evaluate_axioms_bottomup_for_strata(unextended_state, task, *match_tree, applicable_axioms);
-}
 }
