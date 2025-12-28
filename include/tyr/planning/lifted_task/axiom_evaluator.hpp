@@ -23,7 +23,6 @@
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/planning/axiom_evaluator.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/programs/axiom.hpp"
 
 #include <memory>
 
@@ -41,7 +40,6 @@ public:
 private:
     std::shared_ptr<LiftedTask> m_task;
 
-    AxiomEvaluatorProgram m_axiom_program;
     grounder::ProgramExecutionContext m_axiom_context;
 };
 

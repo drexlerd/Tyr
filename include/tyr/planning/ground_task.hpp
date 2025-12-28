@@ -26,6 +26,7 @@
 #include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/views.hpp"  // for View
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/ground_task/match_tree/match_tree.hpp"  // for Matc...
 
 #include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
 #include <limits>                    // for numeric_limits
@@ -64,6 +65,9 @@ public:
     auto& get_repository() noexcept { return m_overlay_repository; }
     const auto& get_repository() const noexcept { return m_overlay_repository; }
 
+    const auto& get_action_match_tree() const noexcept { return m_action_match_tree; }
+    const auto& get_axiom_match_tree_strata() const noexcept { return m_axiom_match_tree_strata; }
+
 private:
     DomainPtr m_domain;
 
@@ -72,6 +76,10 @@ private:
     View<Index<formalism::FDRTask>, formalism::OverlayRepository<formalism::Repository>> m_fdr_task;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
+
+    match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
+
+    std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> m_axiom_match_tree_strata;
 };
 
 }

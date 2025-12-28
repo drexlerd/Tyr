@@ -77,6 +77,22 @@ struct RuleStageExecutionContext
     void clear() noexcept;
 };
 
+struct StaticRuleExecutionContext
+{
+    View<Index<formalism::Rule>, formalism::Repository> rule;
+    View<Index<formalism::GroundConjunctiveCondition>, formalism::Repository> nullary_condition;
+    View<Index<formalism::ConjunctiveCondition>, formalism::Repository> unary_overapproximation_condition;
+    View<Index<formalism::ConjunctiveCondition>, formalism::Repository> binary_overapproximation_condition;
+    View<Index<formalism::ConjunctiveCondition>, formalism::Repository> unary_conflicting_overapproximation_condition;
+    View<Index<formalism::ConjunctiveCondition>, formalism::Repository> binary_conflicting_overapproximation_condition;
+    StaticConsistencyGraph static_consistency_graph;
+
+    static StaticRuleExecutionContext create(View<Index<formalism::Rule>, formalism::Repository> rule,
+                                             formalism::Repository& repository,
+                                             const analysis::DomainListList& parameter_domains,
+                                             const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
+};
+
 struct RuleExecutionContext
 {
     const View<Index<formalism::Rule>, formalism::Repository> rule;
@@ -196,15 +212,6 @@ struct ThreadExecutionContext
     void clear() noexcept;
 };
 
-struct PlanningExecutionContext
-{
-    UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> fluent_assign;
-    UnorderedMap<Index<formalism::GroundAtom<formalism::DerivedTag>>, bool> derived_assign;
-    itertools::cartesian_set::Workspace<Index<formalism::Object>> iter_workspace;
-
-    PlanningExecutionContext() = default;
-};
-
 struct ProgramToTaskExecutionContext
 {
     ProgramToTaskExecutionContext() = default;
@@ -244,8 +251,6 @@ struct ProgramExecutionContext
     std::vector<RuleStageExecutionContext> rule_stage_execution_contexts;
 
     oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
-
-    PlanningExecutionContext planning_execution_context;
 
     ProgramToTaskExecutionContext program_to_task_execution_context;
     TaskToProgramExecutionContext task_to_program_execution_context;

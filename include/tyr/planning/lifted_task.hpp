@@ -26,6 +26,8 @@
 #include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/views.hpp"  // for View
 #include "tyr/planning/declarations.hpp"
+#include "tyr/planning/programs/action.hpp"
+#include "tyr/planning/programs/axiom.hpp"
 
 #include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
 #include <limits>                    // for numeric_limits
@@ -56,8 +58,11 @@ public:
 
     const auto& get_fdr_context() const noexcept { return m_fdr_context; }
 
-    auto& get_repository() noexcept { return m_overlay_repository; }
     const auto& get_repository() const noexcept { return m_overlay_repository; }
+
+    const auto& get_axiom_program() const noexcept { return m_axiom_program; }
+    const auto& get_action_program() const noexcept { return m_action_program; }
+    const auto& get_parameter_domains_per_cond_effect_per_action() const noexcept { return m_parameter_domains_per_cond_effect_per_action; }
 
     const auto& get_static_atoms_bitset() const noexcept { return m_static_atoms_bitset; }
     const auto& get_static_numeric_variables() const noexcept { return m_static_numeric_variables; }
@@ -75,6 +80,11 @@ private:
     std::shared_ptr<formalism::BinaryFDRContext<formalism::OverlayRepository<formalism::Repository>>> m_fdr_context;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
+
+    AxiomEvaluatorProgram m_axiom_program;
+
+    ApplicableActionProgram m_action_program;
+    std::vector<analysis::DomainListListList> m_parameter_domains_per_cond_effect_per_action;
 };
 
 }

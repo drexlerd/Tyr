@@ -17,13 +17,14 @@
 
 #include "tyr/planning/ground_task.hpp"
 
-#include "tyr/common/comparators.hpp"              // for operat...
-#include "tyr/common/dynamic_bitset.hpp"           // for set
-#include "tyr/common/vector.hpp"                   // for View, set
-#include "tyr/formalism/overlay_repository.hpp"    // for Overla...
-#include "tyr/formalism/planning/fdr_context.hpp"  // for Genera...
-#include "tyr/formalism/repository.hpp"            // for Reposi...
-#include "tyr/formalism/views.hpp"                 // for Index
+#include "tyr/common/comparators.hpp"                         // for operat...
+#include "tyr/common/dynamic_bitset.hpp"                      // for set
+#include "tyr/common/vector.hpp"                              // for View, set
+#include "tyr/formalism/overlay_repository.hpp"               // for Overla...
+#include "tyr/formalism/planning/fdr_context.hpp"             // for Genera...
+#include "tyr/formalism/repository.hpp"                       // for Reposi...
+#include "tyr/formalism/views.hpp"                            // for Index
+#include "tyr/planning/ground_task/axiom_stratification.hpp"  // for compute...
 
 #include <tuple>    // for operat...
 #include <utility>  // for move
@@ -43,7 +44,9 @@ GroundTask::GroundTask(DomainPtr domain,
     m_overlay_repository(std::move(overlay_repository)),
     m_fdr_task(fdr_task),
     m_static_atoms_bitset(),
-    m_static_numeric_variables()
+    m_static_numeric_variables(),
+    m_action_match_tree(match_tree::MatchTree<GroundAction>::create(m_fdr_task.get_ground_actions().get_data(), m_fdr_task.get_context())),
+    m_axiom_match_tree_strata()
 {
     // std::cout << m_fdr_task << std::endl;
 
@@ -52,6 +55,11 @@ GroundTask::GroundTask(DomainPtr domain,
 
     for (const auto fterm_value : m_fdr_task.template get_fterm_values<StaticTag>())
         set(uint_t(fterm_value.get_fterm().get_index()), fterm_value.get_value(), m_static_numeric_variables, std::numeric_limits<float_t>::quiet_NaN());
+
+    auto axiom_strata = compute_ground_axiom_stratification(m_fdr_task);
+
+    for (const auto& stratum : axiom_strata.data)
+        m_axiom_match_tree_strata.emplace_back(match_tree::MatchTree<GroundAxiom>::create(stratum, m_fdr_task.get_context()));
 }
 
 template<FactKind T>

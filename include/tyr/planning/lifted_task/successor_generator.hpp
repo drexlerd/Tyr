@@ -25,7 +25,6 @@
 #include "tyr/planning/lifted_task/axiom_evaluator.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
 #include "tyr/planning/lifted_task/state_repository.hpp"
-#include "tyr/planning/programs/action.hpp"
 #include "tyr/planning/successor_generator.hpp"
 
 namespace tyr::planning
@@ -48,9 +47,7 @@ public:
 private:
     std::shared_ptr<LiftedTask> m_task;
 
-    ApplicableActionProgram m_action_program;
     grounder::ProgramExecutionContext m_action_context;
-    std::vector<analysis::DomainListListList> m_parameter_domains_per_cond_effect_per_action;
 
     std::shared_ptr<StateRepository<LiftedTask>> m_state_repository;
 

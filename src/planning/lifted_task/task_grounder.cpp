@@ -298,9 +298,9 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
 
     ground_context.program_to_task_execution_context.clear();
 
-    auto& fluent_assign = ground_context.planning_execution_context.fluent_assign;
-    auto& derived_assign = ground_context.planning_execution_context.derived_assign;
-    auto& iter_workspace = ground_context.planning_execution_context.iter_workspace;
+    auto fluent_assign = UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> {};
+    auto derived_assign = UnorderedMap<Index<formalism::GroundAtom<formalism::DerivedTag>>, bool> {};
+    auto iter_workspace = itertools::cartesian_set::Workspace<Index<formalism::Object>> {};
 
     /// --- Ground Atoms
 
@@ -328,8 +328,6 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
     for (const auto atom : lifted_task.get_task().get_atoms<StaticTag>())
         set(uint_t(atom.get_index()), true, static_atoms_bitset);
 
-    auto parameter_domains_per_cond_effect_per_action = compute_parameter_domains_per_cond_effect_per_action(lifted_task.get_task());
-
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_actions_mapping, then facts of the predicate
     for (const auto fact : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
     {
@@ -345,7 +343,7 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
 
                 const auto ground_action_index = ground_planning(action,
                                                                  grounder_context,
-                                                                 parameter_domains_per_cond_effect_per_action[action_index.get_value()],
+                                                                 lifted_task.get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
                                                                  fluent_assign,
                                                                  iter_workspace,
                                                                  *lifted_task.get_fdr_context())

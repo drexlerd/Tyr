@@ -24,7 +24,6 @@
 #include "tyr/formalism/planning/ground_action_index.hpp"  // for Index
 #include "tyr/planning/action_executor.hpp"
 #include "tyr/planning/declarations.hpp"
-#include "tyr/planning/ground_task/match_tree/declarations.hpp"  // for Matc...
 #include "tyr/planning/successor_generator.hpp"
 
 namespace tyr::planning
@@ -47,7 +46,6 @@ public:
 private:
     std::shared_ptr<GroundTask> m_task;
 
-    match_tree::MatchTreePtr<formalism::GroundAction> m_action_match_tree;
     IndexList<formalism::GroundAction> m_applicable_actions;
 
     std::shared_ptr<StateRepository<GroundTask>> m_state_repository;

@@ -39,13 +39,11 @@ namespace tyr::planning
 
 SuccessorGenerator<LiftedTask>::SuccessorGenerator(std::shared_ptr<LiftedTask> task) :
     m_task(task),
-    m_action_program(m_task->get_task()),
-    m_action_context(m_action_program.get_program(),
-                     m_action_program.get_repository(),
-                     m_action_program.get_domains(),
-                     m_action_program.get_strata(),
-                     m_action_program.get_listeners()),
-    m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(task->get_task())),
+    m_action_context(m_task->get_action_program().get_program(),
+                     m_task->get_action_program().get_repository(),
+                     m_task->get_action_program().get_domains(),
+                     m_task->get_action_program().get_strata(),
+                     m_task->get_action_program().get_listeners()),
     m_state_repository(std::make_shared<StateRepository<LiftedTask>>(task)),
     m_executor()
 {
@@ -85,15 +83,15 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
 
     out_nodes.clear();
 
-    auto& fluent_assign = m_action_context.planning_execution_context.fluent_assign;
-    auto& iter_workspace = m_action_context.planning_execution_context.iter_workspace;
+    auto fluent_assign = UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> {};
+    auto iter_workspace = itertools::cartesian_set::Workspace<Index<formalism::Object>> {};
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
     for (const auto fact : m_action_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
     {
-        if (m_action_program.get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
+        if (m_task->get_action_program().get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
         {
-            for (const auto action_index : m_action_program.get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
+            for (const auto action_index : m_task->get_action_program().get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
             {
                 auto grounder_context =
                     GrounderContext { m_action_context.builder, *m_task->get_repository(), m_action_context.program_to_task_execution_context.binding };
@@ -104,7 +102,7 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
 
                 const auto ground_action_index = ground_planning(action,
                                                                  grounder_context,
-                                                                 m_parameter_domains_per_cond_effect_per_action[action_index.get_value()],
+                                                                 m_task->get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
                                                                  fluent_assign,
                                                                  iter_workspace,
                                                                  *m_task->get_fdr_context())

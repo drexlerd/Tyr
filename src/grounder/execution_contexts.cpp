@@ -93,6 +93,46 @@ void RuleStageExecutionContext::clear() noexcept
 }
 
 /**
+ * StaticRuleExecutionContext
+ */
+
+StaticRuleExecutionContext StaticRuleExecutionContext::create(View<Index<formalism::Rule>, formalism::Repository> rule,
+                                                              formalism::Repository& repository,
+                                                              const analysis::DomainListList& parameter_domains,
+                                                              const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets)
+{
+    auto builder = Builder();
+
+    auto nullary_condition = make_view(create_ground_nullary_condition(rule.get_body(), builder, repository).first, repository);
+
+    auto unary_overapproximation_condition =
+        make_view(create_overapproximation_conjunctive_condition(1, rule.get_body(), builder, repository).first, repository);
+    auto binary_overapproximation_condition =
+        make_view(create_overapproximation_conjunctive_condition(2, rule.get_body(), builder, repository).first, repository);
+
+    auto unary_conflicting_overapproximation_condition =
+        make_view(create_overapproximation_conflicting_conjunctive_condition(1, rule.get_body(), builder, repository).first, repository);
+    auto binary_conflicting_overapproximation_condition =
+        make_view(create_overapproximation_conflicting_conjunctive_condition(2, rule.get_body(), builder, repository).first, repository);
+
+    auto static_consistency_graph = StaticConsistencyGraph(rule.get_body(),
+                                                           unary_overapproximation_condition,
+                                                           binary_overapproximation_condition,
+                                                           parameter_domains,
+                                                           0,
+                                                           rule.get_arity(),
+                                                           static_assignment_sets);
+
+    return StaticRuleExecutionContext { rule,
+                                        nullary_condition,
+                                        unary_overapproximation_condition,
+                                        binary_overapproximation_condition,
+                                        unary_conflicting_overapproximation_condition,
+                                        binary_conflicting_overapproximation_condition,
+                                        std::move(static_consistency_graph) };
+}
+
+/**
  * RuleExecutionContext
  */
 
@@ -176,7 +216,6 @@ ProgramExecutionContext::ProgramExecutionContext(View<Index<Program>, Repository
     rule_execution_contexts(),
     rule_stage_execution_contexts(),
     thread_execution_contexts(),
-    planning_execution_context(),
     program_to_task_execution_context(),
     task_to_program_execution_context()
 {

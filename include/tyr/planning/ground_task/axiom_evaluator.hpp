@@ -38,7 +38,6 @@ public:
 private:
     std::shared_ptr<GroundTask> m_task;
 
-    std::vector<match_tree::MatchTreePtr<formalism::GroundAxiom>> m_axiom_match_tree_strata;
     IndexList<formalism::GroundAxiom> m_applicable_axioms;
 };
 }

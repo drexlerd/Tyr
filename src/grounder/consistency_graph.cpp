@@ -873,4 +873,5 @@ std::pair<Index<ConjunctiveCondition>, bool> create_overapproximation_conflictin
     canonicalize(conj_cond);
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
+
 }

@@ -85,12 +85,11 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 
 AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task) :
     m_task(task),
-    m_axiom_program(task->get_task()),
-    m_axiom_context(m_axiom_program.get_program(),
-                    m_axiom_program.get_repository(),
-                    m_axiom_program.get_domains(),
-                    m_axiom_program.get_strata(),
-                    m_axiom_program.get_listeners())
+    m_axiom_context(task->get_axiom_program().get_program(),
+                    task->get_axiom_program().get_repository(),
+                    task->get_axiom_program().get_domains(),
+                    task->get_axiom_program().get_strata(),
+                    task->get_axiom_program().get_listeners())
 {
 }
 
@@ -100,7 +99,7 @@ void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask
 
     solve_bottom_up(m_axiom_context);
 
-    read_derived_atoms_from_program_context(m_axiom_program, unpacked_state, *m_task->get_repository(), m_axiom_context);
+    read_derived_atoms_from_program_context(m_task->get_axiom_program(), unpacked_state, *m_task->get_repository(), m_axiom_context);
 }
 
 }

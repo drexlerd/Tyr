@@ -17,6 +17,7 @@
 
 #include "tyr/planning/lifted_task.hpp"
 
+#include "task_utils.hpp"
 #include "tyr/common/comparators.hpp"            // for operat...
 #include "tyr/common/dynamic_bitset.hpp"         // for set
 #include "tyr/common/vector.hpp"                 // for View, set
@@ -43,7 +44,10 @@ LiftedTask::LiftedTask(DomainPtr domain,
     m_task(task),
     m_fdr_context(fdr_context),
     m_static_atoms_bitset(),
-    m_static_numeric_variables()
+    m_static_numeric_variables(),
+    m_axiom_program(m_task),
+    m_action_program(m_task),
+    m_parameter_domains_per_cond_effect_per_action(compute_parameter_domains_per_cond_effect_per_action(m_task))
 {
     for (const auto atom : m_task.template get_atoms<StaticTag>())
         set(uint_t(atom.get_index()), true, m_static_atoms_bitset);

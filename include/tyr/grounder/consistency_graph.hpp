@@ -219,6 +219,7 @@ create_overapproximation_conflicting_conjunctive_condition(size_t k,
                                                            View<Index<formalism::ConjunctiveCondition>, formalism::Repository> condition,
                                                            formalism::Builder& builder,
                                                            formalism::Repository& context);
+
 }
 
 #endif

@@ -35,7 +35,6 @@ namespace tyr::planning
 
 SuccessorGenerator<GroundTask>::SuccessorGenerator(std::shared_ptr<GroundTask> task) :
     m_task(task),
-    m_action_match_tree(match_tree::MatchTree<GroundAction>::create(task->get_task().get_ground_actions().get_data(), task->get_task().get_context())),
     m_applicable_actions(),
     m_state_repository(std::make_shared<StateRepository<GroundTask>>(task)),
     m_executor()
@@ -70,7 +69,7 @@ void SuccessorGenerator<GroundTask>::get_labeled_successor_nodes(const Node<Grou
 
     const auto state_context = StateContext<GroundTask>(*m_task, state.get_unpacked_state(), node.get_metric());
 
-    m_action_match_tree->generate(state_context, m_applicable_actions);
+    m_task->get_action_match_tree()->generate(state_context, m_applicable_actions);
 
     for (const auto ground_action : make_view(m_applicable_actions, *m_task->get_repository()))
     {
