@@ -19,24 +19,24 @@
 #define TYR_FORMALISM_PLANNING_AXIOM_VIEW_HPP_
 
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/atom_view.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/atom_view.hpp"
 #include "tyr/formalism/planning/axiom_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_view.hpp"
 #include "tyr/formalism/variable_view.hpp"
 
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::Axiom>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::Axiom>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::Axiom> m_handle;
+    Index<formalism::planning::Axiom> m_handle;
 
 public:
-    View(Index<formalism::Axiom> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::Axiom> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

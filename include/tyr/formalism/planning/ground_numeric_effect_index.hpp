@@ -20,18 +20,18 @@
 
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 
 namespace tyr
 {
-template<formalism::NumericEffectOpKind Op, formalism::FactKind T>
-struct Index<formalism::GroundNumericEffect<Op, T>> : IndexMixin<Index<formalism::GroundNumericEffect<Op, T>>>
+template<formalism::planning::NumericEffectOpKind Op, formalism::FactKind T>
+struct Index<formalism::planning::GroundNumericEffect<Op, T>> : IndexMixin<Index<formalism::planning::GroundNumericEffect<Op, T>>>
 {
-    static_assert(std::same_as<T, formalism::FluentTag> || (std::same_as<T, formalism::AuxiliaryTag> && std::same_as<Op, formalism::OpIncrease>),
+    static_assert(std::same_as<T, formalism::FluentTag> || (std::same_as<T, formalism::AuxiliaryTag> && std::same_as<Op, formalism::planning::OpIncrease>),
                   "Unsupported NumericEffect<Op, T> combination.");
 
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::GroundNumericEffect<Op, T>>>;
+    using Base = IndexMixin<Index<formalism::planning::GroundNumericEffect<Op, T>>>;
     using Base::Base;
 };
 

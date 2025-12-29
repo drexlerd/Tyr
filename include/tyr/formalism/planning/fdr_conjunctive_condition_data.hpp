@@ -20,31 +20,31 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/boolean_operator_data.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/literal_index.hpp"
+#include "tyr/formalism/planning/boolean_operator_data.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/planning/literal_index.hpp"
 #include "tyr/formalism/variable_index.hpp"
 
 namespace tyr
 {
 template<>
-struct Data<formalism::FDRConjunctiveCondition>
+struct Data<formalism::planning::FDRConjunctiveCondition>
 {
-    Index<formalism::FDRConjunctiveCondition> index;
+    Index<formalism::planning::FDRConjunctiveCondition> index;
     IndexList<formalism::Variable> variables;
-    IndexList<formalism::Literal<formalism::StaticTag>> static_literals;
-    IndexList<formalism::Literal<formalism::FluentTag>> fluent_literals;
-    IndexList<formalism::Literal<formalism::DerivedTag>> derived_literals;
-    DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>> numeric_constraints;
+    IndexList<formalism::planning::Literal<formalism::StaticTag>> static_literals;
+    IndexList<formalism::planning::Literal<formalism::FluentTag>> fluent_literals;
+    IndexList<formalism::planning::Literal<formalism::DerivedTag>> derived_literals;
+    DataList<formalism::planning::BooleanOperator<Data<formalism::planning::FunctionExpression>>> numeric_constraints;
 
     Data() = default;
-    Data(Index<formalism::FDRConjunctiveCondition> index,
+    Data(Index<formalism::planning::FDRConjunctiveCondition> index,
          IndexList<formalism::Variable> variables,
-         IndexList<formalism::Literal<formalism::StaticTag>> static_literals,
-         IndexList<formalism::Literal<formalism::FluentTag>> fluent_literals,
-         IndexList<formalism::Literal<formalism::DerivedTag>> derived_literals,
-         DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>> numeric_constraints) :
+         IndexList<formalism::planning::Literal<formalism::StaticTag>> static_literals,
+         IndexList<formalism::planning::Literal<formalism::FluentTag>> fluent_literals,
+         IndexList<formalism::planning::Literal<formalism::DerivedTag>> derived_literals,
+         DataList<formalism::planning::BooleanOperator<Data<formalism::planning::FunctionExpression>>> numeric_constraints) :
         index(index),
         variables(std::move(variables)),
         static_literals(std::move(static_literals)),

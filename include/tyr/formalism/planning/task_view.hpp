@@ -21,15 +21,15 @@
 #include "tyr/common/optional.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
-#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_view.hpp"
-#include "tyr/formalism/ground_function_term_value_view.hpp"
 #include "tyr/formalism/object_view.hpp"
 #include "tyr/formalism/planning/action_view.hpp"
 #include "tyr/formalism/planning/axiom_view.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/domain_index.hpp"
 #include "tyr/formalism/planning/domain_view.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_view.hpp"
+#include "tyr/formalism/planning/ground_function_term_value_view.hpp"
 #include "tyr/formalism/planning/metric_view.hpp"
 #include "tyr/formalism/planning/task_index.hpp"
 #include "tyr/formalism/predicate_view.hpp"
@@ -37,15 +37,15 @@
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::Task>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::Task>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::Task> m_handle;
+    Index<formalism::planning::Task> m_handle;
 
 public:
-    View(Index<formalism::Task> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::Task> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

@@ -20,19 +20,20 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/variant.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_data.hpp"
 
 namespace tyr
 {
-template<formalism::FactKind T, formalism::Context C>
-class View<Data<formalism::GroundNumericEffectOperator<T>>, C>
+template<formalism::FactKind T, formalism::planning::Context C>
+class View<Data<formalism::planning::GroundNumericEffectOperator<T>>, C>
 {
 private:
     const C* m_context;
-    Data<formalism::GroundNumericEffectOperator<T>> m_handle;
+    Data<formalism::planning::GroundNumericEffectOperator<T>> m_handle;
 
 public:
-    View(Data<formalism::GroundNumericEffectOperator<T>> data, const C& context) noexcept : m_context(&context), m_handle(data) {}
+    View(Data<formalism::planning::GroundNumericEffectOperator<T>> data, const C& context) noexcept : m_context(&context), m_handle(data) {}
 
     const auto& get_data() const noexcept { return m_handle; }
     const auto& get_context() const noexcept { return *m_context; }

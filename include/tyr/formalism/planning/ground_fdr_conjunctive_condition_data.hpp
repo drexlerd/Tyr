@@ -21,29 +21,29 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
 #include "tyr/formalism/binding_index.hpp"
-#include "tyr/formalism/boolean_operator_data.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_literal_index.hpp"
+#include "tyr/formalism/planning/boolean_operator_data.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_fact_data.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/planning/ground_literal_index.hpp"
 
 namespace tyr
 {
 template<>
-struct Data<formalism::GroundFDRConjunctiveCondition>
+struct Data<formalism::planning::GroundFDRConjunctiveCondition>
 {
-    Index<formalism::GroundFDRConjunctiveCondition> index;
-    IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_literals;
-    DataList<formalism::FDRFact<formalism::FluentTag>> fluent_facts;
-    IndexList<formalism::GroundLiteral<formalism::DerivedTag>> derived_literals;
-    DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_constraints;
+    Index<formalism::planning::GroundFDRConjunctiveCondition> index;
+    IndexList<formalism::planning::GroundLiteral<formalism::StaticTag>> static_literals;
+    DataList<formalism::planning::FDRFact<formalism::FluentTag>> fluent_facts;
+    IndexList<formalism::planning::GroundLiteral<formalism::DerivedTag>> derived_literals;
+    DataList<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>> numeric_constraints;
 
     Data() = default;
-    Data(Index<formalism::GroundFDRConjunctiveCondition> index,
-         IndexList<formalism::GroundLiteral<formalism::StaticTag>> static_literals,
-         DataList<formalism::FDRFact<formalism::FluentTag>> fluent_facts,
-         IndexList<formalism::GroundLiteral<formalism::DerivedTag>> derived_literals,
-         DataList<formalism::BooleanOperator<Data<formalism::GroundFunctionExpression>>> numeric_constraints) :
+    Data(Index<formalism::planning::GroundFDRConjunctiveCondition> index,
+         IndexList<formalism::planning::GroundLiteral<formalism::StaticTag>> static_literals,
+         DataList<formalism::planning::FDRFact<formalism::FluentTag>> fluent_facts,
+         IndexList<formalism::planning::GroundLiteral<formalism::DerivedTag>> derived_literals,
+         DataList<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>> numeric_constraints) :
         index(index),
         static_literals(std::move(static_literals)),
         fluent_facts(std::move(fluent_facts)),

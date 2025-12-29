@@ -20,11 +20,11 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_index.hpp"
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/planning/action_index.hpp"
 #include "tyr/formalism/planning/axiom_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/domain_index.hpp"
 #include "tyr/formalism/planning/task_index.hpp"
 #include "tyr/formalism/predicate_index.hpp"
@@ -33,9 +33,9 @@ namespace tyr
 {
 
 template<>
-struct Data<formalism::Domain>
+struct Data<formalism::planning::Domain>
 {
-    Index<formalism::Domain> index;
+    Index<formalism::planning::Domain> index;
     ::cista::offset::string name;
     IndexList<formalism::Predicate<formalism::StaticTag>> static_predicates;
     IndexList<formalism::Predicate<formalism::FluentTag>> fluent_predicates;
@@ -44,11 +44,11 @@ struct Data<formalism::Domain>
     IndexList<formalism::Function<formalism::FluentTag>> fluent_functions;
     ::cista::optional<Index<formalism::Function<formalism::AuxiliaryTag>>> auxiliary_function;
     IndexList<formalism::Object> constants;
-    IndexList<formalism::Action> actions;
-    IndexList<formalism::Axiom> axioms;
+    IndexList<formalism::planning::Action> actions;
+    IndexList<formalism::planning::Axiom> axioms;
 
     Data() = default;
-    Data(Index<formalism::Domain> index,
+    Data(Index<formalism::planning::Domain> index,
          ::cista::offset::string name,
          IndexList<formalism::Predicate<formalism::StaticTag>> static_predicates,
          IndexList<formalism::Predicate<formalism::FluentTag>> fluent_predicates,
@@ -57,8 +57,8 @@ struct Data<formalism::Domain>
          IndexList<formalism::Function<formalism::FluentTag>> fluent_functions,
          ::cista::optional<Index<formalism::Function<formalism::AuxiliaryTag>>> auxiliary_function,
          IndexList<formalism::Object> constants,
-         IndexList<formalism::Action> actions,
-         IndexList<formalism::Axiom> axioms) :
+         IndexList<formalism::planning::Action> actions,
+         IndexList<formalism::planning::Axiom> axioms) :
         index(index),
         name(std::move(name)),
         static_predicates(std::move(static_predicates)),

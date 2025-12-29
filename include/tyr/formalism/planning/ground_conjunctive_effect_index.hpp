@@ -20,15 +20,15 @@
 
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 
 namespace tyr
 {
 template<>
-struct Index<formalism::GroundConjunctiveEffect> : IndexMixin<Index<formalism::GroundConjunctiveEffect>>
+struct Index<formalism::planning::GroundConjunctiveEffect> : IndexMixin<Index<formalism::planning::GroundConjunctiveEffect>>
 {
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::GroundConjunctiveEffect>>;
+    using Base = IndexMixin<Index<formalism::planning::GroundConjunctiveEffect>>;
     using Base::Base;
 };
 

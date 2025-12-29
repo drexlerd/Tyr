@@ -21,20 +21,20 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
 #include "tyr/common/variant.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/plaanning/declarations.hpp"
 #include "tyr/formalism/planning/numeric_effect_index.hpp"
 
 namespace tyr
 {
 
 template<>
-struct Data<formalism::NumericEffectOperator<formalism::FluentTag>>
+struct Data<formalism::planning::NumericEffectOperator<formalism::FluentTag>>
 {
-    using Variant = ::cista::offset::variant<Index<formalism::NumericEffect<formalism::OpAssign, formalism::FluentTag>>,
-                                             Index<formalism::NumericEffect<formalism::OpIncrease, formalism::FluentTag>>,
-                                             Index<formalism::NumericEffect<formalism::OpDecrease, formalism::FluentTag>>,
-                                             Index<formalism::NumericEffect<formalism::OpScaleUp, formalism::FluentTag>>,
-                                             Index<formalism::NumericEffect<formalism::OpScaleDown, formalism::FluentTag>>>;
+    using Variant = ::cista::offset::variant<Index<formalism::planning::NumericEffect<formalism::planning::OpAssign, formalism::FluentTag>>,
+                                             Index<formalism::planning::NumericEffect<formalism::planning::OpIncrease, formalism::FluentTag>>,
+                                             Index<formalism::planning::NumericEffect<formalism::planning::OpDecrease, formalism::FluentTag>>,
+                                             Index<formalism::planning::NumericEffect<formalism::planning::OpScaleUp, formalism::FluentTag>>,
+                                             Index<formalism::planning::NumericEffect<formalism::planning::OpScaleDown, formalism::FluentTag>>>;
 
     Variant value;
 
@@ -48,9 +48,9 @@ struct Data<formalism::NumericEffectOperator<formalism::FluentTag>>
 };
 
 template<>
-struct Data<formalism::NumericEffectOperator<formalism::AuxiliaryTag>>
+struct Data<formalism::planning::NumericEffectOperator<formalism::AuxiliaryTag>>
 {
-    using Variant = ::cista::offset::variant<Index<formalism::NumericEffect<formalism::OpIncrease, formalism::AuxiliaryTag>>>;
+    using Variant = ::cista::offset::variant<Index<formalism::planning::NumericEffect<formalism::planning::OpIncrease, formalism::AuxiliaryTag>>>;
 
     Variant value;
 

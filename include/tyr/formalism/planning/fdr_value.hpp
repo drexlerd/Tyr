@@ -20,9 +20,9 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/uint_mixins.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 
-namespace tyr::formalism
+namespace tyr::formalism::planning
 {
 struct FDRValue : FixedUintMixin<FDRValue>
 {

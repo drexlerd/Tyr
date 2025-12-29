@@ -19,23 +19,23 @@
 #define TYR_FORMALISM_PLANNING_METRIC_VIEW_HPP_
 
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_function_expression_data.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_function_expression_data.hpp"
 #include "tyr/formalism/planning/metric_data.hpp"
 #include "tyr/formalism/planning/metric_index.hpp"
 
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::Metric>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::Metric>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::Metric> m_handle;
+    Index<formalism::planning::Metric> m_handle;
 
 public:
-    View(Index<formalism::Metric> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::Metric> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

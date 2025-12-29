@@ -21,23 +21,23 @@
 #include "tyr/common/optional.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/literal_view.hpp"
 #include "tyr/formalism/planning/conjunctive_effect_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/literal_view.hpp"
 #include "tyr/formalism/planning/numeric_effect_operator_view.hpp"
 
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::ConjunctiveEffect>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::ConjunctiveEffect>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::ConjunctiveEffect> m_handle;
+    Index<formalism::planning::ConjunctiveEffect> m_handle;
 
 public:
-    View(Index<formalism::ConjunctiveEffect> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::ConjunctiveEffect> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

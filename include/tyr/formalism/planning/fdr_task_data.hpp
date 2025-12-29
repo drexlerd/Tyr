@@ -20,19 +20,19 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_index.hpp"
-#include "tyr/formalism/ground_function_term_index.hpp"
-#include "tyr/formalism/ground_function_term_value_index.hpp"
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/planning/axiom_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/domain_index.hpp"
 #include "tyr/formalism/planning/fdr_fact_data.hpp"
 #include "tyr/formalism/planning/fdr_task_index.hpp"
 #include "tyr/formalism/planning/fdr_variable_index.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
+#include "tyr/formalism/planning/ground_atom_index.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/planning/ground_function_term_index.hpp"
+#include "tyr/formalism/planning/ground_function_term_value_index.hpp"
 #include "tyr/formalism/planning/metric_index.hpp"
 #include "tyr/formalism/predicate_index.hpp"
 
@@ -40,54 +40,54 @@ namespace tyr
 {
 
 template<>
-struct Data<formalism::FDRTask>
+struct Data<formalism::planning::FDRTask>
 {
-    Index<formalism::FDRTask> index;
+    Index<formalism::planning::FDRTask> index;
     ::cista::offset::string name;
-    Index<formalism::Domain> domain;
+    Index<formalism::planning::Domain> domain;
     IndexList<formalism::Predicate<formalism::DerivedTag>> derived_predicates;
     IndexList<formalism::Object> objects;
-    IndexList<formalism::GroundAtom<formalism::StaticTag>> static_atoms;
-    IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms;
-    IndexList<formalism::GroundAtom<formalism::DerivedTag>> derived_atoms;
-    IndexList<formalism::GroundFunctionTerm<formalism::StaticTag>> static_fterms;
-    IndexList<formalism::GroundFunctionTerm<formalism::FluentTag>> fluent_fterms;
-    ::cista::optional<Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>> auxiliary_fterm;
-    IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values;
-    IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values;
-    ::cista::optional<Index<formalism::GroundFunctionTermValue<formalism::AuxiliaryTag>>> auxiliary_fterm_value;
-    ::cista::optional<Index<formalism::Metric>> metric;
-    IndexList<formalism::Axiom> axioms;
+    IndexList<formalism::planning::GroundAtom<formalism::StaticTag>> static_atoms;
+    IndexList<formalism::planning::GroundAtom<formalism::FluentTag>> fluent_atoms;
+    IndexList<formalism::planning::GroundAtom<formalism::DerivedTag>> derived_atoms;
+    IndexList<formalism::planning::GroundFunctionTerm<formalism::StaticTag>> static_fterms;
+    IndexList<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> fluent_fterms;
+    ::cista::optional<Index<formalism::planning::GroundFunctionTerm<formalism::AuxiliaryTag>>> auxiliary_fterm;
+    IndexList<formalism::planning::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values;
+    IndexList<formalism::planning::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values;
+    ::cista::optional<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>> auxiliary_fterm_value;
+    ::cista::optional<Index<formalism::planning::Metric>> metric;
+    IndexList<formalism::planning::Axiom> axioms;
 
     /// FDR-related
-    IndexList<formalism::FDRVariable<formalism::FluentTag>> fluent_variables;
-    DataList<formalism::FDRFact<formalism::FluentTag>> fluent_facts;
-    Index<formalism::GroundFDRConjunctiveCondition> goal;
-    IndexList<formalism::GroundAction> ground_actions;
-    IndexList<formalism::GroundAxiom> ground_axioms;
+    IndexList<formalism::planning::FDRVariable<formalism::FluentTag>> fluent_variables;
+    DataList<formalism::planning::FDRFact<formalism::FluentTag>> fluent_facts;
+    Index<formalism::planning::GroundFDRConjunctiveCondition> goal;
+    IndexList<formalism::planning::GroundAction> ground_actions;
+    IndexList<formalism::planning::GroundAxiom> ground_axioms;
 
     Data() = default;
-    Data(Index<formalism::FDRTask> index,
+    Data(Index<formalism::planning::FDRTask> index,
          ::cista::offset::string name,
-         Index<formalism::Domain> domain,
+         Index<formalism::planning::Domain> domain,
          IndexList<formalism::Predicate<formalism::DerivedTag>> derived_predicates,
          IndexList<formalism::Object> objects,
-         IndexList<formalism::GroundAtom<formalism::StaticTag>> static_atoms,
-         IndexList<formalism::GroundAtom<formalism::FluentTag>> fluent_atoms,
-         IndexList<formalism::GroundAtom<formalism::DerivedTag>> derived_atoms,
-         IndexList<formalism::GroundFunctionTerm<formalism::StaticTag>> static_fterms,
-         IndexList<formalism::GroundFunctionTerm<formalism::FluentTag>> fluent_fterms,
-         ::cista::optional<Index<formalism::GroundFunctionTerm<formalism::AuxiliaryTag>>> auxiliary_fterm,
-         IndexList<formalism::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values,
-         IndexList<formalism::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values,
-         ::cista::optional<Index<formalism::GroundFunctionTermValue<formalism::AuxiliaryTag>>> auxiliary_fterm_value,
-         ::cista::optional<Index<formalism::Metric>> metric,
-         IndexList<formalism::Axiom> axioms,
-         IndexList<formalism::FDRVariable<formalism::FluentTag>> fluent_variables,
-         DataList<formalism::FDRFact<formalism::FluentTag>> fluent_facts,
-         Index<formalism::GroundFDRConjunctiveCondition> goal,
-         IndexList<formalism::GroundAction> ground_actions,
-         IndexList<formalism::GroundAxiom> ground_axioms) :
+         IndexList<formalism::planning::GroundAtom<formalism::StaticTag>> static_atoms,
+         IndexList<formalism::planning::GroundAtom<formalism::FluentTag>> fluent_atoms,
+         IndexList<formalism::planning::GroundAtom<formalism::DerivedTag>> derived_atoms,
+         IndexList<formalism::planning::GroundFunctionTerm<formalism::StaticTag>> static_fterms,
+         IndexList<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> fluent_fterms,
+         ::cista::optional<Index<formalism::planning::GroundFunctionTerm<formalism::AuxiliaryTag>>> auxiliary_fterm,
+         IndexList<formalism::planning::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values,
+         IndexList<formalism::planning::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values,
+         ::cista::optional<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>> auxiliary_fterm_value,
+         ::cista::optional<Index<formalism::planning::Metric>> metric,
+         IndexList<formalism::planning::Axiom> axioms,
+         IndexList<formalism::planning::FDRVariable<formalism::FluentTag>> fluent_variables,
+         DataList<formalism::planning::FDRFact<formalism::FluentTag>> fluent_facts,
+         Index<formalism::planning::GroundFDRConjunctiveCondition> goal,
+         IndexList<formalism::planning::GroundAction> ground_actions,
+         IndexList<formalism::planning::GroundAxiom> ground_axioms) :
         index(index),
         name(std::move(name)),
         domain(domain),

@@ -20,24 +20,24 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/binding_view.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_view.hpp"
 #include "tyr/formalism/planning/axiom_view.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_atom_view.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_view.hpp"
 
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::GroundAxiom>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::GroundAxiom>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::GroundAxiom> m_handle;
+    Index<formalism::planning::GroundAxiom> m_handle;
 
 public:
-    View(Index<formalism::GroundAxiom> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::GroundAxiom> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

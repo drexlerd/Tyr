@@ -20,9 +20,9 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/planning/action_index.hpp"
 #include "tyr/formalism/planning/conditional_effect_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
 #include "tyr/formalism/variable_index.hpp"
 
@@ -30,22 +30,22 @@ namespace tyr
 {
 
 template<>
-struct Data<formalism::Action>
+struct Data<formalism::planning::Action>
 {
-    Index<formalism::Action> index;
+    Index<formalism::planning::Action> index;
     ::cista::offset::string name;
     uint_t original_arity;
     IndexList<formalism::Variable> variables;
-    Index<formalism::FDRConjunctiveCondition> condition;
-    IndexList<formalism::ConditionalEffect> effects;
+    Index<formalism::planning::FDRConjunctiveCondition> condition;
+    IndexList<formalism::planning::ConditionalEffect> effects;
 
     Data() = default;
-    Data(Index<formalism::Action> index,
+    Data(Index<formalism::planning::Action> index,
          ::cista::offset::string name,
          uint_t original_arity,
          IndexList<formalism::Variable> variables,
-         Index<formalism::FDRConjunctiveCondition> condition,
-         IndexList<formalism::ConditionalEffect> effects) :
+         Index<formalism::planning::FDRConjunctiveCondition> condition,
+         IndexList<formalism::planning::ConditionalEffect> effects) :
         index(index),
         name(std::move(name)),
         variables(std::move(variables)),

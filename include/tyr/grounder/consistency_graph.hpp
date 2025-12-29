@@ -54,9 +54,9 @@ public:
     bool consistent_literals(View<IndexList<formalism::Literal<T>>, formalism::Repository> literals,
                              const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
-    bool
-    consistent_numeric_constraints(View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> numeric_constraints,
-                                   const AssignmentSets& assignment_sets) const noexcept;
+    bool consistent_numeric_constraints(
+        View<DataList<formalism::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::Repository> numeric_constraints,
+        const AssignmentSets& assignment_sets) const noexcept;
 
     Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::Repository> term) const noexcept;
 
@@ -83,9 +83,9 @@ public:
     bool consistent_literals(View<IndexList<formalism::Literal<T>>, formalism::Repository> literals,
                              const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
-    bool
-    consistent_numeric_constraints(View<DataList<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>, formalism::Repository> numeric_constraints,
-                                   const AssignmentSets& assignment_sets) const noexcept;
+    bool consistent_numeric_constraints(
+        View<DataList<formalism::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::Repository> numeric_constraints,
+        const AssignmentSets& assignment_sets) const noexcept;
 
     Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::Repository> term) const noexcept;
 

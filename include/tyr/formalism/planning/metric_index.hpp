@@ -20,15 +20,15 @@
 
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 
 namespace tyr
 {
 template<>
-struct Index<formalism::Metric> : IndexMixin<Index<formalism::Metric>>
+struct Index<formalism::planning::Metric> : IndexMixin<Index<formalism::planning::Metric>>
 {
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::Metric>>;
+    using Base = IndexMixin<Index<formalism::planning::Metric>>;
     using Base::Base;
 };
 

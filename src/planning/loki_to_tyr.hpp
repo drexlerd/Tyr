@@ -463,26 +463,26 @@ private:
     }
 
     template<formalism::Context C>
-    Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionNumber element, formalism::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionNumber element, formalism::Builder& builder, C& context)
     {
-        return Data<formalism::FunctionExpression>(float_t(element->get_number()));
+        return Data<formalism::planning::FunctionExpression>(float_t(element->get_number()));
     }
 
     template<formalism::Context C>
-    Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionBinaryOperator element, formalism::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionBinaryOperator element, formalism::Builder& builder, C& context)
     {
-        auto build_binary_op = [&](auto op_tag) -> Data<formalism::FunctionExpression>
+        auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::FunctionExpression>
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::FunctionExpression>>>();
+            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
             auto& binary = *binary_ptr;
             binary.clear();
             binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
             binary.rhs = translate_lifted(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
-            return Data<formalism::FunctionExpression>(
-                Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first));
+            return Data<formalism::planning::FunctionExpression>(
+                Data<formalism::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first));
         };
 
         switch (element->get_binary_operator())
@@ -501,19 +501,19 @@ private:
     }
 
     template<formalism::Context C>
-    Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionMultiOperator element, formalism::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionMultiOperator element, formalism::Builder& builder, C& context)
     {
-        auto build_multi_op = [&](auto op_tag) -> Data<formalism::FunctionExpression>
+        auto build_multi_op = [&](auto op_tag) -> Data<formalism::planning::FunctionExpression>
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto multi_ptr = builder.template get_builder<formalism::MultiOperator<Tag, Data<formalism::FunctionExpression>>>();
+            auto multi_ptr = builder.template get_builder<formalism::MultiOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
             auto& multi = *multi_ptr;
             multi.clear();
             multi.args = translate_lifted(element->get_function_expressions(), builder, context);
             formalism::canonicalize(multi);
-            return Data<formalism::FunctionExpression>(
-                Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(multi, builder.get_buffer()).first));
+            return Data<formalism::planning::FunctionExpression>(
+                Data<formalism::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(context.get_or_create(multi, builder.get_buffer()).first));
         };
 
         switch (element->get_multi_operator())
@@ -528,31 +528,31 @@ private:
     }
 
     template<formalism::Context C>
-    Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionMinus element, formalism::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionMinus element, formalism::Builder& builder, C& context)
     {
-        auto minus_ptr = builder.template get_builder<formalism::UnaryOperator<formalism::OpSub, Data<formalism::FunctionExpression>>>();
+        auto minus_ptr = builder.template get_builder<formalism::UnaryOperator<formalism::OpSub, Data<formalism::planning::FunctionExpression>>>();
         auto& minus = *minus_ptr;
         minus.clear();
         minus.arg = translate_lifted(element->get_function_expression(), builder, context);
         formalism::canonicalize(minus);
-        return Data<formalism::FunctionExpression>(
-            Data<formalism::ArithmeticOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(minus, builder.get_buffer()).first));
+        return Data<formalism::planning::FunctionExpression>(
+            Data<formalism::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(context.get_or_create(minus, builder.get_buffer()).first));
     }
 
     template<formalism::Context C>
-    Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpressionFunction element, formalism::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionFunction element, formalism::Builder& builder, C& context)
     {
         const auto index_fterm_variant = translate_lifted(element->get_function(), builder, context);
 
         return std::visit(
-            [&](auto&& arg) -> Data<formalism::FunctionExpression>
+            [&](auto&& arg) -> Data<formalism::planning::FunctionExpression>
             {
                 using T = std::decay_t<decltype(arg)>;
 
                 if constexpr (std::is_same_v<T, Index<formalism::FunctionTerm<formalism::StaticTag>>>)
-                    return Data<formalism::FunctionExpression>(arg);
+                    return Data<formalism::planning::FunctionExpression>(arg);
                 else if constexpr (std::is_same_v<T, Index<formalism::FunctionTerm<formalism::FluentTag>>>)
-                    return Data<formalism::FunctionExpression>(arg);
+                    return Data<formalism::planning::FunctionExpression>(arg);
                 else if constexpr (std::is_same_v<T, Index<formalism::FunctionTerm<formalism::AuxiliaryTag>>>)
                     throw std::runtime_error("Cannot create FunctionExpression over auxiliary function term.");
                 else
@@ -562,7 +562,7 @@ private:
     }
 
     template<formalism::Context C>
-    Data<formalism::FunctionExpression> translate_lifted(loki::FunctionExpression element, formalism::Builder& builder, C& context)
+    Data<formalism::planning::sFunctionExpression> translate_lifted(loki::FunctionExpression element, formalism::Builder& builder, C& context)
     {
         return std::visit([&](auto&& arg) { return translate_lifted(arg, builder, context); }, element->get_function_expression());
     }
@@ -603,20 +603,20 @@ private:
     }
 
     template<formalism::Context C>
-    Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>
+    Data<formalism::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
     translate_lifted(loki::ConditionNumericConstraint element, formalism::Builder& builder, C& context)
     {
-        auto build_binary_op = [&](auto op_tag) -> Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>
+        auto build_binary_op = [&](auto op_tag) -> Data<formalism::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::FunctionExpression>>>();
+            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
             auto& binary = *binary_ptr;
             binary.clear();
             binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
             binary.rhs = translate_lifted(element->get_right_function_expression(), builder, context);
             formalism::canonicalize(binary);
-            return Data<formalism::BooleanOperator<Data<formalism::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first);
+            return Data<formalism::BooleanOperator<Data<formalism::planning::FunctionExpression>>>(context.get_or_create(binary, builder.get_buffer()).first);
         };
 
         switch (element->get_binary_comparator())

@@ -20,26 +20,28 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_function_expression_data.hpp"
-#include "tyr/formalism/ground_function_term_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_function_expression_data.hpp"
+#include "tyr/formalism/planning/ground_function_term_index.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_index.hpp"
 
 namespace tyr
 {
 
-template<formalism::NumericEffectOpKind Op, formalism::FactKind T>
-struct Data<formalism::GroundNumericEffect<Op, T>>
+template<formalism::planning::NumericEffectOpKind Op, formalism::FactKind T>
+struct Data<formalism::planning::GroundNumericEffect<Op, T>>
 {
-    static_assert(std::same_as<T, formalism::FluentTag> || (std::same_as<T, formalism::AuxiliaryTag> && std::same_as<Op, formalism::OpIncrease>),
+    static_assert(std::same_as<T, formalism::FluentTag> || (std::same_as<T, formalism::AuxiliaryTag> && std::same_as<Op, formalism::planning::OpIncrease>),
                   "Unsupported NumericEffect<Op, T> combination.");
 
-    Index<formalism::GroundNumericEffect<Op, T>> index;
-    Index<formalism::GroundFunctionTerm<T>> fterm;
-    Data<formalism::GroundFunctionExpression> fexpr;
+    Index<formalism::planning::GroundNumericEffect<Op, T>> index;
+    Index<formalism::planning::GroundFunctionTerm<T>> fterm;
+    Data<formalism::planning::GroundFunctionExpression> fexpr;
 
     Data() = default;
-    Data(Index<formalism::GroundNumericEffect<Op, T>> index, Index<formalism::GroundFunctionTerm<T>> fterm, Data<formalism::GroundFunctionExpression> fexpr) :
+    Data(Index<formalism::planning::GroundNumericEffect<Op, T>> index,
+         Index<formalism::planning::GroundFunctionTerm<T>> fterm,
+         Data<formalism::planning::GroundFunctionExpression> fexpr) :
         index(index),
         fterm(fterm),
         fexpr(fexpr)

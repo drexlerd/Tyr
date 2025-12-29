@@ -20,21 +20,21 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_variable_index.hpp"
 
 namespace tyr
 {
 
 template<formalism::FactKind T>
-struct Data<formalism::FDRVariable<T>>
+struct Data<formalism::planning::FDRVariable<T>>
 {
-    Index<formalism::FDRVariable<T>> index;
+    Index<formalism::planning::FDRVariable<T>> index;
     uint_t domain_size;
-    IndexList<formalism::GroundAtom<T>> atoms;
+    IndexList<formalism::planning::GroundAtom<T>> atoms;
 
     Data() = default;
-    Data(Index<formalism::FDRVariable<T>> index, uint_t domain_size, IndexList<formalism::GroundAtom<T>> atoms) :
+    Data(Index<formalism::planning::FDRVariable<T>> index, uint_t domain_size, IndexList<formalism::planning::GroundAtom<T>> atoms) :
         index(index),
         domain_size(domain_size),
         atoms(std::move(atoms))

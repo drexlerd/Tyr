@@ -22,19 +22,19 @@
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/canonicalization.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_view.hpp"
-#include "tyr/formalism/ground_literal_view.hpp"
+#include "tyr/formalism/planning/canonicalization.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_value.hpp"
 #include "tyr/formalism/planning/fdr_variable_data.hpp"
 #include "tyr/formalism/planning/fdr_variable_index.hpp"
 #include "tyr/formalism/planning/fdr_variable_view.hpp"
+#include "tyr/formalism/planning/ground_atom_view.hpp"
+#include "tyr/formalism/planning/ground_literal_view.hpp"
 
 #include <concepts>
 #include <vector>
 
-namespace tyr::formalism
+namespace tyr::formalism::planning
 {
 
 template<Context C>

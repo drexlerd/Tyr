@@ -43,9 +43,30 @@ bool is_canonical(const DataList<T>& list)
 template<typename T>
 bool is_canonical(const ::cista::optional<T>& element)
 {
-    if (!element.has_value())
-        return true;
-    return is_canonical(*element);
+    return true;
+}
+
+template<typename T>
+void canonicalize(IndexList<T>& list)
+{
+    if (!is_canonical(list))
+        std::sort(list.begin(), list.end());
+
+    list.erase(std::unique(list.begin(), list.end()), list.end());
+}
+
+template<typename T>
+void canonicalize(DataList<T>& list)
+{
+    if (!is_canonical(list))
+        std::sort(list.begin(), list.end());
+
+    list.erase(std::unique(list.begin(), list.end()), list.end());
+}
+
+template<typename T>
+void canonicalize(::cista::optional<T>& element)
+{
 }
 
 }

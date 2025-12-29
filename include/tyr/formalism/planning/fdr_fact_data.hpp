@@ -21,20 +21,20 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
 #include "tyr/common/variant.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_value.hpp"
 #include "tyr/formalism/planning/fdr_variable_index.hpp"
 
 namespace tyr
 {
 template<formalism::FactKind T>
-struct Data<formalism::FDRFact<T>>
+struct Data<formalism::planning::FDRFact<T>>
 {
-    Index<formalism::FDRVariable<T>> variable;
-    formalism::FDRValue value;
+    Index<formalism::planning::FDRVariable<T>> variable;
+    formalism::planning::FDRValue value;
 
     Data() = default;
-    Data(Index<formalism::FDRVariable<T>> variable, formalism::FDRValue value) : variable(variable), value(value) {}
+    Data(Index<formalism::planning::FDRVariable<T>> variable, formalism::planning::FDRValue value) : variable(variable), value(value) {}
 
     void clear() noexcept
     {

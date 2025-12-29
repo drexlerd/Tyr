@@ -20,23 +20,23 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
-#include "tyr/formalism/boolean_operator_view.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/literal_view.hpp"
+#include "tyr/formalism/planning/boolean_operator_view.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
+#include "tyr/formalism/planning/literal_view.hpp"
 #include "tyr/formalism/variable_view.hpp"
 
 namespace tyr
 {
-template<formalism::Context C>
-class View<Index<formalism::FDRConjunctiveCondition>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::FDRConjunctiveCondition>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::FDRConjunctiveCondition> m_handle;
+    Index<formalism::planning::FDRConjunctiveCondition> m_handle;
 
 public:
-    View(Index<formalism::FDRConjunctiveCondition> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::FDRConjunctiveCondition> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

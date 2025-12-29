@@ -20,15 +20,15 @@
 
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 
 namespace tyr
 {
 template<>
-struct Index<formalism::GroundConditionalEffect> : IndexMixin<Index<formalism::GroundConditionalEffect>>
+struct Index<formalism::planning::GroundConditionalEffect> : IndexMixin<Index<formalism::planning::GroundConditionalEffect>>
 {
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::GroundConditionalEffect>>;
+    using Base = IndexMixin<Index<formalism::planning::GroundConditionalEffect>>;
     using Base::Base;
 };
 

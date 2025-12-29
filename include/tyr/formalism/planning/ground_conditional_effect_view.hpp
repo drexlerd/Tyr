@@ -19,7 +19,7 @@
 #define TYR_FORMALISM_PLANNING_GROUND_CONDITIONAL_EFFECT_VIEW_HPP_
 
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_conditional_effect_index.hpp"
 #include "tyr/formalism/planning/ground_conjunctive_effect_view.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_view.hpp"
@@ -27,15 +27,15 @@
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::GroundConditionalEffect>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::GroundConditionalEffect>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::GroundConditionalEffect> m_handle;
+    Index<formalism::planning::GroundConditionalEffect> m_handle;
 
 public:
-    View(Index<formalism::GroundConditionalEffect> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::GroundConditionalEffect> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

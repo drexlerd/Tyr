@@ -20,24 +20,24 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_function_expression_data.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_function_expression_data.hpp"
 #include "tyr/formalism/planning/metric_index.hpp"
 
 namespace tyr
 {
 
 template<>
-struct Data<formalism::Metric>
+struct Data<formalism::planning::Metric>
 {
-    using ObjectiveVariant = ::cista::offset::variant<formalism::Minimize, formalism::Maximize>;
+    using ObjectiveVariant = ::cista::offset::variant<formalism::planning::Minimize, formalism::planning::Maximize>;
 
-    Index<formalism::Metric> index;
+    Index<formalism::planning::Metric> index;
     ObjectiveVariant objective;
-    Data<formalism::GroundFunctionExpression> fexpr;
+    Data<formalism::planning::GroundFunctionExpression> fexpr;
 
     Data() = default;
-    Data(Index<formalism::Metric> index, ObjectiveVariant objective, Data<formalism::GroundFunctionExpression> fexpr) :
+    Data(Index<formalism::planning::Metric> index, ObjectiveVariant objective, Data<formalism::planning::GroundFunctionExpression> fexpr) :
         index(index),
         objective(objective),
         fexpr(fexpr)

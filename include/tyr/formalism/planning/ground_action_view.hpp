@@ -21,8 +21,8 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/binding_view.hpp"
-#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/planning/action_view.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
 #include "tyr/formalism/planning/ground_conditional_effect_view.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_data.hpp"
@@ -30,15 +30,15 @@
 namespace tyr
 {
 
-template<formalism::Context C>
-class View<Index<formalism::GroundAction>, C>
+template<formalism::planning::Context C>
+class View<Index<formalism::planning::GroundAction>, C>
 {
 private:
     const C* m_context;
-    Index<formalism::GroundAction> m_handle;
+    Index<formalism::planning::GroundAction> m_handle;
 
 public:
-    View(Index<formalism::GroundAction> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::GroundAction> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

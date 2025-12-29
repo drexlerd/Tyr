@@ -20,28 +20,28 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_literal_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_fact_data.hpp"
 #include "tyr/formalism/planning/ground_conjunctive_effect_index.hpp"
+#include "tyr/formalism/planning/ground_literal_index.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_data.hpp"
 
 namespace tyr
 {
 
 template<>
-struct Data<formalism::GroundConjunctiveEffect>
+struct Data<formalism::planning::GroundConjunctiveEffect>
 {
-    Index<formalism::GroundConjunctiveEffect> index;
-    DataList<formalism::FDRFact<formalism::FluentTag>> facts;
-    DataList<formalism::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects;
-    ::cista::optional<Data<formalism::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect;  // :action-cost
+    Index<formalism::planning::GroundConjunctiveEffect> index;
+    DataList<formalism::planning::FDRFact<formalism::FluentTag>> facts;
+    DataList<formalism::planning::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects;
+    ::cista::optional<Data<formalism::planning::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect;  // :action-cost
 
     Data() = default;
-    Data(Index<formalism::GroundConjunctiveEffect> index,
-         DataList<formalism::FDRFact<formalism::FluentTag>> facts,
-         DataList<formalism::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects,
-         ::cista::optional<Data<formalism::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect) :
+    Data(Index<formalism::planning::GroundConjunctiveEffect> index,
+         DataList<formalism::planning::FDRFact<formalism::FluentTag>> facts,
+         DataList<formalism::planning::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects,
+         ::cista::optional<Data<formalism::planning::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect) :
         index(index),
         facts(std::move(facts)),
         numeric_effects(std::move(numeric_effects)),

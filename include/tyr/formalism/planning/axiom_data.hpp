@@ -20,9 +20,9 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/atom_index.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/atom_index.hpp"
 #include "tyr/formalism/planning/axiom_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_conjunctive_condition_index.hpp"
 #include "tyr/formalism/variable_index.hpp"
 
@@ -30,18 +30,18 @@ namespace tyr
 {
 
 template<>
-struct Data<formalism::Axiom>
+struct Data<formalism::planning::Axiom>
 {
-    Index<formalism::Axiom> index;
+    Index<formalism::planning::Axiom> index;
     IndexList<formalism::Variable> variables;
-    Index<formalism::FDRConjunctiveCondition> body;
-    Index<formalism::Atom<formalism::DerivedTag>> head;
+    Index<formalism::planning::FDRConjunctiveCondition> body;
+    Index<formalism::planning::Atom<formalism::DerivedTag>> head;
 
     Data() = default;
-    Data(Index<formalism::Axiom> index,
+    Data(Index<formalism::planning::Axiom> index,
          IndexList<formalism::Variable> variables,
-         Index<formalism::FDRConjunctiveCondition> body,
-         Index<formalism::Atom<formalism::DerivedTag>> head) :
+         Index<formalism::planning::FDRConjunctiveCondition> body,
+         Index<formalism::planning::Atom<formalism::DerivedTag>> head) :
         index(index),
         variables(std::move(variables)),
         body(body),

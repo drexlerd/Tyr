@@ -19,21 +19,21 @@
 #define TYR_FORMALISM_PLANNING_FDR_FACT_VIEW_HPP_
 
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/object_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_value.hpp"
 
 namespace tyr
 {
-template<formalism::FactKind T, formalism::Context C>
-class View<Data<formalism::FDRFact<T>>, C>
+template<formalism::FactKind T, formalism::planning::Context C>
+class View<Data<formalism::planning::FDRFact<T>>, C>
 {
 private:
     const C* m_context;
-    Data<formalism::FDRFact<T>> m_handle;
+    Data<formalism::planning::FDRFact<T>> m_handle;
 
 public:
-    View(Data<formalism::FDRFact<T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Data<formalism::planning::FDRFact<T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return m_handle; }
     const auto& get_context() const noexcept { return *m_context; }
@@ -46,7 +46,7 @@ public:
         assert(has_value());
         return get_variable().get_atoms()[uint_t(get_value() - 1)];
     }
-    auto has_value() const noexcept { return get_value() != formalism::FDRValue::none(); }
+    auto has_value() const noexcept { return get_value() != formalism::planning::FDRValue::none(); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

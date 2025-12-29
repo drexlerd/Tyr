@@ -20,26 +20,26 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/variant.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/function_expression_view.hpp"
-#include "tyr/formalism/function_term_view.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/function_expression_view.hpp"
+#include "tyr/formalism/planning/function_term_view.hpp"
 #include "tyr/formalism/planning/numeric_effect_index.hpp"
 
 namespace tyr
 {
 
-template<formalism::NumericEffectOpKind Op, formalism::FactKind T, formalism::Context C>
-class View<Index<formalism::NumericEffect<Op, T>>, C>
+template<formalism::planning::NumericEffectOpKind Op, formalism::FactKind T, formalism::planning::Context C>
+class View<Index<formalism::planning::NumericEffect<Op, T>>, C>
 {
-    static_assert(std::same_as<T, formalism::FluentTag> || (std::same_as<T, formalism::AuxiliaryTag> && std::same_as<Op, formalism::OpIncrease>),
+    static_assert(std::same_as<T, formalism::FluentTag> || (std::same_as<T, formalism::AuxiliaryTag> && std::same_as<Op, formalism::planning::OpIncrease>),
                   "Unsupported NumericEffect<Op, T> combination.");
 
 private:
     const C* m_context;
-    Index<formalism::NumericEffect<Op, T>> m_handle;
+    Index<formalism::planning::NumericEffect<Op, T>> m_handle;
 
 public:
-    View(Index<formalism::NumericEffect<Op, T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::planning::NumericEffect<Op, T>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     const auto& get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
     const auto& get_context() const noexcept { return *m_context; }

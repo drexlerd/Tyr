@@ -21,8 +21,8 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
 #include "tyr/formalism/binding_index.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/ground_atom_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_atom_index.hpp"
 #include "tyr/formalism/planning/ground_axiom_index.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
 
@@ -30,20 +30,20 @@ namespace tyr
 {
 
 template<>
-struct Data<formalism::GroundAxiom>
+struct Data<formalism::planning::GroundAxiom>
 {
-    Index<formalism::GroundAxiom> index;
-    Index<formalism::Axiom> axiom;
+    Index<formalism::planning::GroundAxiom> index;
+    Index<formalism::planning::Axiom> axiom;
     Index<formalism::Binding> binding;
-    Index<formalism::GroundFDRConjunctiveCondition> body;
-    Index<formalism::GroundAtom<formalism::DerivedTag>> head;
+    Index<formalism::planning::GroundFDRConjunctiveCondition> body;
+    Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head;
 
     Data() = default;
-    Data(Index<formalism::GroundAxiom> index,
-         Index<formalism::Axiom> axiom,
+    Data(Index<formalism::planning::GroundAxiom> index,
+         Index<formalism::planning::Axiom> axiom,
          Index<formalism::Binding> binding,
-         Index<formalism::GroundFDRConjunctiveCondition> body,
-         Index<formalism::GroundAtom<formalism::DerivedTag>> head) :
+         Index<formalism::planning::GroundFDRConjunctiveCondition> body,
+         Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head) :
         index(index),
         axiom(axiom),
         binding(binding),

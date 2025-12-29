@@ -1,5 +1,5 @@
 # List of subdirectory names
-set(SUBDIRECTORIES "analysis" "buffer" "common" "formalism" "grounder" "planning" "solver")
+set(SUBDIRECTORIES "buffer" "common" "formalism")
 # set(SUBDIRECTORIES "analysis" "buffer" "common" "formalism" "grounder" "planning" "solver")
 
 # Initialize empty lists for source and header files

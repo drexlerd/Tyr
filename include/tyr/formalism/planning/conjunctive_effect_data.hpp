@@ -20,27 +20,27 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/literal_index.hpp"
 #include "tyr/formalism/planning/conjunctive_effect_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/literal_index.hpp"
 #include "tyr/formalism/planning/numeric_effect_operator_data.hpp"
 
 namespace tyr
 {
 
 template<>
-struct Data<formalism::ConjunctiveEffect>
+struct Data<formalism::planning::ConjunctiveEffect>
 {
-    Index<formalism::ConjunctiveEffect> index;
-    IndexList<formalism::Literal<formalism::FluentTag>> literals;
-    DataList<formalism::NumericEffectOperator<formalism::FluentTag>> numeric_effects;
-    ::cista::optional<Data<formalism::NumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect;  // :action-cost
+    Index<formalism::planning::ConjunctiveEffect> index;
+    IndexList<formalism::planning::Literal<formalism::FluentTag>> literals;
+    DataList<formalism::planning::NumericEffectOperator<formalism::FluentTag>> numeric_effects;
+    ::cista::optional<Data<formalism::planning::NumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect;  // :action-cost
 
     Data() = default;
-    Data(Index<formalism::ConjunctiveEffect> index,
-         IndexList<formalism::Literal<formalism::FluentTag>> literals,
-         DataList<formalism::NumericEffectOperator<formalism::FluentTag>> numeric_effects,
-         ::cista::optional<Data<formalism::NumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect) :
+    Data(Index<formalism::planning::ConjunctiveEffect> index,
+         IndexList<formalism::planning::Literal<formalism::FluentTag>> literals,
+         DataList<formalism::planning::NumericEffectOperator<formalism::FluentTag>> numeric_effects,
+         ::cista::optional<Data<formalism::planning::NumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect) :
         index(index),
         literals(std::move(literals)),
         numeric_effects(std::move(numeric_effects)),

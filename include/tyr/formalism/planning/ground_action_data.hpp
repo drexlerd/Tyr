@@ -21,8 +21,8 @@
 #include "tyr/common/types.hpp"
 #include "tyr/common/types_utils.hpp"
 #include "tyr/formalism/binding_index.hpp"
-#include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/function_index.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
 #include "tyr/formalism/planning/ground_conjunctive_effect_index.hpp"
 #include "tyr/formalism/planning/ground_fdr_conjunctive_condition_index.hpp"
@@ -31,20 +31,20 @@ namespace tyr
 {
 
 template<>
-struct Data<formalism::GroundAction>
+struct Data<formalism::planning::GroundAction>
 {
-    Index<formalism::GroundAction> index;
-    Index<formalism::Action> action;
+    Index<formalism::planning::GroundAction> index;
+    Index<formalism::planning::Action> action;
     Index<formalism::Binding> binding;
-    Index<formalism::GroundFDRConjunctiveCondition> condition;
-    IndexList<formalism::GroundConditionalEffect> effects;
+    Index<formalism::planning::GroundFDRConjunctiveCondition> condition;
+    IndexList<formalism::planning::GroundConditionalEffect> effects;
 
     Data() = default;
-    Data(Index<formalism::GroundAction> index,
-         Index<formalism::Action> action,
+    Data(Index<formalism::planning::GroundAction> index,
+         Index<formalism::planning::Action> action,
          Index<formalism::Binding> binding,
-         Index<formalism::GroundFDRConjunctiveCondition> condition,
-         IndexList<formalism::GroundConditionalEffect> effects) :
+         Index<formalism::planning::GroundFDRConjunctiveCondition> condition,
+         IndexList<formalism::planning::GroundConditionalEffect> effects) :
         index(index),
         action(action),
         binding(binding),
