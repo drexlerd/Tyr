@@ -46,7 +46,7 @@ public:
 private:
     std::shared_ptr<GroundTask> m_task;
 
-    IndexList<formalism::GroundAction> m_applicable_actions;
+    IndexList<formalism::planning::GroundAction> m_applicable_actions;
 
     std::shared_ptr<StateRepository<GroundTask>> m_state_repository;
 

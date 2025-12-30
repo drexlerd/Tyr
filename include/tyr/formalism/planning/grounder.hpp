@@ -40,7 +40,7 @@ struct GrounderContext
 };
 
 template<Context C_SRC, Context C_DST>
-auto ground_common(View<DataList<Term>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<DataList<Term>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto binding_ptr = context.builder.template get_builder<Binding>();
@@ -71,7 +71,7 @@ auto ground_common(View<DataList<Term>, C_SRC> element, GrounderContext<C_DST>& 
 }
 
 template<Context C>
-auto ground_common(const IndexList<Object>& element, GrounderContext<C>& context)
+auto ground(const IndexList<Object>& element, GrounderContext<C>& context)
 {
     // Fetch and clear
     auto binding_ptr = context.builder.template get_builder<Binding>();
@@ -87,7 +87,7 @@ auto ground_common(const IndexList<Object>& element, GrounderContext<C>& context
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
-auto ground_common(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
@@ -96,7 +96,7 @@ auto ground_common(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<
 
     // Fill data
     fterm.function = element.get_function().get_index();
-    fterm.binding = ground_common(element.get_terms(), context).first;
+    fterm.binding = ground(element.get_terms(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(fterm);
@@ -104,7 +104,7 @@ auto ground_common(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<
 }
 
 template<Context C_SRC, Context C_DST>
-auto ground_common(View<Data<FunctionExpression>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Data<FunctionExpression>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     return visit(
         [&](auto&& arg)
@@ -114,15 +114,15 @@ auto ground_common(View<Data<FunctionExpression>, C_SRC> element, GrounderContex
             if constexpr (std::is_same_v<Alternative, float_t>)
                 return Data<GroundFunctionExpression>(arg);
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC>>)
-                return Data<GroundFunctionExpression>(ground_common(arg, context));
+                return Data<GroundFunctionExpression>(ground(arg, context));
             else
-                return Data<GroundFunctionExpression>(ground_common(arg, context).first);
+                return Data<GroundFunctionExpression>(ground(arg, context).first);
         },
         element.get_variant());
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
-auto ground_common(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, Data<GroundFunctionExpression>>>();
@@ -130,7 +130,7 @@ auto ground_common(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC
     unary.clear();
 
     // Fill data
-    unary.arg = ground_common(element.get_arg(), context);
+    unary.arg = ground(element.get_arg(), context);
 
     // Canonicalize and Serialize
     canonicalize(unary);
@@ -138,7 +138,7 @@ auto ground_common(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, C_SRC
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
-auto ground_common(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, Data<GroundFunctionExpression>>>();
@@ -146,8 +146,8 @@ auto ground_common(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SR
     binary.clear();
 
     // Fill data
-    binary.lhs = ground_common(element.get_lhs(), context);
-    binary.rhs = ground_common(element.get_rhs(), context);
+    binary.lhs = ground(element.get_lhs(), context);
+    binary.rhs = ground(element.get_rhs(), context);
 
     // Canonicalize and Serialize
     canonicalize(binary);
@@ -155,7 +155,7 @@ auto ground_common(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, C_SR
 }
 
 template<OpKind O, Context C_SRC, Context C_DST>
-auto ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto multi_ptr = context.builder.template get_builder<MultiOperator<O, Data<GroundFunctionExpression>>>();
@@ -164,7 +164,7 @@ auto ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC
 
     // Fill data
     for (const auto arg : element.get_args())
-        multi.args.push_back(ground_common(arg, context));
+        multi.args.push_back(ground(arg, context));
 
     // Canonicalize and Serialize
     canonicalize(multi);
@@ -172,20 +172,19 @@ auto ground_common(View<Index<MultiOperator<O, Data<FunctionExpression>>>, C_SRC
 }
 
 template<Context C_SRC, Context C_DST>
-auto ground_common(View<Data<BooleanOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).first); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground(arg, context).first); }, element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST>
-auto ground_common(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return Data<ArithmeticOperator<Data<GroundFunctionExpression>>>(ground_common(arg, context).first); },
-                 element.get_variant());
+    return visit([&](auto&& arg) { return Data<ArithmeticOperator<Data<GroundFunctionExpression>>>(ground(arg, context).first); }, element.get_variant());
 }
 
 template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST>
-auto ground_planning(View<Index<Atom<T_SRC>>, C_SRC> element, MergeContext<C_DST>& merge_context, GrounderContext<C_DST>& grounder_context)
+auto ground(View<Index<Atom<T_SRC>>, C_SRC> element, MergeContext<C_DST>& merge_context, GrounderContext<C_DST>& grounder_context)
 {
     // Fetch and clear
     auto atom_ptr = grounder_context.builder.template get_builder<GroundAtom<T_DST>>();
@@ -194,7 +193,7 @@ auto ground_planning(View<Index<Atom<T_SRC>>, C_SRC> element, MergeContext<C_DST
 
     // Fill data
     atom.predicate = merge<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), merge_context).first;
-    atom.binding = ground_common(element.get_terms(), grounder_context).first;
+    atom.binding = ground(element.get_terms(), grounder_context).first;
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -202,7 +201,7 @@ auto ground_planning(View<Index<Atom<T_SRC>>, C_SRC> element, MergeContext<C_DST
 }
 
 template<FactKind T_SRC, Context C_SRC, Context C_DST, FactKind T_DST = T_SRC>
-auto ground_planning(View<Index<Atom<T_SRC>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<Atom<T_SRC>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T_DST>>();
@@ -211,7 +210,7 @@ auto ground_planning(View<Index<Atom<T_SRC>>, C_SRC> element, GrounderContext<C_
 
     // Fill data
     atom.predicate = element.get_predicate().get_index();
-    atom.binding = ground_common(element.get_terms(), context).first;
+    atom.binding = ground(element.get_terms(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -220,13 +219,13 @@ auto ground_planning(View<Index<Atom<T_SRC>>, C_SRC> element, GrounderContext<C_
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<Atom<FluentTag>>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
+auto ground(View<Index<Atom<FluentTag>>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
 {
-    return fdr.get_fact(ground_planning(element, context).first);
+    return fdr.get_fact(ground(element, context).first);
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
-auto ground_planning(View<Index<Literal<T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<Literal<T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto ground_literal_ptr = context.builder.template get_builder<GroundLiteral<T>>();
@@ -235,7 +234,7 @@ auto ground_planning(View<Index<Literal<T>>, C_SRC> element, GrounderContext<C_D
 
     // Fill data
     ground_literal.polarity = element.get_polarity();
-    ground_literal.atom = ground_planning(element.get_atom(), context).first;
+    ground_literal.atom = ground(element.get_atom(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(ground_literal);
@@ -244,9 +243,9 @@ auto ground_planning(View<Index<Literal<T>>, C_SRC> element, GrounderContext<C_D
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<Literal<FluentTag>>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
+auto ground(View<Index<Literal<FluentTag>>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
 {
-    auto fact = ground_planning(element.get_atom(), context, fdr);
+    auto fact = ground(element.get_atom(), context, fdr);
     if (!element.get_polarity())
         fact.value = FDRValue::none();
 
@@ -255,7 +254,7 @@ auto ground_planning(View<Index<Literal<FluentTag>>, C_SRC> element, GrounderCon
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<FDRConjunctiveCondition>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
+auto ground(View<Index<FDRConjunctiveCondition>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
 {
     // Fetch and clear
     auto conj_cond_ptr = context.builder.template get_builder<GroundFDRConjunctiveCondition>();
@@ -264,13 +263,13 @@ auto ground_planning(View<Index<FDRConjunctiveCondition>, C_SRC> element, Ground
 
     // Fill data
     for (const auto literal : element.template get_literals<StaticTag>())
-        conj_cond.static_literals.push_back(ground_planning(literal, context).first);
+        conj_cond.static_literals.push_back(ground(literal, context).first);
     for (const auto literal : element.template get_literals<FluentTag>())
-        conj_cond.fluent_facts.push_back(ground_planning(literal, context, fdr));
+        conj_cond.fluent_facts.push_back(ground(literal, context, fdr));
     for (const auto literal : element.template get_literals<DerivedTag>())
-        conj_cond.derived_literals.push_back(ground_planning(literal, context).first);
+        conj_cond.derived_literals.push_back(ground(literal, context).first);
     for (const auto numeric_constraint : element.get_numeric_constraints())
-        conj_cond.numeric_constraints.push_back(ground_common(numeric_constraint, context));
+        conj_cond.numeric_constraints.push_back(ground(numeric_constraint, context));
 
     // Canonicalize and Serialize
     canonicalize(conj_cond);
@@ -278,7 +277,7 @@ auto ground_planning(View<Index<FDRConjunctiveCondition>, C_SRC> element, Ground
 }
 
 template<NumericEffectOpKind Op, FactKind T, Context C_SRC, Context C_DST>
-auto ground_planning(View<Index<NumericEffect<Op, T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Index<NumericEffect<Op, T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
     // Fetch and clear
     auto numeric_effect_ptr = context.builder.template get_builder<GroundNumericEffect<Op, T>>();
@@ -286,8 +285,8 @@ auto ground_planning(View<Index<NumericEffect<Op, T>>, C_SRC> element, GrounderC
     numeric_effect.clear();
 
     // Fill data
-    numeric_effect.fterm = ground_common(element.get_fterm(), context).first;
-    numeric_effect.fexpr = ground_common(element.get_fexpr(), context);
+    numeric_effect.fterm = ground(element.get_fterm(), context).first;
+    numeric_effect.fexpr = ground(element.get_fexpr(), context);
 
     // Canonicalize and Serialize
     canonicalize(numeric_effect);
@@ -295,17 +294,17 @@ auto ground_planning(View<Index<NumericEffect<Op, T>>, C_SRC> element, GrounderC
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
-auto ground_planning(View<Data<NumericEffectOperator<T>>, C_SRC> element, GrounderContext<C_DST>& context)
+auto ground(View<Data<NumericEffectOperator<T>>, C_SRC> element, GrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return Data<GroundNumericEffectOperator<T>>(ground_planning(arg, context).first); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<GroundNumericEffectOperator<T>>(ground(arg, context).first); }, element.get_variant());
 }
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<ConjunctiveEffect>, C_SRC> element,
-                     GrounderContext<C_DST>& context,
-                     UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
-                     FDR& fdr)
+auto ground(View<Index<ConjunctiveEffect>, C_SRC> element,
+            GrounderContext<C_DST>& context,
+            UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
+            FDR& fdr)
 {
     // Fetch and clear
     auto conj_effect_ptr = context.builder.template get_builder<GroundConjunctiveEffect>();
@@ -314,7 +313,7 @@ auto ground_planning(View<Index<ConjunctiveEffect>, C_SRC> element,
 
     // 1) create facts and variables
     for (const auto literal : element.get_literals())
-        conj_eff.facts.push_back(ground_planning(literal, context, fdr));
+        conj_eff.facts.push_back(ground(literal, context, fdr));
 
     // 2) deletes first
     assign.clear();
@@ -334,9 +333,9 @@ auto ground_planning(View<Index<ConjunctiveEffect>, C_SRC> element,
 
     // Fill remaining data
     for (const auto numeric_effect : element.get_numeric_effects())
-        conj_eff.numeric_effects.push_back(ground_planning(numeric_effect, context));
+        conj_eff.numeric_effects.push_back(ground(numeric_effect, context));
     if (element.get_auxiliary_numeric_effect().has_value())
-        conj_eff.auxiliary_numeric_effect = ground_planning(element.get_auxiliary_numeric_effect().value(), context);
+        conj_eff.auxiliary_numeric_effect = ground(element.get_auxiliary_numeric_effect().value(), context);
 
     // Canonicalize and Serialize
     canonicalize(conj_eff);
@@ -345,10 +344,10 @@ auto ground_planning(View<Index<ConjunctiveEffect>, C_SRC> element,
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<ConditionalEffect>, C_SRC> element,
-                     GrounderContext<C_DST>& context,
-                     UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
-                     FDR& fdr)
+auto ground(View<Index<ConditionalEffect>, C_SRC> element,
+            GrounderContext<C_DST>& context,
+            UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
+            FDR& fdr)
 {
     // Fetch and clear
     auto cond_effect_ptr = context.builder.template get_builder<GroundConditionalEffect>();
@@ -356,8 +355,8 @@ auto ground_planning(View<Index<ConditionalEffect>, C_SRC> element,
     cond_effect.clear();
 
     // Fill data
-    cond_effect.condition = ground_planning(element.get_condition(), context, fdr).first;
-    cond_effect.effect = ground_planning(element.get_effect(), context, assign, fdr).first;
+    cond_effect.condition = ground(element.get_condition(), context, fdr).first;
+    cond_effect.effect = ground(element.get_effect(), context, assign, fdr).first;
 
     // Canonicalize and Serialize
     canonicalize(cond_effect);
@@ -366,12 +365,12 @@ auto ground_planning(View<Index<ConditionalEffect>, C_SRC> element,
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<Action>, C_SRC> element,
-                     GrounderContext<C_DST>& context,
-                     const analysis::DomainListListList& cond_effect_domains,
-                     UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
-                     itertools::cartesian_set::Workspace<Index<formalism::Object>>& iter_workspace,
-                     FDR& fdr)
+auto ground(View<Index<Action>, C_SRC> element,
+            GrounderContext<C_DST>& context,
+            const analysis::DomainListListList& cond_effect_domains,
+            UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
+            itertools::cartesian_set::Workspace<Index<formalism::Object>>& iter_workspace,
+            FDR& fdr)
 {
     // Fetch and clear
     auto action_ptr = context.builder.template get_builder<GroundAction>();
@@ -380,8 +379,8 @@ auto ground_planning(View<Index<Action>, C_SRC> element,
 
     // Fill data
     action.action = element.get_index();
-    action.binding = ground_common(context.binding, context).first;
-    action.condition = ground_planning(element.get_condition(), context, fdr).first;
+    action.binding = ground(context.binding, context).first;
+    action.condition = ground(element.get_condition(), context, fdr).first;
 
     auto binding_size = context.binding.size();
 
@@ -402,7 +401,7 @@ auto ground_planning(View<Index<Action>, C_SRC> element,
                                                        context.binding.resize(binding_size);
                                                        context.binding.insert(context.binding.end(), binding_cond.begin(), binding_cond.end());
 
-                                                       action.effects.push_back(ground_planning(cond_effect, context, assign, fdr).first);
+                                                       action.effects.push_back(ground(cond_effect, context, assign, fdr).first);
                                                    });
     }
     context.binding.resize(binding_size);  ///< important to restore the binding in case of grounding other actions
@@ -414,7 +413,7 @@ auto ground_planning(View<Index<Action>, C_SRC> element,
 
 template<Context C_SRC, Context C_DST, typename FDR>
     requires FDRContext<FDR>
-auto ground_planning(View<Index<Axiom>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
+auto ground(View<Index<Axiom>, C_SRC> element, GrounderContext<C_DST>& context, FDR& fdr)
 {
     // Fetch and clear
     auto axiom_ptr = context.builder.template get_builder<GroundAxiom>();
@@ -423,9 +422,9 @@ auto ground_planning(View<Index<Axiom>, C_SRC> element, GrounderContext<C_DST>& 
 
     // Fill data
     axiom.axiom = element.get_index();
-    axiom.binding = ground_common(context.binding, context).first;
-    axiom.body = ground_planning(element.get_body(), context, fdr).first;
-    axiom.head = ground_planning(element.get_head(), context).first;
+    axiom.binding = ground(context.binding, context).first;
+    axiom.body = ground(element.get_body(), context, fdr).first;
+    axiom.head = ground(element.get_head(), context).first;
 
     // Canonicalize and Serialize
     canonicalize(axiom);

@@ -140,8 +140,6 @@ struct Function
 {
 };
 
-class MergeCache;
-
 template<typename C>
 class OverlayRepository;
 

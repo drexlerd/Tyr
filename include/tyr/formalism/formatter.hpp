@@ -22,6 +22,7 @@
 #include "tyr/common/iostream.hpp"
 #include "tyr/formalism/datas.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/views.hpp"
 
 #include <fmt/core.h>

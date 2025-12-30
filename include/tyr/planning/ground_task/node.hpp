@@ -24,20 +24,6 @@
 #include "tyr/planning/node.hpp"
 
 /**
- * Forward declarations
- */
-
-namespace tyr::formalism
-{
-template<typename T>
-class OverlayRepository;
-
-class Repository;
-
-struct GroundAction;
-}
-
-/**
  * Definitions
  */
 

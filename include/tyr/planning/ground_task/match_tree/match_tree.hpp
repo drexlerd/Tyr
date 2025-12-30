@@ -542,7 +542,7 @@ private:
     std::vector<Data<Node<Tag>>> m_evaluate_stack;  ///< temporary during evaluation.
 
 public:
-    template<formalism::Context C>
+    template<formalism::planning::Context C>
     MatchTree(IndexList<Tag> elements_, const C& context_) :
         m_elements(std::move(elements_)),
         m_context(std::make_unique<Repository<Tag, formalism::OverlayRepository<formalism::planning::Repository>>>(context_)),

@@ -33,7 +33,9 @@
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
 #include "tyr/common/tuple.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/ground_task/match_tree/declarations.hpp"
 
 #include <cassert>

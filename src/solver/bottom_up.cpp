@@ -17,14 +17,14 @@
 
 #include "tyr/solver/bottom_up.hpp"
 
-#include "tyr/common/chrono.hpp"           // for StopwatchScope
-#include "tyr/common/comparators.hpp"      // for operator!=, opera...
-#include "tyr/common/config.hpp"           // for uint_t
-#include "tyr/common/formatter.hpp"        // for operator<<
-#include "tyr/common/types.hpp"            // for make_view, IndexList
-#include "tyr/common/vector.hpp"           // for View
-#include "tyr/formalism/merge_common.hpp"  // for merge, MergeContext
-#include "tyr/formalism/views.hpp"
+#include "tyr/common/chrono.hpp"            // for StopwatchScope
+#include "tyr/common/comparators.hpp"       // for operator!=, opera...
+#include "tyr/common/config.hpp"            // for uint_t
+#include "tyr/common/formatter.hpp"         // for operator<<
+#include "tyr/common/types.hpp"             // for make_view, IndexList
+#include "tyr/common/vector.hpp"            // for View
+#include "tyr/formalism/datalog/merge.hpp"  // for merge, MergeContext
+#include "tyr/formalism/datalog/views.hpp"
 #include "tyr/grounder/assignment_sets.hpp"     // for AssignmentSets
 #include "tyr/grounder/execution_contexts.hpp"  // for ProgramExecutionC...
 #include "tyr/grounder/fact_sets.hpp"           // for FactSets, Predica...

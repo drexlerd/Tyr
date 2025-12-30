@@ -17,18 +17,18 @@
 
 #include "tyr/planning/lifted_task/axiom_evaluator.hpp"
 
-#include "../task_utils.hpp"           // for insert_fact_s...
-#include "tyr/common/comparators.hpp"  // for operator!=
-#include "tyr/common/equal_to.hpp"     // for EqualTo
-#include "tyr/common/formatter.hpp"    // for operator<<
-#include "tyr/common/hash.hpp"         // for Hash
-#include "tyr/common/vector.hpp"       // for View
-#include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/merge_common.hpp"        // for MergeContext
-#include "tyr/formalism/merge_planning.hpp"      // for merge
+#include "../task_utils.hpp"                     // for insert_fact_s...
+#include "tyr/common/comparators.hpp"            // for operator!=
+#include "tyr/common/equal_to.hpp"               // for EqualTo
+#include "tyr/common/formatter.hpp"              // for operator<<
+#include "tyr/common/hash.hpp"                   // for Hash
+#include "tyr/common/vector.hpp"                 // for View
 #include "tyr/formalism/overlay_repository.hpp"  // for OverlayReposi...
-#include "tyr/formalism/repository.hpp"          // for Repository
-#include "tyr/formalism/views.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/merge_datalog.hpp"   // for MergeContext
+#include "tyr/formalism/planning/merge_planning.hpp"  // for MergeContext
+#include "tyr/formalism/planning/repository.hpp"      // for Repository
+#include "tyr/formalism/planning/views.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/grounder/fact_sets.hpp"    // for FactSets, Pre...
 #include "tyr/planning/lifted_task.hpp"  // for LiftedTask
@@ -48,7 +48,7 @@ namespace tyr::planning
 {
 
 static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_state,
-                                    const OverlayRepository<Repository>& atoms_context,
+                                    const OverlayRepository<formalism::planning::Repository>& atoms_context,
                                     ProgramExecutionContext& axiom_context)
 {
     axiom_context.facts_execution_context.reset<FluentTag>();
@@ -61,14 +61,16 @@ static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_st
 
 static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram& axiom_program,
                                                     UnpackedState<LiftedTask>& unpacked_state,
-                                                    OverlayRepository<Repository>& task_repository,
+                                                    formalism::OverlayRepository<formalism::planning::Repository>& task_repository,
                                                     ProgramExecutionContext& axiom_context)
 {
     axiom_context.program_to_task_execution_context.clear();
 
     /// --- Initialize derived atoms in unpacked state
 
-    auto merge_context = MergeContext { axiom_context.builder, task_repository, axiom_context.program_to_task_execution_context.merge_cache };
+    auto merge_context = formalism::planning::MergePlanningContext { axiom_context.planning_builder,
+                                                                     task_repository,
+                                                                     axiom_context.program_to_task_execution_context.merge_cache };
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_predicate_mapping, then facts of the predicate
     for (const auto fact : axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
@@ -76,7 +78,11 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
         if (axiom_program.get_predicate_to_predicate_mapping().contains(fact.get_predicate().get_index()))
         {
             // TODO: pass the predicate mapping here so that we can skip merging the predicate :)
-            const auto ground_atom = merge<FluentTag, Repository, OverlayRepository<Repository>, DerivedTag>(fact, merge_context).first;
+            const auto ground_atom = formalism::planning::merge_d2p<formalism::FluentTag,
+                                                                    formalism::datalog::Repository,
+                                                                    formalism::OverlayRepository<formalism::planning::Repository>,
+                                                                    formalism::DerivedTag>(fact, merge_context)
+                                         .first;
 
             unpacked_state.set(ground_atom);
         }

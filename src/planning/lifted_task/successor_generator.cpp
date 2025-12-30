@@ -19,7 +19,7 @@
 
 #include "../metric.hpp"
 #include "../task_utils.hpp"
-#include "tyr/formalism/grounder_planning.hpp"
+#include "tyr/formalism/planning/grounder.hpp"
 #include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"
@@ -83,7 +83,7 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
 
     out_nodes.clear();
 
-    auto fluent_assign = UnorderedMap<Index<formalism::FDRVariable<formalism::FluentTag>>, formalism::FDRValue> {};
+    auto fluent_assign = UnorderedMap<Index<formalism::planning::FDRVariable<formalism::FluentTag>>, formalism::planning::FDRValue> {};
     auto iter_workspace = itertools::cartesian_set::Workspace<Index<formalism::Object>> {};
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
@@ -93,19 +93,20 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
         {
             for (const auto action_index : m_task->get_action_program().get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
             {
-                auto grounder_context =
-                    GrounderContext { m_action_context.builder, *m_task->get_repository(), m_action_context.program_to_task_execution_context.binding };
+                auto grounder_context = formalism::planning::GrounderContext { m_action_context.planning_builder,
+                                                                               *m_task->get_repository(),
+                                                                               m_action_context.program_to_task_execution_context.binding };
 
                 const auto action = make_view(action_index, grounder_context.destination);
 
                 m_action_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
 
-                const auto ground_action_index = ground_planning(action,
-                                                                 grounder_context,
-                                                                 m_task->get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
-                                                                 fluent_assign,
-                                                                 iter_workspace,
-                                                                 *m_task->get_fdr_context())
+                const auto ground_action_index = ground(action,
+                                                        grounder_context,
+                                                        m_task->get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
+                                                        fluent_assign,
+                                                        iter_workspace,
+                                                        *m_task->get_fdr_context())
                                                      .first;
 
                 const auto ground_action = make_view(ground_action_index, grounder_context.destination);

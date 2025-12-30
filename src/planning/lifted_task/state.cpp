@@ -22,9 +22,9 @@
 namespace tyr::planning
 {
 
-bool State<LiftedTask>::test(Index<formalism::GroundAtom<formalism::StaticTag>> index) const { return m_task->test(index); }
+bool State<LiftedTask>::test(Index<formalism::planning::GroundAtom<formalism::StaticTag>> index) const { return m_task->test(index); }
 
-float_t State<LiftedTask>::get(Index<formalism::GroundFunctionTerm<formalism::StaticTag>> index) const { return m_task->get(index); }
+float_t State<LiftedTask>::get(Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>> index) const { return m_task->get(index); }
 
 template<formalism::FactKind T>
 const boost::dynamic_bitset<>& State<LiftedTask>::get_atoms() const noexcept

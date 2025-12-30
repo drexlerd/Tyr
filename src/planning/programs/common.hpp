@@ -26,8 +26,8 @@
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
-#include "tyr/formalism/planning/repository.hpp
-#include "tyr/formalism/planning/merge.hpp"
+#include "tyr/formalism/planning/merge_datalog.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/declarations.hpp"
 
@@ -44,28 +44,28 @@ extern ::cista::offset::string
 create_applicability_name(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom);
 
 inline void append_from_condition(View<Index<formalism::planning::FDRConjunctiveCondition>, formalism::OverlayRepository<formalism::planning::Repository>> cond,
-                                  formalism::planning::MergeContext<formalism::datalog::Repository>& context,
+                                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context,
                                   Data<formalism::datalog::ConjunctiveCondition>& conj_cond)
 {
     for (const auto literal : cond.template get_literals<formalism::StaticTag>())
         if (literal.get_polarity())
-            conj_cond.static_literals.push_back(merge(literal, context).first);
+            conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
 
     for (const auto literal : cond.template get_literals<formalism::FluentTag>())
         if (literal.get_polarity())
-            conj_cond.fluent_literals.push_back(merge(literal, context).first);
+            conj_cond.fluent_literals.push_back(merge_p2d(literal, context).first);
 
     for (const auto literal : cond.template get_literals<formalism::DerivedTag>())
         if (literal.get_polarity())
-            conj_cond.fluent_literals.push_back(merge<formalism::DerivedTag,
-                                                      formalism::OverlayRepository<formalism::planning::Repository>,
-                                                      formalism::datalog::Repository,
-                                                      formalism::FluentTag>(literal, context)
+            conj_cond.fluent_literals.push_back(merge_p2d<formalism::DerivedTag,
+                                                          formalism::OverlayRepository<formalism::planning::Repository>,
+                                                          formalism::datalog::Repository,
+                                                          formalism::FluentTag>(literal, context)
                                                     .first);
 };
 
 inline auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                                           formalism::planning::MergeContext<formalism::planning::Repository>& context)
+                                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
     auto& predicate = *predicate_ptr;
@@ -79,9 +79,9 @@ inline auto create_applicability_predicate(View<Index<formalism::planning::Actio
 }
 
 inline auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                                      formalism::planning::MergeContext<formalism::planning::Repository>& context)
+                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto atom_ptr = context.builder.get_builder<formalism::planning::Atom<formalism::FluentTag>>();
+    auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
@@ -96,9 +96,9 @@ inline auto create_applicability_atom(View<Index<formalism::planning::Action>, f
 }
 
 inline auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                                         formalism::planning::MergeContext<formalism::planning::Repository>& context)
+                                         formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto literal_ptr = context.builder.get_builder<formalism::planning::Literal<formalism::FluentTag>>();
+    auto literal_ptr = context.builder.get_builder<formalism::datalog::Literal<formalism::FluentTag>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
@@ -110,7 +110,7 @@ inline auto create_applicability_literal(View<Index<formalism::planning::Action>
 }
 
 inline auto create_applicability_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                                      formalism::planning::MergeContext<formalism::planning::Repository>& context)
+                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
@@ -121,7 +121,7 @@ inline auto create_applicability_rule(View<Index<formalism::planning::Action>, f
     conj_cond.clear();
 
     for (const auto variable : action.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     append_from_condition(action.get_condition(), context, conj_cond);
 
     canonicalize(conj_cond);
@@ -135,9 +135,10 @@ inline auto create_applicability_rule(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_triggered_predicate(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                                       View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                                       formalism::MergeContext<formalism::Repository>& context)
+inline auto
+create_triggered_predicate(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                           View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
     auto& predicate = *predicate_ptr;
@@ -150,11 +151,11 @@ inline auto create_triggered_predicate(View<Index<formalism::Action>, formalism:
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-inline auto create_triggered_atom(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                                  View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                                  formalism::MergeContext<formalism::Repository>& context)
+inline auto create_triggered_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                                  View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto atom_ptr = context.builder.get_builder<formalism::Atom<formalism::FluentTag>>();
+    auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
@@ -168,11 +169,12 @@ inline auto create_triggered_atom(View<Index<formalism::Action>, formalism::Over
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-inline auto create_triggered_literal(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                                     View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                                     formalism::MergeContext<formalism::Repository>& context)
+inline auto
+create_triggered_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                         View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                         formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto literal_ptr = context.builder.get_builder<formalism::Literal<formalism::FluentTag>>();
+    auto literal_ptr = context.builder.get_builder<formalism::datalog::Literal<formalism::FluentTag>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
@@ -183,26 +185,26 @@ inline auto create_triggered_literal(View<Index<formalism::Action>, formalism::O
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-inline auto create_triggered_rule(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                                  View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                                  formalism::MergeContext<formalism::Repository>& context)
+inline auto create_triggered_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                                  View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
-    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto conj_cond_ptr = context.builder.get_builder<formalism::datalog::ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto variable : action.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto variable : cond_eff.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto literal : action.get_condition().get_literals<formalism::StaticTag>())
-        conj_cond.static_literals.push_back(merge(literal, context).first);
+        conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
     for (const auto literal : action.get_condition().get_literals<formalism::StaticTag>())
-        conj_cond.static_literals.push_back(merge(literal, context).first);
+        conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
     append_from_condition(cond_eff.get_condition(), context, conj_cond);
     conj_cond.fluent_literals.push_back(create_applicability_literal(action, context).first);
 
@@ -217,23 +219,23 @@ inline auto create_triggered_rule(View<Index<formalism::Action>, formalism::Over
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_effect_rule(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                               View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                               View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
-                               formalism::MergeContext<formalism::Repository>& context)
+inline auto create_effect_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                               View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                               View<Index<formalism::datalog::Atom<formalism::FluentTag>>, formalism::datalog::Repository> effect,
+                               formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
-    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto conj_cond_ptr = context.builder.get_builder<formalism::datalog::ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto variable : action.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto variable : cond_eff.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     conj_cond.fluent_literals.push_back(create_triggered_literal(action, cond_eff, context).first);
 
     canonicalize(conj_cond);
@@ -247,25 +249,25 @@ inline auto create_effect_rule(View<Index<formalism::Action>, formalism::Overlay
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_cond_effect_rule(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                                    View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                                    View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
-                                    formalism::MergeContext<formalism::Repository>& context)
+inline auto create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                                    View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                                    View<Index<formalism::datalog::Atom<formalism::FluentTag>>, formalism::datalog::Repository> effect,
+                                    formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
-    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto conj_cond_ptr = context.builder.get_builder<formalism::datalog::ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto variable : action.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto variable : cond_eff.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto literal : action.get_condition().get_literals<formalism::StaticTag>())
-        conj_cond.static_literals.push_back(merge(literal, context).first);
+        conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
     append_from_condition(cond_eff.get_condition(), context, conj_cond);
     conj_cond.fluent_literals.push_back(create_applicability_literal(action, context).first);
 
@@ -280,23 +282,24 @@ inline auto create_cond_effect_rule(View<Index<formalism::Action>, formalism::Ov
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_full_cond_effect_rule(View<Index<formalism::Action>, formalism::OverlayRepository<formalism::Repository>> action,
-                                         View<Index<formalism::ConditionalEffect>, formalism::OverlayRepository<formalism::Repository>> cond_eff,
-                                         View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
-                                         formalism::MergeContext<formalism::Repository>& context)
+inline auto
+create_full_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+                             View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
+                             View<Index<formalism::datalog::Atom<formalism::FluentTag>>, formalism::datalog::Repository> effect,
+                             formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
-    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto conj_cond_ptr = context.builder.get_builder<formalism::datalog::ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto variable : action.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto variable : cond_eff.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     append_from_condition(action.get_condition(), context, conj_cond);
     append_from_condition(cond_eff.get_condition(), context, conj_cond);
 
@@ -311,8 +314,8 @@ inline auto create_full_cond_effect_rule(View<Index<formalism::Action>, formalis
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_applicability_predicate(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
-                                           formalism::MergeContext<formalism::Repository>& context)
+inline auto create_applicability_predicate(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
+                                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
     auto& predicate = *predicate_ptr;
@@ -325,10 +328,10 @@ inline auto create_applicability_predicate(View<Index<formalism::Axiom>, formali
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-inline auto create_applicability_atom(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
-                                      formalism::MergeContext<formalism::Repository>& context)
+inline auto create_applicability_atom(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
+                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto atom_ptr = context.builder.get_builder<formalism::Atom<formalism::FluentTag>>();
+    auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
@@ -342,10 +345,10 @@ inline auto create_applicability_atom(View<Index<formalism::Axiom>, formalism::O
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-inline auto create_applicability_literal(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
-                                         formalism::MergeContext<formalism::Repository>& context)
+inline auto create_applicability_literal(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
+                                         formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto literal_ptr = context.builder.get_builder<formalism::Literal<formalism::FluentTag>>();
+    auto literal_ptr = context.builder.get_builder<formalism::datalog::Literal<formalism::FluentTag>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
@@ -356,19 +359,19 @@ inline auto create_applicability_literal(View<Index<formalism::Axiom>, formalism
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-inline auto create_applicability_rule(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
-                                      formalism::MergeContext<formalism::Repository>& context)
+inline auto create_applicability_rule(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
+                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
-    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto conj_cond_ptr = context.builder.get_builder<formalism::datalog::ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto variable : axiom.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     append_from_condition(axiom.get_body(), context, conj_cond);
 
     canonicalize(conj_cond);
@@ -382,22 +385,22 @@ inline auto create_applicability_rule(View<Index<formalism::Axiom>, formalism::O
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_effect_rule(View<Index<formalism::Axiom>, formalism::OverlayRepository<formalism::Repository>> axiom,
-                               View<Index<formalism::Atom<formalism::FluentTag>>, formalism::Repository> effect,
-                               formalism::MergeContext<formalism::Repository>& context)
+inline auto create_effect_rule(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
+                               View<Index<formalism::datalog::Atom<formalism::FluentTag>>, formalism::datalog::Repository> effect,
+                               formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
-    auto rule_ptr = context.builder.get_builder<formalism::Rule>();
+    auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
-    auto conj_cond_ptr = context.builder.get_builder<formalism::ConjunctiveCondition>();
+    auto conj_cond_ptr = context.builder.get_builder<formalism::datalog::ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto variable : axiom.get_variables())
-        conj_cond.variables.push_back(merge(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first);
     for (const auto literal : axiom.get_body().get_literals<formalism::StaticTag>())
-        conj_cond.static_literals.push_back(merge(literal, context).first);
+        conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
     conj_cond.fluent_literals.push_back(create_applicability_literal(axiom, context).first);
 
     canonicalize(conj_cond);

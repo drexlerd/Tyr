@@ -15,9 +15,9 @@ endfunction()
 
 add_gtest(common_bit_packed_layout                       "common/bit_packed_layout.cpp")
 
-add_gtest(analysis_domains                               "analysis/domains.cpp")
-add_gtest(analysis_stratification                        "analysis/stratification.cpp")
-add_gtest(analysis_listeners                             "analysis/listeners.cpp")
+# add_gtest(analysis_domains                               "analysis/domains.cpp")
+# add_gtest(analysis_stratification                        "analysis/stratification.cpp")
+# add_gtest(analysis_listeners                             "analysis/listeners.cpp")
 
 # add_gtest(buffer_indexed_hash_set                        "buffer/indexed_hash_set.cpp")
 

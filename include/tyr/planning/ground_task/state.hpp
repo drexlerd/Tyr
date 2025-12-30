@@ -19,6 +19,8 @@
 #define TYR_PLANNING_GROUND_TASK_STATE_HPP_
 
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/repository.hpp"
+#include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/state.hpp"
@@ -44,7 +46,7 @@ public:
     bool test(Index<formalism::planning::GroundAtom<formalism::StaticTag>> index) const;
     float_t get(Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>> index) const;
 
-    formalism::FDRValue get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const;
+    formalism::planning::FDRValue get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const;
     float_t get(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index) const;
 
     bool test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const;

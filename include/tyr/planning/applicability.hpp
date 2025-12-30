@@ -19,12 +19,14 @@
 #define TYR_PLANNING_APPLICABILITY_HPP_
 
 #include "tyr/common/dynamic_bitset.hpp"
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_utils.hpp"
-#include "tyr/formalism/views.hpp"
+#include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/node.hpp"
 
 #include <algorithm>
@@ -164,7 +166,7 @@ bool evaluate(View<Data<formalism::planning::BooleanOperator<Data<formalism::pla
 template<typename Task, formalism::planning::NumericEffectOpKind Op, formalism::FactKind T, formalism::planning::Context C>
 float_t evaluate(View<Index<formalism::planning::GroundNumericEffect<Op, T>>, C> element, const StateContext<Task>& context)
 {
-    return formalism::apply(Op {}, evaluate(element.get_fterm(), context), evaluate(element.get_fexpr(), context));
+    return formalism::planning::apply(Op {}, evaluate(element.get_fterm(), context), evaluate(element.get_fexpr(), context));
 }
 
 template<typename Task, formalism::FactKind T, formalism::planning::Context C>

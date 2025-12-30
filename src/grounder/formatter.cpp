@@ -18,7 +18,7 @@
 #include "tyr/grounder/formatter.hpp"
 
 #include "tyr/common/formatter.hpp"  // for to_string
-#include "tyr/formalism/views.hpp"
+#include "tyr/formalism/datalog/views.hpp"
 #include "tyr/grounder/assignment.hpp"  // for EdgeAssignment, VertexAssignment
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/formatter.hpp"

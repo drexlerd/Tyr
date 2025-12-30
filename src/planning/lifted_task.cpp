@@ -22,7 +22,7 @@
 #include "tyr/common/dynamic_bitset.hpp"         // for set
 #include "tyr/common/vector.hpp"                 // for View, set
 #include "tyr/formalism/overlay_repository.hpp"  // for Overla...
-#include "tyr/formalism/views.hpp"               // for View
+#include "tyr/formalism/planning/views.hpp"      // for View
 #include "tyr/planning/lifted_task/task_grounder.hpp"
 
 #include <tuple>

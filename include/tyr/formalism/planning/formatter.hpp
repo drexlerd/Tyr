@@ -20,6 +20,7 @@
 
 #include "tyr/common/formatter.hpp"
 #include "tyr/common/iostream.hpp"
+#include "tyr/formalism/formatter.hpp"
 #include "tyr/formalism/planning/datas.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/views.hpp"
@@ -34,7 +35,7 @@ namespace tyr
 /**
  * Forward declarations
  */
-namespace formalism::planning::planning
+namespace formalism::planning
 {
 template<OpKind Op, typename T>
 inline std::ostream& operator<<(std::ostream& os, const Data<UnaryOperator<Op, T>>& el);

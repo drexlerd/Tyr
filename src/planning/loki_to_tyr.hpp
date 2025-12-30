@@ -70,9 +70,9 @@ using IndexFunctionVariant = std::variant<Index<formalism::Function<formalism::S
                                           Index<formalism::Function<formalism::FluentTag>>,
                                           Index<formalism::Function<formalism::AuxiliaryTag>>>;
 
-using IndexFunctionTermVariant = std::variant<Index<formalism::planning::planning::FunctionTerm<formalism::StaticTag>>,
-                                              Index<formalism::planning::planning::FunctionTerm<formalism::FluentTag>>,
-                                              Index<formalism::planning::planning::FunctionTerm<formalism::AuxiliaryTag>>>;
+using IndexFunctionTermVariant = std::variant<Index<formalism::planning::FunctionTerm<formalism::StaticTag>>,
+                                              Index<formalism::planning::FunctionTerm<formalism::FluentTag>>,
+                                              Index<formalism::planning::FunctionTerm<formalism::AuxiliaryTag>>>;
 
 using IndexGroundFunctionTermVariant = std::variant<Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>>,
                                                     Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>,
@@ -406,7 +406,7 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto atom_ptr = builder.template get_builder<formalism::Atom<Tag>>();
+            auto atom_ptr = builder.template get_builder<formalism::planning::Atom<Tag>>();
             auto& atom = *atom_ptr;
             atom.clear();
             atom.predicate = predicate_index;
@@ -440,7 +440,7 @@ private:
         {
             using Tag = std::decay_t<decltype(fact_tag)>;
 
-            auto literal_ptr = builder.template get_builder<formalism::Literal<Tag>>();
+            auto literal_ptr = builder.template get_builder<formalism::planning::Literal<Tag>>();
             auto& literal = *literal_ptr;
             literal.clear();
             literal.atom = atom_index;
@@ -453,11 +453,11 @@ private:
             [&](auto&& arg) -> IndexLiteralVariant
             {
                 using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, Index<formalism::Atom<formalism::StaticTag>>>)
+                if constexpr (std::is_same_v<T, Index<formalism::planning::Atom<formalism::StaticTag>>>)
                     return build_literal(formalism::StaticTag {}, arg);
-                else if constexpr (std::is_same_v<T, Index<formalism::Atom<formalism::FluentTag>>>)
+                else if constexpr (std::is_same_v<T, Index<formalism::planning::Atom<formalism::FluentTag>>>)
                     return build_literal(formalism::FluentTag {}, arg);
-                else if constexpr (std::is_same_v<T, Index<formalism::Atom<formalism::DerivedTag>>>)
+                else if constexpr (std::is_same_v<T, Index<formalism::planning::Atom<formalism::DerivedTag>>>)
                     return build_literal(formalism::DerivedTag {}, arg);
                 else
                     static_assert(dependent_false<T>::value, "Missing case for type");
@@ -512,13 +512,13 @@ private:
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto multi_ptr = builder.template get_builder<formalism::MultiOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
+            auto multi_ptr = builder.template get_builder<formalism::planning::MultiOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
             auto& multi = *multi_ptr;
             multi.clear();
             multi.args = translate_lifted(element->get_function_expressions(), builder, context);
             formalism::planning::canonicalize(multi);
-            return Data<formalism::planning::FunctionExpression>(
-                Data<formalism::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(context.get_or_create(multi, builder.get_buffer()).first));
+            return Data<formalism::planning::FunctionExpression>(Data<formalism::planning::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(
+                context.get_or_create(multi, builder.get_buffer()).first));
         };
 
         switch (element->get_multi_operator())
@@ -535,13 +535,13 @@ private:
     template<formalism::planning::Context C>
     Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionMinus element, formalism::planning::Builder& builder, C& context)
     {
-        auto minus_ptr = builder.template get_builder<formalism::UnaryOperator<formalism::OpSub, Data<formalism::planning::FunctionExpression>>>();
+        auto minus_ptr = builder.template get_builder<formalism::planning::UnaryOperator<formalism::OpSub, Data<formalism::planning::FunctionExpression>>>();
         auto& minus = *minus_ptr;
         minus.clear();
         minus.arg = translate_lifted(element->get_function_expression(), builder, context);
         formalism::planning::canonicalize(minus);
-        return Data<formalism::planning::FunctionExpression>(
-            Data<formalism::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(context.get_or_create(minus, builder.get_buffer()).first));
+        return Data<formalism::planning::FunctionExpression>(Data<formalism::planning::ArithmeticOperator<Data<formalism::planning::FunctionExpression>>>(
+            context.get_or_create(minus, builder.get_buffer()).first));
     }
 
     template<formalism::planning::Context C>
@@ -611,11 +611,11 @@ private:
     Data<formalism::planning::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
     translate_lifted(loki::ConditionNumericConstraint element, formalism::planning::Builder& builder, C& context)
     {
-        auto build_binary_op = [&](auto op_tag) -> Data<formalism::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
+        auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
-            auto binary_ptr = builder.template get_builder<formalism::BinaryOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
+            auto binary_ptr = builder.template get_builder<formalism::planning::BinaryOperator<Tag, Data<formalism::planning::FunctionExpression>>>();
             auto& binary = *binary_ptr;
             binary.clear();
             binary.lhs = translate_lifted(element->get_left_function_expression(), builder, context);
@@ -771,22 +771,22 @@ private:
                 if (element->get_assign_operator() != loki::AssignOperatorEnum::INCREASE)
                     throw std::runtime_error("Auxiliary numeric effect must use INCREASE operator.");
 
-                return build_numeric_effect_term_helper(Tag {}, formalism::OpIncrease {}, fterm_index);
+                return build_numeric_effect_term_helper(Tag {}, formalism::planning::OpIncrease {}, fterm_index);
             }
             else
             {
                 switch (element->get_assign_operator())
                 {
                     case loki::AssignOperatorEnum::ASSIGN:
-                        return build_numeric_effect_term_helper(Tag {}, formalism::OpAssign {}, fterm_index);
+                        return build_numeric_effect_term_helper(Tag {}, formalism::planning::OpAssign {}, fterm_index);
                     case loki::AssignOperatorEnum::INCREASE:
-                        return build_numeric_effect_term_helper(Tag {}, formalism::OpIncrease {}, fterm_index);
+                        return build_numeric_effect_term_helper(Tag {}, formalism::planning::OpIncrease {}, fterm_index);
                     case loki::AssignOperatorEnum::DECREASE:
-                        return build_numeric_effect_term_helper(Tag {}, formalism::OpDecrease {}, fterm_index);
+                        return build_numeric_effect_term_helper(Tag {}, formalism::planning::OpDecrease {}, fterm_index);
                     case loki::AssignOperatorEnum::SCALE_UP:
-                        return build_numeric_effect_term_helper(Tag {}, formalism::OpScaleUp {}, fterm_index);
+                        return build_numeric_effect_term_helper(Tag {}, formalism::planning::OpScaleUp {}, fterm_index);
                     case loki::AssignOperatorEnum::SCALE_DOWN:
-                        return build_numeric_effect_term_helper(Tag {}, formalism::OpScaleDown {}, fterm_index);
+                        return build_numeric_effect_term_helper(Tag {}, formalism::planning::OpScaleDown {}, fterm_index);
                     default:
                         throw std::runtime_error("Unexpected case.");
                 }
@@ -1273,7 +1273,7 @@ private:
     Data<formalism::planning::GroundFunctionExpression>
     translate_grounded(loki::FunctionExpressionNumber element, formalism::planning::Builder& builder, C& context)
     {
-        return Data<formalism::GroundFunctionExpression>(float_t(element->get_number()));
+        return Data<formalism::planning::GroundFunctionExpression>(float_t(element->get_number()));
     }
 
     template<formalism::planning::Context C>
@@ -1455,7 +1455,7 @@ private:
     Data<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>>
     translate_grounded(loki::ConditionNumericConstraint element, formalism::planning::Builder& builder, C& context)
     {
-        auto build_binary_op = [&](auto op_tag) -> Data<formalism::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>>
+        auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>>
         {
             using Tag = std::decay_t<decltype(op_tag)>;
 
@@ -1493,7 +1493,7 @@ private:
                        C& context,
                        formalism::planning::BinaryFDRContext<formalism::OverlayRepository<formalism::planning::Repository>>& fdr_context)
     {
-        auto conj_condition_ptr = builder.template get_builder<formalism::GroundFDRConjunctiveCondition>();
+        auto conj_condition_ptr = builder.template get_builder<formalism::planning::GroundFDRConjunctiveCondition>();
         auto& conj_condition = *conj_condition_ptr;
         conj_condition.clear();
 

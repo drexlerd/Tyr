@@ -26,8 +26,8 @@
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/merge.hpp"
+#include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/views.hpp"
 
 namespace tyr::formalism::datalog
 {

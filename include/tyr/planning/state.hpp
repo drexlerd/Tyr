@@ -19,6 +19,7 @@
 #define TYR_PLANNING_STATE_HPP_
 
 #include "tyr/common/shared_object_pool.hpp"
+#include "tyr/formalism/declarations.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/unpacked_state.hpp"

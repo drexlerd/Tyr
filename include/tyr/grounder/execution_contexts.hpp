@@ -31,6 +31,8 @@
 #include "tyr/formalism/planning/builder.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
 #include "tyr/formalism/planning/merge.hpp"
+#include "tyr/formalism/planning/merge_datalog.hpp"
+#include "tyr/formalism/planning/merge_planning.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/grounder/consistency_graph.hpp"
 #include "tyr/grounder/declarations.hpp"
@@ -220,7 +222,7 @@ struct ProgramToTaskExecutionContext
 {
     ProgramToTaskExecutionContext() = default;
 
-    formalism::datalog::MergeCache merge_cache;
+    formalism::planning::MergePlanningCache merge_cache;
     IndexList<formalism::Object> binding;
 
     void clear() noexcept;
@@ -230,7 +232,7 @@ struct TaskToProgramExecutionContext
 {
     TaskToProgramExecutionContext() = default;
 
-    formalism::datalog::MergeCache merge_cache;
+    formalism::planning::MergeDatalogCache merge_cache;
 
     void clear() noexcept;
 };
@@ -246,7 +248,8 @@ struct ProgramExecutionContext
     RuleSchedulerStrata rule_scheduler_strata;
 
     /// --- Builder
-    formalism::datalog::Builder builder;
+    formalism::planning::Builder planning_builder;
+    formalism::datalog::Builder datalog_builder;
 
     /// --- Execution contexts
     FactsExecutionContext facts_execution_context;
