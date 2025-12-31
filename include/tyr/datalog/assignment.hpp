@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_ASSIGNMENT_HPP_
-#define TYR_GROUNDER_ASSIGNMENT_HPP_
+#ifndef TYR_DATALOG_ASSIGNMENT_HPP_
+#define TYR_DATALOG_ASSIGNMENT_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/common/declarations.hpp"
@@ -25,7 +25,7 @@
 
 #include <limits>
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 /**

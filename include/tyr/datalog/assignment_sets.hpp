@@ -15,19 +15,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_ASSIGNMENT_SETS_HPP_
-#define TYR_GROUNDER_ASSIGNMENT_SETS_HPP_
+#ifndef TYR_DATALOG_ASSIGNMENT_SETS_HPP_
+#define TYR_DATALOG_ASSIGNMENT_SETS_HPP_
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"
+#include "tyr/datalog/assignment.hpp"
+#include "tyr/datalog/fact_sets.hpp"
+#include "tyr/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/grounder/assignment.hpp"
-#include "tyr/grounder/fact_sets.hpp"
-#include "tyr/grounder/formatter.hpp"
 
 #include <algorithm>
 #include <boost/dynamic_bitset.hpp>
@@ -36,7 +36,7 @@
 #include <tuple>
 #include <vector>
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 [[maybe_unused]] inline bool contains(const analysis::DomainListList& parameter_domains, const VertexAssignment& assignment)

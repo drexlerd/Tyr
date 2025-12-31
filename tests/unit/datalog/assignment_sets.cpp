@@ -19,16 +19,17 @@
 
 #include <gtest/gtest.h>
 #include <tyr/analysis/analysis.hpp>
+#include <tyr/datalog/datalog.hpp>
 #include <tyr/formalism/formalism.hpp>
-#include <tyr/grounder/grounder.hpp>
 
 using namespace tyr::buffer;
 using namespace tyr::formalism;
+using namespace tyr::datalog;
 
 namespace tyr::tests
 {
 
-TEST(TyrTests, TyrGrounderStaticConsistencyGraph)
+TEST(TyrTests, TyrDatalogAssignmentSets)
 {
     auto [program, repository] = create_example_problem();
 
@@ -36,7 +37,7 @@ TEST(TyrTests, TyrGrounderStaticConsistencyGraph)
     auto domains = analysis::compute_variable_domains(program);
 
     // Allocate
-    auto assignment_sets = grounder::AssignmentSets(program, domains);
+    auto assignment_sets = datalog::AssignmentSets(program, domains);
 
     // Reset
     assignment_sets.static_sets.predicate.reset();
@@ -49,15 +50,5 @@ TEST(TyrTests, TyrGrounderStaticConsistencyGraph)
     assignment_sets.fluent_sets.predicate.insert(program.get_atoms<formalism::FluentTag>());
     assignment_sets.static_sets.function.insert(program.get_fterm_values<formalism::StaticTag>());
     assignment_sets.fluent_sets.function.insert(program.get_fterm_values<formalism::FluentTag>());
-
-    for (uint_t i = 0; i < program.get_rules().size(); ++i)
-    {
-        const auto rule = program.get_rules()[i];
-        const auto& parameter_domains = domains.rule_domains[i];
-
-        auto graph = grounder::StaticConsistencyGraph(rule.get_body(), parameter_domains, 0, rule.get_arity(), assignment_sets.static_sets);
-
-        std::cout << graph << std::endl;
-    }
 }
 }

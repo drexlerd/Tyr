@@ -20,7 +20,7 @@
 
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 //
-#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
 #include "tyr/planning/axiom_evaluator.hpp"
 #include "tyr/planning/declarations.hpp"
 
@@ -40,7 +40,7 @@ public:
 private:
     std::shared_ptr<LiftedTask> m_task;
 
-    grounder::ProgramExecutionContext m_axiom_context;
+    datalog::ProgramExecutionContext m_axiom_context;
 };
 
 }

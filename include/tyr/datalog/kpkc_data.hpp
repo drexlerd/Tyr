@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_KPKC_DATA_HPP_
-#define TYR_GROUNDER_KPKC_DATA_HPP_
+#ifndef TYR_DATALOG_KPKC_DATA_HPP_
+#define TYR_DATALOG_KPKC_DATA_HPP_
 
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>
@@ -27,7 +27,7 @@
 #include <tyr/common/config.hpp>
 #include <vector>
 
-namespace tyr::grounder::kpkc
+namespace tyr::datalog::kpkc
 {
 /**
  * V = num vertices

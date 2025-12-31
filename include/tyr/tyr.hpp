@@ -30,13 +30,10 @@
 // Formalism
 #include "tyr/formalism/formalism.hpp"
 
-// Grounder
-#include "tyr/grounder/grounder.hpp"
+// Datalog
+#include "tyr/datalog/datalog.hpp"
 
 // Planning
 #include "tyr/planning/planning.hpp"
-
-// Solver
-#include "tyr/solver/solver.hpp"
 
 #endif

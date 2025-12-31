@@ -15,15 +15,15 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_CONSISTENCY_GRAPH_HPP_
-#define TYR_GROUNDER_CONSISTENCY_GRAPH_HPP_
+#ifndef TYR_DATALOG_CONSISTENCY_GRAPH_HPP_
+#define TYR_DATALOG_CONSISTENCY_GRAPH_HPP_
 
 #include "tyr/analysis/domains.hpp"
+#include "tyr/datalog/assignment_sets.hpp"
+#include "tyr/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/grounder/assignment_sets.hpp"
-#include "tyr/grounder/declarations.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <optional>
@@ -31,7 +31,7 @@
 #include <sstream>
 #include <vector>
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 namespace details
 {

@@ -15,13 +15,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_EXECUTION_CONTEXTS_HPP_
-#define TYR_GROUNDER_EXECUTION_CONTEXTS_HPP_
+#ifndef TYR_DATALOG_EXECUTION_CONTEXTS_HPP_
+#define TYR_DATALOG_EXECUTION_CONTEXTS_HPP_
 
 #include "tyr/analysis/analysis.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/itertools.hpp"
+#include "tyr/datalog/consistency_graph.hpp"
+#include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/kpkc_utils.hpp"
+#include "tyr/datalog/rule_scheduler.hpp"
 #include "tyr/formalism/datalog/builder.hpp"
 #include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/merge.hpp"
@@ -34,16 +38,12 @@
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/formalism/planning/merge_planning.hpp"
 #include "tyr/formalism/planning/repository.hpp"
-#include "tyr/grounder/consistency_graph.hpp"
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/kpkc_utils.hpp"
-#include "tyr/grounder/rule_scheduler.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <chrono>
 #include <oneapi/tbb/enumerable_thread_specific.h>
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 struct FactsExecutionContext
 {
@@ -257,7 +257,7 @@ struct ProgramExecutionContext
     std::vector<RuleExecutionContext> rule_execution_contexts;
     std::vector<RuleStageExecutionContext> rule_stage_execution_contexts;
 
-    oneapi::tbb::enumerable_thread_specific<grounder::ThreadExecutionContext> thread_execution_contexts;
+    oneapi::tbb::enumerable_thread_specific<datalog::ThreadExecutionContext> thread_execution_contexts;
 
     ProgramToTaskExecutionContext program_to_task_execution_context;
     TaskToProgramExecutionContext task_to_program_execution_context;

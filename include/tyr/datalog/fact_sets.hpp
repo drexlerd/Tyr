@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_FACT_SETS_HPP_
-#define TYR_GROUNDER_FACT_SETS_HPP_
+#ifndef TYR_DATALOG_FACT_SETS_HPP_
+#define TYR_DATALOG_FACT_SETS_HPP_
 
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
@@ -24,7 +24,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 template<formalism::FactKind T>

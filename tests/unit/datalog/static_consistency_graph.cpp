@@ -19,25 +19,26 @@
 
 #include <gtest/gtest.h>
 #include <tyr/analysis/analysis.hpp>
+#include <tyr/datalog/datalog.hpp>
 #include <tyr/formalism/formalism.hpp>
-#include <tyr/grounder/grounder.hpp>
 
-using namespace tyr::buffer;
-using namespace tyr::formalism;
-using namespace tyr::grounder;
+namespace a = tyr::analysis;
+namespace b = tyr::buffer;
+namespace f = tyr::formalism;
+namespace g = tyr::grounder;
 
 namespace tyr::tests
 {
 
-TEST(TyrTests, TyrGrounderAssignmentSets)
+TEST(TyrTests, TyrDatalogStaticConsistencyGraph)
 {
     auto [program, repository] = create_example_problem();
 
     // Analyze variable domains to compress assignment sets
-    auto domains = analysis::compute_variable_domains(program);
+    auto domains = a::compute_variable_domains(program);
 
     // Allocate
-    auto assignment_sets = grounder::AssignmentSets(program, domains);
+    auto assignment_sets = g::AssignmentSets(program, domains);
 
     // Reset
     assignment_sets.static_sets.predicate.reset();
@@ -46,9 +47,19 @@ TEST(TyrTests, TyrGrounderAssignmentSets)
     assignment_sets.fluent_sets.function.reset();
 
     // Insert for a given set of facts
-    assignment_sets.static_sets.predicate.insert(program.get_atoms<formalism::StaticTag>());
-    assignment_sets.fluent_sets.predicate.insert(program.get_atoms<formalism::FluentTag>());
-    assignment_sets.static_sets.function.insert(program.get_fterm_values<formalism::StaticTag>());
-    assignment_sets.fluent_sets.function.insert(program.get_fterm_values<formalism::FluentTag>());
+    assignment_sets.static_sets.predicate.insert(program.get_atoms<f::StaticTag>());
+    assignment_sets.fluent_sets.predicate.insert(program.get_atoms<f::FluentTag>());
+    assignment_sets.static_sets.function.insert(program.get_fterm_values<f::StaticTag>());
+    assignment_sets.fluent_sets.function.insert(program.get_fterm_values<f::FluentTag>());
+
+    for (uint_t i = 0; i < program.get_rules().size(); ++i)
+    {
+        const auto rule = program.get_rules()[i];
+        const auto& parameter_domains = domains.rule_domains[i];
+
+        auto graph = datalog::StaticConsistencyGraph(rule.get_body(), parameter_domains, 0, rule.get_arity(), assignment_sets.static_sets);
+
+        std::cout << graph << std::endl;
+    }
 }
 }

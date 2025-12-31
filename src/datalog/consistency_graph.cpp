@@ -15,10 +15,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/consistency_graph.hpp"
+#include "tyr/datalog/consistency_graph.hpp"
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/closed_interval.hpp"
+#include "tyr/datalog/assignment_sets.hpp"
+#include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/formatter.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/datalog/arity.hpp"
@@ -26,9 +29,6 @@
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/grounder/assignment_sets.hpp"
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/formatter.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <optional>
@@ -39,7 +39,7 @@
 using namespace tyr::formalism;
 using namespace tyr::formalism::datalog;
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 namespace details
 {

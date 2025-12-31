@@ -15,16 +15,20 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_SOLVER_BOTTOM_UP_HPP_
-#define TYR_SOLVER_BOTTOM_UP_HPP_
+#ifndef TYR_DATALOG_DATALOG_HPP_
+#define TYR_DATALOG_DATALOG_HPP_
 
-#include "tyr/grounder/declarations.hpp"
-
-namespace tyr::solver
-{
-
-extern void solve_bottom_up(grounder::ProgramExecutionContext& context);
-
-}
+#include "tyr/datalog/applicability.hpp"
+#include "tyr/datalog/assignment.hpp"
+#include "tyr/datalog/assignment_sets.hpp"
+#include "tyr/datalog/consistency_graph.hpp"
+#include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
+#include "tyr/datalog/fact_sets.hpp"
+#include "tyr/datalog/formatter.hpp"
+#include "tyr/datalog/generator.hpp"
+#include "tyr/datalog/kpkc.hpp"
+#include "tyr/datalog/kpkc_data.hpp"
+#include "tyr/datalog/kpkc_utils.hpp"
 
 #endif

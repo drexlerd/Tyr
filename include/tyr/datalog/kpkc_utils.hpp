@@ -15,13 +15,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_KPKC_UTILS_HPP_
-#define TYR_GROUNDER_KPKC_UTILS_HPP_
+#ifndef TYR_DATALOG_KPKC_UTILS_HPP_
+#define TYR_DATALOG_KPKC_UTILS_HPP_
 
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/kpkc_data.hpp"
+#include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/kpkc_data.hpp"
 
-namespace tyr::grounder::kpkc
+namespace tyr::datalog::kpkc
 {
 
 /// @brief Helper to allocate a DenseKPartiteGraph from a given StaticConsistencyGraph.

@@ -25,9 +25,9 @@ add_gtest(formalism_builder                              "formalism/builder.cpp"
 add_gtest(formalism_repository                           "formalism/repository.cpp")
 add_gtest(formalism_view                                 "formalism/view.cpp")
 
-add_gtest(grounder_assignment_sets                       "grounder/assignment_sets.cpp")
-add_gtest(grounder_generator                             "grounder/generator.cpp")
-# add_gtest(grounder_static_consistency_graph              "grounder/static_consistency_graph.cpp")
+add_gtest(datalog_assignment_sets                        "datalog/assignment_sets.cpp")
+add_gtest(datalog_generator                              "datalog/generator.cpp")
+# add_gtest(datalog_static_consistency_graph              "datalog/static_consistency_graph.cpp")
 
 add_gtest(planning_lifted_task                           "planning/lifted_task.cpp")
 add_gtest(planning_ground_task                           "planning/ground_task.cpp")

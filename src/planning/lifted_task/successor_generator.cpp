@@ -19,8 +19,9 @@
 
 #include "../metric.hpp"
 #include "../task_utils.hpp"
+#include "tyr/datalog/bottom_up.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"
 #include "tyr/planning/lifted_task.hpp"
@@ -28,11 +29,9 @@
 #include "tyr/planning/lifted_task/state_repository.hpp"
 #include "tyr/planning/programs/action.hpp"
 #include "tyr/planning/successor_generator.hpp"
-#include "tyr/solver/bottom_up.hpp"
 
 using namespace tyr::formalism;
-using namespace tyr::grounder;
-using namespace tyr::solver;
+using namespace tyr::datalog;
 
 namespace tyr::planning
 {
@@ -77,7 +76,7 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
 
     insert_extended_state(state.get_unpacked_state(), *m_task->get_repository(), m_action_context);
 
-    solve_bottom_up(m_action_context);
+    datalog::solve_bottom_up(m_action_context);
 
     const auto state_context = StateContext<LiftedTask>(*m_task, state.get_unpacked_state(), node.get_metric());
 

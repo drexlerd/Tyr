@@ -15,21 +15,21 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/solver/bottom_up.hpp"
+#include "tyr/datalog/bottom_up.hpp"
 
-#include "tyr/common/chrono.hpp"            // for StopwatchScope
-#include "tyr/common/comparators.hpp"       // for operator!=, opera...
-#include "tyr/common/config.hpp"            // for uint_t
-#include "tyr/common/formatter.hpp"         // for operator<<
-#include "tyr/common/types.hpp"             // for make_view, IndexList
-#include "tyr/common/vector.hpp"            // for View
-#include "tyr/formalism/datalog/merge.hpp"  // for merge, MergeContext
+#include "tyr/common/chrono.hpp"               // for StopwatchScope
+#include "tyr/common/comparators.hpp"          // for operator!=, opera...
+#include "tyr/common/config.hpp"               // for uint_t
+#include "tyr/common/formatter.hpp"            // for operator<<
+#include "tyr/common/types.hpp"                // for make_view, IndexList
+#include "tyr/common/vector.hpp"               // for View
+#include "tyr/datalog/assignment_sets.hpp"     // for AssignmentSets
+#include "tyr/datalog/execution_contexts.hpp"  // for ProgramExecutionC...
+#include "tyr/datalog/fact_sets.hpp"           // for FactSets, Predica...
+#include "tyr/datalog/generator.hpp"           // for ground
+#include "tyr/datalog/rule_scheduler.hpp"      // for RuleSchedulerStratum
+#include "tyr/formalism/datalog/merge.hpp"     // for merge, MergeContext
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/grounder/assignment_sets.hpp"     // for AssignmentSets
-#include "tyr/grounder/execution_contexts.hpp"  // for ProgramExecutionC...
-#include "tyr/grounder/fact_sets.hpp"           // for FactSets, Predica...
-#include "tyr/grounder/generator.hpp"           // for ground
-#include "tyr/grounder/rule_scheduler.hpp"      // for RuleSchedulerStratum
 
 #include <cista/containers/hash_storage.h>          // for operator!=
 #include <gtl/phmap.hpp>                            // for operator!=
@@ -39,9 +39,9 @@
 #include <utility>                                  // for pair
 #include <vector>                                   // for vector
 
-namespace tyr::solver
+namespace tyr::datalog
 {
-static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& program_execution_context, grounder::RuleSchedulerStratum& scheduler)
+static void solve_bottom_up_for_stratum(datalog::ProgramExecutionContext& program_execution_context, datalog::RuleSchedulerStratum& scheduler)
 {
     scheduler.activate_all();
 
@@ -143,7 +143,7 @@ static void solve_bottom_up_for_stratum(grounder::ProgramExecutionContext& progr
     }
 }
 
-void solve_bottom_up(grounder::ProgramExecutionContext& program_execution_context)
+void solve_bottom_up(datalog::ProgramExecutionContext& program_execution_context)
 {
     for (auto& rule_stage_execution_context : program_execution_context.rule_stage_execution_contexts)
         rule_stage_execution_context.clear();

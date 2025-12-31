@@ -18,7 +18,7 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_SUCCESSOR_GENERATOR_HPP_
 #define TYR_PLANNING_LIFTED_TASK_SUCCESSOR_GENERATOR_HPP_
 
-#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
 #include "tyr/planning/action_executor.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/match_tree/declarations.hpp"  // for Matc...
@@ -47,7 +47,7 @@ public:
 private:
     std::shared_ptr<LiftedTask> m_task;
 
-    grounder::ProgramExecutionContext m_action_context;
+    datalog::ProgramExecutionContext m_action_context;
 
     std::shared_ptr<StateRepository<LiftedTask>> m_state_repository;
 

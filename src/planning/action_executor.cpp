@@ -21,8 +21,8 @@
 //
 
 #include "tyr/common/types.hpp"
+#include "tyr/datalog/declarations.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
-#include "tyr/grounder/declarations.hpp"
 #include "tyr/planning/action_executor.hpp"
 #include "tyr/planning/applicability.hpp"
 #include "tyr/planning/declarations.hpp"

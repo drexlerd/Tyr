@@ -19,6 +19,9 @@
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/config.hpp"
+#include "tyr/datalog/assignment_sets.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
+#include "tyr/datalog/fact_sets.hpp"
 #include "tyr/formalism/datalog/merge.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
@@ -26,9 +29,6 @@
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
-#include "tyr/grounder/assignment_sets.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
-#include "tyr/grounder/fact_sets.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 
 #include <algorithm>
@@ -96,7 +96,7 @@ valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float_t>& nu
 
 void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
                                      const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                     grounder::ProgramExecutionContext& axiom_context)
+                                     datalog::ProgramExecutionContext& axiom_context)
 {
     /// --- Initialize FactSets
     auto merge_context = formalism::planning::MergeDatalogContext { axiom_context.datalog_builder,
@@ -116,7 +116,7 @@ void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms
 
 void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
                                       const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                      grounder::ProgramExecutionContext& axiom_context)
+                                      datalog::ProgramExecutionContext& axiom_context)
 {
     /// --- Initialize FactSets
     auto merge_context = formalism::planning::MergeDatalogContext { axiom_context.datalog_builder,
@@ -136,7 +136,7 @@ void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_ato
 
 void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
                                           const formalism::OverlayRepository<formalism::planning::Repository>& numeric_variables_context,
-                                          grounder::ProgramExecutionContext& axiom_context)
+                                          datalog::ProgramExecutionContext& axiom_context)
 {
     /// --- Initialize FactSets
     auto merge_context = formalism::planning::MergeDatalogContext { axiom_context.datalog_builder,
@@ -156,7 +156,7 @@ void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_va
     }
 }
 
-void insert_fact_sets_into_assignment_sets(grounder::ProgramExecutionContext& program_context)
+void insert_fact_sets_into_assignment_sets(datalog::ProgramExecutionContext& program_context)
 {
     auto& fluent_predicate_fact_sets = program_context.facts_execution_context.fact_sets.get<formalism::FluentTag>().predicate;
     auto& fluent_predicate_assignment_sets = program_context.facts_execution_context.assignment_sets.get<formalism::FluentTag>().predicate;
@@ -175,7 +175,7 @@ void insert_fact_sets_into_assignment_sets(grounder::ProgramExecutionContext& pr
 
 void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
                            const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                           grounder::ProgramExecutionContext& action_context)
+                           datalog::ProgramExecutionContext& action_context)
 {
     action_context.facts_execution_context.reset<formalism::FluentTag>();
     action_context.task_to_program_execution_context.clear();

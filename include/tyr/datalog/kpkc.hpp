@@ -15,10 +15,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_KPKC_HPP_
-#define TYR_GROUNDER_KPKC_HPP_
+#ifndef TYR_DATALOG_KPKC_HPP_
+#define TYR_DATALOG_KPKC_HPP_
 
-#include "tyr/grounder/kpkc_data.hpp"
+#include "tyr/datalog/kpkc_data.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <cassert>
@@ -29,7 +29,7 @@
 #include <tyr/common/config.hpp>
 #include <vector>
 
-namespace tyr::grounder::kpkc
+namespace tyr::datalog::kpkc
 {
 
 template<typename Callback>

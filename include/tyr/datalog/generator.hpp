@@ -15,12 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_GENERATOR_HPP_
-#define TYR_GROUNDER_GENERATOR_HPP_
+#ifndef TYR_DATALOG_GENERATOR_HPP_
+#define TYR_DATALOG_GENERATOR_HPP_
 
-#include "tyr/grounder/declarations.hpp"
+#include "tyr/datalog/declarations.hpp"
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 extern void ground_nullary_case(const FactsExecutionContext& fact_execution_context,

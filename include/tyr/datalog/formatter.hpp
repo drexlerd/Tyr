@@ -15,28 +15,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_FORMATTER_HPP_
-#define TYR_GROUNDER_FORMATTER_HPP_
+#ifndef TYR_DATALOG_FORMATTER_HPP_
+#define TYR_DATALOG_FORMATTER_HPP_
 
 #include "tyr/common/formatter.hpp"
+#include "tyr/datalog/declarations.hpp"
 #include "tyr/formalism/declarations.hpp"  // for Context
-#include "tyr/grounder/declarations.hpp"
 
 #include <iosfwd>  // for ostream
 
 namespace tyr
 {
-extern std::ostream& print(std::ostream& os, const grounder::VertexAssignment& el);
+extern std::ostream& print(std::ostream& os, const datalog::VertexAssignment& el);
 
-extern std::ostream& print(std::ostream& os, const grounder::EdgeAssignment& el);
+extern std::ostream& print(std::ostream& os, const datalog::EdgeAssignment& el);
 
-extern std::ostream& print(std::ostream& os, const grounder::details::Vertex& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::Vertex& el);
 
-extern std::ostream& print(std::ostream& os, const grounder::details::Edge& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::Edge& el);
 
-extern std::ostream& print(std::ostream& os, const grounder::StaticConsistencyGraph& el);
+extern std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el);
 
-namespace grounder
+namespace datalog
 {
 namespace details
 {
@@ -50,7 +50,7 @@ extern std::ostream& operator<<(std::ostream& os, const VertexAssignment& el);
 extern std::ostream& operator<<(std::ostream& os, const EdgeAssignment& el);
 
 extern std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph& el);
-}  // end namespace grounder
+}  // end namespace datalog
 }
 
 #endif

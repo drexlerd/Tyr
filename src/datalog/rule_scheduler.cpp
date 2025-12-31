@@ -15,12 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/rule_scheduler.hpp"
+#include "tyr/datalog/rule_scheduler.hpp"
 
 #include "tyr/common/config.hpp"  // for uint_t
+#include "tyr/datalog/rule_scheduler.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/views.hpp"  // for View
-#include "tyr/grounder/rule_scheduler.hpp"
 
 #include <assert.h>       // for assert
 #include <gtl/phmap.hpp>  // for operator!=, flat_hash_set
@@ -29,7 +29,7 @@
 using namespace tyr::formalism;
 using namespace tyr::formalism::datalog;
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 RuleSchedulerStratum::RuleSchedulerStratum(const analysis::RuleStratum& rules, const analysis::ListenerStratum& listeners, const Repository& context) :

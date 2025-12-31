@@ -15,16 +15,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_APPLICABILITY_HPP_
-#define TYR_GROUNDER_APPLICABILITY_HPP_
+#ifndef TYR_DATALOG_APPLICABILITY_HPP_
+#define TYR_DATALOG_APPLICABILITY_HPP_
 
 #include "tyr/common/vector.hpp"
+#include "tyr/datalog/fact_sets.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/grounder/fact_sets.hpp"
 
 #include <algorithm>
 #include <concepts>
@@ -35,7 +35,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 /**
@@ -70,6 +70,7 @@ float_t evaluate(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism
 
 template<formalism::datalog::Context C>
 bool evaluate(View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::GroundFunctionExpression>>>, C> element, const FactSets& fact_sets);
+
 // Implementations
 
 inline float_t evaluate(float_t element, const FactSets& fact_sets) { return element; }
@@ -143,12 +144,6 @@ bool is_applicable(View<Index<formalism::datalog::GroundLiteral<T>>, C> element,
 
 template<formalism::FactKind T, formalism::datalog::Context C>
 bool is_applicable(View<IndexList<formalism::datalog::GroundLiteral<T>>, C> elements, const FactSets& fact_sets)
-{
-    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, fact_sets); });
-}
-
-template<formalism::datalog::Context C>
-bool is_applicable(View<DataList<formalism::planning::FDRFact<formalism::FluentTag>>, C> elements, const FactSets& fact_sets)
 {
     return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, fact_sets); });
 }

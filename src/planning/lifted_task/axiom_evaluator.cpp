@@ -17,24 +17,24 @@
 
 #include "tyr/planning/lifted_task/axiom_evaluator.hpp"
 
-#include "../task_utils.hpp"                     // for insert_fact_s...
-#include "tyr/common/comparators.hpp"            // for operator!=
-#include "tyr/common/equal_to.hpp"               // for EqualTo
-#include "tyr/common/formatter.hpp"              // for operator<<
-#include "tyr/common/hash.hpp"                   // for Hash
-#include "tyr/common/vector.hpp"                 // for View
+#include "../task_utils.hpp"           // for insert_fact_s...
+#include "tyr/common/comparators.hpp"  // for operator!=
+#include "tyr/common/equal_to.hpp"     // for EqualTo
+#include "tyr/common/formatter.hpp"    // for operator<<
+#include "tyr/common/hash.hpp"         // for Hash
+#include "tyr/common/vector.hpp"       // for View
+#include "tyr/datalog/bottom_up.hpp"   // for solve_bottom_up
+#include "tyr/datalog/execution_contexts.hpp"
+#include "tyr/datalog/fact_sets.hpp"             // for FactSets, Pre...
 #include "tyr/formalism/overlay_repository.hpp"  // for OverlayReposi...
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"   // for MergeContext
 #include "tyr/formalism/planning/merge_planning.hpp"  // for MergeContext
 #include "tyr/formalism/planning/repository.hpp"      // for Repository
 #include "tyr/formalism/planning/views.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
-#include "tyr/grounder/fact_sets.hpp"    // for FactSets, Pre...
 #include "tyr/planning/lifted_task.hpp"  // for LiftedTask
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"  // for UnpackedState
-#include "tyr/solver/bottom_up.hpp"                     // for solve_bottom_up
 
 #include <cista/containers/hash_storage.h>  // for operator!=
 #include <gtl/phmap.hpp>                    // for operator!=
@@ -45,7 +45,7 @@ namespace tyr::planning
 
 static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_state,
                                     const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                    grounder::ProgramExecutionContext& axiom_context)
+                                    datalog::ProgramExecutionContext& axiom_context)
 {
     axiom_context.facts_execution_context.reset<formalism::FluentTag>();
     axiom_context.task_to_program_execution_context.clear();
@@ -58,7 +58,7 @@ static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_st
 static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram& axiom_program,
                                                     UnpackedState<LiftedTask>& unpacked_state,
                                                     formalism::OverlayRepository<formalism::planning::Repository>& task_repository,
-                                                    grounder::ProgramExecutionContext& axiom_context)
+                                                    datalog::ProgramExecutionContext& axiom_context)
 {
     axiom_context.program_to_task_execution_context.clear();
 
@@ -99,7 +99,7 @@ void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask
 {
     insert_unextended_state(unpacked_state, *m_task->get_repository(), m_axiom_context);
 
-    solver::solve_bottom_up(m_axiom_context);
+    datalog::solve_bottom_up(m_axiom_context);
 
     read_derived_atoms_from_program_context(m_task->get_axiom_program(), unpacked_state, *m_task->get_repository(), m_axiom_context);
 }

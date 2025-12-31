@@ -21,25 +21,24 @@
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/vector.hpp"
+#include "tyr/datalog/bottom_up.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
+#include "tyr/datalog/generator.hpp"
 #include "tyr/formalism/canonicalization.hpp"
 #include "tyr/formalism/planning/builder.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
 #include "tyr/formalism/planning/merge.hpp"
-#include "tyr/grounder/execution_contexts.hpp"
-#include "tyr/grounder/generator.hpp"
 #include "tyr/planning/applicability.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/programs/ground.hpp"
-#include "tyr/solver/bottom_up.hpp"
 
 using namespace tyr::formalism;
 using namespace tyr::formalism::planning;
-using namespace tyr::grounder;
-using namespace tyr::solver;
+using namespace tyr::datalog;
 
 namespace tyr::planning
 {
@@ -277,7 +276,7 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
                                                   ground_program.get_strata(),
                                                   ground_program.get_listeners());
 
-    solve_bottom_up(ground_context);
+    datalog::solve_bottom_up(ground_context);
 
     auto aggregated_statistics = RuleExecutionContext::compute_aggregate_statistics(ground_context.rule_execution_contexts);
 

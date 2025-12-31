@@ -40,14 +40,14 @@ auto goal_facts = parser.parse_goal("goal_facts.dl");
 
 // Initialize execution context. Fine-grained reinitialization with new fluent and goal facts possible.
 // Only assumptions are fixed sets of objects and static facts.
-auto execuction_context = tyr::grounder::ProgramExecutionContext(program, fluent_facts, goal_facts);
+auto execuction_context = tyr::datalog::ProgramExecutionContext(program, fluent_facts, goal_facts);
 
 // Execution modes
 const auto annotated = bool{true};
 const auto weighted = bool{true};
 
 // Solution is a set of ground facts and rules annotated with achievers and cost
-auto solution = tyr::solver::solve_bottomup(execuction_context, annotated, weighted);
+auto solution = tyr::datalog::solve_bottomup(execuction_context, annotated, weighted);
 
 ```
   

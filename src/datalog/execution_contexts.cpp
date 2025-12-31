@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/execution_contexts.hpp"
+#include "tyr/datalog/execution_contexts.hpp"
 
 #include "tyr/formalism/datalog/arity.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
@@ -24,7 +24,7 @@
 using namespace tyr::formalism;
 using namespace tyr::formalism::datalog;
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 /**
  * FactsExecutionContext
@@ -159,8 +159,8 @@ RuleExecutionContext::RuleExecutionContext(View<Index<Rule>, Repository> rule,
                              0,
                              rule.get_arity(),
                              static_assignment_sets),
-    consistency_graph(grounder::kpkc::allocate_dense_graph(static_consistency_graph)),
-    kpkc_workspace(grounder::kpkc::allocate_workspace(static_consistency_graph)),
+    consistency_graph(datalog::kpkc::allocate_dense_graph(static_consistency_graph)),
+    kpkc_workspace(datalog::kpkc::allocate_workspace(static_consistency_graph)),
     repository(std::make_shared<Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     overlay_repository(parent, *repository),
     binding(),
@@ -176,7 +176,7 @@ void RuleExecutionContext::clear() noexcept
 
 void RuleExecutionContext::initialize(const AssignmentSets& assignment_sets)
 {
-    grounder::kpkc::initialize_dense_graph_and_workspace(static_consistency_graph, assignment_sets, consistency_graph, kpkc_workspace);
+    datalog::kpkc::initialize_dense_graph_and_workspace(static_consistency_graph, assignment_sets, consistency_graph, kpkc_workspace);
 }
 
 /**

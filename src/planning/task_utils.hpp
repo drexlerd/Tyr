@@ -20,10 +20,10 @@
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/config.hpp"
+#include "tyr/datalog/declarations.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
-#include "tyr/grounder/declarations.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 
 #include <boost/dynamic_bitset.hpp>
@@ -53,21 +53,21 @@ extern valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float
 
 extern void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
                                             const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                            grounder::ProgramExecutionContext& axiom_context);
+                                            datalog::ProgramExecutionContext& axiom_context);
 
 extern void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
                                              const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                             grounder::ProgramExecutionContext& axiom_context);
+                                             datalog::ProgramExecutionContext& axiom_context);
 
 extern void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
                                                  const formalism::OverlayRepository<formalism::planning::Repository>& numeric_variables_context,
-                                                 grounder::ProgramExecutionContext& axiom_context);
+                                                 datalog::ProgramExecutionContext& axiom_context);
 
-extern void insert_fact_sets_into_assignment_sets(grounder::ProgramExecutionContext& program_context);
+extern void insert_fact_sets_into_assignment_sets(datalog::ProgramExecutionContext& program_context);
 
 extern void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
                                   const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                  grounder::ProgramExecutionContext& action_context);
+                                  datalog::ProgramExecutionContext& action_context);
 
 extern std::vector<analysis::DomainListListList> compute_parameter_domains_per_cond_effect_per_action(
     View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);

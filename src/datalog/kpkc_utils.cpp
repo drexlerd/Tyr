@@ -15,17 +15,17 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/kpkc_utils.hpp"
+#include "tyr/datalog/kpkc_utils.hpp"
 
 #include "tyr/common/config.hpp"  // for uint_t
-#include "tyr/grounder/consistency_graph.hpp"
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/formatter.hpp"
+#include "tyr/datalog/consistency_graph.hpp"
+#include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/formatter.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>  // for dynamic_bitset
 #include <vector>                                   // for vector
 
-namespace tyr::grounder::kpkc
+namespace tyr::datalog::kpkc
 {
 
 DenseKPartiteGraph allocate_dense_graph(const StaticConsistencyGraph& sparse_graph)

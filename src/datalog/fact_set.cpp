@@ -15,9 +15,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "tyr/datalog/fact_sets.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
-#include "tyr/grounder/fact_sets.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <limits>
@@ -25,7 +25,7 @@
 using namespace tyr::formalism;
 using namespace tyr::formalism::datalog;
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 /**

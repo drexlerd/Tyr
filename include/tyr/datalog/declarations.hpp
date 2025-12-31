@@ -15,12 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_GROUNDER_DECLARATIONS_HPP_
-#define TYR_GROUNDER_DECLARATIONS_HPP_
+#ifndef TYR_DATALOG_DECLARATIONS_HPP_
+#define TYR_DATALOG_DECLARATIONS_HPP_
 
 #include "tyr/formalism/declarations.hpp"
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 template<formalism::FactKind T>
 class PredicateAssignmentSet;

@@ -15,13 +15,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/formatter.hpp"
+#include "tyr/datalog/formatter.hpp"
 
-#include "tyr/common/formatter.hpp"  // for to_string
+#include "tyr/common/formatter.hpp"    // for to_string
+#include "tyr/datalog/assignment.hpp"  // for EdgeAssignment, VertexAssignment
+#include "tyr/datalog/consistency_graph.hpp"
+#include "tyr/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/grounder/assignment.hpp"  // for EdgeAssignment, VertexAssignment
-#include "tyr/grounder/consistency_graph.hpp"
-#include "tyr/grounder/formatter.hpp"
 
 #include <fmt/base.h>     // for vformat_to
 #include <fmt/format.h>   // for format
@@ -33,31 +33,31 @@
 
 namespace tyr
 {
-std::ostream& print(std::ostream& os, const grounder::VertexAssignment& el)
+std::ostream& print(std::ostream& os, const datalog::VertexAssignment& el)
 {
     fmt::print(os, "[{}/{}]", to_string(el.index), to_string(el.object));
     return os;
 }
 
-std::ostream& print(std::ostream& os, const grounder::EdgeAssignment& el)
+std::ostream& print(std::ostream& os, const datalog::EdgeAssignment& el)
 {
     fmt::print(os, "[{}/{}, {}/{}]", to_string(el.first_index), to_string(el.first_object), to_string(el.second_index), to_string(el.second_object));
     return os;
 }
 
-std::ostream& print(std::ostream& os, const grounder::details::Vertex& el)
+std::ostream& print(std::ostream& os, const datalog::details::Vertex& el)
 {
     fmt::print(os, "[{}/{}]", to_string(el.get_parameter_index()), to_string(el.get_object_index()));
     return os;
 }
 
-std::ostream& print(std::ostream& os, const grounder::details::Edge& el)
+std::ostream& print(std::ostream& os, const datalog::details::Edge& el)
 {
     fmt::print(os, "[{}, {}]", to_string(el.get_src()), to_string(el.get_dst()));
     return os;
 }
 
-std::ostream& print(std::ostream& os, const grounder::StaticConsistencyGraph& el)
+std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el)
 {
     fmt::print(
         os,
@@ -71,7 +71,7 @@ std::ostream& print(std::ostream& os, const grounder::StaticConsistencyGraph& el
     return os;
 }
 
-namespace grounder
+namespace datalog
 {
 namespace details
 {
@@ -87,5 +87,5 @@ std::ostream& operator<<(std::ostream& os, const EdgeAssignment& el) { return pr
 
 std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph& el) { return print(os, el); }
 
-}  // end namespace grounder
+}  // end namespace datalog
 }

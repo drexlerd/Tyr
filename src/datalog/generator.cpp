@@ -15,30 +15,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/grounder/generator.hpp"
+#include "tyr/datalog/generator.hpp"
 
-#include "tyr/common/comparators.hpp"                            // for opera...
-#include "tyr/common/config.hpp"                                 // for uint_t
-#include "tyr/common/equal_to.hpp"                               // for EqualTo
-#include "tyr/common/formatter.hpp"                              // for opera...
-#include "tyr/common/hash.hpp"                                   // for Hash
-#include "tyr/common/types.hpp"                                  // for View
-#include "tyr/common/vector.hpp"                                 // for opera...
+#include "tyr/common/comparators.hpp"         // for opera...
+#include "tyr/common/config.hpp"              // for uint_t
+#include "tyr/common/equal_to.hpp"            // for EqualTo
+#include "tyr/common/formatter.hpp"           // for opera...
+#include "tyr/common/hash.hpp"                // for Hash
+#include "tyr/common/types.hpp"               // for View
+#include "tyr/common/vector.hpp"              // for opera...
+#include "tyr/datalog/applicability.hpp"      // for is_ap...
+#include "tyr/datalog/consistency_graph.hpp"  // for Vertex
+#include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/execution_contexts.hpp"  // for RuleE...
+#include "tyr/datalog/fact_sets.hpp"
+#include "tyr/datalog/formatter.hpp"
+#include "tyr/datalog/generator.hpp"
+#include "tyr/datalog/kpkc.hpp"                                  // for for_e...
+#include "tyr/datalog/kpkc_data.hpp"                             // for Works...
 #include "tyr/formalism/datalog/conjunctive_condition_view.hpp"  // for View
 #include "tyr/formalism/datalog/declarations.hpp"                // for Context
 #include "tyr/formalism/datalog/formatter.hpp"                   // for opera...
 #include "tyr/formalism/datalog/grounder.hpp"                    // for Groun...
 #include "tyr/formalism/datalog/repository.hpp"                  // for Repos...
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/grounder/applicability.hpp"      // for is_ap...
-#include "tyr/grounder/consistency_graph.hpp"  // for Vertex
-#include "tyr/grounder/declarations.hpp"
-#include "tyr/grounder/execution_contexts.hpp"  // for RuleE...
-#include "tyr/grounder/fact_sets.hpp"
-#include "tyr/grounder/formatter.hpp"
-#include "tyr/grounder/generator.hpp"
-#include "tyr/grounder/kpkc.hpp"       // for for_e...
-#include "tyr/grounder/kpkc_data.hpp"  // for Works...
 
 #include <algorithm>                        // for all_of
 #include <assert.h>                         // for assert
@@ -52,7 +52,7 @@
 using namespace tyr::formalism;
 using namespace tyr::formalism::datalog;
 
-namespace tyr::grounder
+namespace tyr::datalog
 {
 
 template<FactKind T, Context C_SRC, Context C_DST>
