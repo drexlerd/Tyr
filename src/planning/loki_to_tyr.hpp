@@ -629,6 +629,8 @@ private:
         {
             case loki::BinaryComparatorEnum::EQUAL:
                 return build_binary_op(formalism::OpEq {});
+            case loki::BinaryComparatorEnum::UNEQUAL:
+                return build_binary_op(formalism::OpNe {});
             case loki::BinaryComparatorEnum::LESS_EQUAL:
                 return build_binary_op(formalism::OpLe {});
             case loki::BinaryComparatorEnum::LESS:
