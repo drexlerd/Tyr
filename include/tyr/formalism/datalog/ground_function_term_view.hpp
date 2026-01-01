@@ -42,7 +42,7 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_function() const noexcept { return make_view(get_data().function, *m_context); }
+    auto get_function() const noexcept { return make_view(m_handle.group, *m_context); }
     auto get_binding() const noexcept { return make_view(get_data().binding, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }

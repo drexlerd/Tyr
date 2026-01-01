@@ -394,7 +394,7 @@ auto merge_p2d(View<Index<GroundAtom<T_SRC>>, C_SRC> element, MergeDatalogContex
             auto& atom = *atom_ptr;
             atom.clear();
 
-            atom.predicate = merge_p2d<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), context).first;
+            atom.index.group = merge_p2d<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), context).first;
             atom.binding = merge_p2d(element.get_binding(), context).first;
 
             canonicalize(atom);
@@ -497,7 +497,7 @@ auto merge_p2d(View<Index<GroundFunctionTerm<T>>, C_SRC> element, MergeDatalogCo
             auto& fterm = *fterm_ptr;
             fterm.clear();
 
-            fterm.function = element.get_function().get_index();
+            fterm.index.group = element.get_function().get_index();
             fterm.binding = merge_p2d(element.get_binding(), context).first;
 
             canonicalize(fterm);

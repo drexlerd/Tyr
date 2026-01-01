@@ -158,15 +158,11 @@ void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_va
 
 void insert_fact_sets_into_assignment_sets(datalog::ProgramExecutionContext& program_context)
 {
-    auto& fluent_predicate_fact_sets = program_context.facts_execution_context.fact_sets.get<formalism::FluentTag>().predicate;
-    auto& fluent_predicate_assignment_sets = program_context.facts_execution_context.assignment_sets.get<formalism::FluentTag>().predicate;
-
-    auto& fluent_function_fact_sets = program_context.facts_execution_context.fact_sets.get<formalism::FluentTag>().function;
-    auto& fluent_function_assignment_sets = program_context.facts_execution_context.assignment_sets.get<formalism::FluentTag>().function;
+    auto& fluent_fact_sets = program_context.facts_execution_context.fact_sets.get<formalism::FluentTag>();
+    auto& fluent_assignment_sets = program_context.facts_execution_context.assignment_sets.get<formalism::FluentTag>();
 
     /// --- Initialize AssignmentSets
-    fluent_predicate_assignment_sets.insert(fluent_predicate_fact_sets.get_facts());
-    fluent_function_assignment_sets.insert(fluent_function_fact_sets.get_fterms(), fluent_function_fact_sets.get_values());
+    fluent_assignment_sets.insert(fluent_fact_sets);
 
     /// --- Initialize RuleExecutionContext
     for (auto& rule_context : program_context.rule_execution_contexts)

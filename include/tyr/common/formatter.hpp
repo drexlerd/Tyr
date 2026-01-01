@@ -83,6 +83,9 @@ std::ostream& operator<<(std::ostream& os, const std::variant<Ts...>& el);
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const IndexMixin<Derived>& el);
 
+template<typename Derived, IndexConcept Group>
+std::ostream& operator<<(std::ostream& os, const GroupIndexMixin<Derived, Group>& el);
+
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& el);
 
@@ -148,6 +151,9 @@ std::ostream& print(std::ostream& os, const std::variant<Ts...>& el);
 
 template<typename Derived>
 std::ostream& print(std::ostream& os, const IndexMixin<Derived>& el);
+
+template<typename Derived, IndexConcept Group>
+std::ostream& print(std::ostream& os, const GroupIndexMixin<Derived, Group>& el);
 
 template<typename Derived>
 std::ostream& print(std::ostream& os, const FixedUintMixin<Derived>& el);
@@ -323,6 +329,12 @@ std::ostream& operator<<(std::ostream& os, const IndexMixin<Derived>& el)
     return print(os, el);
 }
 
+template<typename Derived, IndexConcept Group>
+std::ostream& operator<<(std::ostream& os, const GroupIndexMixin<Derived, Group>& el)
+{
+    return print(os, el);
+}
+
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& el)
 {
@@ -457,6 +469,17 @@ template<typename Derived>
 std::ostream& print(std::ostream& os, const IndexMixin<Derived>& el)
 {
     return print(os, el.get_value());
+}
+
+template<typename Derived, IndexConcept Group>
+std::ostream& print(std::ostream& os, const GroupIndexMixin<Derived, Group>& el)
+{
+    os << "<";
+    print(os, el.get_group());
+    os << ": ";
+    print(os, el.get_value());
+    os << ">";
+    return os;
 }
 
 template<typename Derived>

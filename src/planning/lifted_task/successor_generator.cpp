@@ -87,32 +87,35 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
     auto iter_workspace = itertools::cartesian_set::Workspace<Index<f::Object>> {};
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
-    for (const auto fact : m_action_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
+    for (const auto& set : m_action_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_sets())
     {
-        if (m_task->get_action_program().get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
+        for (const auto& fact : set.get_facts())
         {
-            for (const auto action_index : m_task->get_action_program().get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
+            if (m_task->get_action_program().get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
             {
-                auto grounder_context = fp::GrounderContext { m_action_context.planning_builder,
-                                                              *m_task->get_repository(),
-                                                              m_action_context.program_to_task_execution_context.binding };
+                for (const auto action_index : m_task->get_action_program().get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
+                {
+                    auto grounder_context = fp::GrounderContext { m_action_context.planning_builder,
+                                                                  *m_task->get_repository(),
+                                                                  m_action_context.program_to_task_execution_context.binding };
 
-                const auto action = make_view(action_index, grounder_context.destination);
+                    const auto action = make_view(action_index, grounder_context.destination);
 
-                m_action_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
+                    m_action_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
 
-                const auto ground_action_index = ground(action,
-                                                        grounder_context,
-                                                        m_task->get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
-                                                        fluent_assign,
-                                                        iter_workspace,
-                                                        *m_task->get_fdr_context())
-                                                     .first;
+                    const auto ground_action_index = ground(action,
+                                                            grounder_context,
+                                                            m_task->get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
+                                                            fluent_assign,
+                                                            iter_workspace,
+                                                            *m_task->get_fdr_context())
+                                                         .first;
 
-                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
+                    const auto ground_action = make_view(ground_action_index, grounder_context.destination);
 
-                if (m_executor.is_applicable(ground_action, state_context))
-                    out_nodes.emplace_back(ground_action, m_executor.apply_action(state_context, ground_action, *m_state_repository));
+                    if (m_executor.is_applicable(ground_action, state_context))
+                        out_nodes.emplace_back(ground_action, m_executor.apply_action(state_context, ground_action, *m_state_repository));
+                }
             }
         }
     }

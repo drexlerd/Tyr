@@ -35,7 +35,7 @@ public:
     OverlayRepository(const C& parent_scope, C& local_scope) : parent_scope(parent_scope), local_scope(local_scope) {}
 
     template<typename T>
-    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
+    auto find(const Data<T>& builder) const noexcept
     {
         if (auto ptr = parent_scope.find(builder))
             return ptr;
@@ -67,7 +67,7 @@ public:
             return std::make_pair(*ptr, false);
 
         // Manually assign index to continue indexing.
-        builder.index.index.value = parent_scope.template size<T>(builder.index.group) + local_scope.template size<T>(builder.index.group);
+        builder.index.value = parent_scope.template size<T>(builder.index) + local_scope.template size<T>(builder.index);
 
         return std::make_pair(local_scope.template get_or_create<T, false>(builder, buf).first, true);
     }
@@ -98,16 +98,15 @@ public:
         assert(index != Index<T>::max() && "Unassigned index.");
 
         // Guard against accidental overlap from incorrect merging.
-        assert(local_scope.template size<T>(index.get_group()) == 0
-               || local_scope.template front<T>(index.get_group()).index.get_index().value >= parent_scope.template size<T>(index.get_group()));
+        assert(local_scope.template size<T>(index) == 0 || local_scope.template front<T>(index).index.value >= parent_scope.template size<T>(index));
 
-        const auto parent_scope_size = parent_scope.template size<T>(index.get_group());
+        const auto parent_scope_size = parent_scope.template size<T>(index);
 
-        if (index.index.value < parent_scope_size)
+        if (index.value < parent_scope_size)
             return parent_scope[index];
 
         // Subtract parent_scope size to get position in local_scope storage
-        index.index.value -= parent_scope_size;
+        index.value -= parent_scope_size;
         return local_scope[index];
     }
 
@@ -118,9 +117,10 @@ public:
     }
 
     template<typename T>
-    size_t size(Index<T> group) const noexcept
+        requires(GroupIndexConcept<Index<T>>)
+    size_t size(Index<T> index) const noexcept
     {
-        return parent_scope.template size<T>(group) + local_scope.template size<T>(group);
+        return parent_scope.template size<T>(index) + local_scope.template size<T>(index);
     }
 
     const C& get_parent_scope() const noexcept { return parent_scope; }

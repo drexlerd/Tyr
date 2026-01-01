@@ -388,8 +388,10 @@ struct TaggedAssignmentSets
 
     void insert(const TaggedFactSets<T>& fact_sets)
     {
-        predicate.insert(fact_sets.predicate.get_facts());
-        function.insert(fact_sets.function.get_fterms(), fact_sets.function.get_values());
+        for (const auto& set : fact_sets.predicate.get_sets())
+            predicate.insert(set.get_facts());
+        for (const auto& set : fact_sets.function.get_sets())
+            function.insert(set.get_fterms(), set.get_values());
     }
 
     void reset()

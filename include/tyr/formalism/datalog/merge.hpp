@@ -358,7 +358,7 @@ auto merge_d2d(View<Index<GroundAtom<T>>, C_SRC> element, MergeContext<C_DST>& c
                                                         auto& atom = *atom_ptr;
                                                         atom.clear();
 
-                                                        atom.predicate = element.get_predicate().get_index();
+                                                        atom.index.group = element.get_index().get_group();
                                                         atom.binding = merge_d2d(element.get_binding(), context).first;
 
                                                         canonicalize(atom);
@@ -410,19 +410,19 @@ template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<formalism::Function<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
     return with_cache<formalism::Function<T>, formalism::Function<T>>(element,
-                                                context.cache,
-                                                [&]()
-                                                {
-                                                    auto function_ptr = context.builder.template get_builder<formalism::Function<T>>();
-                                                    auto& function = *function_ptr;
-                                                    function.clear();
+                                                                      context.cache,
+                                                                      [&]()
+                                                                      {
+                                                                          auto function_ptr = context.builder.template get_builder<formalism::Function<T>>();
+                                                                          auto& function = *function_ptr;
+                                                                          function.clear();
 
-                                                    function.name = element.get_name();
-                                                    function.arity = element.get_arity();
+                                                                          function.name = element.get_name();
+                                                                          function.arity = element.get_arity();
 
-                                                    canonicalize(function);
-                                                    return context.destination.get_or_create(function, context.builder.get_buffer());
-                                                });
+                                                                          canonicalize(function);
+                                                                          return context.destination.get_or_create(function, context.builder.get_buffer());
+                                                                      });
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>

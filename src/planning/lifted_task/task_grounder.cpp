@@ -328,52 +328,55 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
         set(uint_t(atom.get_index()), true, static_atoms_bitset);
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_actions_mapping, then facts of the predicate
-    for (const auto fact : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
+    for (const auto& set : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_sets())
     {
-        if (ground_program.get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
+        for (const auto& fact : set.get_facts())
         {
-            ground_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
-            auto grounder_context = fp::GrounderContext { ground_context.planning_builder,
-                                                          *lifted_task.get_repository(),
-                                                          ground_context.program_to_task_execution_context.binding };
-
-            for (const auto action_index : ground_program.get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
+            if (ground_program.get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
             {
-                const auto action = make_view(action_index, grounder_context.destination);
+                ground_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
+                auto grounder_context = fp::GrounderContext { ground_context.planning_builder,
+                                                              *lifted_task.get_repository(),
+                                                              ground_context.program_to_task_execution_context.binding };
 
-                const auto ground_action_index = ground(action,
-                                                        grounder_context,
-                                                        lifted_task.get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
-                                                        fluent_assign,
-                                                        iter_workspace,
-                                                        *lifted_task.get_fdr_context())
-                                                     .first;
-
-                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
-
-                if (is_statically_applicable(ground_action, static_atoms_bitset) && is_consistent(ground_action, fluent_assign, derived_assign))
+                for (const auto action_index : ground_program.get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
                 {
-                    ground_actions_set.insert(ground_action.get_index());
+                    const auto action = make_view(action_index, grounder_context.destination);
 
-                    for (const auto fact : ground_action.get_condition().get_facts<f::FluentTag>())
-                        for (const auto atom : fact.get_variable().get_atoms())
-                            fluent_atoms_set.insert(atom.get_index());
+                    const auto ground_action_index = ground(action,
+                                                            grounder_context,
+                                                            lifted_task.get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
+                                                            fluent_assign,
+                                                            iter_workspace,
+                                                            *lifted_task.get_fdr_context())
+                                                         .first;
 
-                    for (const auto literal : ground_action.get_condition().get_facts<f::DerivedTag>())
-                        derived_atoms_set.insert(literal.get_atom().get_index());
+                    const auto ground_action = make_view(ground_action_index, grounder_context.destination);
 
-                    for (const auto cond_effect : ground_action.get_effects())
+                    if (is_statically_applicable(ground_action, static_atoms_bitset) && is_consistent(ground_action, fluent_assign, derived_assign))
                     {
-                        for (const auto fact : cond_effect.get_condition().get_facts<f::FluentTag>())
+                        ground_actions_set.insert(ground_action.get_index());
+
+                        for (const auto fact : ground_action.get_condition().get_facts<f::FluentTag>())
                             for (const auto atom : fact.get_variable().get_atoms())
                                 fluent_atoms_set.insert(atom.get_index());
 
-                        for (const auto literal : cond_effect.get_condition().get_facts<f::DerivedTag>())
+                        for (const auto literal : ground_action.get_condition().get_facts<f::DerivedTag>())
                             derived_atoms_set.insert(literal.get_atom().get_index());
 
-                        for (const auto fact : cond_effect.get_effect().get_facts())
-                            for (const auto atom : fact.get_variable().get_atoms())
-                                fluent_atoms_set.insert(atom.get_index());
+                        for (const auto cond_effect : ground_action.get_effects())
+                        {
+                            for (const auto fact : cond_effect.get_condition().get_facts<f::FluentTag>())
+                                for (const auto atom : fact.get_variable().get_atoms())
+                                    fluent_atoms_set.insert(atom.get_index());
+
+                            for (const auto literal : cond_effect.get_condition().get_facts<f::DerivedTag>())
+                                derived_atoms_set.insert(literal.get_atom().get_index());
+
+                            for (const auto fact : cond_effect.get_effect().get_facts())
+                                for (const auto atom : fact.get_variable().get_atoms())
+                                    fluent_atoms_set.insert(atom.get_index());
+                        }
                     }
                 }
             }
@@ -385,35 +388,38 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
     auto ground_axioms_set = UnorderedSet<Index<fp::GroundAxiom>> {};
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_axioms_mapping, then facts of the predicate
-    for (const auto fact : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
+    for (const auto& set : ground_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_sets())
     {
-        if (ground_program.get_predicate_to_axioms_mapping().contains(fact.get_predicate().get_index()))
+        for (const auto& fact : set.get_facts())
         {
-            ground_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
-            auto grounder_context = fp::GrounderContext { ground_context.planning_builder,
-                                                          *lifted_task.get_repository(),
-                                                          ground_context.program_to_task_execution_context.binding };
-
-            for (const auto axiom_index : ground_program.get_predicate_to_axioms_mapping().at(fact.get_predicate().get_index()))
+            if (ground_program.get_predicate_to_axioms_mapping().contains(fact.get_predicate().get_index()))
             {
-                const auto axiom = make_view(axiom_index, grounder_context.destination);
+                ground_context.program_to_task_execution_context.binding = fact.get_binding().get_objects().get_data();
+                auto grounder_context = fp::GrounderContext { ground_context.planning_builder,
+                                                              *lifted_task.get_repository(),
+                                                              ground_context.program_to_task_execution_context.binding };
 
-                const auto ground_axiom_index = ground(axiom, grounder_context, *lifted_task.get_fdr_context()).first;
-
-                const auto ground_axiom = make_view(ground_axiom_index, grounder_context.destination);
-
-                if (is_statically_applicable(ground_axiom, static_atoms_bitset) && is_consistent(ground_axiom, fluent_assign, derived_assign))
+                for (const auto axiom_index : ground_program.get_predicate_to_axioms_mapping().at(fact.get_predicate().get_index()))
                 {
-                    ground_axioms_set.insert(ground_axiom.get_index());
+                    const auto axiom = make_view(axiom_index, grounder_context.destination);
 
-                    for (const auto fact : ground_axiom.get_body().get_facts<f::FluentTag>())
-                        for (const auto atom : fact.get_variable().get_atoms())
-                            fluent_atoms_set.insert(atom.get_index());
+                    const auto ground_axiom_index = ground(axiom, grounder_context, *lifted_task.get_fdr_context()).first;
 
-                    for (const auto literal : ground_axiom.get_body().get_facts<f::DerivedTag>())
-                        derived_atoms_set.insert(literal.get_atom().get_index());
+                    const auto ground_axiom = make_view(ground_axiom_index, grounder_context.destination);
 
-                    derived_atoms_set.insert(ground_axiom.get_head().get_index());
+                    if (is_statically_applicable(ground_axiom, static_atoms_bitset) && is_consistent(ground_axiom, fluent_assign, derived_assign))
+                    {
+                        ground_axioms_set.insert(ground_axiom.get_index());
+
+                        for (const auto fact : ground_axiom.get_body().get_facts<f::FluentTag>())
+                            for (const auto atom : fact.get_variable().get_atoms())
+                                fluent_atoms_set.insert(atom.get_index());
+
+                        for (const auto literal : ground_axiom.get_body().get_facts<f::DerivedTag>())
+                            derived_atoms_set.insert(literal.get_atom().get_index());
+
+                        derived_atoms_set.insert(ground_axiom.get_head().get_index());
+                    }
                 }
             }
         }

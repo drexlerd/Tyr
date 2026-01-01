@@ -33,9 +33,12 @@ namespace tyr::datalog
  */
 
 template<f::FactKind T>
-PredicateFactSet<T>::PredicateFactSet(View<IndexList<fd::GroundAtom<T>>, fd::Repository> view) : m_context(view.get_context()), m_indices()
+PredicateFactSet<T>::PredicateFactSet(View<Index<formalism::Predicate<T>>, formalism::datalog::Repository> predicate) :
+    m_predicate(predicate.get_index()),
+    m_context(predicate.get_context()),
+    m_indices(),
+    m_bitset()
 {
-    insert(view);
 }
 
 template<f::FactKind T>
@@ -103,12 +106,12 @@ template class PredicateFactSet<f::FluentTag>;
  */
 
 template<f::FactKind T>
-FunctionFactSet<T>::FunctionFactSet(View<IndexList<fd::GroundFunctionTermValue<T>>, fd::Repository> view) :
-    m_context(view.get_context()),
+FunctionFactSet<T>::FunctionFactSet(View<Index<formalism::Function<T>>, formalism::datalog::Repository> function) :
+    m_function(function.get_index()),
+    m_context(function.get_context()),
     m_indices(),
     m_unique()
 {
-    insert(view);
 }
 
 template<f::FactKind T>
@@ -144,34 +147,34 @@ void FunctionFactSet<T>::insert(View<IndexList<fd::GroundFunctionTerm<T>>, fd::R
 }
 
 template<f::FactKind T>
-void FunctionFactSet<T>::insert(View<Index<fd::GroundFunctionTermValue<T>>, fd::Repository> view)
+void FunctionFactSet<T>::insert(View<Index<fd::GroundFunctionTermValue<T>>, fd::Repository> fterm_value)
 {
-    insert(view.get_fterm(), view.get_value());
+    insert(fterm_value.get_fterm(), fterm_value.get_value());
 }
 
 template<f::FactKind T>
-void FunctionFactSet<T>::insert(View<IndexList<fd::GroundFunctionTermValue<T>>, fd::Repository> view)
+void FunctionFactSet<T>::insert(View<IndexList<fd::GroundFunctionTermValue<T>>, fd::Repository> fterm_values)
 {
-    for (const auto fterm_value : view)
+    for (const auto fterm_value : fterm_values)
         insert(fterm_value);
 }
 
 template<f::FactKind T>
-bool FunctionFactSet<T>::contains(Index<fd::GroundFunctionTerm<T>> index) const noexcept
+bool FunctionFactSet<T>::contains(Index<fd::GroundFunctionTerm<T>> fterm) const noexcept
 {
-    return m_unique.contains(index);
+    return m_unique.contains(fterm);
 }
 
 template<f::FactKind T>
-bool FunctionFactSet<T>::contains(View<Index<fd::GroundFunctionTerm<T>>, fd::Repository> view) const noexcept
+bool FunctionFactSet<T>::contains(View<Index<fd::GroundFunctionTerm<T>>, fd::Repository> fterm) const noexcept
 {
-    return contains(view.get_index());
+    return contains(fterm.get_index());
 }
 
 template<f::FactKind T>
-float_t FunctionFactSet<T>::operator[](Index<fd::GroundFunctionTerm<T>> index) const noexcept
+float_t FunctionFactSet<T>::operator[](Index<fd::GroundFunctionTerm<T>> fterm) const noexcept
 {
-    return m_values[index.get_value()];
+    return m_values[fterm.get_value()];
 }
 
 template<f::FactKind T>
@@ -194,15 +197,26 @@ template class FunctionFactSet<f::FluentTag>;
  */
 
 FactSets::FactSets(View<Index<fd::Program>, fd::Repository> program) :
-    static_sets(program.template get_atoms<f::StaticTag>(), program.template get_fterm_values<f::StaticTag>()),
-    fluent_sets(program.template get_atoms<f::FluentTag>(), program.template get_fterm_values<f::FluentTag>())
+    static_sets(program.template get_predicates<f::StaticTag>(), program.template get_functions<f::StaticTag>()),
+    fluent_sets(program.template get_predicates<f::FluentTag>(), program.template get_functions<f::FluentTag>())
 {
+    static_sets.predicate.insert(program.template get_atoms<f::StaticTag>());
+    static_sets.function.insert(program.template get_fterm_values<f::StaticTag>());
+    fluent_sets.predicate.insert(program.template get_atoms<f::FluentTag>());
+    fluent_sets.function.insert(program.template get_fterm_values<f::FluentTag>());
 }
 
 FactSets::FactSets(View<Index<fd::Program>, fd::Repository> program, TaggedFactSets<f::FluentTag> fluent_facts) :
-    static_sets(program.template get_atoms<f::StaticTag>(), program.template get_fterm_values<f::StaticTag>()),
-    fluent_sets(std::move(fluent_facts))
+    static_sets(program.template get_predicates<f::StaticTag>(), program.template get_functions<f::StaticTag>()),
+    fluent_sets(program.template get_predicates<f::FluentTag>(), program.template get_functions<f::FluentTag>())
 {
+    static_sets.predicate.insert(program.template get_atoms<f::StaticTag>());
+    static_sets.function.insert(program.template get_fterm_values<f::StaticTag>());
+
+    for (const auto& set : fluent_facts.predicate.get_sets())
+        fluent_sets.predicate.insert(set.get_facts());
+    for (const auto& set : fluent_facts.function.get_sets())
+        fluent_sets.function.insert(set.get_fterms(), set.get_values());
 }
 
 }

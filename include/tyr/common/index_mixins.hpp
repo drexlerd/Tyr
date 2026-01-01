@@ -75,19 +75,20 @@ concept IndexConcept = requires(const T& i, const T& j, uint_t v) {
     { i > j } -> std::same_as<bool>;
 };
 
-template<typename Derived, IndexConcept Group, IndexConcept Index>
+template<typename Derived, IndexConcept Group>
 struct GroupIndexMixin
 {
     using GroupType = Group;
-    using IndexType = Index;
 
     Group group {};
-    Index index {};
+    uint_t value {};
 
-    GroupIndexMixin() noexcept : group(Group::max()), index(Index::max()) {}
-    explicit GroupIndexMixin(Group group, Index index) noexcept : group(group), index(index) {}
+    static constexpr uint_t MAX = std::numeric_limits<uint_t>::max();
 
-    static constexpr Derived max() noexcept { return Derived(Group::max(), Index::max()); }
+    GroupIndexMixin() noexcept : group(Group::max()), value(MAX) {}
+    explicit GroupIndexMixin(Group group, uint_t value) noexcept : group(group), value(value) {}
+
+    static constexpr Derived max() noexcept { return Derived(Group::max(), MAX); }
 
     // ----------------------------------------------------
     // Comparisons
@@ -95,31 +96,31 @@ struct GroupIndexMixin
 
     friend constexpr bool operator==(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
     {
-        return EqualTo<Group> {}(lhs.group, rhs.group) && EqualTo<Index> {}(lhs.index, rhs.index);
+        return EqualTo<Group> {}(lhs.group, rhs.group) && EqualTo<uint_t> {}(lhs.value, rhs.value);
     }
     friend constexpr bool operator!=(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept { return !(lhs == rhs); }
 
     friend constexpr bool operator<(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept
     {
-        return (lhs.group < rhs.group) || (lhs.group == rhs.group && lhs.index < rhs.index);
+        return (lhs.group < rhs.group) || (lhs.group == rhs.group && lhs.value < rhs.value);
     }
     friend constexpr bool operator<=(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept { return !(rhs < lhs); }
     friend constexpr bool operator>(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept { return rhs < lhs; }
     friend constexpr bool operator>=(const GroupIndexMixin& lhs, const GroupIndexMixin& rhs) noexcept { return !(lhs < rhs); }
 
     Group get_group() const noexcept { return group; }
-    Index get_index() const noexcept { return index; }
+    uint_t get_value() const noexcept { return value; }
 
-    auto cista_members() const noexcept { return std::tie(group, index); }
-    auto identifying_members() const noexcept { return std::tie(group, index); }
+    auto cista_members() const noexcept { return std::tie(group, value); }
+    auto identifying_members() const noexcept { return std::tie(group, value); }
 };
 
 template<typename T>
-concept GroupIndexConcept = requires(const T& i, const T& j, typename T::GroupType g, typename T::IndexType x) {
+concept GroupIndexConcept = requires(const T& i, const T& j, typename T::GroupType g, uint_t x) {
     { T() };
     { T(g, x) };
     { i.get_group() } -> IndexConcept;
-    { i.get_index() } -> IndexConcept;
+    { i.get_value() } -> std::same_as<uint_t>;
     { T::max() } -> std::same_as<T>;
     { i == j } -> std::same_as<bool>;
     { i != j } -> std::same_as<bool>;

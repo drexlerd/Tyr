@@ -32,16 +32,10 @@ template<formalism::FactKind T>
 struct Data<formalism::datalog::GroundFunctionTerm<T>>
 {
     Index<formalism::datalog::GroundFunctionTerm<T>> index;
-    Index<formalism::Function<T>> function;
     Index<formalism::Binding> binding;
 
     Data() = default;
-    Data(Index<formalism::datalog::GroundFunctionTerm<T>> index, Index<formalism::Function<T>> function, Index<formalism::Binding> binding) :
-        index(index),
-        function(function),
-        binding(binding)
-    {
-    }
+    Data(Index<formalism::datalog::GroundFunctionTerm<T>> index, Index<formalism::Binding> binding) : index(index), binding(binding) {}
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;
@@ -50,12 +44,11 @@ struct Data<formalism::datalog::GroundFunctionTerm<T>>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(function);
         tyr::clear(binding);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, function, binding); }
-    auto identifying_members() const noexcept { return std::tie(function, binding); }
+    auto cista_members() const noexcept { return std::tie(index, binding); }
+    auto identifying_members() const noexcept { return std::tie(index.group, binding); }
 };
 }
 

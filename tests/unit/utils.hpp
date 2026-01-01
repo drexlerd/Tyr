@@ -261,7 +261,7 @@ inline IndexList<formalism::datalog::GroundAtom<formalism::StaticTag>> add_stati
              { GripperStaticPredicate::Gripper, { { GripperObject::Left }, { GripperObject::Right } } },
              { GripperStaticPredicate::Ball, { { GripperObject::Ball1 }, { GripperObject::Ball2 } } } })
     {
-        ground_atom_builder.predicate = convert(predicate);
+        ground_atom_builder.index.group = convert(predicate);
 
         for (const auto& atom : atoms)
         {
@@ -301,7 +301,7 @@ inline IndexList<formalism::datalog::GroundAtom<formalism::FluentTag>> add_fluen
              { GripperFluentPredicate::At, { { GripperObject::Ball1, GripperObject::RoomA }, { GripperObject::Ball2, GripperObject::RoomA } } },
              { GripperFluentPredicate::AtRobby, { { GripperObject::RoomA } } } })
     {
-        ground_atom_builder.predicate = convert(predicate);
+        ground_atom_builder.index.group = convert(predicate);
         for (const auto& atom : atoms)
         {
             auto binding_builder = Data<formalism::Binding> {};

@@ -95,7 +95,7 @@ auto ground(View<Index<FunctionTerm<T>>, C_SRC> element, GrounderContext<C_DST>&
     fterm.clear();
 
     // Fill data
-    fterm.function = element.get_function().get_index();
+    fterm.index.group = element.get_function().get_index();
     fterm.binding = ground(element.get_terms(), context).first;
 
     // Canonicalize and Serialize
@@ -192,7 +192,7 @@ auto ground(View<Index<Atom<T>>, C_SRC> element, GrounderContext<C_DST>& context
     atom.clear();
 
     // Fill data
-    atom.predicate = element.get_predicate().get_index();
+    atom.index.group = element.get_predicate().get_index();
     atom.binding = ground(element.get_terms(), context).first;
 
     // Canonicalize and Serialize

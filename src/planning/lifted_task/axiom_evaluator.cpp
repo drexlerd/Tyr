@@ -69,18 +69,21 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
                                                                      axiom_context.program_to_task_execution_context.merge_cache };
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_predicate_mapping, then facts of the predicate
-    for (const auto fact : axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_facts())
+    for (const auto& set : axiom_context.facts_execution_context.fact_sets.fluent_sets.predicate.get_sets())
     {
-        if (axiom_program.get_predicate_to_predicate_mapping().contains(fact.get_predicate().get_index()))
+        for (const auto& fact : set.get_facts())
         {
-            // TODO: pass the predicate mapping here so that we can skip merging the predicate :)
-            const auto ground_atom = formalism::planning::merge_d2p<formalism::FluentTag,
-                                                                    formalism::datalog::Repository,
-                                                                    formalism::OverlayRepository<formalism::planning::Repository>,
-                                                                    formalism::DerivedTag>(fact, merge_context)
-                                         .first;
+            if (axiom_program.get_predicate_to_predicate_mapping().contains(fact.get_predicate().get_index()))
+            {
+                // TODO: pass the predicate mapping here so that we can skip merging the predicate :)
+                const auto ground_atom = formalism::planning::merge_d2p<formalism::FluentTag,
+                                                                        formalism::datalog::Repository,
+                                                                        formalism::OverlayRepository<formalism::planning::Repository>,
+                                                                        formalism::DerivedTag>(fact, merge_context)
+                                             .first;
 
-            unpacked_state.set(ground_atom);
+                unpacked_state.set(ground_atom);
+            }
         }
     }
 }

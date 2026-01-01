@@ -171,7 +171,7 @@ public:
             repositories.resize(builder.index.group.value + 1);
 
         if constexpr (AssignIndex)
-            builder.index.index.value = repositories[builder.index.group.value].size();
+            builder.index.value = repositories[builder.index.group.value].size();
 
         const auto [ptr, success] = repositories[builder.index.group.value].insert(builder, buf);
 
@@ -198,7 +198,7 @@ public:
 
         const auto& repositories = get_container<T>(m_repository);
 
-        return repositories[index.group.value][index.get_index()];
+        return repositories[index.group.value][index];
     }
 
     template<typename T>
@@ -210,13 +210,14 @@ public:
     }
 
     template<typename T>
-    const Data<T>& front(Index<T> group) const
+        requires(GroupIndexConcept<Index<T>>)
+    const Data<T>& front(Index<T> index) const
     {
         const auto& repositories = get_container<T>(m_repository);
 
-        assert(size(group) > 0);
+        assert(size(index) > 0);
 
-        return repositories[group.value].front();
+        return repositories[index.group.value].front();
     }
 
     /// @brief Get the number of stored elements.
@@ -229,14 +230,15 @@ public:
     }
 
     template<typename T>
-    size_t size(Index<T> group) const noexcept
+        requires(GroupIndexConcept<Index<T>>)
+    size_t size(Index<T> index) const noexcept
     {
         const auto& repositories = get_container<T>(m_repository);
 
-        if (group.value >= repositories.size())
+        if (index.group.value >= repositories.size())
             return 0;
 
-        return repositories[group.value].size();
+        return repositories[index.group.value].size();
     }
 
     /// @brief Clear the repository but keep memory allocated.

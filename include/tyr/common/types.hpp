@@ -28,19 +28,13 @@ namespace tyr
 {
 
 template<typename T>
-struct Data
-{
-    static_assert(dependent_false<T>::value, "Data is not defined for type T.");
-};
+struct Data;
 
 template<typename T>
 using DataList = ::cista::offset::vector<Data<T>>;
 
 template<typename T>
-struct Index
-{
-    static_assert(dependent_false<T>::value, "Index is not defined for type T.");
-};
+struct Index;
 
 template<typename T>
 using IndexList = ::cista::offset::vector<Index<T>>;
@@ -48,13 +42,6 @@ using IndexList = ::cista::offset::vector<Index<T>>;
 template<typename T, typename C>
 struct View
 {
-    // View type is optional for recursing through data using the C.
-
-    // DEBUG guard: blow up if the *primary* template is instantiated for Domain
-    // static_assert(!(std::is_same_v<T, Index<formalism::Domain>>),
-    //              "Primary View<Index<formalism::Domain>, formalism::Repository> "
-    //              "is being instantiated here. You are missing #include <tyr/formalism/views.hpp> "
-    //              "before using this combination.");
 };
 
 template<typename T, typename C>
