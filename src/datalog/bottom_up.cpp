@@ -136,6 +136,8 @@ static void solve_bottom_up_for_stratum(datalog::RuleSchedulerStratum& scheduler
                         fluent_predicate_fact_sets.insert(ground_head_program);
                         fluent_predicate_assignment_sets.insert(ground_head_program);
 
+                        // TODO: here we could annotate the fact with the cost since we are basically running breadth-first
+
                         ++ws.statistics.num_merges_inserted;
                     }
                     else

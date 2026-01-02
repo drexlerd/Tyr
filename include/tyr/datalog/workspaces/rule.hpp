@@ -126,6 +126,7 @@ struct ConstRuleWorkspace
     Index<formalism::datalog::Rule> rule;
     const formalism::datalog::Repository& repository;
 
+    Index<formalism::datalog::Rule> fluent_rule;
     Index<formalism::datalog::GroundConjunctiveCondition> nullary_condition;
     Index<formalism::datalog::ConjunctiveCondition> unary_overapproximation_condition;
     Index<formalism::datalog::ConjunctiveCondition> binary_overapproximation_condition;
@@ -135,6 +136,7 @@ struct ConstRuleWorkspace
     StaticConsistencyGraph static_consistency_graph;
 
     auto get_rule() const noexcept { return make_view(rule, repository); }
+    auto get_fluent_rule() const noexcept { return make_view(fluent_rule, repository); }
     auto get_nullary_condition() const noexcept { return make_view(nullary_condition, repository); }
     auto get_unary_overapproximation_condition() const noexcept { return make_view(unary_overapproximation_condition, repository); }
     auto get_binary_overapproximation_condition() const noexcept { return make_view(binary_overapproximation_condition, repository); }

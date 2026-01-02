@@ -19,11 +19,15 @@
 
 #include "tyr/datalog/assignment_sets.hpp"
 #include "tyr/datalog/kpkc_utils.hpp"
+#include "tyr/formalism/datalog/builder.hpp"
+#include "tyr/formalism/datalog/canonicalization.hpp"
+#include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/rule_view.hpp"
 
 #include <chrono>
 #include <vector>
 
+namespace f = tyr::formalism;
 namespace fd = tyr::formalism::datalog;
 
 namespace tyr::datalog
@@ -58,12 +62,38 @@ void RuleWorkspace::initialize(const StaticConsistencyGraph& static_consistency_
  * ConstRuleWorkspace
  */
 
+static std::pair<Index<fd::Rule>, bool> create_fluent_rule(View<Index<fd::Rule>, fd::Repository> element, fd::Repository& context)
+{
+    auto builder = fd::Builder {};
+    auto rule_ptr = builder.get_builder<fd::Rule>();
+    auto& rule = *rule_ptr;
+    rule.clear();
+
+    auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
+    conj_cond.clear();
+
+    conj_cond.variables = element.get_variables().get_data();
+    conj_cond.fluent_literals = element.get_body().get_data().fluent_literals;
+
+    canonicalize(conj_cond);
+    const auto new_conj_cond = context.get_or_create(conj_cond, builder.get_buffer()).first;
+
+    rule.variables = element.get_variables().get_data();
+    rule.body = new_conj_cond;
+    rule.head = element.get_head().get_index();
+
+    canonicalize(rule);
+    return context.get_or_create(rule, builder.get_buffer());
+}
+
 ConstRuleWorkspace::ConstRuleWorkspace(Index<formalism::datalog::Rule> rule,
                                        formalism::datalog::Repository& repository,
                                        const analysis::DomainListList& parameter_domains,
                                        const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets) :
     rule(rule),
     repository(repository),
+    fluent_rule(create_fluent_rule(get_rule(), repository).first),
     nullary_condition(create_ground_nullary_condition(get_rule().get_body(), repository).first),
     unary_overapproximation_condition(create_overapproximation_conjunctive_condition(1, get_rule().get_body(), repository).first),
     binary_overapproximation_condition(create_overapproximation_conjunctive_condition(2, get_rule().get_body(), repository).first),

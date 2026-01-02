@@ -797,8 +797,8 @@ bool is_satisfiable(View<Data<fd::BooleanOperator<Data<fd::FunctionExpression>>>
 
 }
 
-std::pair<Index<fd::GroundConjunctiveCondition>, bool>
-create_ground_nullary_condition(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition, fd::Repository& context)
+std::pair<Index<fd::GroundConjunctiveCondition>, bool> create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
+                                                                                       fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::GroundConjunctiveCondition>();
@@ -825,9 +825,7 @@ create_ground_nullary_condition(View<Index<formalism::datalog::ConjunctiveCondit
 }
 
 std::pair<Index<fd::ConjunctiveCondition>, bool>
-create_overapproximation_conjunctive_condition(size_t k,
-                                               View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
-                                               fd::Repository& context)
+create_overapproximation_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
@@ -854,9 +852,7 @@ create_overapproximation_conjunctive_condition(size_t k,
 }
 
 std::pair<Index<fd::ConjunctiveCondition>, bool>
-create_overapproximation_conflicting_conjunctive_condition(size_t k,
-                                                           View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
-                                                           fd::Repository& context)
+create_overapproximation_conflicting_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
