@@ -43,7 +43,7 @@ SuccessorGenerator<LiftedTask>::SuccessorGenerator(std::shared_ptr<LiftedTask> t
           std::vector<d::NoAndAnnotationPolicy>(m_workspace.rule_deltas.size()),
           d::OrAnnotationsList(),
           std::vector<d::AndAnnotationsMap>(m_workspace.rule_deltas.size()),
-          std::vector<d::HeadToBinding>(m_workspace.rule_deltas.size())),
+          std::vector<d::HeadToWitness>(m_workspace.rule_deltas.size())),
     m_tp(d::NoTerminationPolicy()),
     m_state_repository(std::make_shared<StateRepository<LiftedTask>>(m_task)),
     m_executor()

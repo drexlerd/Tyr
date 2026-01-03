@@ -47,6 +47,7 @@ public:
     auto get_variables() const noexcept { return make_view(get_data().variables, *m_context); }
     auto get_body() const noexcept { return make_view(get_data().body, *m_context); }
     auto get_head() const noexcept { return make_view(get_data().head, *m_context); }
+    auto get_cost() const noexcept { return get_data().cost; }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

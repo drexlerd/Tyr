@@ -42,7 +42,7 @@ RuleWorkspace::RuleWorkspace(const formalism::datalog::Repository& parent, const
     repository(std::make_shared<fd::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     overlay_repository(parent, *repository),
     binding(),
-    ground_heads(),
+    heads(),
     statistics()
 {
 }
@@ -50,7 +50,7 @@ RuleWorkspace::RuleWorkspace(const formalism::datalog::Repository& parent, const
 void RuleWorkspace::clear() noexcept
 {
     repository->clear();
-    ground_heads.clear();
+    heads.clear();
 }
 
 void RuleWorkspace::initialize(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)

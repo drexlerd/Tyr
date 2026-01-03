@@ -406,6 +406,8 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::datalog::Rule
         os << print_indent << "head = " << el.head << "\n";
 
         os << print_indent << "body = " << el.body << "\n";
+
+        os << print_indent << "cost = " << el.cost << "\n";
     }
     os << print_indent << ")";
 
@@ -424,6 +426,8 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::datalog
         os << print_indent << "head = " << el.get_head() << "\n";
 
         os << print_indent << "body = " << el.get_body() << "\n";
+
+        os << print_indent << "cost = " << el.get_cost() << "\n";
     }
     os << print_indent << ")";
 

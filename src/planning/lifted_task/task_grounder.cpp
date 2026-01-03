@@ -277,7 +277,7 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
                                      std::vector<d::NoAndAnnotationPolicy>(workspace.rule_deltas.size()),
                                      d::OrAnnotationsList(),
                                      std::vector<d::AndAnnotationsMap>(workspace.rule_deltas.size()),
-                                     std::vector<d::HeadToBinding>(workspace.rule_deltas.size()));
+                                     std::vector<d::HeadToWitness>(workspace.rule_deltas.size()));
     auto tp = d::NoTerminationPolicy();
 
     datalog::solve_bottom_up(workspace, const_workspace, aps, tp);

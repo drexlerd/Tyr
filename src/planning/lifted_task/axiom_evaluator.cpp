@@ -95,7 +95,7 @@ AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task) :
           std::vector<d::NoAndAnnotationPolicy>(m_workspace.rule_deltas.size()),
           d::OrAnnotationsList(),
           std::vector<d::AndAnnotationsMap>(m_workspace.rule_deltas.size()),
-          std::vector<d::HeadToBinding>(m_workspace.rule_deltas.size())),
+          std::vector<d::HeadToWitness>(m_workspace.rule_deltas.size())),
     m_tp(d::NoTerminationPolicy())
 {
 }

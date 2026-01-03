@@ -39,7 +39,7 @@ struct RuleWorkspace
 
     /// Bindings kept from iteration in stage
     IndexList<formalism::Object> binding;
-    std::vector<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> ground_heads;
+    std::vector<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
 
     struct Statistics
     {

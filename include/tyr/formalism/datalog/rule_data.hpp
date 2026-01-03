@@ -34,16 +34,19 @@ struct Data<formalism::datalog::Rule>
     IndexList<formalism::Variable> variables;
     Index<formalism::datalog::ConjunctiveCondition> body;
     Index<formalism::datalog::Atom<formalism::FluentTag>> head;
+    uint_t cost;
 
     Data() = default;
     Data(Index<formalism::datalog::Rule> index,
          IndexList<formalism::Variable> variables,
          Index<formalism::datalog::ConjunctiveCondition> body,
-         Index<formalism::datalog::Atom<formalism::FluentTag>> head) :
+         Index<formalism::datalog::Atom<formalism::FluentTag>> head,
+         uint_t cost) :
         index(index),
         variables(std::move(variables)),
         body(body),
-        head(head)
+        head(head),
+        cost(cost)
     {
     }
     Data(const Data& other) = delete;
@@ -57,10 +60,11 @@ struct Data<formalism::datalog::Rule>
         tyr::clear(variables);
         tyr::clear(body);
         tyr::clear(head);
+        tyr::clear(cost);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, variables, body, head); }
-    auto identifying_members() const noexcept { return std::tie(variables, body, head); }
+    auto cista_members() const noexcept { return std::tie(index, variables, body, head, cost); }
+    auto identifying_members() const noexcept { return std::tie(variables, body, head, cost); }
 };
 }
 

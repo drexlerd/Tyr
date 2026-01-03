@@ -32,7 +32,9 @@
 namespace tyr::datalog
 {
 
-template<OrAnnotationPolicy OrAP = NoOrAnnotationPolicy, AndAnnotationPolicy AndAP = NoAndAnnotationPolicy, TerminationPolicy TP = NoTerminationPolicy>
+template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
+         AndAnnotationPolicyConcept AndAP = NoAndAnnotationPolicy,
+         TerminationPolicy TP = NoTerminationPolicy>
 void solve_bottom_up(datalog::ProgramWorkspace& ws, const datalog::ConstProgramWorkspace& cws, AnnotationPolicies<OrAP, AndAP>& aps, TP& tp);
 
 }
