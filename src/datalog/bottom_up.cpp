@@ -166,9 +166,9 @@ struct GenerateContext
 template<AndAnnotationPolicyConcept AndAP>
 void generate_nullary_case(GenerateContext<AndAP>& gc)
 {
-    const auto head = create_nullary_ground_head_in_delta(gc.const_rule_ws.get_rule().get_head(), gc.ground_context_delta).first;
+    const auto head_index = create_nullary_ground_head_in_delta(gc.const_rule_ws.get_rule().get_head(), gc.ground_context_delta).first;
 
-    const auto exists = gc.rule_delta_ws.heads.contains(head);
+    const auto exists = gc.rule_delta_ws.heads.contains(head_index);
 
     if (!exists || AndAP::ShouldAnnotate)
     {
@@ -177,14 +177,14 @@ void generate_nullary_case(GenerateContext<AndAP>& gc)
         {
             if (!exists)
             {
-                gc.rule_delta_ws.heads.insert(head);
-                gc.rule_ws.heads.push_back(head);
+                gc.rule_delta_ws.heads.insert(head_index);
+                gc.rule_ws.heads.push_back(head_index);
             }
 
             gc.and_ap.update_annotation(gc.const_rule_ws.rule,
                                         gc.const_rule_ws.fluent_rule,
                                         gc.ground_context_delta.binding,
-                                        head,
+                                        head_index,
                                         gc.or_annot,
                                         gc.and_annot,
                                         gc.head_to_witness,
@@ -199,13 +199,13 @@ void generate_unary_case(GenerateContext<AndAP>& gc)
 {
     for (const auto vertex_index : gc.rule_ws.kpkc_workspace.consistent_vertices_vec)
     {
-        const auto head = create_unary_ground_head_in_delta(vertex_index,
-                                                            gc.const_rule_ws.static_consistency_graph,
-                                                            gc.const_rule_ws.get_rule().get_head(),
-                                                            gc.ground_context_delta)
-                              .first;
+        const auto head_index = create_unary_ground_head_in_delta(vertex_index,
+                                                                  gc.const_rule_ws.static_consistency_graph,
+                                                                  gc.const_rule_ws.get_rule().get_head(),
+                                                                  gc.ground_context_delta)
+                                    .first;
 
-        const auto exists = gc.rule_delta_ws.heads.contains(head);
+        const auto exists = gc.rule_delta_ws.heads.contains(head_index);
 
         if (!exists || AndAP::ShouldAnnotate)
         {
@@ -217,14 +217,14 @@ void generate_unary_case(GenerateContext<AndAP>& gc)
 
                 if (!exists)
                 {
-                    gc.rule_delta_ws.heads.insert(head);
-                    gc.rule_ws.heads.push_back(head);
+                    gc.rule_delta_ws.heads.insert(head_index);
+                    gc.rule_ws.heads.push_back(head_index);
                 }
 
                 gc.and_ap.update_annotation(gc.const_rule_ws.rule,
                                             gc.const_rule_ws.fluent_rule,
                                             gc.ground_context_delta.binding,
-                                            head,
+                                            head_index,
                                             gc.or_annot,
                                             gc.and_annot,
                                             gc.head_to_witness,
@@ -243,13 +243,13 @@ void generate_general_case(GenerateContext<AndAP>& gc)
         gc.rule_ws.kpkc_workspace,
         [&](auto&& clique)
         {
-            const auto head = create_general_ground_head_in_delta(clique,
-                                                                  gc.const_rule_ws.static_consistency_graph,
-                                                                  gc.const_rule_ws.get_rule().get_head(),
-                                                                  gc.ground_context_delta)
-                                  .first;
+            const auto head_index = create_general_ground_head_in_delta(clique,
+                                                                        gc.const_rule_ws.static_consistency_graph,
+                                                                        gc.const_rule_ws.get_rule().get_head(),
+                                                                        gc.ground_context_delta)
+                                        .first;
 
-            const auto exists = gc.rule_delta_ws.heads.contains(head);
+            const auto exists = gc.rule_delta_ws.heads.contains(head_index);
 
             if (!exists || AndAP::ShouldAnnotate)
             {
@@ -261,14 +261,14 @@ void generate_general_case(GenerateContext<AndAP>& gc)
 
                     if (!exists)
                     {
-                        gc.rule_delta_ws.heads.insert(head);
-                        gc.rule_ws.heads.push_back(head);
+                        gc.rule_delta_ws.heads.insert(head_index);
+                        gc.rule_ws.heads.push_back(head_index);
                     }
 
                     gc.and_ap.update_annotation(gc.const_rule_ws.rule,
                                                 gc.const_rule_ws.fluent_rule,
                                                 gc.ground_context_delta.binding,
-                                                head,
+                                                head_index,
                                                 gc.or_annot,
                                                 gc.and_annot,
                                                 gc.head_to_witness,
