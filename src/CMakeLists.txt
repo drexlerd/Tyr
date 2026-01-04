@@ -56,6 +56,7 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
     planning/programs/action.cpp
     planning/programs/axiom.cpp
     planning/programs/common.cpp
+    # planning/programs/ff.cpp
     planning/programs/ground.cpp
 
     planning/action_executor.cpp
