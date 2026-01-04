@@ -8,6 +8,9 @@ on:
 jobs:
   build_wheels:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
 
     if: github.repository_owner == 'drexlerd'
 
