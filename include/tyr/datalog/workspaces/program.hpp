@@ -33,10 +33,91 @@
 
 #include <chrono>
 #include <oneapi/tbb/enumerable_thread_specific.h>
+#include <vector>
 
 namespace tyr::datalog
 {
-using CostBuckets = std::vector<UnorderedSet<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>>>;
+class CostBuckets
+{
+public:
+    using Atom = Index<formalism::datalog::GroundAtom<formalism::FluentTag>>;
+    using Bucket = UnorderedSet<Atom>;
+    using Cost = uint_t;
+
+    CostBuckets() : m_buckets(1), m_current(0), m_total_size(0) {}
+
+    void clear() noexcept
+    {
+        for (auto& b : m_buckets)
+            b.clear();
+        m_total_size = 0;
+        m_current = 0;
+    }
+
+    [[nodiscard]] Cost current_cost() const noexcept { return m_current; }
+
+    [[nodiscard]] bool empty() const noexcept { return m_total_size == 0; }
+
+    void resize_to_fit(Cost c)
+    {
+        if (c >= m_buckets.size())
+            m_buckets.resize(static_cast<size_t>(c) + 1);
+    }
+
+    bool insert(Cost c, Atom a)
+    {
+        resize_to_fit(c);
+        const auto [it, inserted] = m_buckets[c].insert(a);
+        if (inserted)
+            ++m_total_size;
+        return inserted;
+    }
+
+    bool erase(Cost c, Atom a)
+    {
+        if (c >= m_buckets.size())
+            return false;
+        const auto erased = m_buckets[c].erase(a) > 0;
+        if (erased)
+            --m_total_size;
+        return erased;
+    }
+
+    void update(std::optional<Cost> old_cost, Cost new_cost, Atom a)
+    {
+        if (old_cost.has_value())
+            erase(*old_cost, a);
+        insert(new_cost, a);
+    }
+
+    void clear_current()
+    {
+        if (m_current >= m_buckets.size())
+            return;
+        m_total_size -= m_buckets[m_current].size();
+        m_buckets[m_current].clear();
+    }
+
+    bool advance_to_next_nonempty()
+    {
+        while (m_current < m_buckets.size() && m_buckets[m_current].empty())
+            ++m_current;
+        return m_current < m_buckets.size();
+    }
+
+    const Bucket& get_current_bucket() const
+    {
+        static const Bucket kEmpty {};
+        if (m_current >= m_buckets.size())
+            return kEmpty;
+        return m_buckets[m_current];
+    }
+
+private:
+    std::vector<Bucket> m_buckets;
+    uint_t m_current = 0;
+    size_t m_total_size = 0;
+};
 
 struct ProgramWorkspace
 {

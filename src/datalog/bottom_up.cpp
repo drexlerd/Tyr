@@ -304,13 +304,18 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
 {
     scheduler.activate_all();
 
-    auto cost = Cost(0);
     ws.cost_buckets.clear();
-    ws.cost_buckets.resize(1);
 
     while (true)
     {
-        // std::cout << "Cost: " << cost << std::endl;
+        std::cout << "Cost: " << ws.cost_buckets.current_cost() << std::endl;
+
+        // Check whether min cost for goal was proven.
+        if (tp.check())
+        {
+            std::cout << "GOAL ACHIEVED!: " << tp.get_total_cost(aps.or_annot) << std::endl;
+            return;
+        }
 
         /**
          * Parallel evaluation.
@@ -386,11 +391,8 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
         {
             const auto stopwatch = StopwatchScope(ws.statistics.merge_seq_total_time);
 
-            // Set upper bound of min cost for scanning.
-            auto min_cost = uint_t(ws.cost_buckets.size());
-
             // Clear current bucket to avoid duplicate handling
-            ws.cost_buckets[cost].clear();
+            ws.cost_buckets.clear_current();
 
             for (const auto rule_index : active_rules)
             {
@@ -413,45 +415,30 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
                     // Merge head from delta into the program
                     const auto head = fd::merge_d2d(make_view(head_index, *rule_delta_ws.repository), merge_context).first;
 
-                    // Notify termination policy
-                    tp.achieve(head);
-
                     // Update annotation
                     const auto [old_cost, new_cost] = or_ap.update_annotation(rule_index, head, or_annot, and_annot, head_to_witness);
 
-                    // Erase from old bucket
-                    if (old_cost != std::numeric_limits<Cost>::max())
-                        ws.cost_buckets[old_cost].erase(head);
-
-                    // Insert into new bucket
-                    if (ws.cost_buckets.size() <= new_cost)
-                        ws.cost_buckets.resize(new_cost + 1);
-                    ws.cost_buckets[new_cost].insert(head);
-
-                    min_cost = std::min(min_cost, new_cost);
+                    ws.cost_buckets.update(old_cost, new_cost, head);
                 }
             }
 
-            // if (tp.check())
-            //     std::cout << "GOAL ACHIEVED!: " << tp.get_total_cost(aps.or_annot) << std::endl;
-
-            // Scan for next bucket.
-            while (cost < ws.cost_buckets.size() && ws.cost_buckets[cost].empty())
-                ++cost;
-
-            // Terminate if no-nonempty bucket was found.
-            if (cost == ws.cost_buckets.size())
-                return;  // fixed point
+            if (!ws.cost_buckets.advance_to_next_nonempty())
+                return;  // Terminate if no-nonempty bucket was found.
 
             // Insert next bucket heads into fact and assignment sets + trigger scheduler.
-            for (const auto head_index : ws.cost_buckets[cost])
+            for (const auto head_index : ws.cost_buckets.get_current_bucket())
             {
                 if (!ws.facts.fact_sets.predicate.contains(head_index))
                 {
                     const auto head = make_view(head_index, ws.repository);
 
+                    // Notify scheduler
                     scheduler.on_generate(head.get_predicate().get_index());
 
+                    // Notify termination policy
+                    tp.achieve(head_index);
+
+                    // Update fact sets
                     ws.facts.fact_sets.predicate.insert(head);
                     ws.facts.assignment_sets.predicate.insert(head);
                 }

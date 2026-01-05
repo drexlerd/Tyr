@@ -41,6 +41,7 @@ concept TerminationPolicyConcept = requires(T& p,
     { p.achieve(atom) } -> std::same_as<void>;
     { cp.check() } -> std::same_as<bool>;
     { cp.get_total_cost(or_annot) } -> std::same_as<Cost>;
+    { p.reset() } -> std::same_as<void>;
     { p.clear() } -> std::same_as<void>;
 };
 
@@ -53,6 +54,7 @@ public:
     void achieve(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> atom) noexcept {}
     bool check() const noexcept { return false; }
     Cost get_total_cost(const OrAnnotationsList& or_annot) const noexcept { return Cost(0); }
+    void reset() noexcept {}
     void clear() noexcept {}
 };
 
@@ -64,6 +66,7 @@ public:
     void set_goals(const PredicateFactSets<formalism::FluentTag>& goals)
     {
         clear();
+
         num_unsat_goals = 0;
         for (const auto& set : goals.get_sets())
         {
@@ -101,11 +104,22 @@ public:
         return cost;
     }
 
+    void reset() noexcept
+    {
+        num_unsat_goals = 0;
+        for (auto& bitset : unsat_goals)
+            bitset.reset();
+
+        for (const auto& atom : atoms)
+            tyr::set(atom.value, true, unsat_goals[uint_t(atom.group)]);
+    }
+
     void clear() noexcept
     {
         num_unsat_goals = 0;
         for (auto& bitset : unsat_goals)
             bitset.reset();
+
         atoms.clear();
     }
 
