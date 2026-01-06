@@ -214,7 +214,8 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, f::Ove
 {
     const auto applicability_predicate = create_applicability_predicate(action, context).first;
 
-    predicate_to_actions[applicability_predicate].emplace_back(action.get_index());
+    [[maybe_unused]] const auto [it, inserted] = predicate_to_actions.emplace(applicability_predicate, action.get_index());
+    assert(inserted);
 
     program.fluent_predicates.push_back(applicability_predicate);
 
@@ -244,7 +245,8 @@ static void translate_axiom_to_delete_free_axiom_rules(View<Index<fp::Axiom>, f:
 
     program.fluent_predicates.push_back(applicability_predicate);
 
-    predicate_to_axioms[applicability_predicate].emplace_back(axiom.get_index());
+    [[maybe_unused]] const auto [it, inserted] = predicate_to_axioms.emplace(applicability_predicate, axiom.get_index());
+    assert(inserted);
 
     const auto applicability_rule = create_applicability_rule(axiom, context).first;
 

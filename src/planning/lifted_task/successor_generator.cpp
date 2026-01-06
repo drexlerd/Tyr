@@ -92,34 +92,34 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
     {
         for (const auto& fact : set.get_facts())
         {
-            if (m_task->get_action_program().get_predicate_to_actions_mapping().contains(fact.get_predicate().get_index()))
+            const auto& mapping = m_task->get_action_program().get_predicate_to_actions_mapping();
+
+            if (const auto it = mapping.find(fact.get_predicate().get_index()); it != mapping.end())
             {
-                for (const auto action_index : m_task->get_action_program().get_predicate_to_actions_mapping().at(fact.get_predicate().get_index()))
-                {
-                    auto grounder_context = fp::GrounderContext { m_workspace.planning_builder, *m_task->get_repository(), m_workspace.d2p.binding };
+                const auto action_index = it->second;
 
-                    const auto action = make_view(action_index, grounder_context.destination);
+                auto grounder_context = fp::GrounderContext { m_workspace.planning_builder, *m_task->get_repository(), m_workspace.d2p.binding };
 
-                    m_workspace.d2p.binding = fact.get_objects().get_data();
+                const auto action = make_view(action_index, grounder_context.destination);
 
-                    const auto ground_action_index = ground(action,
+                m_workspace.d2p.binding = fact.get_objects().get_data();
+
+                const auto ground_action_index = fp::ground(action,
                                                             grounder_context,
                                                             m_task->get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
                                                             fluent_assign,
                                                             iter_workspace,
                                                             *m_task->get_fdr_context())
-                                                         .first;
+                                                     .first;
 
-                    const auto ground_action = make_view(ground_action_index, grounder_context.destination);
+                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
 
-                    if (m_executor.is_applicable(ground_action, state_context))
-                        out_nodes.emplace_back(ground_action, m_executor.apply_action(state_context, ground_action, *m_state_repository));
-                }
+                if (m_executor.is_applicable(ground_action, state_context))
+                    out_nodes.emplace_back(ground_action, m_executor.apply_action(state_context, ground_action, *m_state_repository));
             }
         }
     }
 }
 
 State<LiftedTask> SuccessorGenerator<LiftedTask>::get_state(StateIndex state_index) { return m_state_repository->get_registered_state(state_index); }
-
 }

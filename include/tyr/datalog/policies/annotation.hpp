@@ -20,6 +20,7 @@
 
 #include "tyr/common/config.hpp"
 #include "tyr/common/vector.hpp"
+#include "tyr/datalog/policies/aggregation.hpp"
 #include "tyr/formalism/binding_index.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
@@ -42,8 +43,6 @@ namespace tyr::datalog
 /**
  * Annotations
  */
-
-using Cost = uint_t;
 
 using OrAnnotationsList = std::vector<std::vector<Cost>>;
 
@@ -245,18 +244,6 @@ private:
         if (program_head.value >= vec.size())
             vec.resize(program_head.value + 1, std::numeric_limits<Cost>::max());
     }
-};
-
-struct SumAggregation
-{
-    static constexpr Cost identity() noexcept { return Cost(0); }
-    constexpr Cost operator()(Cost acc, Cost x) const noexcept { return acc + x; }
-};
-
-struct MaxAggregation
-{
-    static constexpr Cost identity() noexcept { return Cost(0); }
-    constexpr Cost operator()(Cost acc, Cost x) const noexcept { return std::max(acc, x); }
 };
 
 template<typename AggregationFunction>

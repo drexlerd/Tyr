@@ -101,7 +101,8 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     {
         const auto new_predicate = fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(predicate, context).first;
 
-        predicate_to_predicate.emplace(new_predicate, predicate.get_index());
+        [[maybe_unused]] const auto [it, inserted] = predicate_to_predicate.emplace(new_predicate, predicate.get_index());
+        assert(inserted);
 
         program.fluent_predicates.push_back(new_predicate);
     }
@@ -110,7 +111,8 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     {
         const auto new_predicate = fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(predicate, context).first;
 
-        predicate_to_predicate.emplace(new_predicate, predicate.get_index());
+        [[maybe_unused]] const auto [it, inserted] = predicate_to_predicate.emplace(new_predicate, predicate.get_index());
+        assert(inserted);
 
         program.fluent_predicates.push_back(new_predicate);
     }

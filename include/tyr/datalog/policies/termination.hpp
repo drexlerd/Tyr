@@ -21,7 +21,7 @@
 #include "tyr/common/config.hpp"
 #include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/datalog/fact_sets.hpp"
-#include "tyr/datalog/policies/annotation.hpp"
+#include "tyr/datalog/policies/aggregation.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/ground_atom_index.hpp"
 
@@ -58,6 +58,7 @@ public:
     void clear() noexcept {}
 };
 
+template<typename AggregationFunction>
 class TerminationPolicy
 {
 public:
@@ -92,13 +93,13 @@ public:
 
     Cost get_total_cost(const OrAnnotationsList& or_annot) const noexcept
     {
-        auto cost = Cost(0);
+        auto cost = AggregationFunction::identity();
 
         for (const auto atom : atoms)
         {
             assert(uint_t(atom.group) < or_annot.size());
             assert(atom.value < or_annot[uint_t(atom.group)].size());
-            cost += or_annot[uint_t(atom.group)][atom.value];
+            cost = agg(cost, or_annot[uint_t(atom.group)][atom.value]);
         }
 
         return cost;
@@ -130,6 +131,8 @@ private:
     size_t num_unsat_goals;
 
     IndexList<formalism::datalog::GroundAtom<formalism::FluentTag>> atoms;
+
+    AggregationFunction agg;
 };
 }
 

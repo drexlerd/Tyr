@@ -41,7 +41,8 @@ public:
               datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
               std::vector<datalog::AndAnnotationsMap>(this->m_workspace.rule_deltas.size()),
               std::vector<datalog::HeadToWitness>(this->m_workspace.rule_deltas.size())),
-        m_tp(datalog::TerminationPolicy(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size())),
+        m_tp(datalog::TerminationPolicy<datalog::SumAggregation>(
+            this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size())),
         m_markings(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
         m_binding(),
         m_assign(),
@@ -97,26 +98,27 @@ private:
         const auto predicate_index = make_view(witness.rule, this->m_workspace.repository).get_head().get_predicate().get_index();
         const auto& mapping = this->m_task->get_rpg_program().get_predicate_to_actions_mapping();
 
-        if (const auto it_app_actions = mapping.find(predicate_index); it_app_actions != mapping.end())
+        if (const auto it = mapping.find(predicate_index); it != mapping.end())
         {
-            for (const auto action : it_app_actions->second)
+            const auto action = it->second;
+
+            grounder_context.binding = make_view(witness.binding, *this->m_workspace.rule_deltas[i].repository).get_data().objects;
+
+            const auto ground_action_index = formalism::planning::ground(make_view(action, grounder_context.destination),
+                                                                         grounder_context,
+                                                                         m_task->get_parameter_domains_per_cond_effect_per_action()[uint_t(action)],
+                                                                         m_assign,
+                                                                         m_iter_workspace,
+                                                                         *m_task->get_fdr_context())
+                                                 .first;
+
+            m_relaxed_plan.insert(ground_action_index);
+
+            const auto ground_action = make_view(ground_action_index, grounder_context.destination);
+
+            if (is_applicable(ground_action, state_context, m_effect_families))
             {
-                grounder_context.binding = make_view(witness.binding, *this->m_workspace.rule_deltas[i].repository).get_data().objects;
-
-                const auto ground_action_index = formalism::planning::ground(make_view(action, grounder_context.destination),
-                                                                             grounder_context,
-                                                                             m_task->get_parameter_domains_per_cond_effect_per_action()[uint_t(action)],
-                                                                             m_assign,
-                                                                             m_iter_workspace,
-                                                                             *m_task->get_fdr_context())
-                                                     .first;
-
-                m_relaxed_plan.insert(ground_action_index);
-
-                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
-
-                if (is_applicable(ground_action, state_context, m_effect_families))
-                    m_preferred_actions.insert(ground_action_index);
+                m_preferred_actions.insert(ground_action_index);
             }
         }
 
@@ -131,7 +133,7 @@ private:
 
 private:
     datalog::AnnotationPolicies<datalog::OrAnnotationPolicy, datalog::AndAnnotationPolicy<datalog::SumAggregation>> m_aps;
-    datalog::TerminationPolicy m_tp;
+    datalog::TerminationPolicy<datalog::SumAggregation> m_tp;
 
     std::vector<boost::dynamic_bitset<>> m_markings;
 

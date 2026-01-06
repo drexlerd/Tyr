@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_LIFTED_TASK_HEURISTICS_ADD_HPP_
-#define TYR_PLANNING_LIFTED_TASK_HEURISTICS_ADD_HPP_
+#ifndef TYR_PLANNING_LIFTED_TASK_HEURISTICS_MAX_HPP_
+#define TYR_PLANNING_LIFTED_TASK_HEURISTICS_MAX_HPP_
 
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
@@ -26,17 +26,17 @@
 namespace tyr::planning
 {
 
-class Add : public RPGBase<Add>
+class Max : public RPGBase<Max>
 {
 public:
-    Add(std::shared_ptr<LiftedTask> task) :
-        RPGBase<Add>(std::move(task)),
+    Max(std::shared_ptr<LiftedTask> task) :
+        RPGBase<Max>(std::move(task)),
         m_aps(datalog::OrAnnotationPolicy(),
-              std::vector<datalog::AndAnnotationPolicy<datalog::SumAggregation>>(this->m_workspace.rule_deltas.size()),
+              std::vector<datalog::AndAnnotationPolicy<datalog::MaxAggregation>>(this->m_workspace.rule_deltas.size()),
               datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
               std::vector<datalog::AndAnnotationsMap>(this->m_workspace.rule_deltas.size()),
               std::vector<datalog::HeadToWitness>(this->m_workspace.rule_deltas.size())),
-        m_tp(datalog::TerminationPolicy<datalog::SumAggregation>(
+        m_tp(datalog::TerminationPolicy<datalog::MaxAggregation>(
             this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()))
     {
     }
@@ -47,8 +47,8 @@ public:
     auto& get_termination_policy_impl() noexcept { return m_tp; }
 
 private:
-    datalog::AnnotationPolicies<datalog::OrAnnotationPolicy, datalog::AndAnnotationPolicy<datalog::SumAggregation>> m_aps;
-    datalog::TerminationPolicy<datalog::SumAggregation> m_tp;
+    datalog::AnnotationPolicies<datalog::OrAnnotationPolicy, datalog::AndAnnotationPolicy<datalog::MaxAggregation>> m_aps;
+    datalog::TerminationPolicy<datalog::MaxAggregation> m_tp;
 };
 
 }

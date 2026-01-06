@@ -132,7 +132,8 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, f::Ove
 
     program.fluent_predicates.push_back(applicability_predicate);
 
-    predicate_to_actions[applicability_predicate].emplace_back(action.get_index());
+    [[maybe_unused]] const auto [it, inserted] = predicate_to_actions.emplace(applicability_predicate, action.get_index());
+    assert(inserted);
 
     const auto applicability_rule = create_applicability_rule(action, context).first;
 

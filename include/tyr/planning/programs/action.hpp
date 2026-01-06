@@ -36,7 +36,7 @@ class ApplicableActionProgram
 {
 public:
     // Mapping from program rule to task action; there may be multiple actions
-    using AppPredicateToActionsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, std::vector<Index<formalism::planning::Action>>>;
+    using AppPredicateToActionsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, Index<formalism::planning::Action>>;
 
     explicit ApplicableActionProgram(View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);
 

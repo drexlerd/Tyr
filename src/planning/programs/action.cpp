@@ -86,7 +86,8 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     {
         const auto applicability_predicate = create_applicability_predicate(action, context).first;
 
-        predicate_to_actions[applicability_predicate].emplace_back(action.get_index());
+        [[maybe_unused]] const auto [it, inserted] = predicate_to_actions.emplace(applicability_predicate, action.get_index());
+        assert(inserted);
 
         program.fluent_predicates.push_back(applicability_predicate);
 

@@ -468,5 +468,16 @@ template void solve_bottom_up(ProgramWorkspace& ws,
 template void solve_bottom_up(ProgramWorkspace& ws,
                               const ConstProgramWorkspace& cws,
                               AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>>& aps,
-                              TerminationPolicy& tp);
+                              TerminationPolicy<SumAggregation>& tp);
+
+template void solve_bottom_up(ProgramWorkspace& ws,
+                              const ConstProgramWorkspace& cws,
+                              AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>>& aps,
+                              NoTerminationPolicy& tp);
+
+template void solve_bottom_up(ProgramWorkspace& ws,
+                              const ConstProgramWorkspace& cws,
+                              AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>>& aps,
+                              TerminationPolicy<MaxAggregation>& tp);
+
 }
