@@ -83,11 +83,11 @@ public:
         return erased;
     }
 
-    void update(std::optional<Cost> old_cost, Cost new_cost, Atom a)
+    void update(const CostUpdate& update, Atom a)
     {
-        if (old_cost.has_value())
-            erase(*old_cost, a);
-        insert(new_cost, a);
+        if (update.old_cost.has_value())
+            erase(*update.old_cost, a);
+        insert(update.new_cost, a);
     }
 
     void clear_current()

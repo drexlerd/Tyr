@@ -73,6 +73,23 @@ struct CostAnnotations
     }
 };
 
+struct CostUpdate
+{
+    std::optional<Cost> old_cost;
+    Cost new_cost;
+
+    CostUpdate() noexcept : old_cost(std::nullopt), new_cost(Cost(0)) { assert(is_monoton()); }
+    CostUpdate(std::optional<Cost> old_cost, Cost new_cost) noexcept : old_cost(old_cost), new_cost(new_cost) { assert(is_monoton()); }
+    CostUpdate(Cost old_cost, Cost new_cost) noexcept :
+        old_cost(old_cost == std::numeric_limits<Cost>::max() ? std::nullopt : std::optional<Cost>(old_cost)),
+        new_cost(new_cost)
+    {
+        assert(is_monoton());
+    }
+
+    bool is_monoton() const noexcept { return !old_cost || new_cost <= old_cost.value(); }
+};
+
 /**
  * Policies
  */
@@ -80,7 +97,6 @@ struct CostAnnotations
 // circle "or"-node
 template<typename T>
 concept OrAnnotationPolicyConcept = requires(const T& p,
-                                             Index<formalism::datalog::Rule> rule,
                                              Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
                                              Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
                                              OrAnnotationsList& or_annot,
@@ -89,7 +105,8 @@ concept OrAnnotationPolicyConcept = requires(const T& p,
     /// Annotate the initial cost of the atom.
     { p.initialize_annotation(head, or_annot) } -> std::same_as<void>;
     /// Annotate the cost of the atom from the given witness and annotations.
-    { p.update_annotation(rule, head, delta_head, or_annot, and_annot, head_to_witness) } -> std::same_as<std::pair<std::optional<Cost>, Cost>>;
+    /// `delta_head` indexes into the rule-local delta repository; `head` indexes into the global program repository.
+    { p.update_annotation(head, delta_head, or_annot, and_annot, head_to_witness) } -> std::same_as<CostUpdate>;
 };
 
 // rectangular "and"-node
@@ -105,9 +122,7 @@ concept AndAnnotationPolicyConcept = requires(const T& p,
                                               formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& rule_context,
                                               formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context) {
     /// Ground the witness and annotate the cost of it from the given annotations.
-    {
-        p.update_annotation(rule, fluent_rule, objects, head, or_annot, and_annot, head_to_witness, rule_context, delta_context)
-    } -> std::same_as<std::pair<std::optional<Cost>, Cost>>;
+    { p.update_annotation(rule, fluent_rule, objects, head, or_annot, and_annot, head_to_witness, rule_context, delta_context) } -> std::same_as<CostUpdate>;
 };
 
 class NoOrAnnotationPolicy
@@ -117,14 +132,13 @@ public:
 
     void initialize_annotation(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head, OrAnnotationsList& or_annot) const noexcept {}
 
-    std::pair<std::optional<Cost>, Cost> update_annotation(Index<formalism::datalog::Rule> rule,
-                                                           Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
-                                                           Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
-                                                           OrAnnotationsList& or_annot,
-                                                           const AndAnnotationsMap& and_annot,
-                                                           const HeadToWitness& head_to_witness) const noexcept
+    CostUpdate update_annotation(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
+                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+                                 OrAnnotationsList& or_annot,
+                                 const AndAnnotationsMap& and_annot,
+                                 const HeadToWitness& head_to_witness) const noexcept
     {
-        return { std::nullopt, Cost(0) };
+        return CostUpdate();
     }
 };
 
@@ -133,18 +147,17 @@ class NoAndAnnotationPolicy
 public:
     static constexpr bool ShouldAnnotate = false;
 
-    std::pair<std::optional<Cost>, Cost>
-    update_annotation(Index<formalism::datalog::Rule> rule,
-                      Index<formalism::datalog::Rule> fluent_rule,
-                      const IndexList<formalism::Object>& objects,
-                      Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
-                      const OrAnnotationsList& or_annot,
-                      AndAnnotationsMap& and_annot,
-                      HeadToWitness& head_to_witness,
-                      formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& rule_context,
-                      formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context) const noexcept
+    CostUpdate update_annotation(Index<formalism::datalog::Rule> rule,
+                                 Index<formalism::datalog::Rule> fluent_rule,
+                                 const IndexList<formalism::Object>& objects,
+                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
+                                 const OrAnnotationsList& or_annot,
+                                 AndAnnotationsMap& and_annot,
+                                 HeadToWitness& head_to_witness,
+                                 formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& rule_context,
+                                 formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context) const noexcept
     {
-        return { std::nullopt, Cost(0) };
+        return CostUpdate();
     }
 };
 
@@ -160,34 +173,52 @@ public:
         or_annot[uint_t(head.group)][head.value] = Cost(0);
     }
 
-    std::pair<std::optional<Cost>, Cost> update_annotation(Index<formalism::datalog::Rule> rule,
-                                                           Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
-                                                           Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
-                                                           OrAnnotationsList& or_annot,
-                                                           const AndAnnotationsMap& and_annot,
-                                                           const HeadToWitness& head_to_witness) const
+    CostUpdate update_annotation(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
+                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+                                 OrAnnotationsList& or_annot,
+                                 const AndAnnotationsMap& and_annot,
+                                 const HeadToWitness& head_to_witness) const
     {
         resize_or_annot_to_fit(head, or_annot);
-        assert(head_to_witness.contains(delta_head));
-        assert(and_annot.contains(head_to_witness.at(delta_head)));
-        const auto cost = and_annot.at(head_to_witness.at(delta_head));
 
-        /// cost(u) = min({ cost(v_1), ..., cost(v_k) })
-        assert(uint_t(head.group) < or_annot.size());
-        auto& new_cost = or_annot[uint_t(head.group)][head.value];
-        const auto old_cost = new_cost;
+        const auto and_cost = fetch_best_head_witness_cost(delta_head, and_annot, head_to_witness);
 
-        new_cost = std::min(new_cost, cost);
+        auto& or_cost = or_annot[uint_t(head.group)][head.value];
 
-        return { old_cost == std::numeric_limits<Cost>::max() ? std::nullopt : std::optional<Cost>(old_cost), new_cost };
+        return update_min_cost(or_cost, and_cost);
     }
 
 private:
-    void resize_or_annot_to_fit(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head, OrAnnotationsList& or_annot) const
+    static CostUpdate update_min_cost(Cost& cost, Cost candidate)
+    {
+        const auto old_cost = cost;
+
+        if (candidate < old_cost)
+            cost = candidate;
+
+        return CostUpdate(old_cost, cost);
+    }
+
+    static Cost fetch_best_head_witness_cost(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+                                             const AndAnnotationsMap& and_annot,
+                                             const HeadToWitness& head_to_witness)
+    {
+        const auto it_w = head_to_witness.find(delta_head);
+        assert(it_w != head_to_witness.end());
+
+        const auto it_a = and_annot.find(it_w->second);
+        assert(it_a != and_annot.end());
+
+        return it_a->second;
+    }
+
+    static void resize_or_annot_to_fit(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head, OrAnnotationsList& or_annot)
     {
         assert(uint_t(head.group) < or_annot.size());
-        if (head.value >= or_annot[uint_t(head.group)].size())
-            or_annot[uint_t(head.group)].resize(head.value + 1, std::numeric_limits<Cost>::max());
+
+        auto& vec = or_annot[uint_t(head.group)];
+        if (head.value >= vec.size())
+            vec.resize(head.value + 1, std::numeric_limits<Cost>::max());
     }
 };
 
@@ -209,16 +240,15 @@ class AndAnnotationPolicy
 public:
     static constexpr bool ShouldAnnotate = true;
 
-    std::pair<std::optional<Cost>, Cost>
-    update_annotation(Index<formalism::datalog::Rule> rule,
-                      Index<formalism::datalog::Rule> fluent_rule,
-                      const IndexList<formalism::Object>& objects,
-                      Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
-                      const OrAnnotationsList& or_annot,
-                      AndAnnotationsMap& and_annot,
-                      HeadToWitness& head_to_witness,
-                      formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& rule_context,
-                      formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context) const
+    CostUpdate update_annotation(Index<formalism::datalog::Rule> rule,
+                                 Index<formalism::datalog::Rule> fluent_rule,
+                                 const IndexList<formalism::Object>& objects,
+                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
+                                 const OrAnnotationsList& or_annot,
+                                 AndAnnotationsMap& and_annot,
+                                 HeadToWitness& head_to_witness,
+                                 formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& rule_context,
+                                 formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context) const
     {
         /// Ground binding in delta to remain persistent across iterations.
         const auto binding = formalism::datalog::ground(objects, delta_context).first;
@@ -235,9 +265,11 @@ public:
             if (literal.get_polarity())
             {
                 const auto atom_index = literal.get_atom().get_index();
+
                 assert(uint_t(atom_index.group) < or_annot.size());
                 assert(atom_index.value < or_annot[uint_t(atom_index.group)].size());
                 assert(or_annot[uint_t(atom_index.group)][atom_index.value] != std::numeric_limits<Cost>::max());
+
                 cost = agg(cost, or_annot[uint_t(atom_index.group)][atom_index.value]);
             }
         }
@@ -258,7 +290,7 @@ public:
         if (hit == head_to_witness.end() || it->second < and_annot.at(hit->second))
             head_to_witness[head] = witness;
 
-        return { inserted ? std::nullopt : std::optional<Cost>(old_cost), it->second };
+        return CostUpdate(old_cost, it->second);
     }
 };
 

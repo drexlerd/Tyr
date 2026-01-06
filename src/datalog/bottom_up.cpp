@@ -382,13 +382,9 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
                     const auto head = fd::merge_d2d(make_view(head_index, *ws.rule_deltas[i].repository), merge_context).first;
 
                     // Update annotation
-                    const auto [old_cost, new_cost] =
-                        aps.or_ap.update_annotation(rule_index, head, head_index, aps.or_annot, aps.and_annots[i], aps.head_to_witness[i]);
+                    const auto cost_update = aps.or_ap.update_annotation(head, head_index, aps.or_annot, aps.and_annots[i], aps.head_to_witness[i]);
 
-                    // Ensure monotonically decreasing costs.
-                    assert(!old_cost || new_cost <= old_cost);
-
-                    ws.cost_buckets.update(old_cost, new_cost, head);
+                    ws.cost_buckets.update(cost_update, head);
                 }
             }
 
