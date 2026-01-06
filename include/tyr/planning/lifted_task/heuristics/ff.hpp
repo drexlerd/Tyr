@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_LIFTED_TASK_HEURISTICS_ADD_HPP_
-#define TYR_PLANNING_LIFTED_TASK_HEURISTICS_ADD_HPP_
+#ifndef TYR_PLANNING_LIFTED_TASK_HEURISTICS_FF_HPP_
+#define TYR_PLANNING_LIFTED_TASK_HEURISTICS_FF_HPP_
 
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
@@ -26,11 +26,11 @@
 namespace tyr::planning
 {
 
-class Add : public RPGBase<Add>
+class FF : public RPGBase<FF>
 {
 public:
-    Add(std::shared_ptr<LiftedTask> task) :
-        RPGBase<Add>(std::move(task)),
+    FF(std::shared_ptr<LiftedTask> task) :
+        RPGBase<FF>(std::move(task)),
         m_aps(datalog::OrAnnotationPolicy(),
               std::vector<datalog::AndAnnotationPolicy<datalog::SumAggregation>>(this->m_workspace.rule_deltas.size()),
               datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
@@ -54,14 +54,18 @@ public:
         }
     }
 
-    float_t extract_cost_and_set_preferred_actions_impl(const State<LiftedTask>& state) { return m_tp.get_total_cost(m_aps.or_annot); }
-
     auto& get_annotation_policies_impl() noexcept { return m_aps; }
     auto& get_termination_policy_impl() noexcept { return m_tp; }
+
+    float_t extract_cost_and_set_preferred_actions_impl(const State<LiftedTask>& state) { return m_tp.get_total_cost(m_aps.or_annot); }
+
+    const UnorderedSet<Index<formalism::planning::GroundAction>>& get_preferred_actions() override { return m_preferred_actions; }
 
 private:
     datalog::AnnotationPolicies<datalog::OrAnnotationPolicy, datalog::AndAnnotationPolicy<datalog::SumAggregation>> m_aps;
     datalog::TerminationPolicy m_tp;
+
+    UnorderedSet<Index<formalism::planning::GroundAction>> m_preferred_actions;
 };
 
 }

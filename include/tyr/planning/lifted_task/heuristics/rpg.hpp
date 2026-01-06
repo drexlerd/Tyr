@@ -64,9 +64,8 @@ public:
                                  self().get_annotation_policies_impl(),
                                  self().get_termination_policy_impl());
 
-        return (self().get_termination_policy_impl().check()) ?
-                   self().get_termination_policy_impl().get_total_cost(self().get_annotation_policies_impl().or_annot) :
-                   std::numeric_limits<float_t>::infinity();
+        return (self().get_termination_policy_impl().check()) ? self().extract_cost_and_set_preferred_actions_impl(state) :
+                                                                std::numeric_limits<float_t>::infinity();
     }
 
 protected:

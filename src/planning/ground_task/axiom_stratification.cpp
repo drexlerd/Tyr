@@ -94,8 +94,8 @@ static std::pair<std::vector<uint_t>, uint_t> compute_scc_and_check(const DepGra
         if (g[e].kind != EdgeKind::Strict)
             continue;
 
-        DepV u = boost::source(e, g);
-        DepV v = boost::target(e, g);
+        const auto u = boost::source(e, g);
+        const auto v = boost::target(e, g);
         if (comp[u] == comp[v])
             throw std::runtime_error("Set of ground axioms is not stratifiable (negative cycle within SCC).");
     }
@@ -113,9 +113,9 @@ static Dag build_condensation_dag(const DepGraph& g, const std::vector<uint_t>& 
 
     for (auto e_it = boost::edges(g); e_it.first != e_it.second; ++e_it.first)
     {
-        DepE e = *e_it.first;
-        DepV u = boost::source(e, g);
-        DepV v = boost::target(e, g);
+        const auto e = *e_it.first;
+        const auto u = boost::source(e, g);
+        const auto v = boost::target(e, g);
 
         const auto cu = comp[u];
         const auto cv = comp[v];
@@ -124,7 +124,8 @@ static Dag build_condensation_dag(const DepGraph& g, const std::vector<uint_t>& 
 
         const auto k = std::make_pair(cu, cv);
         auto& slot = best[k];
-        slot = std::max(slot, g[e].kind);
+        if (slot != EdgeKind::Strict && g[e].kind == EdgeKind::Strict)
+            slot = EdgeKind::Strict;
     }
 
     for (const auto& [k, inc] : best)
@@ -150,12 +151,12 @@ static std::vector<uint_t> compute_component_strata(const Dag& dag)
 
     auto s = std::vector<uint_t>(boost::num_vertices(dag), 0);
 
-    for (DagV u : topo)
+    for (const auto u : topo)
     {
         for (auto oe = boost::out_edges(u, dag); oe.first != oe.second; ++oe.first)
         {
-            DagE e = *oe.first;
-            DagV v = boost::target(e, dag);
+            const auto e = *oe.first;
+            const auto v = boost::target(e, dag);
             s[v] = std::max(s[v], s[u] + (dag[e].kind == EdgeKind::Strict ? 1u : 0u));
         }
     }

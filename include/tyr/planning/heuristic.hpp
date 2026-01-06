@@ -19,6 +19,11 @@
 #define TYR_PLANNING_HEURISTIC_HPP_
 
 #include "tyr/common/config.hpp"
+#include "tyr/common/declarations.hpp"
+#include "tyr/common/equal_to.hpp"
+#include "tyr/common/hash.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_action_index.hpp"
 #include "tyr/planning/declarations.hpp"
 
 namespace tyr::planning
@@ -33,6 +38,12 @@ public:
     virtual void set_goal(View<Index<formalism::planning::GroundConjunctiveCondition>, formalism::OverlayRepository<formalism::planning::Repository>> goal) = 0;
 
     virtual float_t evaluate(const State<Task>& state) = 0;
+
+    virtual const UnorderedSet<Index<formalism::planning::GroundAction>>& get_preferred_actions()
+    {
+        static const auto actions = UnorderedSet<Index<formalism::planning::GroundAction>> {};
+        return actions;
+    }
 };
 
 }

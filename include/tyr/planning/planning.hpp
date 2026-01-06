@@ -32,6 +32,7 @@
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/axiom_evaluator.hpp"
 #include "tyr/planning/lifted_task/heuristics/add.hpp"
+#include "tyr/planning/lifted_task/heuristics/ff.hpp"
 #include "tyr/planning/lifted_task/node.hpp"
 #include "tyr/planning/lifted_task/state.hpp"
 #include "tyr/planning/lifted_task/state_repository.hpp"
