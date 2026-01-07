@@ -29,6 +29,7 @@
 #include "tyr/formalism/planning/formatter.hpp"      // for operator<<
 #include "tyr/formalism/planning/repository.hpp"     // for Repository
 #include "tyr/formalism/planning/views.hpp"
+#include "tyr/planning/algorithms/gbfs_lazy/event_handlers/statistics.hpp"  // for Statistics
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"             // for Domain
 #include "tyr/planning/ground_task.hpp"        // for GroundTask
@@ -226,6 +227,21 @@ std::ostream& print(std::ostream& os, const planning::State<planning::GroundTask
     return os;
 }
 
+std::ostream& print(std::ostream& os, const planning::gbfs_lazy::Statistics& el)
+{
+    fmt::print(os,
+               "[GBFS] Search time: {}ms\n"
+               "[GBFS] Number of generated states: {}\n"
+               "[GBFS] Number of expanded states: {}\n"
+               "[GBFS] Number of pruned states: {}",
+               el.get_search_time_ms().count(),
+               el.get_num_generated(),
+               el.get_num_expanded(),
+               el.get_num_pruned());
+
+    return os;
+}
+
 namespace planning
 {
 std::ostream& operator<<(std::ostream& os, const Domain& el) { return tyr::print(os, el); }
@@ -249,5 +265,10 @@ std::ostream& operator<<(std::ostream& os, const PackedState<GroundTask>& el) { 
 std::ostream& operator<<(std::ostream& os, const UnpackedState<GroundTask>& el) { return tyr::print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const State<GroundTask>& el) { return tyr::print(os, el); }
+
+namespace gbfs_lazy
+{
+std::ostream& operator<<(std::ostream& os, const Statistics& el) { return tyr::print(os, el); }
+}  // end gbfs_lazy
 }
 }

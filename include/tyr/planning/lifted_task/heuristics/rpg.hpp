@@ -19,6 +19,7 @@
 #define TYR_PLANNING_LIFTED_TASK_HEURISTICS_RPG_HPP_
 
 #include "tyr/datalog/bottom_up.hpp"
+#include "tyr/datalog/contexts/program.hpp"
 #include "tyr/datalog/workspaces/program.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/heuristic.hpp"
@@ -67,10 +68,12 @@ public:
 
         insert_fact_sets_into_assignment_sets(m_workspace, m_task->get_rpg_program().get_const_program_workspace());
 
-        datalog::solve_bottom_up(m_workspace,
-                                 m_task->get_rpg_program().get_const_program_workspace(),
-                                 self().get_annotation_policies_impl(),
-                                 self().get_termination_policy_impl());
+        auto ctx = datalog::ProgramExecutionContext(m_workspace,
+                                                    m_task->get_rpg_program().get_const_program_workspace(),
+                                                    self().get_annotation_policies_impl(),
+                                                    self().get_termination_policy_impl());
+
+        datalog::solve_bottom_up(ctx);
 
         return (self().get_termination_policy_impl().check()) ? self().extract_cost_and_set_preferred_actions_impl(state) :
                                                                 std::numeric_limits<float_t>::infinity();

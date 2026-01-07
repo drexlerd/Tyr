@@ -19,6 +19,7 @@
 
 #include "../metric.hpp"
 #include "tyr/datalog/bottom_up.hpp"
+#include "tyr/datalog/contexts/program.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"
@@ -78,7 +79,9 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
 
     insert_extended_state(state.get_unpacked_state(), *m_task->get_repository(), m_workspace, m_task->get_action_program().get_const_program_workspace());
 
-    d::solve_bottom_up(m_workspace, m_task->get_action_program().get_const_program_workspace(), m_aps, m_tp);
+    auto ctx = d::ProgramExecutionContext(m_workspace, m_task->get_action_program().get_const_program_workspace(), m_aps, m_tp);
+
+    d::solve_bottom_up(ctx);
 
     const auto state_context = StateContext<LiftedTask>(*m_task, state.get_unpacked_state(), node.get_metric());
 

@@ -59,6 +59,8 @@ struct RuleIterationWorkspace;
 struct ConstRuleWorkspace;
 struct WorkerWorkspace;
 
+class RuleSchedulerStratum;
+
 namespace details
 {
 class Vertex;

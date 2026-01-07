@@ -21,6 +21,7 @@
 #include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/vector.hpp"
 #include "tyr/datalog/bottom_up.hpp"
+#include "tyr/datalog/contexts/program.hpp"
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
 #include "tyr/datalog/workspaces/program.hpp"
@@ -280,7 +281,9 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
                                      std::vector<d::HeadToWitness>(workspace.rule_deltas.size()));
     auto tp = d::NoTerminationPolicy();
 
-    datalog::solve_bottom_up(workspace, const_workspace, aps, tp);
+    auto ctx = d::ProgramExecutionContext(workspace, const_workspace, aps, tp);
+
+    d::solve_bottom_up(ctx);
 
     auto aggregated_statistics = d::RuleIterationWorkspace::compute_aggregate_statistics(workspace.rules);
 

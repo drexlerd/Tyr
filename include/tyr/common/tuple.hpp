@@ -52,6 +52,50 @@ constexpr const auto& get_container(const std::tuple<Slots...>& tuple)
 {
     return get_container_impl<T, 0, Slots...>(const_cast<std::tuple<Slots...>&>(tuple));
 }
+
+/**
+ * std::get<I> with runtime I.
+ */
+
+template<size_t I>
+struct visit_impl
+{
+    template<typename T, typename F>
+    static void visit(T& tup, size_t idx, F function)
+    {
+        if (idx == I - 1)
+        {
+            function(std::get<I - 1>(tup));
+        }
+        else
+            visit_impl<I - 1>::visit(tup, idx, function);
+    }
+};
+
+template<>
+struct visit_impl<0>
+{
+    template<typename T, typename F>
+    static void visit(T& tup, size_t idx, F function)
+    {
+        if (idx == 0)
+        {
+            function(std::get<0>(tup));
+        }
+    }
+};
+
+template<typename F, typename... Ts>
+void visit_at(std::tuple<Ts...> const& tup, size_t idx, F function)
+{
+    return visit_impl<sizeof...(Ts)>::visit(tup, idx, function);
+}
+
+template<typename F, typename... Ts>
+void visit_at(std::tuple<Ts...>& tup, size_t idx, F function)
+{
+    return visit_impl<sizeof...(Ts)>::visit(tup, idx, function);
+}
 }
 
 #endif

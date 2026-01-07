@@ -15,29 +15,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_SOLVER_BOTTOM_UP_HPP_
-#define TYR_SOLVER_BOTTOM_UP_HPP_
+#ifndef TYR_DATALOG_CONTEXTS_STRATUM_HPP_
+#define TYR_DATALOG_CONTEXTS_STRATUM_HPP_
 
-#include "tyr/common/config.hpp"
-#include "tyr/common/types.hpp"
-#include "tyr/datalog/contexts/program.hpp"
 #include "tyr/datalog/declarations.hpp"
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
-#include "tyr/formalism/datalog/declarations.hpp"
-#include "tyr/formalism/datalog/ground_atom_index.hpp"
-
-#include <concepts>
-#include <vector>
 
 namespace tyr::datalog
 {
+template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
+struct ProgramExecutionContext;
 
 template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
          AndAnnotationPolicyConcept AndAP = NoAndAnnotationPolicy,
          TerminationPolicyConcept TP = NoTerminationPolicy>
-void solve_bottom_up(ProgramExecutionContext<OrAP, AndAP, TP>& ctx);
+struct StratumExecutionContext
+{
+    StratumExecutionContext(RuleSchedulerStratum& scheduler, ProgramExecutionContext<OrAP, AndAP, TP>& ctx) : scheduler(scheduler), ctx(ctx) {}
 
+    RuleSchedulerStratum& scheduler;
+    ProgramExecutionContext<OrAP, AndAP, TP>& ctx;
+};
 }
 
 #endif

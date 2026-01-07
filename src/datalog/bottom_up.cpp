@@ -319,22 +319,18 @@ void generate(GenerateContext<OrAP, AndAP>& gc)
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
-                                 ProgramWorkspace& ws,
-                                 const ConstProgramWorkspace& cws,
-                                 AnnotationPolicies<OrAP, AndAP>& aps,
-                                 TP& tp)
+void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP> ctx)
 {
-    scheduler.activate_all();
+    ctx.scheduler.activate_all();
 
-    ws.cost_buckets.clear();
+    ctx.ctx.ws.cost_buckets.clear();
 
     while (true)
     {
         // std::cout << "Cost: " << ws.cost_buckets.current_cost() << std::endl;
 
         // Check whether min cost for goal was proven.
-        if (tp.check())
+        if (ctx.ctx.tp.check())
         {
             return;
         }
@@ -343,11 +339,11 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
          * Parallel evaluation.
          */
 
-        const auto active_rules = scheduler.get_active_rules();
-        scheduler.on_start_iteration();
+        const auto active_rules = ctx.scheduler.get_active_rules();
+        ctx.scheduler.on_start_iteration();
 
         {
-            auto stopwatch = StopwatchScope(ws.statistics.ground_seq_total_time);
+            auto stopwatch = StopwatchScope(ctx.ctx.ws.statistics.ground_seq_total_time);
 
             oneapi::tbb::parallel_for_each(active_rules.begin(),
                                            active_rules.end(),
@@ -355,10 +351,10 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
                                            {
                                                const auto i = uint_t(rule_index);
 
-                                               auto stopwatch = StopwatchScope(ws.rules[i].statistics.ground_total_time);
-                                               ++ws.rules[i].statistics.num_executions;
+                                               auto stopwatch = StopwatchScope(ctx.ctx.ws.rules[i].statistics.ground_total_time);
+                                               ++ctx.ctx.ws.rules[i].statistics.num_executions;
 
-                                               auto generate_context = GenerateContext(rule_index, ws, cws, aps);
+                                               auto generate_context = GenerateContext(rule_index, ctx.ctx.ws, ctx.ctx.cws, ctx.ctx.aps);
 
                                                generate(generate_context);
                                            });
@@ -371,113 +367,78 @@ void solve_bottom_up_for_stratum(RuleSchedulerStratum& scheduler,
         /// --- Sequentially combine results into a temporary staging repository to prevent modying the program's repository
 
         {
-            const auto stopwatch = StopwatchScope(ws.statistics.merge_seq_total_time);
+            const auto stopwatch = StopwatchScope(ctx.ctx.ws.statistics.merge_seq_total_time);
 
             // Clear current bucket to avoid duplicate handling
-            ws.cost_buckets.clear_current();
+            ctx.ctx.ws.cost_buckets.clear_current();
 
             for (const auto rule_index : active_rules)
             {
                 const auto i = uint_t(rule_index);
 
-                auto merge_context = fd::MergeContext { ws.datalog_builder, ws.repository, ws.rule_deltas[i].merge_cache };
+                auto merge_context = fd::MergeContext { ctx.ctx.ws.datalog_builder, ctx.ctx.ws.repository, ctx.ctx.ws.rule_deltas[i].merge_cache };
 
-                for (const auto delta_head : ws.rules[i].heads)
+                for (const auto delta_head : ctx.ctx.ws.rules[i].heads)
                 {
                     // Merge head from delta into the program
-                    const auto program_head = fd::merge_d2d(make_view(delta_head, *ws.rule_deltas[i].repository), merge_context).first;
+                    const auto program_head = fd::merge_d2d(make_view(delta_head, *ctx.ctx.ws.rule_deltas[i].repository), merge_context).first;
 
                     // Update annotation
-                    const auto cost_update = aps.or_ap.update_annotation(program_head,
-                                                                         delta_head,
-                                                                         aps.or_annot,
-                                                                         aps.and_annots[i],
-                                                                         aps.delta_head_to_witness[i],
-                                                                         aps.program_head_to_witness);
+                    const auto cost_update = ctx.ctx.aps.or_ap.update_annotation(program_head,
+                                                                                 delta_head,
+                                                                                 ctx.ctx.aps.or_annot,
+                                                                                 ctx.ctx.aps.and_annots[i],
+                                                                                 ctx.ctx.aps.delta_head_to_witness[i],
+                                                                                 ctx.ctx.aps.program_head_to_witness);
 
-                    ws.cost_buckets.update(cost_update, program_head);
+                    ctx.ctx.ws.cost_buckets.update(cost_update, program_head);
                 }
             }
 
-            if (!ws.cost_buckets.advance_to_next_nonempty())
+            if (!ctx.ctx.ws.cost_buckets.advance_to_next_nonempty())
                 return;  // Terminate if no-nonempty bucket was found.
 
             // Insert next bucket heads into fact and assignment sets + trigger scheduler.
-            for (const auto head_index : ws.cost_buckets.get_current_bucket())
+            for (const auto head_index : ctx.ctx.ws.cost_buckets.get_current_bucket())
             {
-                if (!ws.facts.fact_sets.predicate.contains(head_index))
+                if (!ctx.ctx.ws.facts.fact_sets.predicate.contains(head_index))
                 {
-                    const auto head = make_view(head_index, ws.repository);
+                    const auto head = make_view(head_index, ctx.ctx.ws.repository);
 
                     // Notify scheduler
-                    scheduler.on_generate(head.get_predicate().get_index());
+                    ctx.scheduler.on_generate(head.get_predicate().get_index());
 
                     // Notify termination policy
-                    tp.achieve(head_index);
+                    ctx.ctx.tp.achieve(head_index);
 
                     // Update fact sets
-                    ws.facts.fact_sets.predicate.insert(head);
-                    ws.facts.assignment_sets.predicate.insert(head);
+                    ctx.ctx.ws.facts.fact_sets.predicate.insert(head);
+                    ctx.ctx.ws.facts.assignment_sets.predicate.insert(head);
                 }
             }
         }
 
-        scheduler.on_finish_iteration();
+        ctx.scheduler.on_finish_iteration();
     }
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void solve_bottom_up(ProgramWorkspace& ws, const ConstProgramWorkspace& cws, AnnotationPolicies<OrAP, AndAP>& aps, TP& tp)
+void solve_bottom_up(ProgramExecutionContext<OrAP, AndAP, TP>& ctx)
 {
-    // Clear cross strata data structures.
-    for (auto& rule_delta : ws.rule_deltas)
-        rule_delta.clear();
-    for (auto& rule_persistent : ws.rule_persistents)
-        rule_persistent.clear();
-    aps.clear();
-    tp.clear();
+    ctx.on_solve_bottom_up();
 
-    // Initialize the termination policy.
-    tp.set_goals(ws.facts.goal_fact_sets);
-
-    // Initialize first fact layer.
-    for (const auto& set : ws.facts.fact_sets.predicate.get_sets())
-    {
-        for (const auto fact : set.get_facts())
-        {
-            aps.or_ap.initialize_annotation(fact.get_index(), aps.or_annot);
-            tp.achieve(fact.get_index());
-        }
-    }
-
-    // Solve for each strata.
-    for (auto& scheduler : ws.schedulers.data)
-        solve_bottom_up_for_stratum(scheduler, ws, cws, aps, tp);
+    for (auto stratum_ctx : ctx.get_stratum_execution_contexts())
+        solve_bottom_up_for_stratum(stratum_ctx);
 }
 
-template void solve_bottom_up(ProgramWorkspace& ws,
-                              const ConstProgramWorkspace& cws,
-                              AnnotationPolicies<NoOrAnnotationPolicy, NoAndAnnotationPolicy>& aps,
-                              NoTerminationPolicy& tp);
+template void solve_bottom_up(ProgramExecutionContext<NoOrAnnotationPolicy, NoAndAnnotationPolicy, NoTerminationPolicy>& ctx);
 
-template void solve_bottom_up(ProgramWorkspace& ws,
-                              const ConstProgramWorkspace& cws,
-                              AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>>& aps,
-                              NoTerminationPolicy& tp);
+template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>, NoTerminationPolicy>& ctx);
 
-template void solve_bottom_up(ProgramWorkspace& ws,
-                              const ConstProgramWorkspace& cws,
-                              AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>>& aps,
-                              TerminationPolicy<SumAggregation>& tp);
+template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>, TerminationPolicy<SumAggregation>>& ctx);
 
-template void solve_bottom_up(ProgramWorkspace& ws,
-                              const ConstProgramWorkspace& cws,
-                              AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>>& aps,
-                              NoTerminationPolicy& tp);
+template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>, NoTerminationPolicy>& ctx);
 
-template void solve_bottom_up(ProgramWorkspace& ws,
-                              const ConstProgramWorkspace& cws,
-                              AnnotationPolicies<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>>& aps,
-                              TerminationPolicy<MaxAggregation>& tp);
+template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>, TerminationPolicy<MaxAggregation>>& ctx);
 
 }

@@ -19,7 +19,7 @@
 #define TYR_PLANNING_STATE_HPP_
 
 #include "tyr/common/shared_object_pool.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/unpacked_state.hpp"
@@ -51,6 +51,9 @@ concept StateConcept = requires(const T& cs,
     { cs.test(derived_atom) } -> std::same_as<bool>;
     { cs.get_task() } -> std::same_as<const Task&>;
 };
+
+template<typename Task>
+using StateList = std::vector<State<Task>>;
 
 }
 

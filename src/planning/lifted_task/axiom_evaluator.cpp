@@ -17,12 +17,13 @@
 
 #include "tyr/planning/lifted_task/axiom_evaluator.hpp"
 
-#include "tyr/common/comparators.hpp"            // for operator!=
-#include "tyr/common/equal_to.hpp"               // for EqualTo
-#include "tyr/common/formatter.hpp"              // for operator<<
-#include "tyr/common/hash.hpp"                   // for Hash
-#include "tyr/common/vector.hpp"                 // for View
-#include "tyr/datalog/bottom_up.hpp"             // for solve_bottom_up
+#include "tyr/common/comparators.hpp"  // for operator!=
+#include "tyr/common/equal_to.hpp"     // for EqualTo
+#include "tyr/common/formatter.hpp"    // for operator<<
+#include "tyr/common/hash.hpp"         // for Hash
+#include "tyr/common/vector.hpp"       // for View
+#include "tyr/datalog/bottom_up.hpp"   // for solve_bottom_up
+#include "tyr/datalog/contexts/program.hpp"
 #include "tyr/datalog/fact_sets.hpp"             // for FactSets, Pre...
 #include "tyr/formalism/overlay_repository.hpp"  // for OverlayReposi...
 #include "tyr/formalism/planning/declarations.hpp"
@@ -104,7 +105,9 @@ void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask
 {
     insert_unextended_state(unpacked_state, *m_task->get_repository(), m_workspace, m_task->get_axiom_program().get_const_program_workspace());
 
-    d::solve_bottom_up(m_workspace, m_task->get_axiom_program().get_const_program_workspace(), m_aps, m_tp);
+    auto ctx = d::ProgramExecutionContext(m_workspace, m_task->get_axiom_program().get_const_program_workspace(), m_aps, m_tp);
+
+    d::solve_bottom_up(ctx);
 
     read_derived_atoms_from_program_context(m_task->get_axiom_program(), unpacked_state, *m_task->get_repository(), m_workspace);
 }

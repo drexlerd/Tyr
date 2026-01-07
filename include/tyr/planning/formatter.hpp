@@ -57,6 +57,8 @@ extern std::ostream& print(std::ostream& os, const planning::UnpackedState<plann
 
 extern std::ostream& print(std::ostream& os, const planning::State<planning::GroundTask>& el);
 
+extern std::ostream& print(std::ostream& os, const planning::gbfs_lazy::Statistics& el);
+
 namespace planning
 {
 extern std::ostream& operator<<(std::ostream& os, const Domain& el);
@@ -80,6 +82,11 @@ extern std::ostream& operator<<(std::ostream& os, const PackedState<GroundTask>&
 extern std::ostream& operator<<(std::ostream& os, const UnpackedState<GroundTask>& el);
 
 extern std::ostream& operator<<(std::ostream& os, const State<GroundTask>& el);
+
+namespace gbfs_lazy
+{
+extern std::ostream& operator<<(std::ostream& os, const Statistics& el);
+}  // end gbfs_lazy
 }
 }
 
