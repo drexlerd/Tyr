@@ -20,7 +20,7 @@
 
 #include "tyr/common/bit_packed_layout.hpp"
 #include "tyr/planning/algorithms/gbfs_lazy.hpp"
-#include "tyr/planning/algorithms/gbfs_lazy/event_handlers.hpp"
+#include "tyr/planning/algorithms/gbfs_lazy/event_handler.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/formatter.hpp"

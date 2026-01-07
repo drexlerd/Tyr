@@ -29,7 +29,7 @@
 #include "tyr/formalism/planning/formatter.hpp"      // for operator<<
 #include "tyr/formalism/planning/repository.hpp"     // for Repository
 #include "tyr/formalism/planning/views.hpp"
-#include "tyr/planning/algorithms/gbfs_lazy/event_handlers/statistics.hpp"  // for Statistics
+#include "tyr/planning/algorithms/gbfs_lazy/statistics.hpp"  // for Statistics
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"             // for Domain
 #include "tyr/planning/ground_task.hpp"        // for GroundTask

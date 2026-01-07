@@ -22,7 +22,7 @@
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
-#include "tyr/planning/algorithms/gbfs_lazy/event_handlers/default.hpp"
+#include "tyr/planning/algorithms/gbfs_lazy/event_handler.hpp"
 #include "tyr/planning/algorithms/openlists/alternating.hpp"
 #include "tyr/planning/algorithms/utils.hpp"
 #include "tyr/planning/applicability.hpp"
@@ -116,7 +116,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
     const auto start_node = (options.start_node) ? options.start_node.value() : successor_generator.get_initial_node();
     const auto& start_state = start_node.get_state();
     const auto start_state_index = start_state.get_index();
-    const auto event_handler = (options.event_handler) ? options.event_handler : DefaultEventHandler<Task>::create(false);
+    const auto event_handler = (options.event_handler) ? options.event_handler : DefaultEventHandler<Task>::create(0);
 
     auto step = uint_t(0);
 

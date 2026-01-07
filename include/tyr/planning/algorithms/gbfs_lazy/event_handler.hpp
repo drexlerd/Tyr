@@ -15,11 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_ALGORITHMS_GBFS_LAZY_EVENT_HANDLERS_INTERFACE_HPP_
-#define TYR_PLANNING_ALGORITHMS_GBFS_LAZY_EVENT_HANDLERS_INTERFACE_HPP_
+#ifndef TYR_PLANNING_ALGORITHMS_GBFS_LAZY_EVENT_HANDLER_HPP_
+#define TYR_PLANNING_ALGORITHMS_GBFS_LAZY_EVENT_HANDLER_HPP_
 
 #include "tyr/formalism/planning/ground_action_view.hpp"
-#include "tyr/planning/algorithms/gbfs_lazy/event_handlers/statistics.hpp"
+#include "tyr/planning/algorithms/gbfs_lazy/statistics.hpp"
 #include "tyr/planning/declarations.hpp"
 
 #include <chrono>
@@ -85,7 +85,7 @@ class EventHandlerBase : public EventHandler<Task>
 {
 protected:
     Statistics m_statistics;
-    bool m_quiet;
+    size_t m_verbosity;
 
 private:
     EventHandlerBase() = default;
@@ -95,20 +95,22 @@ private:
     constexpr const auto& self() const { return static_cast<const Derived&>(*this); }
     constexpr auto& self() { return static_cast<Derived&>(*this); }
 
+    bool verbosity(size_t level) const { return m_verbosity >= level; }
+
 public:
-    explicit EventHandlerBase(bool quiet = true) : m_statistics(), m_quiet(quiet) {}
+    explicit EventHandlerBase(size_t verbosity = 0) : m_statistics(), m_verbosity(verbosity) {}
 
     void on_expand_node(const Node<Task>& node) override
     {
         m_statistics.increment_num_expanded();
 
-        if (!m_quiet)
+        if (verbosity(2))
             self().on_expand_node_impl(node);
     }
 
     void on_expand_goal_node(const Node<Task>& node) override
     {
-        if (!m_quiet)
+        if (verbosity(2))
             self().on_expand_goal_node_impl(node);
     }
 
@@ -116,7 +118,7 @@ public:
     {
         m_statistics.increment_num_generated();
 
-        if (!m_quiet)
+        if (verbosity(2))
         {
             self().on_generate_node_impl(labeled_succ_node);
         }
@@ -126,7 +128,7 @@ public:
     {
         m_statistics.increment_num_pruned();
 
-        if (!m_quiet)
+        if (verbosity(2))
         {
             self().on_prune_node_impl(node);
         }
@@ -138,7 +140,7 @@ public:
 
         m_statistics.set_search_start_time_point(std::chrono::high_resolution_clock::now());
 
-        if (!m_quiet)
+        if (verbosity(0))
         {
             self().on_start_search_impl(node, h_value);
         }
@@ -146,7 +148,7 @@ public:
 
     void on_new_best_h_value(float_t h_value) override
     {
-        if (!m_quiet)
+        if (verbosity(0))
         {
             self().on_new_best_h_value_impl(h_value, m_statistics.get_num_expanded(), m_statistics.get_num_generated());
         }
@@ -157,13 +159,13 @@ public:
     {
         m_statistics.set_search_end_time_point(std::chrono::high_resolution_clock::now());
 
-        if (!m_quiet)
+        if (verbosity(0))
             self().on_end_search_impl();
     }
 
     void on_solved(const Plan<Task>& plan) override
     {
-        if (!m_quiet)
+        if (verbosity(0))
         {
             self().on_solved_impl(plan);
         }
@@ -171,7 +173,7 @@ public:
 
     void on_unsolvable() override
     {
-        if (!m_quiet)
+        if (verbosity(0))
         {
             self().on_unsolvable_impl();
         }
@@ -179,7 +181,7 @@ public:
 
     void on_exhausted() override
     {
-        if (!m_quiet)
+        if (verbosity(0))
         {
             self().on_exhausted_impl();
         }
@@ -190,7 +192,39 @@ public:
      */
 
     const Statistics& get_statistics() const override { return m_statistics; }
-    bool is_quiet() const { return m_quiet; }
+};
+
+template<typename Task>
+class DefaultEventHandler : public EventHandlerBase<DefaultEventHandler<Task>, Task>
+{
+private:
+    /* Implement EventHandlerBase interface */
+    friend class EventHandlerBase<DefaultEventHandler<Task>, Task>;
+
+    void on_expand_node_impl(const Node<Task>& node) const;
+
+    void on_expand_goal_node_impl(const Node<Task>& node) const;
+
+    void on_generate_node_impl(const LabeledNode<Task>& labeled_succ_node) const;
+
+    void on_prune_node_impl(const Node<Task>& node) const;
+
+    void on_start_search_impl(const Node<Task>& node, float_t h_value) const;
+
+    void on_new_best_h_value_impl(float_t h_value, uint64_t num_expanded_states, uint64_t num_generated_states) const;
+
+    void on_end_search_impl() const;
+
+    void on_solved_impl(const Plan<Task>& plan) const;
+
+    void on_unsolvable_impl() const;
+
+    void on_exhausted_impl() const;
+
+public:
+    DefaultEventHandler(size_t verbosity = 0);
+
+    static DefaultEventHandlerPtr<Task> create(size_t verbosity = 0);
 };
 
 }
