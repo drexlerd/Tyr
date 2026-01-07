@@ -20,7 +20,7 @@
 
 #include "tyr/common/config.hpp"
 #include "tyr/formalism/planning/ground_action_index.hpp"
-#include "tyr/planning/state.hpp"
+#include "tyr/planning/node.hpp"
 
 namespace tyr::planning
 {
@@ -29,14 +29,19 @@ template<typename Task>
 class Plan
 {
 private:
-    StateList<Task> m_states;
+    NodeList<Task> m_nodes;
     IndexList<formalism::planning::GroundAction> m_actions;
     float_t m_cost;
 
 public:
-    Plan(StateList<Task> states, IndexList<formalism::planning::GroundAction> actions, float_t cost);
+    Plan(NodeList<Task> nodes, IndexList<formalism::planning::GroundAction> actions, float_t cost) :
+        m_nodes(std::move(nodes)),
+        m_actions(std::move(actions)),
+        m_cost(cost)
+    {
+    }
 
-    const StateList<Task>& get_states() const noexcept { return m_states; }
+    const NodeList<Task>& get_nodes() const noexcept { return m_nodes; }
     const IndexList<formalism::planning::GroundAction>& get_actions() const noexcept { return m_actions; }
     float_t get_cost() const noexcept { return m_cost; }
     size_t get_length() const noexcept { return m_actions.size(); }

@@ -24,8 +24,10 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
+#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_utils.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/node.hpp"
 
@@ -380,6 +382,20 @@ template<formalism::planning::Context C>
 bool is_statically_applicable(View<Index<formalism::planning::GroundAxiom>, C> element, const boost::dynamic_bitset<>& static_atoms)
 {
     return is_statically_applicable(element.get_body(), static_atoms);
+}
+
+/**
+ * is_dynamically_applicable
+ */
+
+// GroundConjunctiveCondition
+
+template<typename Task, formalism::planning::Context C>
+bool is_dynamically_applicable(View<Index<formalism::planning::GroundConjunctiveCondition>, C> element, const StateContext<Task>& context)
+{
+    return is_applicable(element.template get_facts<formalism::FluentTag>(), context)      //
+           && is_applicable(element.template get_facts<formalism::DerivedTag>(), context)  //
+           && is_applicable(element.get_numeric_constraints(), context);
 }
 
 /**

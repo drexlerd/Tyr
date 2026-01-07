@@ -19,6 +19,8 @@
 #define TYR_PLANNING_PLANNING_HPP_
 
 #include "tyr/common/bit_packed_layout.hpp"
+#include "tyr/planning/algorithms/gbfs_lazy.hpp"
+#include "tyr/planning/algorithms/gbfs_lazy/event_handlers.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/domain.hpp"
 #include "tyr/planning/formatter.hpp"
@@ -41,9 +43,11 @@
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 #include "tyr/planning/packed_state.hpp"
 #include "tyr/planning/parser.hpp"
+#include "tyr/planning/plan.hpp"
 #include "tyr/planning/programs/action.hpp"
 #include "tyr/planning/programs/axiom.hpp"
 #include "tyr/planning/programs/ground.hpp"
+#include "tyr/planning/search_node.hpp"
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/state_repository.hpp"
 

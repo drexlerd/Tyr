@@ -49,9 +49,7 @@ public:
     virtual void on_expand_goal_node(const Node<Task>& node) = 0;
 
     /// @brief React on generating a successor `node` by applying an action.
-    virtual void on_generate_node(const Node<Task>& node,
-                                  View<Index<formalism::planning::GroundAction>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                                  const Node<Task>& succ_node) = 0;
+    virtual void on_generate_node(const LabeledNode<Task>& labeled_succ_node) = 0;
 
     /// @brief React on pruning a node.
     virtual void on_prune_node(const Node<Task>& node) = 0;
@@ -114,15 +112,13 @@ public:
             self().on_expand_goal_node_impl(node);
     }
 
-    void on_generate_node(const Node<Task>& node,
-                          View<Index<formalism::planning::GroundAction>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                          const Node<Task>& succ_node) override
+    void on_generate_node(const LabeledNode<Task>& labeled_succ_node) override
     {
         m_statistics.increment_num_generated();
 
         if (!m_quiet)
         {
-            self().on_generate_node_impl(node, action, succ_node);
+            self().on_generate_node_impl(labeled_succ_node);
         }
     }
 

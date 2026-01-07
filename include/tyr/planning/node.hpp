@@ -23,6 +23,7 @@
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/ground_action_view.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/state.hpp"
 #include "tyr/planning/state_index.hpp"
 
@@ -36,6 +37,9 @@ class Node
 {
     static_assert(dependent_false<Task>::value, "Node is not defined for type T.");
 };
+
+template<typename Task>
+using NodeList = std::vector<Node<Task>>;
 
 template<typename Task>
 struct LabeledNode

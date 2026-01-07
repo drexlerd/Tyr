@@ -33,6 +33,8 @@ using DomainPtr = std::shared_ptr<Domain>;
 template<typename Task>
 class Node;
 template<typename Task>
+struct LabeledNode;
+template<typename Task>
 class PackedState;
 template<typename Task>
 class UnpackedState;

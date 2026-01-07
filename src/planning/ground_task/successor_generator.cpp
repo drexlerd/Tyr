@@ -19,8 +19,9 @@
 
 #include "../metric.hpp"
 #include "tyr/formalism/overlay_repository.hpp"  // for View
-#include "tyr/formalism/planning/views.hpp"      // for View
-#include "tyr/planning/applicability.hpp"        // for StateC...
+#include "tyr/formalism/planning/repository.hpp"
+#include "tyr/formalism/planning/views.hpp"  // for View
+#include "tyr/planning/applicability.hpp"    // for StateC...
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"

@@ -16,6 +16,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <tyr/formalism/formalism.hpp>
 #include <tyr/planning/planning.hpp>
 
 namespace p = tyr::planning;

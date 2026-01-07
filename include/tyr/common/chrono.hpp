@@ -34,6 +34,32 @@ struct StopwatchScope
     std::chrono::steady_clock::time_point m_start;
 };
 
+class CountdownWatch
+{
+private:
+    std::chrono::milliseconds m_timeout;
+    std::chrono::steady_clock::time_point m_endTime;
+    bool m_isRunning;
+
+public:
+    explicit CountdownWatch(uint32_t timeout_ms) : m_timeout(timeout_ms), m_isRunning(false) {}
+
+    void start()
+    {
+        m_endTime = std::chrono::steady_clock::now() + m_timeout;
+        m_isRunning = true;
+    }
+
+    bool has_finished() const
+    {
+        if (!m_isRunning)
+        {
+            return true;  // If never started, assume finished.
+        }
+        return std::chrono::steady_clock::now() >= m_endTime;
+    }
+};
+
 }
 
 #endif

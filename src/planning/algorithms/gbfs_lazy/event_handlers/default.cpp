@@ -37,10 +37,7 @@ void DefaultEventHandler<Task>::on_expand_goal_node_impl(const Node<Task>& node)
 }
 
 template<typename Task>
-void DefaultEventHandler<Task>::on_generate_node_impl(
-    const Node<Task>& node,
-    View<Index<formalism::planning::GroundAction>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-    const Node<Task>& succ_node) const
+void DefaultEventHandler<Task>::on_generate_node_impl(const LabeledNode<Task>& labeled_succ_node) const
 {
 }
 

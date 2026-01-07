@@ -31,7 +31,7 @@ namespace tyr::planning::gbfs_lazy
 template<typename Task>
 struct Options
 {
-    Node<Task> start_node;
+    std::optional<Node<Task>> start_node = std::nullopt;
     EventHandlerPtr<Task> event_handler = nullptr;
     uint32_t max_num_states = std::numeric_limits<uint32_t>::max();
     uint32_t max_time_in_ms = std::numeric_limits<uint32_t>::max();
@@ -40,7 +40,8 @@ struct Options
 };
 
 template<typename Task>
-SearchResult<Task> find_solution(const std::shared_ptr<Task>& task, const HeuristicPtr<Task>& heuristic, const Options<Task>& options = Options<Task>());
+SearchResult<Task>
+find_solution(Task& task, SuccessorGenerator<Task>& successor_generator, Heuristic<Task>& heuristic, const Options<Task>& options = Options<Task>());
 
 }
 
