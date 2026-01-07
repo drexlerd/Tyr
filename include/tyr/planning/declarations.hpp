@@ -59,6 +59,8 @@ using HeuristicPtr = std::shared_ptr<Heuristic<Task>>;
 template<typename Task>
 class Plan;
 
+class Statistics;
+
 namespace gbfs_lazy
 {
 template<typename Task>
@@ -73,7 +75,7 @@ template<typename Task>
 class DefaultEventHandler;
 template<typename Task>
 using DefaultEventHandlerPtr = std::shared_ptr<DefaultEventHandler<Task>>;
-class Statistics;
+
 }
 }
 

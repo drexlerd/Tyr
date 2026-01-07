@@ -136,7 +136,7 @@ public:
 
     void on_start_search(const Node<Task>& node, float_t h_value) override
     {
-        m_statistics = Statistics();
+        m_statistics = tyr::planning::Statistics();
 
         m_statistics.set_search_start_time_point(std::chrono::high_resolution_clock::now());
 
