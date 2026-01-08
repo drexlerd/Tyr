@@ -24,9 +24,9 @@ namespace tyr
 {
 
 template<typename Rep, typename Period>
-[[nodiscard]] inline uint64_t to_ms(std::chrono::duration<Rep, Period> d) noexcept
+[[nodiscard]] inline std::chrono::milliseconds::rep to_ms(std::chrono::duration<Rep, Period> d) noexcept
 {
-    return std::chrono::duration_cast<std::chrono::duration<uint64_t, std::milli>>(d).count();
+    return std::chrono::duration_cast<std::chrono::duration<std::chrono::milliseconds::rep, std::milli>>(d).count();
 }
 
 template<typename T>
@@ -43,27 +43,16 @@ struct StopwatchScope
 class CountdownWatch
 {
 private:
-    std::chrono::milliseconds m_timeout;
-    std::chrono::steady_clock::time_point m_endTime;
-    bool m_isRunning;
+    std::chrono::steady_clock::time_point m_deadline;
 
 public:
-    explicit CountdownWatch(uint32_t timeout_ms) : m_timeout(timeout_ms), m_isRunning(false) {}
-
-    void start()
+    template<typename Rep, typename Period>
+    explicit CountdownWatch(std::chrono::duration<Rep, Period> timeout) :
+        m_deadline(std::chrono::steady_clock::now() + std::chrono::duration_cast<std::chrono::steady_clock::duration>(timeout))
     {
-        m_endTime = std::chrono::steady_clock::now() + m_timeout;
-        m_isRunning = true;
     }
 
-    bool has_finished() const
-    {
-        if (!m_isRunning)
-        {
-            return true;  // If never started, assume finished.
-        }
-        return std::chrono::steady_clock::now() >= m_endTime;
-    }
+    bool has_finished() const { return std::chrono::steady_clock::now() >= m_deadline; }
 };
 
 }

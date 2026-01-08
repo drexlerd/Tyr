@@ -154,7 +154,9 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
 
     auto preferred_openlist = ExhaustiveQueue();
     auto standard_openlist = ExhaustiveQueue();
-    auto openlist = AlternatingOpenList<ExhaustiveQueue, ExhaustiveQueue>(preferred_openlist, standard_openlist, std::array<size_t, 2> { 1000, 1 });
+    auto openlist = AlternatingOpenList<ExhaustiveQueue, ExhaustiveQueue>(preferred_openlist,
+                                                                          standard_openlist,
+                                                                          std::array<size_t, 2> { options.prefered_queue_weight, 1 });
 
     if (std::isnan(start_node.get_metric()))
     {
@@ -186,12 +188,11 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
 
     standard_openlist.insert(ExhaustiveQueueEntry { start_node.get_metric(), start_h_value, start_state_index, step++, start_search_node.status });
 
-    auto stopwatch = CountdownWatch(options.max_time_in_ms);
-    stopwatch.start();
+    auto stopwatch = options.max_time ? std::optional<CountdownWatch>(options.max_time.value()) : std::nullopt;
 
     while (!openlist.empty())
     {
-        if (stopwatch.has_finished())
+        if (stopwatch && stopwatch->has_finished())
         {
             result.status = SearchStatus::OUT_OF_TIME;
             return result;
@@ -259,9 +260,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
             /* Skip previously generated state. */
 
             if (!is_new_successor_state)
-            {
                 continue;
-            }
 
             /* Open new state. */
 
@@ -298,15 +297,11 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
             /* Exploration strategy */
 
             if (is_preferred)
-            {
                 preferred_openlist.insert(
                     ExhaustiveQueueEntry { succ_node.get_metric(), state_h_value, succ_state_index, step++, successor_search_node.status });
-            }
             else
-            {
                 standard_openlist.insert(
                     ExhaustiveQueueEntry { succ_node.get_metric(), state_h_value, succ_state_index, step++, successor_search_node.status });
-            }
         }
     }
 

@@ -23,6 +23,7 @@
 #include "tyr/formalism/planning/grounder.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/planning/applicability.hpp"
+#include "tyr/planning/heuristics/ff.hpp"
 #include "tyr/planning/lifted_task/heuristics/rpg.hpp"
 
 #include <boost/dynamic_bitset.hpp>
@@ -31,11 +32,12 @@
 namespace tyr::planning
 {
 
-class FF : public RPGBase<FF>
+template<>
+class FFHeuristic<LiftedTask> : public RPGBase<FFHeuristic<LiftedTask>>
 {
 public:
-    FF(std::shared_ptr<LiftedTask> task) :
-        RPGBase<FF>(std::move(task)),
+    FFHeuristic(std::shared_ptr<LiftedTask> task) :
+        RPGBase<FFHeuristic<LiftedTask>>(std::move(task)),
         m_aps(datalog::OrAnnotationPolicy(),
               std::vector<datalog::AndAnnotationPolicy<datalog::SumAggregation>>(this->m_workspace.rule_deltas.size()),
               datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
@@ -52,6 +54,8 @@ public:
         m_preferred_actions()
     {
     }
+
+    static std::shared_ptr<FFHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task) { return std::make_shared<FFHeuristic<LiftedTask>>(task); }
 
     auto& get_annotation_policies_impl() noexcept { return m_aps; }
     auto& get_termination_policy_impl() noexcept { return m_tp; }

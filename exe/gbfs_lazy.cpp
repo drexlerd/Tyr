@@ -64,7 +64,7 @@ int main(int argc, char** argv)
         options.start_node = successor_generator.get_initial_node();
         options.event_handler = planning::gbfs_lazy::DefaultEventHandler<planning::LiftedTask>::create(verbosity);
 
-        auto ff_heuristic = std::make_shared<planning::FF>(lifted_task);
+        auto ff_heuristic = planning::FFHeuristic<planning::LiftedTask>::create(lifted_task);
         ff_heuristic->set_goal(lifted_task->get_task().get_goal());
 
         auto result = planning::gbfs_lazy::find_solution(*lifted_task, successor_generator, *ff_heuristic, options);

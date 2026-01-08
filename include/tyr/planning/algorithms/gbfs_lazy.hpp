@@ -33,8 +33,9 @@ struct Options
 {
     std::optional<Node<Task>> start_node = std::nullopt;
     EventHandlerPtr<Task> event_handler = nullptr;
-    uint32_t max_num_states = std::numeric_limits<uint32_t>::max();
-    uint32_t max_time_in_ms = std::numeric_limits<uint32_t>::max();
+    uint_t max_num_states = std::numeric_limits<uint_t>::max();
+    std::optional<std::chrono::steady_clock::duration> max_time = std::nullopt;
+    uint_t prefered_queue_weight = 1000;
 
     Options() = default;
 };

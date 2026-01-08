@@ -21,16 +21,18 @@
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
+#include "tyr/planning/heuristics/max.hpp"
 #include "tyr/planning/lifted_task/heuristics/rpg.hpp"
 
 namespace tyr::planning
 {
 
-class Max : public RPGBase<Max>
+template<>
+class MaxHeuristic<LiftedTask> : public RPGBase<MaxHeuristic<LiftedTask>>
 {
 public:
-    Max(std::shared_ptr<LiftedTask> task) :
-        RPGBase<Max>(std::move(task)),
+    MaxHeuristic(std::shared_ptr<LiftedTask> task) :
+        RPGBase<MaxHeuristic<LiftedTask>>(std::move(task)),
         m_aps(datalog::OrAnnotationPolicy(),
               std::vector<datalog::AndAnnotationPolicy<datalog::MaxAggregation>>(this->m_workspace.rule_deltas.size()),
               datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
@@ -40,6 +42,8 @@ public:
             this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()))
     {
     }
+
+    static std::shared_ptr<MaxHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task) { return std::make_shared<MaxHeuristic<LiftedTask>>(task); }
 
     float_t extract_cost_and_set_preferred_actions_impl(const State<LiftedTask>& state) { return m_tp.get_total_cost(m_aps.or_annot); }
 
