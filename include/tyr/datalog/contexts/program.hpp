@@ -43,10 +43,6 @@ struct ProgramExecutionContext
         aps(aps),
         tp(tp)
     {
-    }
-
-    void on_solve_bottom_up()
-    {
         // Clear cross strata data structures.
         for (auto& rule_delta : ws.rule_deltas)
             rule_delta.clear();

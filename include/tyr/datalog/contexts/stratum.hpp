@@ -18,6 +18,7 @@
 #ifndef TYR_DATALOG_CONTEXTS_STRATUM_HPP_
 #define TYR_DATALOG_CONTEXTS_STRATUM_HPP_
 
+#include "tyr/datalog/contexts/rule.hpp"
 #include "tyr/datalog/declarations.hpp"
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
@@ -36,6 +37,8 @@ struct StratumExecutionContext
 
     RuleSchedulerStratum& scheduler;
     ProgramExecutionContext<OrAP, AndAP, TP>& ctx;
+
+    auto get_rule_execution_context(Index<formalism::datalog::Rule> rule) { return RuleExecutionContext<OrAP, AndAP, TP> { rule, *this }; }
 };
 }
 
