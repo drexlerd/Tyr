@@ -46,12 +46,9 @@ NUM_THREADS = 1
 if REMOTE:
     ENV = TetralithEnvironment(
         setup=TetralithEnvironment.DEFAULT_SETUP,
-        cpus_per_task=NUM_THREADS,
-        extra_options="\n".join([
-            "#SBATCH --mem=16000M",
-            "#SBATCH --account=naiss2025-5-382",
-        ]),
-    )
+        memory_per_cpu="2840M",
+        cpus_per_task=6,  # 6*2840 >= 16000
+        extra_options="#SBATCH --account=naiss2025-5-382")
     
 else:
     ENV = LocalEnvironment(processes=6)

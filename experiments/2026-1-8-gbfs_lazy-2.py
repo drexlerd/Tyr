@@ -47,7 +47,7 @@ if REMOTE:
     ENV = TetralithEnvironment(
         setup=TetralithEnvironment.DEFAULT_SETUP,
         memory_per_cpu="2840M",
-        cpus_per_task=3,  # 3*2840 >= 8000
+        cpus_per_task=6,  # 6*2840 >= 16000
         extra_options="#SBATCH --account=naiss2025-5-382")
     
 else:
