@@ -26,8 +26,7 @@ namespace tyr::planning
 
 ::cista::offset::string create_applicability_name(View<Index<fp::Action>, f::OverlayRepository<fp::Repository>> action)
 {
-    return ::cista::offset::string { std::string { "@" } + action.get_name().str() + std::string("_")
-                                     + std::to_string(action.get_condition().get_index().get_value()) };
+    return ::cista::offset::string { std::string { "@" } + action.get_name().str() + std::string("_") + std::to_string(action.get_index().get_value()) };
 }
 
 ::cista::offset::string create_triggered_name(View<Index<fp::Action>, f::OverlayRepository<fp::Repository>> action,
@@ -39,8 +38,7 @@ namespace tyr::planning
 ::cista::offset::string create_applicability_name(View<Index<fp::Axiom>, f::OverlayRepository<fp::Repository>> axiom)
 {
     return ::cista::offset::string { std::string { "@" } + axiom.get_head().get_predicate().get_name().str() + std::string("_")
-                                     + std::to_string(axiom.get_body().get_index().get_value()) + std::string("/")
-                                     + std::to_string(axiom.get_head().get_predicate().get_arity()) };
+                                     + std::to_string(axiom.get_index().get_value()) };
 }
 
 }

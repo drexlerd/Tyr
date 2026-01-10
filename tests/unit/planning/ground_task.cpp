@@ -334,9 +334,9 @@ TEST(TyrTests, TyrPlanningGroundTaskPsrMiddle)
     auto ground_task = compute_ground_task(absolute("psr-middle/domain.pddl"), absolute("psr-middle/test_problem.pddl"));
 
     EXPECT_EQ(ground_task->get_num_atoms<f::FluentTag>(), 14);
-    EXPECT_EQ(ground_task->get_num_atoms<f::DerivedTag>(), 756);
-    EXPECT_EQ(ground_task->get_num_actions(), 40);  // 13+13+14 seems correct. Mimir reports 28 which seems wrong.
-    EXPECT_EQ(ground_task->get_num_axioms(), 1145);
+    EXPECT_EQ(ground_task->get_num_atoms<f::DerivedTag>(), 363);
+    EXPECT_EQ(ground_task->get_num_actions(), 28);
+    EXPECT_EQ(ground_task->get_num_axioms(), 467);
 
     auto successor_generator = p::SuccessorGenerator<p::GroundTask>(ground_task);
 

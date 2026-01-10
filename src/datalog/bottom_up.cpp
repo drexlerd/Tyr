@@ -238,6 +238,12 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                     assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
                                          rctx.fact_sets));
 
+                    if (!exists)
+                    {
+                        rctx.ws_rule_delta.heads.insert(head_index);
+                        rctx.ws_rule.heads.push_back(head_index);
+                    }
+
                     rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
                                                   rctx.cws_rule.rule,
                                                   rctx.cws_rule.witness_condition,
@@ -248,12 +254,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                   rctx.ground_context_iteration,
                                                   rctx.ground_context_delta,
                                                   rctx.ground_context_persistent);
-
-                    if (!exists)
-                    {
-                        rctx.ws_rule_delta.heads.insert(head_index);
-                        rctx.ws_rule.heads.push_back(head_index);
-                    }
                 }
             }
         });

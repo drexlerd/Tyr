@@ -34,6 +34,8 @@ namespace fd = tyr::formalism::datalog;
 
 namespace tyr::planning
 {
+namespace axiom
+{
 static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, f::OverlayRepository<fp::Repository>> axiom_body,
                                fp::MergeDatalogContext<fd::Repository>& context,
                                Data<fd::ConjunctiveCondition>& conj_cond)
@@ -160,10 +162,11 @@ static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp
 
     return datalog::ProgramContext(program, std::move(repository), std::move(domains), std::move(strata), std::move(listeners));
 }
+}
 
 AxiomEvaluatorProgram::AxiomEvaluatorProgram(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task) :
     m_predicate_to_predicate(),
-    m_program_context(create_program_context(task, m_predicate_to_predicate)),
+    m_program_context(axiom::create_program_context(task, m_predicate_to_predicate)),
     m_program_workspace(m_program_context)
 {
     // std::cout << m_program_context.get_program() << std::endl;

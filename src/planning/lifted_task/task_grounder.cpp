@@ -275,6 +275,11 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
 {
     auto ground_program = GroundTaskProgram(lifted_task.get_task());
 
+    // std::cout << lifted_task.get_task().get_domain() << std::endl;
+    // std::cout << lifted_task.get_task() << std::endl;
+
+    // std::cout << ground_program.get_program_context().get_program() << std::endl;
+
     const auto const_workspace = d::ConstProgramWorkspace(ground_program.get_program_context());
     auto workspace = d::ProgramWorkspace(ground_program.get_program_context(), const_workspace);
     auto aps = d::AnnotationPolicies(d::NoOrAnnotationPolicy(),

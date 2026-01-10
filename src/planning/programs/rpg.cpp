@@ -34,7 +34,8 @@ namespace fd = tyr::formalism::datalog;
 
 namespace tyr::planning
 {
-
+namespace rpg
+{
 template<f::FactKind T>
 void collect_parameters(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> atom, UnorderedSet<f::ParameterIndex>& result)
 {
@@ -97,7 +98,7 @@ static auto sorted_params(const UnorderedSet<f::ParameterIndex>& s)
     return v;
 }
 
-inline bool should_keep(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> term, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+static bool should_keep(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> term, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return visit(
         [&](auto&& arg)
@@ -115,28 +116,28 @@ inline bool should_keep(View<Data<f::Term>, f::OverlayRepository<fp::Repository>
 }
 
 template<f::FactKind T>
-inline bool should_keep(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> atom, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+bool should_keep(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> atom, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return std::all_of(atom.get_terms().begin(), atom.get_terms().end(), [&](auto&& term) { return should_keep(term, mapping); });
 }
 
-inline bool should_keep(View<Index<fp::Literal<f::StaticTag>>, f::OverlayRepository<fp::Repository>> literal,
+static bool should_keep(View<Index<fp::Literal<f::StaticTag>>, f::OverlayRepository<fp::Repository>> literal,
                         const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return should_keep(literal.get_atom(), mapping);
 }
 
-inline bool should_keep(View<Index<fp::Literal<f::FluentTag>>, f::OverlayRepository<fp::Repository>> literal,
+static bool should_keep(View<Index<fp::Literal<f::FluentTag>>, f::OverlayRepository<fp::Repository>> literal,
                         const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return literal.get_polarity() && should_keep(literal.get_atom(), mapping);
 }
 
-inline bool should_keep(View<Index<fp::Literal<f::StaticTag>>, f::OverlayRepository<fp::Repository>> literal) { return true; }
+static bool should_keep(View<Index<fp::Literal<f::StaticTag>>, f::OverlayRepository<fp::Repository>> literal) { return true; }
 
-inline bool should_keep(View<Index<fp::Literal<f::FluentTag>>, f::OverlayRepository<fp::Repository>> literal) { return literal.get_polarity(); }
+static bool should_keep(View<Index<fp::Literal<f::FluentTag>>, f::OverlayRepository<fp::Repository>> literal) { return literal.get_polarity(); }
 
-inline auto merge(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> element, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+static auto merge(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> element, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return visit(
         [&](auto&& arg)
@@ -154,9 +155,9 @@ inline auto merge(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> elem
 }
 
 template<f::FactKind T>
-inline auto merge(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> element,
-                  const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+auto merge(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> element,
+           const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
+           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto atom_ptr = context.builder.get_builder<fd::Atom<T>>();
     auto& atom = *atom_ptr;
@@ -171,9 +172,9 @@ inline auto merge(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>>
 }
 
 template<f::FactKind T>
-inline auto merge(View<Index<fp::Literal<T>>, f::OverlayRepository<fp::Repository>> element,
-                  const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+auto merge(View<Index<fp::Literal<T>>, f::OverlayRepository<fp::Repository>> element,
+           const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
+           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto literal_ptr = context.builder.get_builder<fd::Literal<T>>();
     auto& literal = *literal_ptr;
@@ -186,7 +187,7 @@ inline auto merge(View<Index<fp::Literal<T>>, f::OverlayRepository<fp::Repositor
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-inline auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                                            const UnorderedSet<f::ParameterIndex>& parameters,
                                            formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -201,7 +202,7 @@ inline auto create_applicability_predicate(View<Index<formalism::planning::Actio
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-inline auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                                       const UnorderedSet<f::ParameterIndex>& parameters,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -219,7 +220,7 @@ inline auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-inline auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                                          const UnorderedSet<f::ParameterIndex>& parameters,
                                          formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -234,7 +235,7 @@ inline auto create_applicability_literal(View<Index<formalism::planning::Action>
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-inline auto create_applicability_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                                       const UnorderedSet<f::ParameterIndex>& parameters,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -270,7 +271,7 @@ inline auto create_applicability_rule(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                                       const UnorderedSet<f::ParameterIndex>& head_parameters,
                                       const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
@@ -289,7 +290,7 @@ inline auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-inline auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                                          const UnorderedSet<f::ParameterIndex>& head_parameters,
                                          const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
                                          formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
@@ -305,7 +306,7 @@ inline auto create_applicability_literal(View<Index<formalism::planning::Action>
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-inline auto
+static auto
 create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
                         View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
                         View<Index<formalism::planning::Atom<formalism::FluentTag>>, formalism::OverlayRepository<formalism::planning::Repository>> effect,
@@ -486,9 +487,11 @@ static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp
     return datalog::ProgramContext(program, std::move(repository), std::move(domains), std::move(strata), std::move(listeners));
 }
 
+}
+
 RPGProgram::RPGProgram(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task) :
     m_predicate_to_actions(),
-    m_program_context(create_program_context(task, m_predicate_to_actions)),
+    m_program_context(rpg::create_program_context(task, m_predicate_to_actions)),
     m_program_workspace(m_program_context)
 {
     // std::cout << m_program_context.get_program() << std::endl;
