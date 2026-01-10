@@ -283,6 +283,7 @@ public:
         assert(delta_context.binding == persistent_context.binding);
 
         // Fast path: skip grounding full rule if head cannot be improved.
+        // TODO: this can go when KPKC can work on delta facts.
         const auto head_cost = ground_head_and_fetch_cost(rule, or_annot, iteration_context);
         if (head_cost <= current_cost)
             return CostUpdate(head_cost, head_cost);
