@@ -73,7 +73,9 @@ public:
     template<typename Callback>
     void for_each_new_k_clique(Callback&& callback)
     {
-        for (uint_t i = 0; i < m_const_graph.num_vertices; ++i)
+        const auto& vs = m_delta_graph.vertices;
+
+        for (auto i = vs.find_first(); i != boost::dynamic_bitset<>::npos; i = vs.find_next(i))
         {
             const auto& row = m_delta_graph.adjacency_matrix[i];
 
@@ -248,6 +250,10 @@ private:
             adjacent_index = best_partition_compatible_vertices.find_next(adjacent_index);
         }
     }
+
+    const delta_kpkc::ConstGraph& get_const_graph() const noexcept { return m_const_graph; }
+    const delta_kpkc::Graph& get_delta_graph() const noexcept { return m_delta_graph; }
+    const delta_kpkc::Graph& get_full_graph() const noexcept { return m_full_graph; }
 
 private:
     delta_kpkc::ConstGraph m_const_graph;
