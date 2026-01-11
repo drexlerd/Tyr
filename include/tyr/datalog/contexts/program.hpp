@@ -63,6 +63,9 @@ struct ProgramExecutionContext
                 tp.achieve(fact.get_index());
             }
         }
+
+        // Initialize assignment sets
+        ws.facts.assignment_sets.insert(ws.facts.fact_sets);
     }
 
     auto get_stratum_execution_contexts()

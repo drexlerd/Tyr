@@ -35,12 +35,10 @@ FactsWorkspace::FactsWorkspace(View<IndexList<f::Predicate<f::FluentTag>>, fd::R
     assignment_sets(predicates, functions, predicate_domains, function_domains, num_objects, fact_sets),
     goal_fact_sets(predicates)
 {
-    std::cout << "FactsWorkspace::FactsWorkspace" << std::endl;
 }
 
 void FactsWorkspace::reset()
 {
-    std::cout << "FactsWorkspace::reset" << std::endl;
     fact_sets.reset();
     assignment_sets.reset();
 }

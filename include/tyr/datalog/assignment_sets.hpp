@@ -232,7 +232,6 @@ public:
 
     void insert(View<Index<formalism::datalog::GroundAtom<T>>, formalism::datalog::Repository> ground_atom)
     {
-        std::cout << "Insert: " << ground_atom << std::endl;
         m_sets[uint_t(ground_atom.get_predicate().get_index())].insert(ground_atom);
     }
 
@@ -398,7 +397,6 @@ struct TaggedAssignmentSets
                          const TaggedFactSets<T>& fact_sets) :
         TaggedAssignmentSets(predicates, functions, predicate_domains, function_domains, num_objects)
     {
-        std::cout << "TaggedAssignmentSets::TaggedAssignmentSets" << std::endl;
         insert(fact_sets);
     }
 

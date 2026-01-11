@@ -107,8 +107,6 @@ DeltaKPKC::DeltaKPKC(delta_kpkc::ConstGraph const_graph, delta_kpkc::Graph delta
 
 void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets)
 {
-    std::cout << std::endl << "set_next_assignment_sets" << std::endl;
-
     /// 1. Set delta to the old graph.
     std::swap(m_delta_graph, m_full_graph);
 
@@ -119,8 +117,6 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
     // Compute consistent vertices to speed up consistent edges computation
     for (const auto& vertex : static_graph.consistent_vertices(assignment_sets))
         m_full_graph.vertices.set(vertex.get_index());
-
-    std::cout << "m_full_graph.vertices: " << m_full_graph.vertices << std::endl;
 
     // Clear the adj matrix
     for (auto& adj_list : m_full_graph.adjacency_matrix)
@@ -137,12 +133,6 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
         auto& second_row = m_full_graph.adjacency_matrix[second_index];
         first_row.set(second_index);
         second_row.set(first_index);
-    }
-
-    std::cout << "m_full_graph.adjacency_matrix: " << std::endl;
-    for (uint_t i = 0; i < m_const_graph.num_vertices; ++i)
-    {
-        std::cout << m_full_graph.adjacency_matrix[i] << std::endl;
     }
 
     // Initialize compatible vertices: Set bits for depth = 0 because kpkc copies depth i into depth i + 1 before recursive call.
@@ -173,20 +163,6 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
             // non-delta vertex: keep only edges into delta vertices
             m_delta_graph.adjacency_matrix[i] = full_row;
             m_delta_graph.adjacency_matrix[i] &= m_delta_graph.vertices;
-        }
-    }
-
-    std::cout << "m_delta_graph.adjacency_matrix: " << std::endl;
-    for (uint_t i = 0; i < m_const_graph.num_vertices; ++i)
-    {
-        std::cout << m_delta_graph.adjacency_matrix[i] << std::endl;
-    }
-
-    for (uint i = 0; i < m_const_graph.num_vertices; ++i)
-    {
-        for (auto j = m_delta_graph.adjacency_matrix[i].find_first(); j != boost::dynamic_bitset<>::npos; j = m_delta_graph.adjacency_matrix[i].find_next(j))
-        {
-            assert(m_delta_graph.adjacency_matrix[j].test(i));
         }
     }
 }

@@ -46,6 +46,13 @@ struct Graph
     boost::dynamic_bitset<> vertices;  ///< Dimensions V
     /// Edges
     std::vector<boost::dynamic_bitset<>> adjacency_matrix;  ///< Dimensions V x V
+
+    void reset() noexcept
+    {
+        vertices.reset();
+        for (auto& bitset : adjacency_matrix)
+            bitset.reset();
+    }
 };
 
 /// @brief `Workspace` is preallocated memory for a rule.
@@ -70,13 +77,16 @@ public:
     /// @param assignment_sets
     void set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets);
 
+    /// @brief Reset should be called before solving for a program.
+    void reset()
+    {
+        m_delta_graph.reset();
+        m_full_graph.reset();
+    }
+
     template<typename Callback>
     void for_each_new_k_clique(Callback&& callback)
     {
-        std::cout << "for_each_new_k_clique" << std::endl;
-
-        const auto& vs = m_delta_graph.vertices;
-
         for (uint_t i = 0; i < m_const_graph.num_vertices; ++i)
         {
             const auto& row = m_delta_graph.adjacency_matrix[i];
@@ -85,8 +95,6 @@ public:
             {
                 assert(m_full_graph.vertices.test(i));
                 assert(m_full_graph.vertices.test(j));
-
-                std::cout << "anchor: " << i << " " << j << std::endl;
 
                 // Special case
                 if (m_const_graph.k == 2)

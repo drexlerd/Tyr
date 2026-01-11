@@ -99,7 +99,6 @@ AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task) :
           std::vector<d::HeadToWitness>(m_workspace.rule_deltas.size())),
     m_tp(d::NoTerminationPolicy())
 {
-    std::cout << "AxiomEvaluator<LiftedTask>::AxiomEvaluator" << std::endl;
 }
 
 void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask>& unpacked_state)

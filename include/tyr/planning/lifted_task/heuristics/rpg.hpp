@@ -44,7 +44,6 @@ public:
         m_task(std::move(task)),
         m_workspace(m_task->get_rpg_program().get_program_context(), m_task->get_rpg_program().get_const_program_workspace())
     {
-        std::cout << "RPGBase::RPGBase" << std::endl;
     }
 
     void set_goal(View<Index<formalism::planning::GroundConjunctiveCondition>, formalism::OverlayRepository<formalism::planning::Repository>> goal) override

@@ -219,15 +219,9 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
-    std::cout << rctx.cws_rule.get_rule() << std::endl;
-
     rctx.ws_rule.kpkc.for_each_new_k_clique(
         [&](auto&& clique)
         {
-            std::cout << "Clique: ";
-            print(std::cout, clique);
-            std::cout << std::endl;
-
             const auto head_index = create_general_ground_head_in_delta(clique,
                                                                         rctx.cws_rule.static_consistency_graph,
                                                                         rctx.cws_rule.get_rule().get_head(),
@@ -290,13 +284,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
     while (true)
     {
-        std::cout << "Cost: " << ctx.ctx.ws.cost_buckets.current_cost() << std::endl;
-
-        std::cout << "Assignment sets: " << std::endl;
-        for (const auto& set : ctx.ctx.ws.facts.assignment_sets.predicate.get_sets())
-        {
-            std::cout << set.get_set() << std::endl;
-        }
+        // std::cout << "Cost: " << ctx.ctx.ws.cost_buckets.current_cost() << std::endl;
 
         // Check whether min cost for goal was proven.
         if (ctx.ctx.tp.check())
@@ -381,8 +369,6 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     // Update fact sets
                     ctx.ctx.ws.facts.fact_sets.predicate.insert(head);
                     ctx.ctx.ws.facts.assignment_sets.predicate.insert(head);
-
-                    std::cout << "Discovered fact: " << head << std::endl;
                 }
             }
         }
