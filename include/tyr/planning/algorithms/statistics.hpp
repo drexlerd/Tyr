@@ -34,11 +34,27 @@ private:
     uint64_t m_num_expanded;
     uint64_t m_num_deadends;
     uint64_t m_num_pruned;
+
+    std::vector<uint64_t> m_num_generated_per_layer;
+    std::vector<uint64_t> m_num_expanded_per_layer;
+    std::vector<uint64_t> m_num_deadends_per_layer;
+    std::vector<uint64_t> m_num_pruned_per_layer;
+
     std::chrono::time_point<std::chrono::high_resolution_clock> m_search_start_time_point;
     std::chrono::time_point<std::chrono::high_resolution_clock> m_search_end_time_point;
 
 public:
-    Statistics() : m_num_generated(0), m_num_expanded(0), m_num_deadends(0), m_num_pruned(0) {}
+    Statistics() :
+        m_num_generated(0),
+        m_num_expanded(0),
+        m_num_deadends(0),
+        m_num_pruned(0),
+        m_num_generated_per_layer(0),
+        m_num_expanded_per_layer(0),
+        m_num_deadends_per_layer(0),
+        m_num_pruned_per_layer(0)
+    {
+    }
 
     /**
      * Setters
@@ -48,6 +64,13 @@ public:
     void increment_num_expanded() { ++m_num_expanded; }
     void increment_num_deadends() { ++m_num_deadends; }
     void increment_num_pruned() { ++m_num_pruned; }
+    void on_finish_layer()
+    {
+        m_num_generated_per_layer.push_back(m_num_generated);
+        m_num_expanded_per_layer.push_back(m_num_expanded);
+        m_num_deadends_per_layer.push_back(m_num_deadends);
+        m_num_pruned_per_layer.push_back(m_num_pruned);
+    }
     void set_search_start_time_point(std::chrono::time_point<std::chrono::high_resolution_clock> time_point) { m_search_start_time_point = time_point; }
     void set_search_end_time_point(std::chrono::time_point<std::chrono::high_resolution_clock> time_point) { m_search_end_time_point = time_point; }
 
@@ -59,6 +82,22 @@ public:
     uint64_t get_num_expanded() const { return m_num_expanded; }
     uint64_t get_num_deadends() const { return m_num_deadends; }
     uint64_t get_num_pruned() const { return m_num_pruned; }
+    std::optional<uint64_t> get_num_generated_in_last_layer() const
+    {
+        return m_num_generated_per_layer.empty() ? std::nullopt : std::optional<uint64_t>(m_num_generated_per_layer.back());
+    }
+    std::optional<uint64_t> get_num_expanded_in_last_layer() const
+    {
+        return m_num_expanded_per_layer.empty() ? std::nullopt : std::optional<uint64_t>(m_num_expanded_per_layer.back());
+    }
+    std::optional<uint64_t> get_num_deadends_in_last_layer() const
+    {
+        return m_num_deadends_per_layer.empty() ? std::nullopt : std::optional<uint64_t>(m_num_deadends_per_layer.back());
+    }
+    std::optional<uint64_t> get_num_pruned_in_last_layer() const
+    {
+        return m_num_pruned_per_layer.empty() ? std::nullopt : std::optional<uint64_t>(m_num_pruned_per_layer.back());
+    }
 
     std::chrono::milliseconds get_search_time_ms() const
     {

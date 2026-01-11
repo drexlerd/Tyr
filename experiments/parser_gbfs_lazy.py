@@ -25,9 +25,12 @@ SECTION_MAP = {
 
 RE_SECTION = re.compile(r'^\[(?P<name>[^\]]+)\]\s+Summary$')
 
-RE_PAR_MS  = re.compile(r'^\[ProgramStatistics\].*T_par_region.*:\s*(?P<v>\d+)\s*ms$')
-RE_TOT_MS  = re.compile(r'^\[ProgramStatistics\].*T_total.*:\s*(?P<v>\d+)\s*ms$')
-RE_FRAC    = re.compile(r'^\[ProgramStatistics\].*Parallel fraction:\s*(?P<v>[0-9]*\.?[0-9]+)$', re.I)
+RE_NUM_EXEC = re.compile(r'^\[ProgramStatistics\]\s+Num executions:\s*(?P<v>\d+)\s*$')
+RE_PAR_MS = re.compile(r'^\[ProgramStatistics\].*T_par_region.*:\s*(?P<v>\d+)\s*ms\s*$')
+RE_TOT_MS = re.compile(r'^\[ProgramStatistics\].*T_total.*:\s*(?P<v>\d+)\s*ms\s*$')
+RE_AVG_US = re.compile(r'^\[ProgramStatistics\].*T_avg.*:\s*(?P<v>\d+)\s*us\s*$')
+RE_FRAC = re.compile(r'^\[ProgramStatistics\].*Parallel fraction:\s*(?P<v>[0-9]*\.?[0-9]+)\s*$',re.I)
+
 
 RE_SAMPLES = re.compile(r'^\[AggregatedRuleStatistics\].*Number of samples:\s*(?P<v>\d+)$')
 
@@ -69,6 +72,11 @@ def parse_datalog_summaries(content, props):
         def put(suffix, value):
             props[f"{cur}_{suffix}"] = value
 
+        m = RE_NUM_EXEC.match(line)
+        if m:
+            put("num_exec", int(m.group("v")))
+            continue
+
         m = RE_PAR_MS.match(line)
         if m:
             put("par_ms", int(m.group("v")))
@@ -77,6 +85,11 @@ def parse_datalog_summaries(content, props):
         m = RE_TOT_MS.match(line)
         if m:
             put("total_ms", int(m.group("v")))
+            continue
+
+        m = RE_AVG_US.match(line)
+        if m:
+            put("avg_us", int(m.group("v")))
             continue
 
         m = RE_FRAC.match(line)
@@ -134,52 +147,45 @@ def parse_datalog_summaries(content, props):
             put("rule_avg_skew", float("inf") if v == "inf" else float(v))
             continue
 
-    # optional derived sequential time outside parallel region (per component)
-    for prefix in ("succgen", "axiom", "ff"):
-        t = props.get(f"{prefix}_total_ms")
-        p = props.get(f"{prefix}_par_ms")
-        if t is not None and p is not None:
-            props[f"{prefix}_seq_out_ms"] = max(0, t - p)
-
 class GBFSLazyParser(Parser):
     """
     [GBFS] Search started.
-    [GBFS] Start node h_value: 5
-    [GBFS] New best h_value: 4 with num expanded states 2 and num generated states 5 (2 ms)
-    [GBFS] New best h_value: 3 with num expanded states 4 and num generated states 8 (3 ms)
-    [GBFS] New best h_value: 2 with num expanded states 5 and num generated states 9 (3 ms)
-    [GBFS] New best h_value: 1 with num expanded states 6 and num generated states 11 (3 ms)
+    [GBFS] Start node h_value: 3
+    [GBFS] New best h_value: 2 with num expanded states 2 and num generated states 5 (1 ms)
+    [GBFS] New best h_value: 1 with num expanded states 3 and num generated states 7 (1 ms)
     [GBFS] Search ended.
-    [Search] Search time: 3 ms
-    [Search] Number of expanded states: 7
-    [Search] Number of generated states: 12
+    [Search] Search time: 1 ms
+    [Search] Number of expanded states: 4
+    [Search] Number of generated states: 7
     [Search] Number of pruned states: 0
     [GBFS] Plan found.
-    [GBFS] Plan cost: 5
-    [GBFS] Plan length: 5
-    pick(ball1 rooma left)
-    pick(ball2 rooma right)
-    move(rooma roomb)
-    drop(ball1 roomb left)
-    drop(ball2 roomb right)
+    [GBFS] Plan cost: 3
+    [GBFS] Plan length: 3
+    (pick ball2 rooma left)
+    (move rooma roomb)
+    (drop ball2 roomb left)
 
     [Successor generator] Summary
+    [ProgramStatistics] Num executions: 7
     [ProgramStatistics] T_par_region - wallclock time inside parallel region: 0 ms
     [ProgramStatistics] T_total - wallclock time total: 0 ms
-    [ProgramStatistics] Parallel fraction: 1.00
+    [ProgramStatistics] T_avg - average wallclock time total: 40 us
+    [ProgramStatistics] T_par_region / T_total - Parallel fraction: 1.00
     [AggregatedRuleStatistics] Number of samples: 3
     [AggregatedRuleStatistics] T_tot_min_par_region - minimum total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_max_par_region - maximum total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_med_par_region - median total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_max_par_region / T_tot_med_par_region - Total skew: 1.00
-    [AggregatedRuleStatistics] T_avg_min_par_region - minimum average wallclock time inside parallel region: 15665 ns
-    [AggregatedRuleStatistics] T_avg_max_par_region - maximum average wallclock time inside parallel region: 46478 ns
-    [AggregatedRuleStatistics] T_avg_med_par_region - median average wallclock time inside parallel region: 28452 ns
-    [AggregatedRuleStatistics] T_avg_max_par_region / T_avg_med_par_region - Average skew: 1.63
+    [AggregatedRuleStatistics] T_avg_min_par_region - minimum average wallclock time inside parallel region: 7204 ns
+    [AggregatedRuleStatistics] T_avg_max_par_region - maximum average wallclock time inside parallel region: 15266 ns
+    [AggregatedRuleStatistics] T_avg_med_par_region - median average wallclock time inside parallel region: 8284 ns
+    [AggregatedRuleStatistics] T_avg_max_par_region / T_avg_med_par_region - Average skew: 1.84
     [Axiom evaluator] Summary
+    [ProgramStatistics] Num executions: 29
     [ProgramStatistics] T_par_region - wallclock time inside parallel region: 0 ms
     [ProgramStatistics] T_total - wallclock time total: 0 ms
-    [ProgramStatistics] Parallel fraction: 1.00
+    [ProgramStatistics] T_avg - average wallclock time total: 0 us
+    [ProgramStatistics] T_par_region / T_total - Parallel fraction: 1.00
     [AggregatedRuleStatistics] Number of samples: 0
     [AggregatedRuleStatistics] T_tot_min_par_region - minimum total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_max_par_region - maximum total wallclock time inside parallel region: 0 ms
@@ -190,19 +196,21 @@ class GBFSLazyParser(Parser):
     [AggregatedRuleStatistics] T_avg_med_par_region - median average wallclock time inside parallel region: 0 ns
     [AggregatedRuleStatistics] T_avg_max_par_region / T_avg_med_par_region - Average skew: 1.00
     [FFHeuristic] Summary
-    [ProgramStatistics] T_par_region - wallclock time inside parallel region: 3 ms
-    [ProgramStatistics] T_total - wallclock time total: 3 ms
-    [ProgramStatistics] Parallel fraction: 1.00
+    [ProgramStatistics] Num executions: 5
+    [ProgramStatistics] T_par_region - wallclock time inside parallel region: 1 ms
+    [ProgramStatistics] T_total - wallclock time total: 1 ms
+    [ProgramStatistics] T_avg - average wallclock time total: 321 us
+    [ProgramStatistics] T_par_region / T_total - Parallel fraction: 1.00
     [AggregatedRuleStatistics] Number of samples: 7
     [AggregatedRuleStatistics] T_tot_min_par_region - minimum total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_max_par_region - maximum total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_med_par_region - median total wallclock time inside parallel region: 0 ms
     [AggregatedRuleStatistics] T_tot_max_par_region / T_tot_med_par_region - Total skew: 1.00
-    [AggregatedRuleStatistics] T_avg_min_par_region - minimum average wallclock time inside parallel region: 13455 ns
-    [AggregatedRuleStatistics] T_avg_max_par_region - maximum average wallclock time inside parallel region: 40820 ns
-    [AggregatedRuleStatistics] T_avg_med_par_region - median average wallclock time inside parallel region: 24113 ns
-    [AggregatedRuleStatistics] T_avg_max_par_region / T_avg_med_par_region - Average skew: 1.69
-    [Total] Peak memory usage: 578818048 bytes
+    [AggregatedRuleStatistics] T_avg_min_par_region - minimum average wallclock time inside parallel region: 6732 ns
+    [AggregatedRuleStatistics] T_avg_max_par_region - maximum average wallclock time inside parallel region: 26896 ns
+    [AggregatedRuleStatistics] T_avg_med_par_region - median average wallclock time inside parallel region: 9336 ns
+    [AggregatedRuleStatistics] T_avg_max_par_region / T_avg_med_par_region - Average skew: 2.88
+    [Total] Peak memory usage: 226709504 bytes
     [Total] Total time: 12 ms
     """
     def __init__(self):

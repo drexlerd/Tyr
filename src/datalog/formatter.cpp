@@ -81,11 +81,15 @@ extern std::ostream& print(std::ostream& os, const datalog::ProgramStatistics& e
     const double frac = parallel_ms > 0.0 && total_ms > 0.0 ? parallel_ms / total_ms : 1.0;
 
     fmt::print(os,
+               "[ProgramStatistics] Num executions: {}\n"
                "[ProgramStatistics] T_par_region - wallclock time inside parallel region: {} ms\n"
                "[ProgramStatistics] T_total - wallclock time total: {} ms\n"
-               "[ProgramStatistics] Parallel fraction: {:.2f}",
+               "[ProgramStatistics] T_avg - average wallclock time total: {} us\n"
+               "[ProgramStatistics] T_par_region / T_total - Parallel fraction: {:.2f}",
+               el.num_executions,
                to_ms(el.parallel_time),
                to_ms(el.total_time),
+               to_us(el.total_time) / el.num_executions,
                frac);
 
     return os;

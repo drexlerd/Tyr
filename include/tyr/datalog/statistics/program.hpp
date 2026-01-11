@@ -24,6 +24,7 @@ namespace tyr::datalog
 {
 struct ProgramStatistics
 {
+    uint_t num_executions { 0 };
     std::chrono::nanoseconds parallel_time { 0 };
     std::chrono::nanoseconds total_time { 0 };
 };

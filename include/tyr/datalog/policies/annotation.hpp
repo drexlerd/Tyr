@@ -282,8 +282,7 @@ public:
         assert(iteration_context.binding == delta_context.binding);
         assert(delta_context.binding == persistent_context.binding);
 
-        // Fast path: skip grounding full rule if head cannot be improved.
-        // TODO: this can go when KPKC can work on delta facts.
+        // Projection fast path: skip grounding full rule if head cannot be improved.
         const auto head_cost = ground_head_and_fetch_cost(rule, or_annot, iteration_context);
         if (head_cost <= current_cost)
             return CostUpdate(head_cost, head_cost);
@@ -316,7 +315,7 @@ private:
 
     /// @brief Grounds two components to create the witness:
     /// 1) the binding into the persistent delta context, allowing merge into program when necessary.
-    /// 2) the witness condition into the program context, which is sound, be
+    /// 2) the witness condition into the program context, which is sound, because those ground atoms must already exist.
     static Witness ground_witness(Index<formalism::datalog::Rule> rule,
                                   Index<formalism::datalog::ConjunctiveCondition> witness_condition,
                                   formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,

@@ -381,6 +381,7 @@ template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, Termi
 void solve_bottom_up(ProgramExecutionContext<OrAP, AndAP, TP>& ctx)
 {
     const auto program_stopwatch = StopwatchScope(ctx.ws.statistics.total_time);
+    ++ctx.ws.statistics.num_executions;
 
     for (auto stratum_ctx : ctx.get_stratum_execution_contexts())
         solve_bottom_up_for_stratum(stratum_ctx);

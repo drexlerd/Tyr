@@ -111,7 +111,10 @@ ATTRIBUTES = [
 
     # Datalog
     Attribute("axiom_par_frac", function=geometric_mean, min_wins=False),
+    "axiom_num_exec",
     "axiom_par_ms",
+    "axiom_total_ms",
+    "axiom_avg_us",
     "axiom_rule_samples",
     Attribute("axiom_rule_tot_skew", function=geometric_mean, min_wins=False),
     "axiom_rule_tot_max_ms",
@@ -121,11 +124,12 @@ ATTRIBUTES = [
     "axiom_rule_avg_max_ns",
     "axiom_rule_avg_med_ns",
     "axiom_rule_avg_min_ns",
-    "axiom_seq_out_ms",
-    "axiom_total_ms",
 
     Attribute("ff_par_frac", function=geometric_mean, min_wins=False),
+    "ff_num_exec",
     "ff_par_ms",
+    "ff_total_ms",
+    "ff_avg_us",
     "ff_rule_samples",
     Attribute("ff_rule_tot_skew", function=geometric_mean, min_wins=False),
     "ff_rule_tot_max_ms",
@@ -135,11 +139,12 @@ ATTRIBUTES = [
     "ff_rule_avg_max_ns",
     "ff_rule_avg_med_ns",
     "ff_rule_avg_min_ns",
-    "ff_seq_out_ms",
-    "ff_total_ms",
 
     Attribute("succgen_par_frac", function=geometric_mean, min_wins=False),
+    "succgen_num_exec",
     "succgen_par_ms",
+    "succgen_total_ms",
+    "succgen_avg_us",
     "succgen_rule_samples",
     Attribute("succgen_rule_tot_skew", function=geometric_mean, min_wins=False),
     "succgen_rule_tot_max_ms",
@@ -149,8 +154,6 @@ ATTRIBUTES = [
     "succgen_rule_avg_max_ns",
     "succgen_rule_avg_med_ns",
     "succgen_rule_avg_min_ns",
-    "succgen_seq_out_ms",
-    "succgen_total_ms",
 ]
 
 MEMORY_LIMIT = 8000

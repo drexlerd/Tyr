@@ -134,33 +134,34 @@ private:
         m_workspace.partition_bits.set(pi);
         m_workspace.partition_bits.set(pj);
 
-        auto& c0 = m_workspace.compatible_vertices[0];
+        auto& compatible_vertices_0 = m_workspace.compatible_vertices[0];
 
         // Seed candidates for each partition
-        for (uint_t p = 0; p < m_const_graph.k; ++p)
+        for (uint_t partition = 0; partition < m_const_graph.k; ++partition)
         {
-            auto& bits = c0[p];
-            bits.reset();
+            auto& partition_compatible_vertices_0 = compatible_vertices_0[partition];
+            partition_compatible_vertices_0.reset();
 
-            if (p == pi || p == pj)
+            if (partition == pi || partition == pj)
                 continue;
 
-            const auto& part = m_const_graph.partitions[p];
-            for (uint_t idx = 0; idx < part.size(); ++idx)
+            const auto& part = m_const_graph.partitions[partition];
+
+            for (uint_t index = 0; index < part.size(); ++index)
             {
-                const uint_t cand = part[idx];
+                const uint_t vertex = part[index];
 
                 // active in NEW graph
-                if (!m_full_graph.vertices.test(cand))
+                if (!m_full_graph.vertices.test(vertex))
                     continue;
 
                 // 1. Must connect to both anchors in NEW adjacency, and
                 // 2. For such edges that are delta ranks it must hold that their ranks are higher than the anchors.
-                if (m_full_graph.adjacency_matrix[i].test(cand) && m_full_graph.adjacency_matrix[j].test(cand)
-                    && (!is_delta_edge(i, cand) || edge_rank(i, cand) > m_workspace.anchor_edge_edge)
-                    && (!is_delta_edge(j, cand) || edge_rank(j, cand) > m_workspace.anchor_edge_edge))
+                if (m_full_graph.adjacency_matrix[i].test(vertex) && m_full_graph.adjacency_matrix[j].test(vertex)
+                    && (!is_delta_edge(i, vertex) || edge_rank(i, vertex) > m_workspace.anchor_edge_edge)
+                    && (!is_delta_edge(j, vertex) || edge_rank(j, vertex) > m_workspace.anchor_edge_edge))
                 {
-                    bits.set(idx);
+                    partition_compatible_vertices_0.set(index);
                 }
             }
         }
