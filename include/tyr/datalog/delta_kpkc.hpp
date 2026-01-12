@@ -96,7 +96,7 @@ public:
                 assert(m_full_graph.vertices.test(i));
                 assert(m_full_graph.vertices.test(j));
 
-                std::cout << "Anchor: " << i << " " << j << std::endl;
+                // std::cout << "Anchor: " << i << " " << j << std::endl;
 
                 // Special case
                 if (m_const_graph.k == 2)

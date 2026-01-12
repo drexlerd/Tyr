@@ -41,6 +41,7 @@ struct RuleDeltaWorkspace
     formalism::datalog::MergeCache merge_cache;
 
     UnorderedSet<IndexList<formalism::Object>> seen_bindings_dbg;
+    UnorderedMap<Index<formalism::Binding>, Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> pending_bindings;
 
     RuleDeltaWorkspace();
 

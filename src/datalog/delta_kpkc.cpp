@@ -107,16 +107,16 @@ DeltaKPKC::DeltaKPKC(delta_kpkc::ConstGraph const_graph, delta_kpkc::Graph delta
 
 void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets)
 {
-    std::cout << "m_delta_graph.vertices before:" << std::endl;
-    std::cout << m_delta_graph.vertices << std::endl;
-    std::cout << "m_delta_graph.adjacency_matrix  before:" << std::endl;
-    for (auto& bitset : m_delta_graph.adjacency_matrix)
-        std::cout << bitset << std::endl;
-    std::cout << "m_full_graph.vertices before:" << std::endl;
-    std::cout << m_full_graph.vertices << std::endl;
-    std::cout << "m_full_graph.adjacency_matrix before:" << std::endl;
-    for (auto& bitset : m_full_graph.adjacency_matrix)
-        std::cout << bitset << std::endl;
+    // std::cout << "m_delta_graph.vertices before:" << std::endl;
+    // std::cout << m_delta_graph.vertices << std::endl;
+    // std::cout << "m_delta_graph.adjacency_matrix  before:" << std::endl;
+    // for (auto& bitset : m_delta_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
+    // std::cout << "m_full_graph.vertices before:" << std::endl;
+    // std::cout << m_full_graph.vertices << std::endl;
+    // std::cout << "m_full_graph.adjacency_matrix before:" << std::endl;
+    // for (auto& bitset : m_full_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
 
     /// 1. Set delta to the old graph.
     std::swap(m_delta_graph, m_full_graph);
@@ -168,15 +168,15 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
         // m_delta_graph.adjacency_matrix[i] = m_full_graph.adjacency_matrix[i];
     }
 
-    std::cout << "m_full_graph.vertices after:" << std::endl;
-    std::cout << m_full_graph.vertices << std::endl;
-    std::cout << "m_full_graph.adjacency_matrix after:" << std::endl;
-    for (auto& bitset : m_full_graph.adjacency_matrix)
-        std::cout << bitset << std::endl;
-    std::cout << "m_delta_graph.vertices after:" << std::endl;
-    std::cout << m_delta_graph.vertices << std::endl;
-    std::cout << "m_delta_graph.adjacency_matrix after:" << std::endl;
-    for (auto& bitset : m_delta_graph.adjacency_matrix)
-        std::cout << bitset << std::endl;
+    // std::cout << "m_full_graph.vertices after:" << std::endl;
+    // std::cout << m_full_graph.vertices << std::endl;
+    // std::cout << "m_full_graph.adjacency_matrix after:" << std::endl;
+    // for (auto& bitset : m_full_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
+    // std::cout << "m_delta_graph.vertices after:" << std::endl;
+    // std::cout << m_delta_graph.vertices << std::endl;
+    // std::cout << "m_delta_graph.adjacency_matrix after:" << std::endl;
+    // for (auto& bitset : m_delta_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
 }
 }
