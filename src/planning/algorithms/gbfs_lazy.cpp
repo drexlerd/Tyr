@@ -213,6 +213,10 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
             continue;
         }
 
+        /* Expand the successors of the node. */
+
+        event_handler->on_expand_node(node);
+
         const auto state_h_value = heuristic.evaluate(state);
         if (state_h_value == std::numeric_limits<float_t>::infinity())
         {
@@ -227,10 +231,6 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
         }
 
         const auto& preferred_actions = heuristic.get_preferred_actions();
-
-        /* Expand the successors of the node. */
-
-        event_handler->on_expand_node(node);
 
         /* Ensure that the state is closed */
 

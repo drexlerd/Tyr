@@ -73,8 +73,12 @@ public:
 
         datalog::solve_bottom_up(ctx);
 
-        return (self().get_termination_policy_impl().check()) ? self().extract_cost_and_set_preferred_actions_impl(state) :
-                                                                std::numeric_limits<float_t>::infinity();
+        const auto value = (self().get_termination_policy_impl().check()) ? self().extract_cost_and_set_preferred_actions_impl(state) :
+                                                                            std::numeric_limits<float_t>::infinity();
+
+        std::cout << "Heuristic value: " << value << std::endl;
+
+        return value;
     }
 
     const datalog::ProgramWorkspace& get_workspace() const noexcept { return m_workspace; }

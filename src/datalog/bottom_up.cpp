@@ -145,7 +145,8 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     const auto head_index = create_nullary_ground_head_in_delta(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
 
     // Note: we never go through the consistency graph, and hence, have to check validity on the entire rule body.
-    if (is_valid_binding(rctx.cws_rule.get_rule().get_body(), rctx.fact_sets, rctx.ground_context_iteration))
+    if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
+        && is_valid_binding(rctx.cws_rule.get_rule().get_body(), rctx.fact_sets, rctx.ground_context_iteration))
     {
         rctx.ws_rule.heads.insert(head_index);
 
@@ -176,14 +177,15 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                   rctx.ground_context_delta)
                                     .first;
 
-        if (is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
+        // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
+        assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
+
+        if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
+            && is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
         {
             // Ensure that ground rule is truly applicable
             assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
                                  rctx.fact_sets));
-
-            // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
-            assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
 
             rctx.ws_rule.heads.insert(head_index);
 
@@ -197,6 +199,12 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                           rctx.ground_context_iteration,
                                           rctx.ground_context_delta,
                                           rctx.ground_context_persistent);
+        }
+        else
+        {
+            // TODO: Add to pending
+            std::cout << "Invalid binding" << std::endl;
+            std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository) << std::endl;
         }
     }
 }
@@ -213,16 +221,17 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                         rctx.ground_context_delta)
                                         .first;
 
-            if (is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
+            // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
+            assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
+
+            if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
+                && is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
             {
                 // Ensure that ground rule is truly applicable
                 assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
                                      rctx.fact_sets));
 
-                // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
-
-                // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
-                assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
+                std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
                 rctx.ws_rule.heads.insert(head_index);
 
@@ -237,15 +246,18 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                               rctx.ground_context_delta,
                                               rctx.ground_context_persistent);
             }
+            else
+            {
+                // TODO: Add to pending
+                std::cout << "Invalid binding" << std::endl;
+                std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository) << std::endl;
+            }
         });
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void generate(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
-    if (!is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets))
-        return;
-
     const auto arity = rctx.cws_rule.get_rule().get_arity();
 
     if (arity == 0)
@@ -292,13 +304,13 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                                const auto rule_stopwatch = StopwatchScope(ctx.ctx.ws.rules[i].statistics.parallel_time);
                                                ++ctx.ctx.ws.rules[i].statistics.num_executions;
 
-                                               // std::cout << make_view(rule_index, ctx.ctx.ws.repository) << std::endl;
+                                               std::cout << make_view(rule_index, ctx.ctx.ws.repository) << std::endl;
 
                                                auto rctx = ctx.get_rule_execution_context(rule_index);
 
                                                generate(rctx);
 
-                                               // std::cout << std::endl << std::endl;
+                                               std::cout << std::endl << std::endl;
                                            });
         }
 
@@ -355,7 +367,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     ctx.ctx.ws.facts.fact_sets.predicate.insert(head);
                     ctx.ctx.ws.facts.assignment_sets.predicate.insert(head);
 
-                    // std::cout << "Discovered: " << head << std::endl;
+                    std::cout << "Discovered: " << head << std::endl;
                 }
             }
         }
