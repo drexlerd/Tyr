@@ -66,6 +66,10 @@ struct ProgramExecutionContext
 
         // Initialize assignment sets
         ws.facts.assignment_sets.insert(ws.facts.fact_sets);
+
+        // Reset the kpkc
+        for (auto& rule : ws.rules)
+            rule.kpkc.reset();
     }
 
     auto get_stratum_execution_contexts()

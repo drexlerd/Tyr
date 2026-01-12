@@ -40,7 +40,7 @@ struct RuleDeltaWorkspace
     IndexList<formalism::Object> binding;
     formalism::datalog::MergeCache merge_cache;
 
-    UnorderedSet<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
+    UnorderedSet<IndexList<formalism::Object>> bindings;
 
     RuleDeltaWorkspace();
 

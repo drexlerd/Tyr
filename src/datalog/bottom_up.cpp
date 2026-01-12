@@ -144,30 +144,21 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
     const auto head_index = create_nullary_ground_head_in_delta(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
 
-    const auto exists = rctx.ws_rule_delta.heads.contains(head_index);
-
-    if (!exists || AndAP::ShouldAnnotate)
+    // Note: we never go through the consistency graph, and hence, have to check validity on the entire rule body.
+    if (is_valid_binding(rctx.cws_rule.get_rule().get_body(), rctx.fact_sets, rctx.ground_context_iteration))
     {
-        // Note: we never go through the consistency graph, and hence, have to check validity on the entire rule body.
-        if (is_valid_binding(rctx.cws_rule.get_rule().get_body(), rctx.fact_sets, rctx.ground_context_iteration))
-        {
-            if (!exists)
-            {
-                rctx.ws_rule_delta.heads.insert(head_index);
-                rctx.ws_rule.heads.push_back(head_index);
-            }
+        rctx.ws_rule.heads.insert(head_index);
 
-            rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
-                                          rctx.cws_rule.rule,
-                                          rctx.cws_rule.witness_condition,
-                                          head_index,
-                                          rctx.ctx.ctx.aps.or_annot,
-                                          rctx.and_annot,
-                                          rctx.delta_head_to_witness,
-                                          rctx.ground_context_iteration,
-                                          rctx.ground_context_delta,
-                                          rctx.ground_context_persistent);
-        }
+        rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
+                                      rctx.cws_rule.rule,
+                                      rctx.cws_rule.witness_condition,
+                                      head_index,
+                                      rctx.ctx.ctx.aps.or_annot,
+                                      rctx.and_annot,
+                                      rctx.delta_head_to_witness,
+                                      rctx.ground_context_iteration,
+                                      rctx.ground_context_delta,
+                                      rctx.ground_context_persistent);
     }
 }
 
@@ -185,33 +176,27 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                   rctx.ground_context_delta)
                                     .first;
 
-        const auto exists = rctx.ws_rule_delta.heads.contains(head_index);
-
-        if (!exists || AndAP::ShouldAnnotate)
+        if (is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
         {
-            if (is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
-            {
-                // Ensure that ground rule is truly applicable
-                assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
-                                     rctx.fact_sets));
+            // Ensure that ground rule is truly applicable
+            assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
+                                 rctx.fact_sets));
 
-                if (!exists)
-                {
-                    rctx.ws_rule_delta.heads.insert(head_index);
-                    rctx.ws_rule.heads.push_back(head_index);
-                }
+            // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
+            assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
 
-                rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
-                                              rctx.cws_rule.rule,
-                                              rctx.cws_rule.witness_condition,
-                                              head_index,
-                                              rctx.ctx.ctx.aps.or_annot,
-                                              rctx.and_annot,
-                                              rctx.delta_head_to_witness,
-                                              rctx.ground_context_iteration,
-                                              rctx.ground_context_delta,
-                                              rctx.ground_context_persistent);
-            }
+            rctx.ws_rule.heads.insert(head_index);
+
+            rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
+                                          rctx.cws_rule.rule,
+                                          rctx.cws_rule.witness_condition,
+                                          head_index,
+                                          rctx.ctx.ctx.aps.or_annot,
+                                          rctx.and_annot,
+                                          rctx.delta_head_to_witness,
+                                          rctx.ground_context_iteration,
+                                          rctx.ground_context_delta,
+                                          rctx.ground_context_persistent);
         }
     }
 }
@@ -228,33 +213,29 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                         rctx.ground_context_delta)
                                         .first;
 
-            const auto exists = rctx.ws_rule_delta.heads.contains(head_index);
-
-            if (!exists || AndAP::ShouldAnnotate)
+            if (is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
             {
-                if (is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
-                {
-                    // Ensure that ground rule is truly applicable
-                    assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
-                                         rctx.fact_sets));
+                // Ensure that ground rule is truly applicable
+                assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
+                                     rctx.fact_sets));
 
-                    if (!exists)
-                    {
-                        rctx.ws_rule_delta.heads.insert(head_index);
-                        rctx.ws_rule.heads.push_back(head_index);
-                    }
+                // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
-                    rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
-                                                  rctx.cws_rule.rule,
-                                                  rctx.cws_rule.witness_condition,
-                                                  head_index,
-                                                  rctx.ctx.ctx.aps.or_annot,
-                                                  rctx.and_annot,
-                                                  rctx.delta_head_to_witness,
-                                                  rctx.ground_context_iteration,
-                                                  rctx.ground_context_delta,
-                                                  rctx.ground_context_persistent);
-                }
+                // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
+                assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
+
+                rctx.ws_rule.heads.insert(head_index);
+
+                rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
+                                              rctx.cws_rule.rule,
+                                              rctx.cws_rule.witness_condition,
+                                              head_index,
+                                              rctx.ctx.ctx.aps.or_annot,
+                                              rctx.and_annot,
+                                              rctx.delta_head_to_witness,
+                                              rctx.ground_context_iteration,
+                                              rctx.ground_context_delta,
+                                              rctx.ground_context_persistent);
             }
         });
 }
@@ -311,9 +292,13 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                                const auto rule_stopwatch = StopwatchScope(ctx.ctx.ws.rules[i].statistics.parallel_time);
                                                ++ctx.ctx.ws.rules[i].statistics.num_executions;
 
+                                               // std::cout << make_view(rule_index, ctx.ctx.ws.repository) << std::endl;
+
                                                auto rctx = ctx.get_rule_execution_context(rule_index);
 
                                                generate(rctx);
+
+                                               // std::cout << std::endl << std::endl;
                                            });
         }
 
@@ -369,6 +354,8 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     // Update fact sets
                     ctx.ctx.ws.facts.fact_sets.predicate.insert(head);
                     ctx.ctx.ws.facts.assignment_sets.predicate.insert(head);
+
+                    // std::cout << "Discovered: " << head << std::endl;
                 }
             }
         }
@@ -396,5 +383,4 @@ template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnn
 template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>, NoTerminationPolicy>& ctx);
 
 template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>, TerminationPolicy<MaxAggregation>>& ctx);
-
 }

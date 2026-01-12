@@ -107,6 +107,17 @@ DeltaKPKC::DeltaKPKC(delta_kpkc::ConstGraph const_graph, delta_kpkc::Graph delta
 
 void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets)
 {
+    // std::cout << "m_delta_graph.vertices before:" << std::endl;
+    // std::cout << m_delta_graph.vertices << std::endl;
+    // std::cout << "m_delta_graph.adjacency_matrix  before:" << std::endl;
+    // for (auto& bitset : m_delta_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
+    // std::cout << "m_full_graph.vertices before:" << std::endl;
+    // std::cout << m_full_graph.vertices << std::endl;
+    // std::cout << "m_full_graph.adjacency_matrix before:" << std::endl;
+    // for (auto& bitset : m_full_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
+
     /// 1. Set delta to the old graph.
     std::swap(m_delta_graph, m_full_graph);
 
@@ -148,22 +159,22 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
     m_delta_graph.vertices ^= m_full_graph.vertices;  // OLD ⊕ NEW
     m_delta_graph.vertices &= m_full_graph.vertices;  // (OLD ⊕ NEW) ∧ NEW = NEW ∧ ~OLD
 
-    /// 4. For each edge (i,j) in full: include it in delta iff D[i] || D[j]
+    /// 4. Set delta graph edges to those that were added
     for (uint i = 0; i < m_const_graph.num_vertices; ++i)
     {
-        const auto& full_row = m_full_graph.adjacency_matrix[i];
-
-        if (m_delta_graph.vertices.test(i))
-        {
-            // delta vertex: keep all incident edges
-            m_delta_graph.adjacency_matrix[i] = full_row;
-        }
-        else
-        {
-            // non-delta vertex: keep only edges into delta vertices
-            m_delta_graph.adjacency_matrix[i] = full_row;
-            m_delta_graph.adjacency_matrix[i] &= m_delta_graph.vertices;
-        }
+        m_delta_graph.adjacency_matrix[i] ^= m_full_graph.adjacency_matrix[i];  // OLD ⊕ NEW
+        m_delta_graph.adjacency_matrix[i] &= m_full_graph.adjacency_matrix[i];  // (OLD ⊕ NEW) ∧ NEW = NEW ∧ ~OLD
     }
+
+    // std::cout << "m_full_graph.vertices after:" << std::endl;
+    // std::cout << m_full_graph.vertices << std::endl;
+    // std::cout << "m_full_graph.adjacency_matrix after:" << std::endl;
+    // for (auto& bitset : m_full_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
+    // std::cout << "m_delta_graph.vertices after:" << std::endl;
+    // std::cout << m_delta_graph.vertices << std::endl;
+    // std::cout << "m_delta_graph.adjacency_matrix after:" << std::endl;
+    // for (auto& bitset : m_delta_graph.adjacency_matrix)
+    //     std::cout << bitset << std::endl;
 }
 }

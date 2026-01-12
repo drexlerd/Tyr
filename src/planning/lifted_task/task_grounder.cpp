@@ -280,8 +280,6 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
 
     // std::cout << ground_program.get_program_context().get_program() << std::endl;
 
-    std::cout << "ground_task" << std::endl;
-
     const auto const_workspace = d::ConstProgramWorkspace(ground_program.get_program_context());
     auto workspace = d::ProgramWorkspace(ground_program.get_program_context(), const_workspace);
     auto aps = d::AnnotationPolicies(d::NoOrAnnotationPolicy(),

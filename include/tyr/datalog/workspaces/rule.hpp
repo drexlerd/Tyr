@@ -39,7 +39,7 @@ struct RuleIterationWorkspace
 
     /// Bindings kept from iteration in stage
     IndexList<formalism::Object> binding;
-    std::vector<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
+    UnorderedSet<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
 
     RuleStatistics statistics;
 
