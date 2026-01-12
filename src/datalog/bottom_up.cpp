@@ -177,9 +177,12 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                   rctx.ground_context_delta)
                                     .first;
 
-        // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
-        assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
+        // Ensure delta soundness of kpkc, i.e., it does not regenerate the same binding.
+        assert(rctx.ws_rule_delta.seen_bindings_dbg.insert(rctx.ground_context_delta.binding).second);
 
+        // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
+        // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
+        // Therefore we must store it as pending (keyed by binding + head_index or equivalent) and recheck in the next fact envelope.
         if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
             && is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
         {
@@ -221,9 +224,12 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                         rctx.ground_context_delta)
                                         .first;
 
-            // Ensure delta soundness of kpkc, i.e., it does not regenerate the same valid binding.
-            assert(rctx.ws_rule_delta.bindings.insert(rctx.ground_context_delta.binding).second);
+            // Ensure delta soundness of kpkc, i.e., it does not regenerate the same binding.
+            assert(rctx.ws_rule_delta.seen_bindings_dbg.insert(rctx.ground_context_delta.binding).second);
 
+            // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
+            // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
+            // Therefore we must store it as pending (keyed by binding + head_index or equivalent) and recheck in the next fact envelope.
             if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
                 && is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
             {

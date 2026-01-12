@@ -40,7 +40,7 @@ struct RuleDeltaWorkspace
     IndexList<formalism::Object> binding;
     formalism::datalog::MergeCache merge_cache;
 
-    UnorderedSet<IndexList<formalism::Object>> bindings;
+    UnorderedSet<IndexList<formalism::Object>> seen_bindings_dbg;
 
     RuleDeltaWorkspace();
 
