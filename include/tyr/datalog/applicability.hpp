@@ -23,6 +23,7 @@
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
+#include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/declarations.hpp"
 
@@ -171,6 +172,60 @@ template<formalism::datalog::Context C>
 bool is_applicable(View<Index<formalism::datalog::GroundRule>, C> element, const FactSets& fact_sets)
 {
     return is_applicable(element.get_body(), fact_sets);
+}
+
+/**
+ * is_valid_binding
+ */
+
+template<formalism::FactKind T, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool is_valid_binding(View<Index<formalism::datalog::Literal<T>>, C_SRC> element,
+                      const FactSets& fact_sets,
+                      formalism::datalog::GrounderContext<C_DST>& context)
+{
+    return fact_sets.template get<T>().predicate.contains(ground(element.get_atom(), context).first) == element.get_polarity();
+}
+
+template<formalism::FactKind T, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool is_valid_binding(View<IndexList<formalism::datalog::Literal<T>>, C_SRC> elements,
+                      const FactSets& fact_sets,
+                      formalism::datalog::GrounderContext<C_DST>& context)
+{
+    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_valid_binding(arg, fact_sets, context); });
+}
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool is_valid_binding(View<DataList<formalism::datalog::Literal<formalism::FluentTag>>, C_SRC> elements,
+                      const FactSets& fact_sets,
+                      formalism::datalog::GrounderContext<C_DST>& context)
+{
+    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_valid_binding(arg, fact_sets, context); });
+}
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool is_valid_binding(View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                      const FactSets& fact_sets,
+                      formalism::datalog::GrounderContext<C_DST>& context)
+{
+    return evaluate(make_view(ground(element, context), context.destination), fact_sets);
+}
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool is_valid_binding(View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> elements,
+                      const FactSets& fact_sets,
+                      formalism::datalog::GrounderContext<C_DST>& context)
+{
+    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_valid_binding(arg, fact_sets, context); });
+}
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool is_valid_binding(View<Index<formalism::datalog::ConjunctiveCondition>, C_SRC> element,
+                      const FactSets& fact_sets,
+                      formalism::datalog::GrounderContext<C_DST>& context)
+{
+    return is_valid_binding(element.template get_literals<formalism::StaticTag>(), fact_sets, context)     //
+           && is_valid_binding(element.template get_literals<formalism::FluentTag>(), fact_sets, context)  //
+           && is_valid_binding(element.get_numeric_constraints(), fact_sets, context);
 }
 
 }

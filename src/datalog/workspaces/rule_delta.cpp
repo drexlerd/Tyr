@@ -22,14 +22,22 @@ namespace fd = tyr::formalism::datalog;
 namespace tyr::datalog
 {
 
-RuleDeltaWorkspace::RuleDeltaWorkspace() : repository(std::make_shared<fd::Repository>()), binding(), merge_cache(), seen_bindings_dbg(), pending_bindings() {}
+RuleDeltaWorkspace::RuleDeltaWorkspace() :
+    repository(std::make_shared<fd::Repository>()),
+    binding(),
+    merge_cache(),
+    seen_bindings_dbg(),
+    applicability_check_pool(),
+    pending_rules()
+{
+}
 
 void RuleDeltaWorkspace::clear() noexcept
 {
     repository->clear();
     merge_cache.clear();
     seen_bindings_dbg.clear();
-    pending_bindings.clear();
+    pending_rules.clear();
 }
 
 }

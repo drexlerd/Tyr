@@ -48,7 +48,8 @@
 
 #include <algorithm>  // for all_of
 #include <assert.h>   // for assert
-#include <memory>     // for __sha...
+#include <boost/dynamic_bitset.hpp>
+#include <memory>  // for __sha...
 #include <oneapi/tbb/parallel_for_each.h>
 #include <tuple>    // for opera...
 #include <utility>  // for pair
@@ -59,48 +60,6 @@ namespace fd = tyr::formalism::datalog;
 
 namespace tyr::datalog
 {
-
-template<f::FactKind T, fd::Context C_SRC, fd::Context C_DST>
-bool is_valid_binding(View<Index<fd::Literal<T>>, C_SRC> element, const FactSets& fact_sets, fd::GrounderContext<C_DST>& context)
-{
-    return fact_sets.template get<T>().predicate.contains(ground(element.get_atom(), context).first) == element.get_polarity();
-}
-
-template<f::FactKind T, fd::Context C_SRC, fd::Context C_DST>
-bool is_valid_binding(View<IndexList<fd::Literal<T>>, C_SRC> elements, const FactSets& fact_sets, fd::GrounderContext<C_DST>& context)
-{
-    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_valid_binding(arg, fact_sets, context); });
-}
-
-template<fd::Context C_SRC, fd::Context C_DST>
-bool is_valid_binding(View<DataList<fd::Literal<f::FluentTag>>, C_SRC> elements, const FactSets& fact_sets, fd::GrounderContext<C_DST>& context)
-{
-    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_valid_binding(arg, fact_sets, context); });
-}
-
-template<fd::Context C_SRC, fd::Context C_DST>
-bool is_valid_binding(View<Data<fd::BooleanOperator<Data<fd::FunctionExpression>>>, C_SRC> element,
-                      const FactSets& fact_sets,
-                      fd::GrounderContext<C_DST>& context)
-{
-    return evaluate(make_view(ground(element, context), context.destination), fact_sets);
-}
-
-template<fd::Context C_SRC, fd::Context C_DST>
-bool is_valid_binding(View<DataList<fd::BooleanOperator<Data<fd::FunctionExpression>>>, C_SRC> elements,
-                      const FactSets& fact_sets,
-                      fd::GrounderContext<C_DST>& context)
-{
-    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_valid_binding(arg, fact_sets, context); });
-}
-
-template<fd::Context C_SRC, fd::Context C_DST>
-bool is_valid_binding(View<Index<fd::ConjunctiveCondition>, C_SRC> element, const FactSets& fact_sets, fd::GrounderContext<C_DST>& context)
-{
-    return is_valid_binding(element.template get_literals<f::StaticTag>(), fact_sets, context)     //
-           && is_valid_binding(element.template get_literals<f::FluentTag>(), fact_sets, context)  //
-           && is_valid_binding(element.get_numeric_constraints(), fact_sets, context);
-}
 
 static auto create_nullary_ground_head_in_delta(View<Index<fd::Atom<f::FluentTag>>, fd::Repository> head, fd::GrounderContext<fd::Repository>& context)
 {
@@ -164,6 +123,35 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
+bool ensure_applicability(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
+{
+    const auto ground_rule = make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository);
+
+    const auto applicable = is_applicable(ground_rule, rctx.fact_sets);
+
+    if (!applicable)
+    {
+        std::cout << "Delta-KPKC generated false positive." << std::endl;
+        std::cout << ground_rule << std::endl;
+    }
+
+    return applicable;
+}
+
+template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
+bool ensure_novel_binding(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
+{
+    const auto inserted = rctx.ws_rule_delta.seen_bindings_dbg.insert(rctx.ground_context_delta.binding).second;
+
+    if (!inserted)
+    {
+        std::cout << "Delta-KPKC generated duplicate binding." << std::endl;
+    }
+
+    return inserted;
+}
+
+template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
     const auto& consistent_vertices = rctx.ws_rule.kpkc.get_delta_graph().vertices;
@@ -177,18 +165,23 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                   rctx.ground_context_delta)
                                     .first;
 
-        // Ensure delta soundness of kpkc, i.e., it does not regenerate the same binding.
-        assert(rctx.ws_rule_delta.seen_bindings_dbg.insert(rctx.ground_context_delta.binding).second);
+        ensure_novel_binding(rctx);
+
+        auto applicability_check =
+            rctx.ws_rule_delta.applicability_check_pool.get_or_allocate(rctx.cws_rule.get_nullary_condition(),
+                                                                        rctx.cws_rule.get_unary_conflicting_overapproximation_condition(),
+                                                                        rctx.fact_sets,
+                                                                        rctx.ground_context_iteration);
+
+        if (!applicability_check->is_statically_applicable())
+            continue;
 
         // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
         // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
         // Therefore we must store it as pending (keyed by binding + head_index or equivalent) and recheck in the next fact envelope.
-        if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
-            && is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
+        if (applicability_check->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
         {
-            // Ensure that ground rule is truly applicable
-            assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
-                                 rctx.fact_sets));
+            assert(ensure_applicability(rctx));
 
             rctx.ws_rule.heads.insert(head_index);
 
@@ -205,29 +198,28 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
         }
         else
         {
-            rctx.ws_rule_delta.pending_bindings.emplace(fd::ground(rctx.ground_context_delta.binding, rctx.ground_context_delta).first, head_index);
+            auto pending_rule = PendingRule { fd::ground(rctx.ground_context_delta.binding, rctx.ground_context_delta).first, head_index };
+
+            rctx.ws_rule_delta.pending_rules.emplace(pending_rule, std::move(applicability_check));
         }
     }
 
-    for (auto it = rctx.ws_rule_delta.pending_bindings.begin(); it != rctx.ws_rule_delta.pending_bindings.end();)
+    for (auto it = rctx.ws_rule_delta.pending_rules.begin(); it != rctx.ws_rule_delta.pending_rules.end();)
     {
-        rctx.ground_context_delta.binding = make_view(it->first, rctx.ground_context_delta.destination).get_objects().get_data();
+        rctx.ground_context_delta.binding = make_view(it->first.binding, rctx.ground_context_delta.destination).get_objects().get_data();
 
-        if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
-            && is_valid_binding(rctx.cws_rule.get_unary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
+        if (it->second->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
         {
-            // Ensure that ground rule is truly applicable
-            assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
-                                 rctx.fact_sets));
+            assert(ensure_applicability(rctx));
 
             // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
-            rctx.ws_rule.heads.insert(it->second);
+            rctx.ws_rule.heads.insert(it->first.head);
 
             rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
                                           rctx.cws_rule.rule,
                                           rctx.cws_rule.witness_condition,
-                                          it->second,
+                                          it->first.head,
                                           rctx.ctx.ctx.aps.or_annot,
                                           rctx.and_annot,
                                           rctx.delta_head_to_witness,
@@ -235,29 +227,13 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                           rctx.ground_context_delta,
                                           rctx.ground_context_persistent);
 
-            it = rctx.ws_rule_delta.pending_bindings.erase(it);
+            it = rctx.ws_rule_delta.pending_rules.erase(it);
         }
         else
         {
             ++it;
         }
     }
-}
-
-template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-bool ensure_general_applicability(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
-{
-    const auto ground_rule = make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository);
-
-    const auto applicable = is_applicable(ground_rule, rctx.fact_sets);
-
-    if (!applicable)
-    {
-        std::cout << "Delta-KPKC generated false positive." << std::endl;
-        std::cout << ground_rule << std::endl;
-    }
-
-    return applicable;
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
@@ -272,17 +248,23 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                         rctx.ground_context_delta)
                                         .first;
 
-            // Ensure delta soundness of kpkc, i.e., it does not regenerate the same binding.
-            assert(rctx.ws_rule_delta.seen_bindings_dbg.insert(rctx.ground_context_delta.binding).second);
+            ensure_novel_binding(rctx);
+
+            auto applicability_check =
+                rctx.ws_rule_delta.applicability_check_pool.get_or_allocate(rctx.cws_rule.get_nullary_condition(),
+                                                                            rctx.cws_rule.get_binary_conflicting_overapproximation_condition(),
+                                                                            rctx.fact_sets,
+                                                                            rctx.ground_context_iteration);
+
+            if (!applicability_check->is_statically_applicable())
+                return;
 
             // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
             // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
             // Therefore we must store it as pending (keyed by binding + head_index or equivalent) and recheck in the next fact envelope.
-            if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
-                && is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
+            if (applicability_check->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
             {
-                // Ensure that ground rule is truly applicable
-                assert(ensure_general_applicability(rctx));
+                assert(ensure_applicability(rctx));
 
                 // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
@@ -301,29 +283,28 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             }
             else
             {
-                rctx.ws_rule_delta.pending_bindings.emplace(fd::ground(rctx.ground_context_delta.binding, rctx.ground_context_delta).first, head_index);
+                auto pending_rule = PendingRule { fd::ground(rctx.ground_context_delta.binding, rctx.ground_context_delta).first, head_index };
+
+                rctx.ws_rule_delta.pending_rules.emplace(pending_rule, std::move(applicability_check));
             }
         });
 
-    for (auto it = rctx.ws_rule_delta.pending_bindings.begin(); it != rctx.ws_rule_delta.pending_bindings.end();)
+    for (auto it = rctx.ws_rule_delta.pending_rules.begin(); it != rctx.ws_rule_delta.pending_rules.end();)
     {
-        rctx.ground_context_delta.binding = make_view(it->first, rctx.ground_context_delta.destination).get_objects().get_data();
+        rctx.ground_context_delta.binding = make_view(it->first.binding, rctx.ground_context_delta.destination).get_objects().get_data();
 
-        if (is_applicable(rctx.cws_rule.get_nullary_condition(), rctx.fact_sets)
-            && is_valid_binding(rctx.cws_rule.get_binary_conflicting_overapproximation_condition(), rctx.fact_sets, rctx.ground_context_iteration))
+        if (it->second->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
         {
-            // Ensure that ground rule is truly applicable
-            assert(is_applicable(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ws_rule.overlay_repository),
-                                 rctx.fact_sets));
+            assert(ensure_applicability(rctx));
 
             // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
-            rctx.ws_rule.heads.insert(it->second);
+            rctx.ws_rule.heads.insert(it->first.head);
 
             rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
                                           rctx.cws_rule.rule,
                                           rctx.cws_rule.witness_condition,
-                                          it->second,
+                                          it->first.head,
                                           rctx.ctx.ctx.aps.or_annot,
                                           rctx.and_annot,
                                           rctx.delta_head_to_witness,
@@ -331,7 +312,7 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                           rctx.ground_context_delta,
                                           rctx.ground_context_persistent);
 
-            it = rctx.ws_rule_delta.pending_bindings.erase(it);
+            it = rctx.ws_rule_delta.pending_rules.erase(it);
         }
         else
         {

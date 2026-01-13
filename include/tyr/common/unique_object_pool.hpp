@@ -134,9 +134,9 @@ private:
     mutable std::mutex m_mutex;
 
     template<typename... Args>
-    void allocate(Args&&... args)
+    void allocate()
     {
-        m_storage.push_back(std::make_unique<T>(std::forward<Args>(args)...));
+        m_storage.push_back(std::make_unique<T>());
         m_stack.push(m_storage.back().get());
     }
 
@@ -157,7 +157,16 @@ public:
     UniqueObjectPool(UniqueObjectPool&& other) noexcept = delete;
     UniqueObjectPool& operator=(UniqueObjectPool&& other) noexcept = delete;
 
-    [[nodiscard]] UniqueObjectPoolPtr<T> get_or_allocate() { return get_or_allocate<>(); }
+    [[nodiscard]] UniqueObjectPoolPtr<T> get_or_allocate()
+    {
+        std::lock_guard<std::mutex> lg(m_mutex);
+
+        if (m_stack.empty())
+            allocate();
+        T* element = m_stack.top();
+        m_stack.pop();
+        return UniqueObjectPoolPtr<T>(this, element);
+    }
 
     template<typename... Args>
     [[nodiscard]] UniqueObjectPoolPtr<T> get_or_allocate(Args&&... args)
@@ -165,9 +174,10 @@ public:
         std::lock_guard<std::mutex> lg(m_mutex);
 
         if (m_stack.empty())
-            allocate(std::forward<Args>(args)...);
+            allocate();
         T* element = m_stack.top();
         m_stack.pop();
+        element->initialize(std::forward<Args>(args)...);
         return UniqueObjectPoolPtr<T>(this, element);
     }
 
