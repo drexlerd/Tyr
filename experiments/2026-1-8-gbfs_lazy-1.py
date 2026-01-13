@@ -48,8 +48,7 @@ if REMOTE:
         setup=TetralithEnvironment.DEFAULT_SETUP,
         memory_per_cpu="2840M",
         cpus_per_task=6,  # 6*2840 >= 16000
-        extra_options="#SBATCH --account=naiss2025-5-382")
-    
+        extra_options="#SBATCH --account=naiss2025-22-1245")
 else:
     ENV = LocalEnvironment(processes=6)
 
@@ -156,7 +155,7 @@ ATTRIBUTES = [
     "succgen_rule_avg_min_ns",
 ]
 
-MEMORY_LIMIT = 8000
+MEMORY_LIMIT = 16000
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)

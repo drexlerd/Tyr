@@ -152,7 +152,7 @@ ATTRIBUTES = [
     "succgen_total_ms",
 ]
 
-MEMORY_LIMIT = 8000
+MEMORY_LIMIT = 16000
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
