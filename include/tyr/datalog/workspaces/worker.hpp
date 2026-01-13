@@ -26,7 +26,6 @@ namespace tyr::datalog
 struct WorkerWorkspace
 {
     formalism::datalog::Builder builder;
-    formalism::datalog::MergeCache merge_cache;
 
     WorkerWorkspace() = default;
 

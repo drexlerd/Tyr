@@ -37,7 +37,6 @@ ProgramWorkspace::ProgramWorkspace(ProgramContext& context, const ConstProgramWo
     rule_deltas(context.get_program().get_rules().size()),
     rule_persistents(),
     d2p(),
-    p2d(),
     worker(),
     planning_builder(),
     datalog_builder(),

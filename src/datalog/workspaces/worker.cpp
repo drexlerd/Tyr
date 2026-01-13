@@ -20,6 +20,6 @@
 namespace tyr::datalog
 {
 
-void WorkerWorkspace::clear() noexcept { merge_cache.clear(); }
+void WorkerWorkspace::clear() noexcept {}
 
 }

@@ -19,9 +19,5 @@
 
 namespace tyr::datalog
 {
-void D2PWorkspace::clear() noexcept
-{
-    merge_cache.clear();
-    binding.clear();
-}
+void D2PWorkspace::clear() noexcept { binding.clear(); }
 }

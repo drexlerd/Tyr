@@ -394,7 +394,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
             {
                 const auto i = uint_t(rule_index);
 
-                auto merge_context = fd::MergeContext { ctx.ctx.ws.datalog_builder, ctx.ctx.ws.repository, ctx.ctx.ws.rule_deltas[i].merge_cache };
+                auto merge_context = fd::MergeContext { ctx.ctx.ws.datalog_builder, ctx.ctx.ws.repository };
 
                 for (const auto delta_head : ctx.ctx.ws.rules[i].heads)
                 {

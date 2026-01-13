@@ -25,7 +25,6 @@
 #include "tyr/datalog/statistics/program.hpp"
 #include "tyr/datalog/workspaces/d2p.hpp"
 #include "tyr/datalog/workspaces/facts.hpp"
-#include "tyr/datalog/workspaces/p2d.hpp"
 #include "tyr/datalog/workspaces/rule.hpp"
 #include "tyr/datalog/workspaces/rule_delta.hpp"
 #include "tyr/datalog/workspaces/worker.hpp"
@@ -130,7 +129,6 @@ struct ProgramWorkspace
     std::vector<RulePersistentWorkspace> rule_persistents;
 
     D2PWorkspace d2p;
-    P2DWorkspace p2d;
 
     oneapi::tbb::enumerable_thread_specific<WorkerWorkspace> worker;
 

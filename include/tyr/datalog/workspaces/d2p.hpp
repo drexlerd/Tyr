@@ -27,7 +27,6 @@ struct D2PWorkspace
 {
     D2PWorkspace() = default;
 
-    formalism::planning::MergePlanningCache merge_cache;
     IndexList<formalism::Object> binding;
 
     void clear() noexcept;

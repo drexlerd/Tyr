@@ -27,7 +27,6 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
 
     datalog/workspaces/d2p.cpp
     datalog/workspaces/facts.cpp
-    datalog/workspaces/p2d.cpp
     datalog/workspaces/program.cpp
     datalog/workspaces/rule_delta.cpp
     datalog/workspaces/rule.cpp

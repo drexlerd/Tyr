@@ -193,8 +193,7 @@ static auto create_task(View<Index<fp::Task>, f::OverlayRepository<fp::Repositor
     auto& fdr_task = *fdr_task_ptr;
     fdr_task.clear();
 
-    auto merge_cache = fp::MergeCache {};
-    auto merge_context = fp::MergeContext { builder, repository, merge_cache };
+    auto merge_context = fp::MergeContext { builder, repository };
 
     fdr_task.name = task.get_name();
     fdr_task.domain = task.get_domain().get_index();

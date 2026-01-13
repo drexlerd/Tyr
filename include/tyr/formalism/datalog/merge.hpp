@@ -31,101 +31,11 @@
 namespace tyr::formalism::datalog
 {
 
-class MergeCache
-{
-private:
-    template<typename T_SRC, typename T_DST = T_SRC>
-    struct MapEntryType
-    {
-        using value_type = std::pair<T_SRC, T_DST>;
-        using container_type = UnorderedMap<Index<T_SRC>, Index<T_DST>>;
-
-        container_type container;
-    };
-
-    using MergeStorage = std::tuple<MapEntryType<formalism::Variable>,
-                                    MapEntryType<formalism::Object>,
-                                    MapEntryType<formalism::Binding>,
-                                    MapEntryType<formalism::Predicate<StaticTag>>,
-                                    MapEntryType<formalism::Predicate<FluentTag>>,
-                                    MapEntryType<Atom<StaticTag>>,
-                                    MapEntryType<Atom<FluentTag>>,
-                                    MapEntryType<GroundAtom<StaticTag>>,
-                                    MapEntryType<GroundAtom<FluentTag>>,
-                                    MapEntryType<Literal<StaticTag>>,
-                                    MapEntryType<Literal<FluentTag>>,
-                                    MapEntryType<GroundLiteral<StaticTag>>,
-                                    MapEntryType<GroundLiteral<FluentTag>>,
-                                    MapEntryType<Function<StaticTag>>,
-                                    MapEntryType<Function<FluentTag>>,
-                                    MapEntryType<FunctionTerm<StaticTag>>,
-                                    MapEntryType<FunctionTerm<FluentTag>>,
-                                    MapEntryType<GroundFunctionTerm<StaticTag>>,
-                                    MapEntryType<GroundFunctionTerm<FluentTag>>,
-                                    MapEntryType<GroundFunctionTermValue<StaticTag>>,
-                                    MapEntryType<GroundFunctionTermValue<FluentTag>>,
-                                    MapEntryType<UnaryOperator<OpSub, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpSub, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpMul, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
-                                    MapEntryType<MultiOperator<OpAdd, Data<FunctionExpression>>>,
-                                    MapEntryType<MultiOperator<OpMul, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpEq, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpNe, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpLe, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpLt, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpGe, Data<FunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpGt, Data<FunctionExpression>>>,
-                                    MapEntryType<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpNe, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
-                                    MapEntryType<ConjunctiveCondition>,
-                                    MapEntryType<Rule>,
-                                    MapEntryType<GroundConjunctiveCondition>,
-                                    MapEntryType<GroundRule>,
-                                    MapEntryType<Program>>;
-
-    MergeStorage m_maps;
-
-public:
-    MergeCache() = default;
-
-    template<typename T_SRC, typename T_DST = T_SRC>
-    auto& get() noexcept
-    {
-        using Key = std::pair<T_SRC, T_DST>;
-        return get_container<Key>(m_maps);
-    }
-    template<typename T_SRC, typename T_DST = T_SRC>
-    const auto& get() const noexcept
-    {
-        using Key = std::pair<T_SRC, T_DST>;
-        return get_container<Key>(m_maps);
-    }
-
-    void clear() noexcept
-    {
-        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_maps);
-    }
-};
-
 template<Context C>
 struct MergeContext
 {
     Builder& builder;
     C& destination;
-    MergeCache& cache;
 };
 
 /**
@@ -216,75 +126,45 @@ auto merge_d2d(View<Index<GroundRule>, C_SRC> element, MergeContext<C_DST>& cont
  * Implementations
  */
 
-template<typename T_SRC, typename T_DST, Context C_SRC, typename F>
-auto with_cache(View<Index<T_SRC>, C_SRC> element, MergeCache& cache, F&& compute)
-{
-    auto& m = cache.template get<T_SRC, T_DST>();
-
-    if (auto it = m.find(element.get_index()); it != m.end())
-        return std::make_pair(it->second, false);
-
-    auto result = compute();  // compute the merge_d2dd element
-
-    m.emplace(element.get_index(), result.first);
-
-    return result;
-}
-
 // Common
 
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<formalism::Variable>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<formalism::Variable, formalism::Variable>(element,
-                                                                context.cache,
-                                                                [&]()
-                                                                {
-                                                                    auto variable_ptr = context.builder.template get_builder<formalism::Variable>();
-                                                                    auto& variable = *variable_ptr;
-                                                                    variable.clear();
+    auto variable_ptr = context.builder.template get_builder<formalism::Variable>();
+    auto& variable = *variable_ptr;
+    variable.clear();
 
-                                                                    variable.name = element.get_name();
+    variable.name = element.get_name();
 
-                                                                    canonicalize(variable);
-                                                                    return context.destination.get_or_create(variable, context.builder.get_buffer());
-                                                                });
+    canonicalize(variable);
+    return context.destination.get_or_create(variable, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<formalism::Object>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<formalism::Object, formalism::Object>(element,
-                                                            context.cache,
-                                                            [&]()
-                                                            {
-                                                                auto object_ptr = context.builder.template get_builder<formalism::Object>();
-                                                                auto& object = *object_ptr;
-                                                                object.clear();
+    auto object_ptr = context.builder.template get_builder<formalism::Object>();
+    auto& object = *object_ptr;
+    object.clear();
 
-                                                                object.name = element.get_name();
+    object.name = element.get_name();
 
-                                                                canonicalize(object);
-                                                                return context.destination.get_or_create(object, context.builder.get_buffer());
-                                                            });
+    canonicalize(object);
+    return context.destination.get_or_create(object, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<formalism::Binding>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<formalism::Binding, formalism::Binding>(element,
-                                                              context.cache,
-                                                              [&]()
-                                                              {
-                                                                  auto binding_ptr = context.builder.template get_builder<formalism::Binding>();
-                                                                  auto& binding = *binding_ptr;
-                                                                  binding.clear();
+    auto binding_ptr = context.builder.template get_builder<formalism::Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
 
-                                                                  binding.objects = element.get_data().objects;
+    binding.objects = element.get_data().objects;
 
-                                                                  canonicalize(binding);
-                                                                  return context.destination.get_or_create(binding, context.builder.get_buffer());
-                                                              });
+    canonicalize(binding);
+    return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
@@ -310,98 +190,72 @@ auto merge_d2d(View<Data<formalism::Term>, C_SRC> element, MergeContext<C_DST>& 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<formalism::Predicate<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<formalism::Predicate<T>, formalism::Predicate<T>>(element,
-                                                                        context.cache,
-                                                                        [&]()
-                                                                        {
-                                                                            auto predicate_ptr =
-                                                                                context.builder.template get_builder<formalism::Predicate<T>>();
-                                                                            auto& predicate = *predicate_ptr;
-                                                                            predicate.clear();
+    auto predicate_ptr = context.builder.template get_builder<formalism::Predicate<T>>();
+    auto& predicate = *predicate_ptr;
+    predicate.clear();
 
-                                                                            predicate.name = element.get_name();
-                                                                            predicate.arity = element.get_arity();
+    predicate.name = element.get_name();
+    predicate.arity = element.get_arity();
 
-                                                                            canonicalize(predicate);
-                                                                            return context.destination.get_or_create(predicate, context.builder.get_buffer());
-                                                                        });
+    canonicalize(predicate);
+    return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<Atom<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<Atom<T>, Atom<T>>(element,
-                                        context.cache,
-                                        [&]()
-                                        {
-                                            auto atom_ptr = context.builder.template get_builder<Atom<T>>();
-                                            auto& atom = *atom_ptr;
-                                            atom.clear();
+    auto atom_ptr = context.builder.template get_builder<Atom<T>>();
+    auto& atom = *atom_ptr;
+    atom.clear();
 
-                                            atom.predicate = element.get_predicate().get_index();
-                                            for (const auto term : element.get_terms())
-                                                atom.terms.push_back(merge_d2d(term, context));
+    atom.predicate = element.get_predicate().get_index();
+    for (const auto term : element.get_terms())
+        atom.terms.push_back(merge_d2d(term, context));
 
-                                            canonicalize(atom);
-                                            return context.destination.get_or_create(atom, context.builder.get_buffer());
-                                        });
+    canonicalize(atom);
+    return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<GroundAtom<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<GroundAtom<T>, GroundAtom<T>>(element,
-                                                    context.cache,
-                                                    [&]()
-                                                    {
-                                                        auto atom_ptr = context.builder.template get_builder<GroundAtom<T>>();
-                                                        auto& atom = *atom_ptr;
-                                                        atom.clear();
+    auto atom_ptr = context.builder.template get_builder<GroundAtom<T>>();
+    auto& atom = *atom_ptr;
+    atom.clear();
 
-                                                        atom.index.group = element.get_index().get_group();
-                                                        atom.objects = element.get_data().objects;
+    atom.index.group = element.get_index().get_group();
+    atom.objects = element.get_data().objects;
 
-                                                        canonicalize(atom);
-                                                        return context.destination.get_or_create(atom, context.builder.get_buffer());
-                                                    });
+    canonicalize(atom);
+    return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<Literal<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<Literal<T>, Literal<T>>(element,
-                                              context.cache,
-                                              [&]()
-                                              {
-                                                  auto literal_ptr = context.builder.template get_builder<Literal<T>>();
-                                                  auto& literal = *literal_ptr;
-                                                  literal.clear();
+    auto literal_ptr = context.builder.template get_builder<Literal<T>>();
+    auto& literal = *literal_ptr;
+    literal.clear();
 
-                                                  literal.polarity = element.get_polarity();
-                                                  literal.atom = merge_d2d(element.get_atom(), context).first;
+    literal.polarity = element.get_polarity();
+    literal.atom = merge_d2d(element.get_atom(), context).first;
 
-                                                  canonicalize(literal);
-                                                  return context.destination.get_or_create(literal, context.builder.get_buffer());
-                                              });
+    canonicalize(literal);
+    return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<GroundLiteral<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<GroundLiteral<T>, GroundLiteral<T>>(element,
-                                                          context.cache,
-                                                          [&]()
-                                                          {
-                                                              auto literal_ptr = context.builder.template get_builder<GroundLiteral<T>>();
-                                                              auto& literal = *literal_ptr;
-                                                              literal.clear();
+    auto literal_ptr = context.builder.template get_builder<GroundLiteral<T>>();
+    auto& literal = *literal_ptr;
+    literal.clear();
 
-                                                              literal.polarity = element.get_polarity();
-                                                              literal.atom = merge_d2d(element.get_atom(), context).first;
+    literal.polarity = element.get_polarity();
+    literal.atom = merge_d2d(element.get_atom(), context).first;
 
-                                                              canonicalize(literal);
-                                                              return context.destination.get_or_create(literal, context.builder.get_buffer());
-                                                          });
+    canonicalize(literal);
+    return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
 // Numeric
@@ -409,79 +263,58 @@ auto merge_d2d(View<Index<GroundLiteral<T>>, C_SRC> element, MergeContext<C_DST>
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<formalism::Function<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<formalism::Function<T>, formalism::Function<T>>(element,
-                                                                      context.cache,
-                                                                      [&]()
-                                                                      {
-                                                                          auto function_ptr = context.builder.template get_builder<formalism::Function<T>>();
-                                                                          auto& function = *function_ptr;
-                                                                          function.clear();
+    auto function_ptr = context.builder.template get_builder<formalism::Function<T>>();
+    auto& function = *function_ptr;
+    function.clear();
 
-                                                                          function.name = element.get_name();
-                                                                          function.arity = element.get_arity();
+    function.name = element.get_name();
+    function.arity = element.get_arity();
 
-                                                                          canonicalize(function);
-                                                                          return context.destination.get_or_create(function, context.builder.get_buffer());
-                                                                      });
+    canonicalize(function);
+    return context.destination.get_or_create(function, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<FunctionTerm<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<FunctionTerm<T>, FunctionTerm<T>>(element,
-                                                        context.cache,
-                                                        [&]()
-                                                        {
-                                                            auto fterm_ptr = context.builder.template get_builder<FunctionTerm<T>>();
-                                                            auto& fterm = *fterm_ptr;
-                                                            fterm.clear();
+    auto fterm_ptr = context.builder.template get_builder<FunctionTerm<T>>();
+    auto& fterm = *fterm_ptr;
+    fterm.clear();
 
-                                                            fterm.function = element.get_function().get_index();
-                                                            for (const auto term : element.get_terms())
-                                                                fterm.terms.push_back(merge_d2d(term, context));
+    fterm.function = element.get_function().get_index();
+    for (const auto term : element.get_terms())
+        fterm.terms.push_back(merge_d2d(term, context));
 
-                                                            canonicalize(fterm);
-                                                            return context.destination.get_or_create(fterm, context.builder.get_buffer());
-                                                        });
+    canonicalize(fterm);
+    return context.destination.get_or_create(fterm, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<GroundFunctionTerm<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<GroundFunctionTerm<T>, GroundFunctionTerm<T>>(element,
-                                                                    context.cache,
-                                                                    [&]()
-                                                                    {
-                                                                        auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
-                                                                        auto& fterm = *fterm_ptr;
-                                                                        fterm.clear();
+    auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
+    auto& fterm = *fterm_ptr;
+    fterm.clear();
 
-                                                                        fterm.function = element.get_function().get_index();
-                                                                        fterm.objects = element.get_data().objects;
+    fterm.function = element.get_function().get_index();
+    fterm.objects = element.get_data().objects;
 
-                                                                        canonicalize(fterm);
-                                                                        return context.destination.get_or_create(fterm, context.builder.get_buffer());
-                                                                    });
+    canonicalize(fterm);
+    return context.destination.get_or_create(fterm, context.builder.get_buffer());
 }
 
 template<FactKind T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<GroundFunctionTermValue<T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<GroundFunctionTermValue<T>, GroundFunctionTermValue<T>>(
-        element,
-        context.cache,
-        [&]()
-        {
-            auto fterm_value_ptr = context.builder.template get_builder<GroundFunctionTermValue<T>>();
-            auto& fterm_value = *fterm_value_ptr;
-            fterm_value.clear();
+    auto fterm_value_ptr = context.builder.template get_builder<GroundFunctionTermValue<T>>();
+    auto& fterm_value = *fterm_value_ptr;
+    fterm_value.clear();
 
-            fterm_value.fterm = merge_d2d(element.get_fterm(), context).first;
-            fterm_value.value = element.get_value();
+    fterm_value.fterm = merge_d2d(element.get_fterm(), context).first;
+    fterm_value.value = element.get_value();
 
-            canonicalize(fterm_value);
-            return context.destination.get_or_create(fterm_value, context.builder.get_buffer());
-        });
+    canonicalize(fterm_value);
+    return context.destination.get_or_create(fterm_value, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
@@ -523,57 +356,42 @@ auto merge_d2d(View<Data<GroundFunctionExpression>, C_SRC> element, MergeContext
 template<OpKind O, typename T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<UnaryOperator<O, T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<UnaryOperator<O, T>, UnaryOperator<O, T>>(element,
-                                                                context.cache,
-                                                                [&]()
-                                                                {
-                                                                    auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, T>>();
-                                                                    auto& unary = *unary_ptr;
-                                                                    unary.clear();
+    auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, T>>();
+    auto& unary = *unary_ptr;
+    unary.clear();
 
-                                                                    unary.arg = merge_d2d(element.get_arg(), context);
+    unary.arg = merge_d2d(element.get_arg(), context);
 
-                                                                    canonicalize(unary);
-                                                                    return context.destination.get_or_create(unary, context.builder.get_buffer());
-                                                                });
+    canonicalize(unary);
+    return context.destination.get_or_create(unary, context.builder.get_buffer());
 }
 
 template<OpKind O, typename T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<BinaryOperator<O, T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<BinaryOperator<O, T>, BinaryOperator<O, T>>(element,
-                                                                  context.cache,
-                                                                  [&]()
-                                                                  {
-                                                                      auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, T>>();
-                                                                      auto& binary = *binary_ptr;
-                                                                      binary.clear();
+    auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, T>>();
+    auto& binary = *binary_ptr;
+    binary.clear();
 
-                                                                      binary.lhs = merge_d2d(element.get_lhs(), context);
-                                                                      binary.rhs = merge_d2d(element.get_rhs(), context);
+    binary.lhs = merge_d2d(element.get_lhs(), context);
+    binary.rhs = merge_d2d(element.get_rhs(), context);
 
-                                                                      canonicalize(binary);
-                                                                      return context.destination.get_or_create(binary, context.builder.get_buffer());
-                                                                  });
+    canonicalize(binary);
+    return context.destination.get_or_create(binary, context.builder.get_buffer());
 }
 
 template<OpKind O, typename T, Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<MultiOperator<O, T>>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<MultiOperator<O, T>, MultiOperator<O, T>>(element,
-                                                                context.cache,
-                                                                [&]()
-                                                                {
-                                                                    auto multi_ptr = context.builder.template get_builder<MultiOperator<O, T>>();
-                                                                    auto& multi = *multi_ptr;
-                                                                    multi.clear();
+    auto multi_ptr = context.builder.template get_builder<MultiOperator<O, T>>();
+    auto& multi = *multi_ptr;
+    multi.clear();
 
-                                                                    for (const auto arg : element.get_args())
-                                                                        multi.args.push_back(merge_d2d(arg, context));
+    for (const auto arg : element.get_args())
+        multi.args.push_back(merge_d2d(arg, context));
 
-                                                                    canonicalize(multi);
-                                                                    return context.destination.get_or_create(multi, context.builder.get_buffer());
-                                                                });
+    canonicalize(multi);
+    return context.destination.get_or_create(multi, context.builder.get_buffer());
 }
 
 template<typename T, Context C_SRC, Context C_DST>
@@ -591,89 +409,68 @@ auto merge_d2d(View<Data<BooleanOperator<T>>, C_SRC> element, MergeContext<C_DST
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<ConjunctiveCondition>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<ConjunctiveCondition, ConjunctiveCondition>(element,
-                                                                  context.cache,
-                                                                  [&]()
-                                                                  {
-                                                                      auto conj_cond_ptr = context.builder.template get_builder<ConjunctiveCondition>();
-                                                                      auto& conj_cond = *conj_cond_ptr;
-                                                                      conj_cond.clear();
+    auto conj_cond_ptr = context.builder.template get_builder<ConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
+    conj_cond.clear();
 
-                                                                      for (const auto literal : element.template get_literals<StaticTag>())
-                                                                          conj_cond.static_literals.push_back(merge_d2d(literal, context).first);
-                                                                      for (const auto literal : element.template get_literals<FluentTag>())
-                                                                          conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first);
-                                                                      for (const auto numeric_constraint : element.get_numeric_constraints())
-                                                                          conj_cond.numeric_constraints.push_back(merge_d2d(numeric_constraint, context));
+    for (const auto literal : element.template get_literals<StaticTag>())
+        conj_cond.static_literals.push_back(merge_d2d(literal, context).first);
+    for (const auto literal : element.template get_literals<FluentTag>())
+        conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first);
+    for (const auto numeric_constraint : element.get_numeric_constraints())
+        conj_cond.numeric_constraints.push_back(merge_d2d(numeric_constraint, context));
 
-                                                                      canonicalize(conj_cond);
-                                                                      return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
-                                                                  });
+    canonicalize(conj_cond);
+    return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<GroundConjunctiveCondition>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<GroundConjunctiveCondition, GroundConjunctiveCondition>(
-        element,
-        context.cache,
-        [&]()
-        {
-            auto conj_cond_ptr = context.builder.template get_builder<GroundConjunctiveCondition>();
-            auto& conj_cond = *conj_cond_ptr;
-            conj_cond.clear();
+    auto conj_cond_ptr = context.builder.template get_builder<GroundConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
+    conj_cond.clear();
 
-            for (const auto literal : element.template get_literals<StaticTag>())
-                conj_cond.static_literals.push_back(merge_d2d(literal, context).first);
-            for (const auto literal : element.template get_literals<FluentTag>())
-                conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first);
-            for (const auto numeric_constraint : element.get_numeric_constraints())
-                conj_cond.numeric_constraints.push_back(merge_d2d(numeric_constraint, context));
+    for (const auto literal : element.template get_literals<StaticTag>())
+        conj_cond.static_literals.push_back(merge_d2d(literal, context).first);
+    for (const auto literal : element.template get_literals<FluentTag>())
+        conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first);
+    for (const auto numeric_constraint : element.get_numeric_constraints())
+        conj_cond.numeric_constraints.push_back(merge_d2d(numeric_constraint, context));
 
-            canonicalize(conj_cond);
-            return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
-        });
+    canonicalize(conj_cond);
+    return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<Rule>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<Rule, Rule>(element,
-                                  context.cache,
-                                  [&]()
-                                  {
-                                      auto rule_ptr = context.builder.template get_builder<Rule>();
-                                      auto& rule = *rule_ptr;
-                                      rule.clear();
+    auto rule_ptr = context.builder.template get_builder<Rule>();
+    auto& rule = *rule_ptr;
+    rule.clear();
 
-                                      for (const auto variable : element.get_variables())
-                                          rule.variables.push_back(merge_d2d(variable, context).first);
-                                      rule.body = merge_d2d(element.get_body(), context).first;
-                                      rule.head = merge_d2d(element.get_head(), context).first;
+    for (const auto variable : element.get_variables())
+        rule.variables.push_back(merge_d2d(variable, context).first);
+    rule.body = merge_d2d(element.get_body(), context).first;
+    rule.head = merge_d2d(element.get_head(), context).first;
 
-                                      canonicalize(rule);
-                                      return context.destination.get_or_create(rule, context.builder.get_buffer());
-                                  });
+    canonicalize(rule);
+    return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
 template<Context C_SRC, Context C_DST>
 auto merge_d2d(View<Index<GroundRule>, C_SRC> element, MergeContext<C_DST>& context)
 {
-    return with_cache<GroundRule, GroundRule>(element,
-                                              context.cache,
-                                              [&]()
-                                              {
-                                                  auto rule_ptr = context.builder.template get_builder<GroundRule>();
-                                                  auto& rule = *rule_ptr;
-                                                  rule.clear();
+    auto rule_ptr = context.builder.template get_builder<GroundRule>();
+    auto& rule = *rule_ptr;
+    rule.clear();
 
-                                                  rule.rule = element.get_rule().get_index();
-                                                  rule.body = merge_d2d(element.get_body(), context).first;
-                                                  rule.head = merge_d2d(element.get_head(), context).first;
+    rule.rule = element.get_rule().get_index();
+    rule.body = merge_d2d(element.get_body(), context).first;
+    rule.head = merge_d2d(element.get_head(), context).first;
 
-                                                  canonicalize(rule);
-                                                  return context.destination.get_or_create(rule, context.builder.get_buffer());
-                                              });
+    canonicalize(rule);
+    return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
 }

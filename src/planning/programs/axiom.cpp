@@ -86,9 +86,8 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
                                          AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate,
                                          fd::Repository& repository)
 {
-    auto merge_cache = fp::MergeDatalogCache();
     auto builder = fd::Builder();
-    auto context = fp::MergeDatalogContext<fd::Repository>(builder, repository, merge_cache);
+    auto context = fp::MergeDatalogContext<fd::Repository>(builder, repository);
     auto program_ptr = builder.get_builder<fd::Program>();
     auto& program = *program_ptr;
     program.clear();

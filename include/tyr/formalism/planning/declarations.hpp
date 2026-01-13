@@ -309,8 +309,6 @@ concept Context = requires(const T& a) {
     { get_repository(a) } -> RepositoryConcept;
 };
 
-class MergeCache;
-
 template<Context C>
 class BinaryFDRContext;
 

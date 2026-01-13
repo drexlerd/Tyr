@@ -99,7 +99,7 @@ void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms
                                      datalog::ProgramWorkspace& ws)
 {
     /// --- Initialize FactSets
-    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository, ws.p2d.merge_cache };
+    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository };
 
     for (auto i = fluent_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = fluent_atoms.find_next(i))
         ws.facts.fact_sets.predicate.insert(make_view(
@@ -117,7 +117,7 @@ void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_ato
                                       datalog::ProgramWorkspace& ws)
 {
     /// --- Initialize FactSets
-    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository, ws.p2d.merge_cache };
+    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository };
 
     for (auto i = derived_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms.find_next(i))
         ws.facts.fact_sets.predicate.insert(make_view(
@@ -135,7 +135,7 @@ void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_va
                                           datalog::ProgramWorkspace& ws)
 {
     /// --- Initialize FactSets
-    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository, ws.p2d.merge_cache };
+    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository };
 
     for (uint_t i = 0; i < numeric_variables.size(); ++i)
     {
@@ -166,7 +166,6 @@ void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
                            const datalog::ConstProgramWorkspace& cws)
 {
     ws.facts.reset();
-    ws.p2d.clear();
 
     insert_fluent_atoms_to_fact_set(unpacked_state.get_atoms<formalism::FluentTag>(), atoms_context, ws);
     insert_derived_atoms_to_fact_set(unpacked_state.get_atoms<formalism::DerivedTag>(), atoms_context, ws);

@@ -54,7 +54,6 @@ static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_st
                                     const d::ConstProgramWorkspace& cws)
 {
     ws.facts.reset();
-    ws.p2d.clear();
 
     insert_fluent_atoms_to_fact_set(unpacked_state.get_atoms<f::FluentTag>(), atoms_context, ws);
 
@@ -70,7 +69,7 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 
     /// --- Initialize derived atoms in unpacked state
 
-    auto merge_context = fp::MergePlanningContext { ws.planning_builder, task_repository, ws.d2p.merge_cache };
+    auto merge_context = fp::MergePlanningContext { ws.planning_builder, task_repository };
 
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_predicate_mapping, then facts of the predicate
     for (const auto& set : ws.facts.fact_sets.predicate.get_sets())

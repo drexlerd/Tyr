@@ -442,9 +442,8 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
                                          fd::Repository& destination,
                                          RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
 {
-    auto merge_cache = fp::MergeDatalogCache();
     auto builder = fd::Builder();
-    auto context = fp::MergeDatalogContext<fd::Repository>(builder, destination, merge_cache);
+    auto context = fp::MergeDatalogContext<fd::Repository>(builder, destination);
     auto program_ptr = builder.get_builder<fd::Program>();
     auto& program = *program_ptr;
     program.clear();
