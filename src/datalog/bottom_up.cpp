@@ -165,7 +165,7 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                   rctx.ground_context_delta)
                                     .first;
 
-        ensure_novel_binding(rctx);
+        assert(ensure_novel_binding(rctx));
 
         auto applicability_check =
             rctx.ws_rule_delta.applicability_check_pool.get_or_allocate(rctx.cws_rule.get_nullary_condition(),
@@ -248,7 +248,7 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                                                         rctx.ground_context_delta)
                                         .first;
 
-            ensure_novel_binding(rctx);
+            assert(ensure_novel_binding(rctx));
 
             auto applicability_check =
                 rctx.ws_rule_delta.applicability_check_pool.get_or_allocate(rctx.cws_rule.get_nullary_condition(),

@@ -18,7 +18,7 @@ fi
 export LANG=C
 
 # Run planner
-"$planner_exe" "-D" "$domain_file" "-P" "$problem_file" "-O" "$plan_file" "-N" "$num_threads"
+MALLOC_ARENA_MAX=1 "$planner_exe" "-D" "$domain_file" "-P" "$problem_file" "-O" "$plan_file" "-N" "$num_threads"
 
 # Run VAL
 echo -e "\nRun VAL\n"
