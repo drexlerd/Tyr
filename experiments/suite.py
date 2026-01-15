@@ -167,7 +167,7 @@ SUITE_IPC_SATISFICING_STRIPS = [
     "zenotravel",
 ]
 
-SUITE_IPC_SATISFICING_ADL_TEST = [
+SUITE_IPC_SATISFICING_ADL = [
     "assembly", 
     "caldera-sat18-adl", 
     "caldera-split-sat18-adl", 
