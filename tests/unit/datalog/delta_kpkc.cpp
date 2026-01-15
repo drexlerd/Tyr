@@ -29,9 +29,18 @@ namespace p = tyr::planning;
 namespace tyr::tests
 {
 
-static auto enumerate_cliques(d::DeltaKPKC& kpkc)
+inline std::vector<d::delta_kpkc::Vertex> V(std::initializer_list<uint_t> xs)
 {
-    auto result = std::vector<std::vector<uint_t>> {};
+    auto out = std::vector<d::delta_kpkc::Vertex> {};
+    out.reserve(xs.size());
+    for (auto x : xs)
+        out.emplace_back(x);
+    return out;
+}
+
+static auto enumerate_cliques(d::delta_kpkc::DeltaKPKC& kpkc)
+{
+    auto result = std::vector<std::vector<d::delta_kpkc::Vertex>> {};
     kpkc.for_each_new_k_clique([&](auto&& clique) { result.push_back(clique); });
     return result;
 }
@@ -44,7 +53,7 @@ TEST(TyrTests, TyrDatalogDeltaKPKCStandard3)
     auto const_graph = d::delta_kpkc::ConstGraph {};
     const_graph.num_vertices = nv;
     const_graph.k = k;
-    const_graph.partitions = std::vector<std::vector<uint_t>> { { 0, 1 }, { 2, 3 }, { 4, 5 } };
+    const_graph.partitions = std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 1 }), V({ 2, 3 }), V({ 4, 5 }) };
     const_graph.vertex_to_partition = std::vector<uint_t> { 0, 0, 1, 1, 2, 2 };
 
     auto delta_graph = d::delta_kpkc::Graph {};
@@ -94,12 +103,12 @@ TEST(TyrTests, TyrDatalogDeltaKPKCStandard3)
     workspace.partition_bits.resize(k);
     workspace.partial_solution.reserve(k);
 
-    auto dkpkc = d::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
+    auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
     auto cliques = enumerate_cliques(dkpkc);
 
     EXPECT_EQ(cliques.size(), 2);
-    EXPECT_EQ(cliques, (std::vector<std::vector<uint_t>> { { 0, 2, 4 }, { 0, 3, 4 } }));
+    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 2, 4 }), V({ 0, 3, 4 }) }));
 }
 
 TEST(TyrTests, TyrDatalogDeltaKPKCDelta3)
@@ -110,7 +119,7 @@ TEST(TyrTests, TyrDatalogDeltaKPKCDelta3)
     auto const_graph = d::delta_kpkc::ConstGraph {};
     const_graph.num_vertices = nv;
     const_graph.k = k;
-    const_graph.partitions = std::vector<std::vector<uint_t>> { { 0, 1 }, { 2, 3 }, { 4, 5 } };
+    const_graph.partitions = std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 1 }), V({ 2, 3 }), V({ 4, 5 }) };
     const_graph.vertex_to_partition = std::vector<uint_t> { 0, 0, 1, 1, 2, 2 };
 
     auto delta_graph = d::delta_kpkc::Graph {};
@@ -164,12 +173,12 @@ TEST(TyrTests, TyrDatalogDeltaKPKCDelta3)
     workspace.partition_bits.resize(k);
     workspace.partial_solution.reserve(k);
 
-    auto dkpkc = d::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
+    auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
     auto cliques = enumerate_cliques(dkpkc);
 
     EXPECT_EQ(cliques.size(), 2);
-    EXPECT_EQ(cliques, (std::vector<std::vector<uint_t>> { { 0, 5, 2 }, { 0, 5, 3 } }));
+    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 5, 2 }), V({ 0, 5, 3 }) }));
 }
 
 TEST(TyrTests, TyrDatalogDeltaKPKCStandard4)
@@ -180,7 +189,7 @@ TEST(TyrTests, TyrDatalogDeltaKPKCStandard4)
     auto const_graph = d::delta_kpkc::ConstGraph {};
     const_graph.num_vertices = nv;
     const_graph.k = k;
-    const_graph.partitions = std::vector<std::vector<uint_t>> { { 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 } };
+    const_graph.partitions = std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 1 }), V({ 2, 3 }), V({ 4, 5 }), V({ 6, 7 }) };
     const_graph.vertex_to_partition = std::vector<uint_t> { 0, 0, 1, 1, 2, 2, 3, 3 };
 
     auto delta_graph = d::delta_kpkc::Graph {};
@@ -248,12 +257,12 @@ TEST(TyrTests, TyrDatalogDeltaKPKCStandard4)
     workspace.partition_bits.resize(k);
     workspace.partial_solution.reserve(k);
 
-    auto dkpkc = d::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
+    auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
     auto cliques = enumerate_cliques(dkpkc);
 
     EXPECT_EQ(cliques.size(), 2);
-    EXPECT_EQ(cliques, (std::vector<std::vector<uint_t>> { { 0, 2, 4, 7 }, { 0, 3, 4, 7 } }));
+    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 2, 4, 7 }), V({ 0, 3, 4, 7 }) }));
 }
 
 TEST(TyrTests, TyrDatalogDeltaKPKCDelta4)
@@ -264,7 +273,7 @@ TEST(TyrTests, TyrDatalogDeltaKPKCDelta4)
     auto const_graph = d::delta_kpkc::ConstGraph {};
     const_graph.num_vertices = nv;
     const_graph.k = k;
-    const_graph.partitions = std::vector<std::vector<uint_t>> { { 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 } };
+    const_graph.partitions = std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 1 }), V({ 2, 3 }), V({ 4, 5 }), V({ 6, 7 }) };
     const_graph.vertex_to_partition = std::vector<uint_t> { 0, 0, 1, 1, 2, 2, 3, 3 };
 
     auto delta_graph = d::delta_kpkc::Graph {};
@@ -328,12 +337,12 @@ TEST(TyrTests, TyrDatalogDeltaKPKCDelta4)
     workspace.partition_bits.resize(k);
     workspace.partial_solution.reserve(k);
 
-    auto dkpkc = d::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
+    auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
     auto cliques = enumerate_cliques(dkpkc);
 
     EXPECT_EQ(cliques.size(), 1);
-    EXPECT_EQ(cliques, (std::vector<std::vector<uint_t>> { { 0, 6, 2, 4 } }));
+    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 6, 2, 4 }) }));
 }
 
 }

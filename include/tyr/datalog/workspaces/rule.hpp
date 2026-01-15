@@ -31,7 +31,7 @@ namespace tyr::datalog
 {
 struct RuleIterationWorkspace
 {
-    DeltaKPKC kpkc;
+    delta_kpkc::DeltaKPKC kpkc;
 
     /// Merge stage into rule execution context
     std::shared_ptr<formalism::datalog::Repository> repository;

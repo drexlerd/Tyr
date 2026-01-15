@@ -68,29 +68,29 @@ static auto create_nullary_ground_head_in_delta(View<Index<fd::Atom<f::FluentTag
     return ground(head, context);
 }
 
-static auto create_unary_ground_head_in_delta(uint_t vertex_index,
+static auto create_unary_ground_head_in_delta(delta_kpkc::Vertex v,
                                               const StaticConsistencyGraph& consistency_graph,
                                               View<Index<fd::Atom<f::FluentTag>>, fd::Repository> head,
                                               fd::GrounderContext<fd::Repository>& context)
 {
     context.binding.clear();
 
-    const auto& vertex = consistency_graph.get_vertex(vertex_index);
+    const auto& vertex = consistency_graph.get_vertex(v.index);
     assert(uint_t(vertex.get_parameter_index()) == 0);
     context.binding.push_back(vertex.get_object_index());
 
     return ground(head, context);
 }
 
-static auto create_general_ground_head_in_delta(const std::vector<uint_t>& clique,
+static auto create_general_ground_head_in_delta(const std::vector<delta_kpkc::Vertex>& clique,
                                                 const StaticConsistencyGraph& consistency_graph,
                                                 View<Index<fd::Atom<f::FluentTag>>, fd::Repository> head,
                                                 fd::GrounderContext<fd::Repository>& context)
 {
     context.binding.resize(clique.size());
-    for (const auto vertex_index : clique)
+    for (const auto v : clique)
     {
-        const auto& vertex = consistency_graph.get_vertex(vertex_index);
+        const auto& vertex = consistency_graph.get_vertex(v.index);
         assert(uint_t(vertex.get_parameter_index()) < clique.size());
         context.binding[uint_t(vertex.get_parameter_index())] = vertex.get_object_index();
     }
@@ -153,16 +153,11 @@ ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderCon
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
-    const auto& consistent_vertices = rctx.ws_rule.kpkc.get_delta_graph().vertices;
-
-    for (auto vertex_index = consistent_vertices.find_first(); vertex_index != boost::dynamic_bitset<>::npos;
-         vertex_index = consistent_vertices.find_next(vertex_index))
+    for (const auto& vertex : rctx.ws_rule.kpkc.get_delta_graph().vertices_range())
     {
-        const auto head_index = create_unary_ground_head_in_delta(vertex_index,
-                                                                  rctx.cws_rule.static_consistency_graph,
-                                                                  rctx.cws_rule.get_rule().get_head(),
-                                                                  rctx.ground_context_delta)
-                                    .first;
+        const auto head_index =
+            create_unary_ground_head_in_delta(vertex, rctx.cws_rule.static_consistency_graph, rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta)
+                .first;
 
         assert(ensure_novel_binding(rctx.ground_context_delta.binding, rctx.ws_rule_delta.seen_bindings_dbg));
 

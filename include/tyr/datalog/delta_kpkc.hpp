@@ -26,15 +26,15 @@
 #include <iostream>
 #include <vector>
 
-namespace tyr::datalog
-{
-namespace delta_kpkc
+namespace tyr::datalog::delta_kpkc
 {
 struct Vertex
 {
     uint_t index;
 
     constexpr explicit Vertex(uint_t i) : index(i) {}
+
+    friend constexpr bool operator==(Vertex lhs, Vertex rhs) noexcept { return lhs.index == rhs.index; }
 };
 
 struct Edge
@@ -43,6 +43,8 @@ struct Edge
     Vertex dst;
 
     constexpr Edge(Vertex u, Vertex v) : src(u.index < v.index ? u : v), dst(u.index < v.index ? v : u) {}
+
+    friend constexpr bool operator==(Edge lhs, Edge rhs) noexcept { return lhs.src == rhs.src && lhs.dst == rhs.dst; }
 };
 
 struct ConstGraph
@@ -51,7 +53,7 @@ struct ConstGraph
     size_t num_vertices;
     size_t k;
     /// Vertex partitioning
-    std::vector<std::vector<uint_t>> partitions;  ///< Dimensions K x V
+    std::vector<std::vector<Vertex>> partitions;  ///< Dimensions K x V
     std::vector<uint_t> vertex_to_partition;
 };
 
@@ -68,6 +70,9 @@ struct Graph
         for (auto& bitset : adjacency_matrix)
             bitset.reset();
     }
+
+    bool contains(Vertex vertex) const { return vertices.test(vertex.index); }
+    bool contains(Edge edge) const { return adjacency_matrix[edge.src.index].test(edge.dst.index); }
 
     struct VertexIterator
     {
@@ -180,10 +185,9 @@ struct Workspace
 {
     std::vector<std::vector<boost::dynamic_bitset<>>> compatible_vertices;  ///< Dimensions K x K x V
     boost::dynamic_bitset<> partition_bits;                                 ///< Dimensions K
-    std::vector<uint_t> partial_solution;                                   ///< Dimensions K
+    std::vector<Vertex> partial_solution;                                   ///< Dimensions K
     uint_t anchor_edge_rank;
 };
-}
 
 class DeltaKPKC
 {
@@ -191,7 +195,7 @@ public:
     DeltaKPKC(const StaticConsistencyGraph& static_graph);
 
     /// @brief Complete member initialization (for testing)
-    DeltaKPKC(delta_kpkc::ConstGraph const_graph, delta_kpkc::Graph delta_graph, delta_kpkc::Graph full_graph, delta_kpkc::Workspace workspace);
+    DeltaKPKC(ConstGraph const_graph, Graph delta_graph, Graph full_graph, Workspace workspace);
 
     /// @brief Set delta to current adjacency matrix, recompute current adjacency matrix, transform delta to contain the difference.
     /// @param assignment_sets
@@ -214,7 +218,7 @@ public:
     auto full_edges_range() const noexcept { return m_full_graph.edges_range(); }
 
     template<typename Callback>
-    void for_each_new_k_clique(const delta_kpkc::Edge& edge, Callback&& callback)
+    void for_each_new_k_clique(const Edge& edge, Callback&& callback)
     {
         assert(m_const_graph.k >= 2);
 
@@ -222,8 +226,8 @@ public:
         if (m_const_graph.k == 2)
         {
             m_workspace.partial_solution.clear();
-            m_workspace.partial_solution.push_back(edge.src.index);
-            m_workspace.partial_solution.push_back(edge.dst.index);
+            m_workspace.partial_solution.push_back(edge.src);
+            m_workspace.partial_solution.push_back(edge.dst);
             callback(m_workspace.partial_solution);
             return;
         }
@@ -256,32 +260,23 @@ public:
             for_each_new_k_clique(edge, callback);
     }
 
-    const delta_kpkc::ConstGraph& get_const_graph() const noexcept { return m_const_graph; }
-    const delta_kpkc::Graph& get_delta_graph() const noexcept { return m_delta_graph; }
-    const delta_kpkc::Graph& get_full_graph() const noexcept { return m_full_graph; }
+    const ConstGraph& get_const_graph() const noexcept { return m_const_graph; }
+    const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
+    const Graph& get_full_graph() const noexcept { return m_full_graph; }
 
 private:
-    uint_t edge_rank(uint_t u, uint_t v) const
-    {
-        const uint_t a = std::min(u, v);
-        const uint_t b = std::max(u, v);
-        return a * m_const_graph.num_vertices + b;
-    }
+    uint_t edge_rank(Edge edge) const { return edge.src.index * m_const_graph.num_vertices + edge.dst.index; }
 
-    bool is_delta_edge(uint_t u, uint_t v) const
+    bool is_vertex_compatible_with_anchor(Edge edge, Vertex vertex) const
     {
-        const uint_t a = std::min(u, v);
-        const uint_t b = std::max(u, v);
-        return m_delta_graph.adjacency_matrix[a].test(b);
-    }
+        const auto e1 = Edge(edge.src, vertex);
+        const auto e2 = Edge(edge.dst, vertex);
 
-    bool is_vertex_compatible_with_anchor(uint_t u, uint_t v, uint_t vertex) const
-    {
-        return (m_full_graph.vertices.test(vertex)                                                     //
-                && m_full_graph.adjacency_matrix[u].test(vertex)                                       //
-                && m_full_graph.adjacency_matrix[v].test(vertex)                                       //
-                && (!is_delta_edge(u, vertex) || edge_rank(u, vertex) > m_workspace.anchor_edge_rank)  //
-                && (!is_delta_edge(v, vertex) || edge_rank(v, vertex) > m_workspace.anchor_edge_rank));
+        return (m_full_graph.vertices.test(vertex.index)                                          //
+                && m_full_graph.contains(e1)                                                      //                                    //
+                && m_full_graph.contains(e2)                                                      //
+                && (!m_delta_graph.contains(e1) || edge_rank(e1) > m_workspace.anchor_edge_rank)  //
+                && (!m_delta_graph.contains(e2) || edge_rank(e2) > m_workspace.anchor_edge_rank));
     }
 
     void seed_without_anchor()
@@ -297,18 +292,18 @@ private:
 
             const auto& part = m_const_graph.partitions[p];
             for (uint_t bit = 0; bit < part.size(); ++bit)
-                if (m_full_graph.vertices.test(part[bit]))
+                if (m_full_graph.vertices.test(part[bit].index))
                     cv_0_p.set(bit);
         }
     }
 
-    void seed_from_anchor(const delta_kpkc::Edge& edge)
+    void seed_from_anchor(const Edge& edge)
     {
         // Reset workspace state for this anchored run
         m_workspace.partial_solution.clear();
-        m_workspace.partial_solution.push_back(edge.src.index);
-        m_workspace.partial_solution.push_back(edge.dst.index);
-        m_workspace.anchor_edge_rank = edge_rank(edge.src.index, edge.dst.index);
+        m_workspace.partial_solution.push_back(edge.src);
+        m_workspace.partial_solution.push_back(edge.dst);
+        m_workspace.anchor_edge_rank = edge_rank(edge);
 
         const uint_t pi = m_const_graph.vertex_to_partition[edge.src.index];
         const uint_t pj = m_const_graph.vertex_to_partition[edge.dst.index];
@@ -330,7 +325,7 @@ private:
 
             const auto& part = m_const_graph.partitions[p];
             for (uint_t bit = 0; bit < part.size(); ++bit)
-                if (is_vertex_compatible_with_anchor(edge.src.index, edge.dst.index, part[bit]))
+                if (is_vertex_compatible_with_anchor(edge, Vertex { part[bit] }))
                     cv_0_p.set(bit);
         }
     }
@@ -370,7 +365,7 @@ private:
     }
 
     template<bool Delta>
-    void update_compatible_adjacent_vertices_at_next_depth(uint_t vertex, size_t depth)
+    void update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth)
     {
         const uint_t k = m_const_graph.k;
         auto& cv_d_next = m_workspace.compatible_vertices[depth + 1];
@@ -386,13 +381,14 @@ private:
             {
                 for (uint_t bit = 0; bit < partition_size; ++bit)
                 {
-                    const auto target_vertex = bit + offset;
+                    const auto dst = Vertex(bit + offset);
+                    const auto edge = Edge(src, dst);
 
-                    cv_d_next_p[bit] &= m_full_graph.adjacency_matrix[vertex].test(target_vertex);
+                    cv_d_next_p[bit] &= m_full_graph.contains(edge);
 
                     // monotone delta-rank pruning
                     if constexpr (Delta)
-                        if (cv_d_next_p.test(bit) && is_delta_edge(vertex, target_vertex) && edge_rank(vertex, target_vertex) < m_workspace.anchor_edge_rank)
+                        if (cv_d_next_p.test(bit) && m_delta_graph.contains(edge) && edge_rank(edge) < m_workspace.anchor_edge_rank)
                             cv_d_next_p.reset(bit);
                 }
             }
@@ -433,7 +429,7 @@ private:
         {
             cv_d_p.reset(bit);
 
-            const uint_t vertex = m_const_graph.partitions[p][bit];
+            const auto vertex = m_const_graph.partitions[p][bit];
 
             partial_solution.push_back(vertex);
 
@@ -460,11 +456,12 @@ private:
     }
 
 private:
-    delta_kpkc::ConstGraph m_const_graph;
-    delta_kpkc::Graph m_delta_graph;
-    delta_kpkc::Graph m_full_graph;
-    delta_kpkc::Workspace m_workspace;
+    ConstGraph m_const_graph;
+    Graph m_delta_graph;
+    Graph m_full_graph;
+    Workspace m_workspace;
 };
+
 }
 
 #endif

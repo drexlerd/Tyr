@@ -19,9 +19,7 @@
 
 #include "tyr/datalog/consistency_graph.hpp"
 
-namespace tyr::datalog
-{
-namespace delta_kpkc
+namespace tyr::datalog::delta_kpkc
 {
 
 ConstGraph allocate_const_graph(const StaticConsistencyGraph& static_graph)
@@ -37,11 +35,16 @@ ConstGraph allocate_const_graph(const StaticConsistencyGraph& static_graph)
     graph.num_vertices = num_vertices;
 
     // Initialize partitions
-    graph.partitions = partitions;
+    graph.partitions.resize(partitions.size());
     graph.vertex_to_partition.resize(num_vertices);
     for (size_t i = 0; i < partitions.size(); ++i)
+    {
         for (const auto& v : partitions[i])
+        {
+            graph.partitions[i].push_back(Vertex(v));
             graph.vertex_to_partition[v] = i;
+        }
+    }
 
     return graph;
 }
@@ -87,17 +90,16 @@ Workspace allocate_empty_workspace(const StaticConsistencyGraph& static_graph)
 
     return workspace;
 }
-}
 
 DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
-    m_const_graph(delta_kpkc::allocate_const_graph(static_graph)),
-    m_delta_graph(delta_kpkc::allocate_empty_graph(static_graph)),
-    m_full_graph(delta_kpkc::allocate_empty_graph(static_graph)),
-    m_workspace(delta_kpkc::allocate_empty_workspace(static_graph))
+    m_const_graph(allocate_const_graph(static_graph)),
+    m_delta_graph(allocate_empty_graph(static_graph)),
+    m_full_graph(allocate_empty_graph(static_graph)),
+    m_workspace(allocate_empty_workspace(static_graph))
 {
 }
 
-DeltaKPKC::DeltaKPKC(delta_kpkc::ConstGraph const_graph, delta_kpkc::Graph delta_graph, delta_kpkc::Graph full_graph, delta_kpkc::Workspace workspace) :
+DeltaKPKC::DeltaKPKC(ConstGraph const_graph, Graph delta_graph, Graph full_graph, Workspace workspace) :
     m_const_graph(std::move(const_graph)),
     m_delta_graph(std::move(delta_graph)),
     m_full_graph(std::move(full_graph)),
