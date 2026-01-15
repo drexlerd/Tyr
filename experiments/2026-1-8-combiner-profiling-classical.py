@@ -78,7 +78,7 @@ ATTRIBUTES = [
     "succgen_total_ms",
 ]
 
-exp = Experiment("2026-1-8-gbfs_lazy-combined")
+exp = Experiment("2026-1-8-gbfs_lazy-profiling-classical-combined")
 
 exp.add_fetcher("data/2026-1-8-gbfs_lazy-profiling-classical-1-eval")
 exp.add_fetcher("data/2026-1-8-gbfs_lazy-profiling-classical-2-eval")
