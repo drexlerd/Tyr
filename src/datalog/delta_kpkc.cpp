@@ -85,8 +85,8 @@ Workspace allocate_empty_workspace(const StaticConsistencyGraph& static_graph)
     // Allocate partition bits
     workspace.partition_bits.resize(k);
 
-    // Allocate partial solution: Dont change size because kpkc uses push_back() and pop_back() during recursion
-    workspace.partial_solution.reserve(k);
+    // Allocate partial solution
+    workspace.partial_solution.resize(k);
 
     return workspace;
 }

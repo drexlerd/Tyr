@@ -32,6 +32,7 @@ struct Vertex
 {
     uint_t index;
 
+    constexpr Vertex() : index(std::numeric_limits<uint_t>::max()) {}
     constexpr explicit Vertex(uint_t i) : index(i) {}
 
     friend constexpr bool operator==(Vertex lhs, Vertex rhs) noexcept { return lhs.index == rhs.index; }
@@ -42,6 +43,7 @@ struct Edge
     Vertex src;
     Vertex dst;
 
+    constexpr Edge() : src(), dst() {}
     constexpr Edge(Vertex u, Vertex v) : src(u.index < v.index ? u : v), dst(u.index < v.index ? v : u) {}
 
     friend constexpr bool operator==(Edge lhs, Edge rhs) noexcept { return lhs.src == rhs.src && lhs.dst == rhs.dst; }
@@ -186,6 +188,7 @@ struct Workspace
     std::vector<std::vector<boost::dynamic_bitset<>>> compatible_vertices;  ///< Dimensions K x K x V
     boost::dynamic_bitset<> partition_bits;                                 ///< Dimensions K
     std::vector<Vertex> partial_solution;                                   ///< Dimensions K
+    size_t solution_size;
     uint_t anchor_edge_rank;
 };
 
@@ -225,9 +228,12 @@ public:
         // Special case
         if (m_const_graph.k == 2)
         {
-            m_workspace.partial_solution.clear();
-            m_workspace.partial_solution.push_back(edge.src);
-            m_workspace.partial_solution.push_back(edge.dst);
+            const auto pi = m_const_graph.vertex_to_partition[edge.src.index];
+            const auto pj = m_const_graph.vertex_to_partition[edge.dst.index];
+            assert(pi != pj);
+            m_workspace.partial_solution[pi] = edge.src;
+            m_workspace.partial_solution[pj] = edge.dst;
+            m_workspace.solution_size = 2;
             callback(m_workspace.partial_solution);
             return;
         }
@@ -260,6 +266,25 @@ public:
             for_each_new_k_clique(edge, callback);
     }
 
+    /*
+    template<typename Callback>
+    void for_each_new_k_clique(const boost::dynamic_bitset<>& vertices, Callback&& callback)
+    {
+        assert(m_const_graph.k >= 2);
+
+        bool has_head_delta = false;
+        if (has_delta_edge)
+        {
+            for (const auto& edge : delta_edges_range(vertices))
+            {
+                seed_without_anchor();
+
+                complete_from_seed<false>(vertices, 0);
+            }
+        }
+    }
+        */
+
     const ConstGraph& get_const_graph() const noexcept { return m_const_graph; }
     const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
     const Graph& get_full_graph() const noexcept { return m_full_graph; }
@@ -281,8 +306,9 @@ private:
 
     void seed_without_anchor()
     {
-        m_workspace.partial_solution.clear();
         m_workspace.partition_bits.reset();
+        m_workspace.solution_size = 0;
+        m_workspace.anchor_edge_rank = std::numeric_limits<uint_t>::max();
 
         auto& cv_0 = m_workspace.compatible_vertices[0];
         for (uint_t p = 0; p < m_const_graph.k; ++p)
@@ -299,15 +325,14 @@ private:
 
     void seed_from_anchor(const Edge& edge)
     {
-        // Reset workspace state for this anchored run
-        m_workspace.partial_solution.clear();
-        m_workspace.partial_solution.push_back(edge.src);
-        m_workspace.partial_solution.push_back(edge.dst);
-        m_workspace.anchor_edge_rank = edge_rank(edge);
-
         const uint_t pi = m_const_graph.vertex_to_partition[edge.src.index];
         const uint_t pj = m_const_graph.vertex_to_partition[edge.dst.index];
         assert(pi != pj);
+
+        m_workspace.partial_solution[pi] = edge.src;
+        m_workspace.partial_solution[pj] = edge.dst;
+        m_workspace.solution_size = 2;
+        m_workspace.anchor_edge_rank = edge_rank(edge);
 
         m_workspace.partition_bits.reset();
         m_workspace.partition_bits.set(pi);
@@ -431,9 +456,10 @@ private:
 
             const auto vertex = m_const_graph.partitions[p][bit];
 
-            partial_solution.push_back(vertex);
+            partial_solution[p] = vertex;
+            ++m_workspace.solution_size;
 
-            if (partial_solution.size() == k)
+            if (m_workspace.solution_size == k)
             {
                 callback(partial_solution);
             }
@@ -445,13 +471,13 @@ private:
 
                 partition_bits.set(p);
 
-                if ((partial_solution.size() + num_possible_additions_at_next_depth(depth)) == k)
+                if ((m_workspace.solution_size + num_possible_additions_at_next_depth(depth)) == k)
                     complete_from_seed<Delta>(callback, depth + 1);
 
                 partition_bits.reset(p);
             }
 
-            partial_solution.pop_back();
+            --m_workspace.solution_size;
         }
     }
 

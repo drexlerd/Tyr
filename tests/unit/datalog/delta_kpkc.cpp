@@ -101,7 +101,7 @@ TEST(TyrTests, TyrDatalogDeltaKPKCStandard3)
             workspace.compatible_vertices[i][j].resize(const_graph.partitions[j].size());
     }
     workspace.partition_bits.resize(k);
-    workspace.partial_solution.reserve(k);
+    workspace.partial_solution.resize(k);
 
     auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
@@ -171,14 +171,14 @@ TEST(TyrTests, TyrDatalogDeltaKPKCDelta3)
             workspace.compatible_vertices[i][j].resize(const_graph.partitions[j].size());
     }
     workspace.partition_bits.resize(k);
-    workspace.partial_solution.reserve(k);
+    workspace.partial_solution.resize(k);
 
     auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
     auto cliques = enumerate_cliques(dkpkc);
 
     EXPECT_EQ(cliques.size(), 2);
-    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 5, 2 }), V({ 0, 5, 3 }) }));
+    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 2, 5 }), V({ 0, 3, 5 }) }));
 }
 
 TEST(TyrTests, TyrDatalogDeltaKPKCStandard4)
@@ -255,7 +255,7 @@ TEST(TyrTests, TyrDatalogDeltaKPKCStandard4)
             workspace.compatible_vertices[i][j].resize(const_graph.partitions[j].size());
     }
     workspace.partition_bits.resize(k);
-    workspace.partial_solution.reserve(k);
+    workspace.partial_solution.resize(k);
 
     auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
@@ -335,14 +335,14 @@ TEST(TyrTests, TyrDatalogDeltaKPKCDelta4)
             workspace.compatible_vertices[i][j].resize(const_graph.partitions[j].size());
     }
     workspace.partition_bits.resize(k);
-    workspace.partial_solution.reserve(k);
+    workspace.partial_solution.resize(k);
 
     auto dkpkc = d::delta_kpkc::DeltaKPKC(std::move(const_graph), std::move(delta_graph), std::move(full_graph), std::move(workspace));
 
     auto cliques = enumerate_cliques(dkpkc);
 
     EXPECT_EQ(cliques.size(), 1);
-    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 6, 2, 4 }) }));
+    EXPECT_EQ(cliques, (std::vector<std::vector<d::delta_kpkc::Vertex>> { V({ 0, 2, 4, 6 }) }));
 }
 
 }
