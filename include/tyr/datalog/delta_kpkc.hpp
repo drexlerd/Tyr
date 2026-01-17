@@ -361,6 +361,7 @@ private:
 
     void seed_without_anchor()
     {
+        m_workspace.partial_solution.clear();
         m_workspace.partition_bits.reset();
         m_workspace.anchor_edge_rank = std::numeric_limits<uint_t>::max();
 
