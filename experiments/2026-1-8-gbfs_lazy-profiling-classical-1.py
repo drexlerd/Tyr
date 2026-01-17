@@ -104,7 +104,7 @@ ATTRIBUTES = [
 
     # Total
     "total_time",
-    "peak_memory_usage_bytes",
+    "memory",
 
     # Datalog
     Attribute("axiom_par_frac", function=geometric_mean, min_wins=False),
