@@ -166,6 +166,8 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
     auto best_h_value = start_h_value;
     const auto start_preferred = false;
 
+    // std::terminate();
+
     event_handler->on_start_search(start_node, start_h_value);
 
     auto& start_search_node = get_or_create_search_node(start_state_index, search_nodes);

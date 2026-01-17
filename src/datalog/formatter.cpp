@@ -101,9 +101,15 @@ extern std::ostream& print(std::ostream& os, const datalog::RuleStatistics& el)
 {
     fmt::print(os,
                "[RuleStatistics] Num executions: {}\n"
-               "[RuleStatistics] T_par_region - wallclock time inside parallel region: {} ms",
+               "[RuleStatistics] Num bindings: {}\n"
+               "[RuleStatistics] T_par_region - wallclock time inside parallel region: {} ms\n"
+               "[RuleStatistics] T_gen_region - wallclock time inside generate region: {} ms\n"
+               "[RuleStatistics] T_pen_region - wallclock time inside pending region: {} ms",
                el.num_executions,
-               to_ms(el.parallel_time));
+               el.num_bindings,
+               to_ms(el.parallel_time),
+               to_ms(el.gen_time),
+               to_ms(el.pending_time));
 
     return os;
 }
@@ -119,6 +125,7 @@ extern std::ostream& print(std::ostream& os, const datalog::AggregatedRuleStatis
     const double avg_skew = avg_parallel_max_ns > 0.0 && avg_parallel_med_ns > 0.0 ? avg_parallel_max_ns / avg_parallel_med_ns : 1.0;
 
     fmt::print(os,
+               "[AggregatedRuleStatistics] Number of bindings: {}\n"
                "[AggregatedRuleStatistics] Number of samples: {}\n"
                "[AggregatedRuleStatistics] T_tot_min_par_region - minimum total wallclock time inside parallel region: {} ms\n"
                "[AggregatedRuleStatistics] T_tot_max_par_region - maximum total wallclock time inside parallel region: {} ms\n"
@@ -128,6 +135,7 @@ extern std::ostream& print(std::ostream& os, const datalog::AggregatedRuleStatis
                "[AggregatedRuleStatistics] T_avg_max_par_region - maximum average wallclock time inside parallel region: {} ns\n"
                "[AggregatedRuleStatistics] T_avg_med_par_region - median average wallclock time inside parallel region: {} ns\n"
                "[AggregatedRuleStatistics] T_avg_max_par_region / T_avg_med_par_region - Average skew: {:.2f}",
+               el.num_bindings,
                el.sample_count,
                to_ms(el.tot_parallel_time_min),
                to_ms(el.tot_parallel_time_max),

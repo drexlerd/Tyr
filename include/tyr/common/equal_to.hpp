@@ -93,7 +93,7 @@ struct EqualTo<::cista::optional<T>>
 {
     using Type = ::cista::optional<T>;
 
-    size_t operator()(const Type& lhs, const Type& rhs) const
+    bool operator()(const Type& lhs, const Type& rhs) const
     {
         if (!lhs.has_value() && !rhs.has_value())
             return true;

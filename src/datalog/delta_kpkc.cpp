@@ -95,7 +95,8 @@ DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
     m_const_graph(allocate_const_graph(static_graph)),
     m_delta_graph(allocate_empty_graph(static_graph)),
     m_full_graph(allocate_empty_graph(static_graph)),
-    m_workspace(allocate_empty_workspace(static_graph))
+    m_workspace(allocate_empty_workspace(static_graph)),
+    m_iteration(0)
 {
 }
 
@@ -103,12 +104,15 @@ DeltaKPKC::DeltaKPKC(ConstGraph const_graph, Graph delta_graph, Graph full_graph
     m_const_graph(std::move(const_graph)),
     m_delta_graph(std::move(delta_graph)),
     m_full_graph(std::move(full_graph)),
-    m_workspace(std::move(workspace))
+    m_workspace(std::move(workspace)),
+    m_iteration(0)
 {
 }
 
 void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets)
 {
+    ++m_iteration;
+
     // std::cout << "m_delta_graph.vertices before:" << std::endl;
     // std::cout << m_delta_graph.vertices << std::endl;
     // std::cout << "m_delta_graph.adjacency_matrix  before:" << std::endl;

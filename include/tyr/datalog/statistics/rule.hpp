@@ -29,11 +29,15 @@ namespace tyr::datalog
 struct RuleStatistics
 {
     uint64_t num_executions = 0;
+    uint64_t num_bindings = 0;
     std::chrono::nanoseconds parallel_time { 0 };
+    std::chrono::nanoseconds gen_time { 0 };
+    std::chrono::nanoseconds pending_time { 0 };
 };
 
 struct AggregatedRuleStatistics
 {
+    uint64_t num_bindings = 0;
     size_t sample_count { 0 };
     std::chrono::nanoseconds tot_parallel_time_min { 0 };
     std::chrono::nanoseconds tot_parallel_time_max { 0 };
@@ -58,6 +62,7 @@ inline AggregatedRuleStatistics compute_aggregated_rule_statistics(const std::ve
             continue;
         samples.push_back(rs.parallel_time);
         avg_samples.push_back(rs.parallel_time / rs.num_executions);
+        result.num_bindings += rs.num_bindings;
     }
 
     result.sample_count = samples.size();

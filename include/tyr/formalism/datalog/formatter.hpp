@@ -401,6 +401,8 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::datalog::Rule
     {
         IndentScope scope(os);
 
+        os << print_indent << "index = " << el.index << "\n";
+
         os << print_indent << "variables = " << el.variables << "\n";
 
         os << print_indent << "head = " << el.head << "\n";
@@ -420,6 +422,8 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::datalog
     os << "Rule(\n";
     {
         IndentScope scope(os);
+
+        os << print_indent << "index = " << el.get_index() << "\n";
 
         os << print_indent << "variables = " << el.get_variables() << "\n";
 

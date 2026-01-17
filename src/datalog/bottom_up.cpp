@@ -143,9 +143,20 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
     for (const auto& vertex : rctx.ws_rule.kpkc.get_delta_graph().vertices_range())
     {
+        const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.gen_time);
+
         create_unary_binding(vertex, rctx.cws_rule.static_consistency_graph, rctx.ground_context_delta.binding);
 
         assert(ensure_novel_binding(rctx.ground_context_delta.binding, rctx.ws_rule_delta.seen_bindings_dbg));
+
+        {
+            const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_iteration).first;
+
+            if (rctx.ctx.ctx.ws.facts.fact_sets.predicate.contains(head_index))
+                continue;  ///< optimal was already proven
+        }
+
+        ++rctx.ws_rule.statistics.num_bindings;
 
         // Ground head in ground_context_delta
 
@@ -187,36 +198,40 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
         }
     }
 
-    for (auto it = rctx.ws_rule_delta.pending_rules.begin(); it != rctx.ws_rule_delta.pending_rules.end();)
     {
-        rctx.ground_context_delta.binding = make_view(it->first, rctx.ground_context_delta.destination).get_objects().get_data();
+        const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.pending_time);
 
-        if (it->second->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
+        for (auto it = rctx.ws_rule_delta.pending_rules.begin(); it != rctx.ws_rule_delta.pending_rules.end();)
         {
-            assert(ensure_applicability(rctx.cws_rule.get_rule(), rctx.ground_context_iteration, rctx.fact_sets));
+            rctx.ground_context_delta.binding = make_view(it->first, rctx.ground_context_delta.destination).get_objects().get_data();
 
-            // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
+            if (it->second->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
+            {
+                assert(ensure_applicability(rctx.cws_rule.get_rule(), rctx.ground_context_iteration, rctx.fact_sets));
 
-            const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
+                // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
-            rctx.ws_rule.heads.insert(head_index);
+                const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
 
-            rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
-                                          rctx.cws_rule.rule,
-                                          rctx.cws_rule.witness_condition,
-                                          head_index,
-                                          rctx.ctx.ctx.aps.or_annot,
-                                          rctx.and_annot,
-                                          rctx.delta_head_to_witness,
-                                          rctx.ground_context_iteration,
-                                          rctx.ground_context_delta,
-                                          rctx.ground_context_persistent);
+                rctx.ws_rule.heads.insert(head_index);
 
-            it = rctx.ws_rule_delta.pending_rules.erase(it);
-        }
-        else
-        {
-            ++it;
+                rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
+                                              rctx.cws_rule.rule,
+                                              rctx.cws_rule.witness_condition,
+                                              head_index,
+                                              rctx.ctx.ctx.aps.or_annot,
+                                              rctx.and_annot,
+                                              rctx.delta_head_to_witness,
+                                              rctx.ground_context_iteration,
+                                              rctx.ground_context_delta,
+                                              rctx.ground_context_persistent);
+
+                it = rctx.ws_rule_delta.pending_rules.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
     }
 }
@@ -224,12 +239,25 @@ void generate_unary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
+    // std::cout << std::endl << std::endl << rctx.cws_rule.get_rule() << std::endl;
+
     rctx.ws_rule.kpkc.for_each_new_k_clique(
         [&](auto&& clique)
         {
+            const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.gen_time);
+
             create_general_binding(clique, rctx.cws_rule.static_consistency_graph, rctx.ground_context_delta.binding);
 
             assert(ensure_novel_binding(rctx.ground_context_delta.binding, rctx.ws_rule_delta.seen_bindings_dbg));
+
+            {
+                const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_iteration).first;
+
+                if (rctx.ctx.ctx.ws.facts.fact_sets.predicate.contains(head_index))
+                    return;  ///< optimal was already proven
+            }
+
+            ++rctx.ws_rule.statistics.num_bindings;
 
             auto applicability_check =
                 rctx.ws_rule_delta.applicability_check_pool.get_or_allocate(rctx.cws_rule.get_nullary_condition(),
@@ -251,6 +279,9 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 
                 const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
 
+                // std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iteration).first, rctx.ground_context_iteration.destination)
+                //           << std::endl;
+
                 rctx.ws_rule.heads.insert(head_index);
 
                 rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
@@ -271,37 +302,45 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             }
         });
 
-    for (auto it = rctx.ws_rule_delta.pending_rules.begin(); it != rctx.ws_rule_delta.pending_rules.end();)
+    // std::cout << "Num pending rules before: " << rctx.ws_rule_delta.pending_rules.size() << std::endl;
+
     {
-        rctx.ground_context_delta.binding = make_view(it->first, rctx.ground_context_delta.destination).get_objects().get_data();
+        const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.pending_time);
 
-        if (it->second->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
+        for (auto it = rctx.ws_rule_delta.pending_rules.begin(); it != rctx.ws_rule_delta.pending_rules.end();)
         {
-            assert(ensure_applicability(rctx.cws_rule.get_rule(), rctx.ground_context_iteration, rctx.fact_sets));
+            rctx.ground_context_delta.binding = make_view(it->first, rctx.ground_context_delta.destination).get_objects().get_data();
 
-            // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
+            if (it->second->is_dynamically_applicable(rctx.fact_sets, rctx.ground_context_iteration))
+            {
+                assert(ensure_applicability(rctx.cws_rule.get_rule(), rctx.ground_context_iteration, rctx.fact_sets));
 
-            const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
+                // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_delta.binding << std::endl;
 
-            rctx.ws_rule.heads.insert(head_index);
+                const auto head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), rctx.ground_context_delta).first;
 
-            rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
-                                          rctx.cws_rule.rule,
-                                          rctx.cws_rule.witness_condition,
-                                          head_index,
-                                          rctx.ctx.ctx.aps.or_annot,
-                                          rctx.and_annot,
-                                          rctx.delta_head_to_witness,
-                                          rctx.ground_context_iteration,
-                                          rctx.ground_context_delta,
-                                          rctx.ground_context_persistent);
+                rctx.ws_rule.heads.insert(head_index);
 
-            it = rctx.ws_rule_delta.pending_rules.erase(it);
+                rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
+                                              rctx.cws_rule.rule,
+                                              rctx.cws_rule.witness_condition,
+                                              head_index,
+                                              rctx.ctx.ctx.aps.or_annot,
+                                              rctx.and_annot,
+                                              rctx.delta_head_to_witness,
+                                              rctx.ground_context_iteration,
+                                              rctx.ground_context_delta,
+                                              rctx.ground_context_persistent);
+
+                it = rctx.ws_rule_delta.pending_rules.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
-        else
-        {
-            ++it;
-        }
+
+        // std::cout << "Num pending rules after: " << rctx.ws_rule_delta.pending_rules.size() << std::endl;
     }
 }
 
@@ -429,6 +468,8 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void solve_bottom_up(ProgramExecutionContext<OrAP, AndAP, TP>& ctx)
 {
+    // std::cout << "solve_bottom_up" << std::endl;
+
     const auto program_stopwatch = StopwatchScope(ctx.ws.statistics.total_time);
     ++ctx.ws.statistics.num_executions;
 

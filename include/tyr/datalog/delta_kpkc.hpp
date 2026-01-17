@@ -208,6 +208,7 @@ public:
     {
         m_delta_graph.reset();
         m_full_graph.reset();
+        m_iteration = 0;
     }
 
     /**
@@ -220,49 +221,123 @@ public:
     auto full_edges_range() const noexcept { return m_full_graph.edges_range(); }
 
     template<typename Callback>
-    void for_each_new_k_clique(const Edge& edge, Callback&& callback)
+    void for_each_new_unary_head(Callback&& callback)
     {
-        assert(m_const_graph.k >= 2);
+        assert(m_const_graph.k == 1);
 
-        // Special case
-        if (m_const_graph.k == 2)
+        for (const auto& vertex : delta_vertices_range())
         {
-            const auto pi = m_const_graph.vertex_to_partition[edge.src.index];
-            const auto pj = m_const_graph.vertex_to_partition[edge.dst.index];
-            assert(pi != pj);
+            m_workspace.partial_solution.clear();
+            m_workspace.partial_solution.push_back(vertex);
+
+            callback(m_workspace.partial_solution);
+        }
+    }
+
+    template<typename Callback>
+    void for_each_unary_head(Callback&& callback)
+    {
+        assert(m_const_graph.k == 1);
+
+        for (const auto& vertex : full_vertices_range())
+        {
+            m_workspace.partial_solution.clear();
+            m_workspace.partial_solution.push_back(vertex);
+
+            callback(m_workspace.partial_solution);
+        }
+    }
+
+    template<typename Callback>
+    void for_each_new_binary_head(Callback&& callback)
+    {
+        assert(m_const_graph.k == 2);
+
+        for (const auto& edge : delta_edges_range())
+        {
             m_workspace.partial_solution.clear();
             m_workspace.partial_solution.push_back(edge.src);
             m_workspace.partial_solution.push_back(edge.dst);
+
             callback(m_workspace.partial_solution);
-            return;
         }
-
-        seed_from_anchor(edge);
-
-        complete_from_seed<true>(callback, 0);
     }
 
-    /**
-     * Sequential interface
-     */
+    template<typename Callback>
+    void for_each_binary_head(Callback&& callback)
+    {
+        assert(m_const_graph.k == 2);
+
+        for (const auto& edge : full_edges_range())
+        {
+            m_workspace.partial_solution.clear();
+            m_workspace.partial_solution.push_back(edge.src);
+            m_workspace.partial_solution.push_back(edge.dst);
+
+            callback(m_workspace.partial_solution);
+        }
+    }
 
     template<typename Callback>
     void for_each_k_clique(Callback&& callback)
     {
-        assert(m_const_graph.k >= 2);
+        const auto k = m_const_graph.k;
 
-        seed_without_anchor();
+        if (k == 0)
+        {
+            m_workspace.partial_solution.clear();
+            callback(m_workspace.partial_solution);
+            return;
+        }
+        else if (k == 1)
+        {
+            for_each_unary_head(callback);
+        }
+        else if (k == 2)
+        {
+            for_each_binary_head(callback);
+        }
+        else
+        {
+            seed_without_anchor();
 
-        complete_from_seed<false>(callback, 0);
+            complete_from_seed<false>(callback, 0);
+        }
     }
 
     template<typename Callback>
     void for_each_new_k_clique(Callback&& callback)
     {
-        assert(m_const_graph.k >= 2);
+        if (m_iteration == 1)
+        {
+            for_each_k_clique(callback);
+        }
+        else
+        {
+            const auto k = m_const_graph.k;
 
-        for (const auto& edge : delta_edges_range())
-            for_each_new_k_clique(edge, callback);
+            if (k == 0)
+            {
+                return;
+            }
+            else if (k == 1)
+            {
+                for_each_new_unary_head(callback);
+            }
+            else if (k == 2)
+            {
+                for_each_new_binary_head(callback);
+            }
+            else
+            {
+                for (const auto& edge : delta_edges_range())
+                {
+                    seed_from_anchor(edge);
+
+                    complete_from_seed<true>(callback, 0);
+                }
+            }
+        }
     }
 
     const ConstGraph& get_const_graph() const noexcept { return m_const_graph; }
@@ -464,6 +539,7 @@ private:
     Graph m_delta_graph;
     Graph m_full_graph;
     Workspace m_workspace;
+    size_t m_iteration;
 };
 
 }
