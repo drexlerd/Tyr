@@ -11,8 +11,16 @@ def process_invalid(content, props):
 def process_unsolvable(content, props):
     props["unsolvable"] = int("unsolvable" in props)
 
+def add_search_time(content, props):
+    if "search_time_ms" in props:
+        props["search_time"] = props["search_time_ms"] / 1000
+
+def add_total_time(content, props):
+    if "total_time_ms" in props:
+        props["total_time"] = props["total_time_ms"] / 1000
+
 def add_coverage(content, props):
-    if "plan_length" in props or props.get("unsolvable", 0):
+    if "length" in props or props.get("unsolvable", 0):
         props["coverage"] = 1
     else:
         props["coverage"] = 0
@@ -215,13 +223,13 @@ class GBFSLazyParser(Parser):
     """
     def __init__(self):
         super().__init__()
-        self.add_pattern("plan_cost", r"\[GBFS\] Plan cost: (\d+)", type=int)
-        self.add_pattern("plan_length", r"\[GBFS\] Plan length: (\d+)", type=int)
+        self.add_pattern("cost", r"\[GBFS\] Plan cost: (\d+)", type=int)
+        self.add_pattern("length", r"\[GBFS\] Plan length: (\d+)", type=int)
         
 
         self.add_pattern("search_time_ms", r"\[Search\] Search time: (\d+) ms", type=int)
-        self.add_pattern("expansions", r"\[Search\] Number of expanded states: (\d+)", type=int)
-        self.add_pattern("generated", r"\[Search\] Number of generated states: (\d+)", type=int)
+        self.add_pattern("num_expanded", r"\[Search\] Number of expanded states: (\d+)", type=int)
+        self.add_pattern("num_generated", r"\[Search\] Number of generated states: (\d+)", type=int)
 
         self.add_pattern("total_time_ms", r"\[Total\] Total time: (\d+) ms", type=int)
         self.add_pattern("peak_memory_usage_bytes", r"\[Total\] Peak memory usage: (\d+) bytes", type=int)
@@ -231,6 +239,8 @@ class GBFSLazyParser(Parser):
         
         self.add_function(process_invalid)
         self.add_function(process_unsolvable)
+        self.add_function(add_search_time)
+        self.add_function(add_total_time)
         self.add_function(add_coverage)
         self.add_function(parse_datalog_summaries)
         

@@ -444,6 +444,10 @@ private:
             next[p] = cv_d[p];
     }
 
+    /// @brief Restrict candidates in each remaining partition to those with an edge connecting to the last chosen vertex `src`.
+    /// @tparam Delta
+    /// @param src
+    /// @param depth
     template<bool Delta>
     void update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth)
     {
@@ -462,14 +466,30 @@ private:
                 for (uint_t bit = 0; bit < partition_size; ++bit)
                 {
                     const auto dst = Vertex(bit + offset);
-                    const auto edge = Edge(src, dst);
+                    {
+                        // Restriction
+                        const auto edge = Edge(src, dst);
 
-                    cv_d_next_p[bit] &= m_full_graph.contains(edge);
+                        cv_d_next_p[bit] &= m_full_graph.contains(edge);
+                    }
+                    {
+                        // Delta-rank pruning
+                        if constexpr (Delta)
+                        {
+                            if (cv_d_next_p.test(bit))
+                            {
+                                for (uint_t i = 0; i < m_workspace.partial_solution.size(); ++i)
+                                {
+                                    const auto edge = Edge { m_workspace.partial_solution[i], dst };
+                                    assert(m_workspace.partial_solution[i] != dst);
+                                    assert(m_full_graph.contains(edge));
 
-                    // monotone delta-rank pruning
-                    if constexpr (Delta)
-                        if (cv_d_next_p.test(bit) && m_delta_graph.contains(edge) && edge_rank(edge) < m_workspace.anchor_edge_rank)
-                            cv_d_next_p.reset(bit);
+                                    if (m_delta_graph.contains(edge) && edge_rank(edge) < m_workspace.anchor_edge_rank)
+                                        cv_d_next_p.reset(bit);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             offset += partition_size;

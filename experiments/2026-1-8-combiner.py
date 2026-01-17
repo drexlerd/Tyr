@@ -22,16 +22,20 @@ ATTRIBUTES = [
 
     Attribute("coverage", min_wins=False),
     # GBFS Lazy
-    "plan_cost",
-    "plan_length",
+    "cost",
+    "length",
+    "unsolvable",
+
+    # VAL
+    "invalid",
 
     # Search
-    "search_time_ms",
-    "expansions",
-    "generated",
+    "search_time",
+    "num_expanded",
+    "num_generated",
 
     # Total
-    "total_time_ms",
+    "total_time",
     "peak_memory_usage_bytes",
 
     # Datalog
