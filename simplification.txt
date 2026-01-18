@@ -1,0 +1,43 @@
+Old:
+
+Rule(
+    index = 80
+    variables = [?w1_0, ?w2_0, ?wmax_0, ?r_0, ?v_0]
+    head = (@sow_21 V4 V1)
+    body = ConjunctiveCondition(
+        variables = [?w1_0, ?w2_0, ?wmax_0, ?r_0, ?v_0]
+        static literals = [(object V0), (object V1), (object V2), (object V3), (object V4), (worker V2), (worker V1), (round V3), (worker V0), (next_worker V0 V1), (goods V4), (vegetable V4)]
+        fluent literals = [(max_worker V2), (current_round V3), (current_worker V0), (available_action act_sow), (plowed_fields ), (stored_veg V4), (open_action act_sow)]
+        numeric constraints = []
+    )
+    cost = 1
+)
+
+New:
+
+Rule(
+    index = 81
+    variables = [?wmax_0, ?r_0]
+    head = (@guard_80 )
+    body = ConjunctiveCondition(
+        variables = [?wmax_0, ?r_0]
+        static literals = [(object V1), (round V1), (object V0), (worker V0)]
+        fluent literals = [(max_worker V0), (current_round V1)]
+        numeric constraints = []
+    )
+    cost = 0
+)
+
+
+Rule(
+    index = 80
+    variables = [?w1_0, ?w2_0, ?v_0]
+    head = (@sow_21 V2 V1)
+    body = ConjunctiveCondition(
+        variables = [?w1_0, ?w2_0, ?v_0]
+        static literals = [(object V0), (object V1), (object V2), (worker V1), (worker V0), (next_worker V0 V1), (goods V2), (vegetable V2)]
+        fluent literals = [(current_worker V0), (available_action act_sow), (plowed_fields ), (stored_veg V2), (open_action act_sow) (@guard_80)]
+        numeric constraints = []
+    )
+    cost = 1
+)
