@@ -22,93 +22,67 @@
 namespace tyr::datalog::delta_kpkc
 {
 
-Workspace::Workspace(size_t k, size_t nv) :
-    compatible_vertices(k, std::vector<boost::dynamic_bitset<>>(k, boost::dynamic_bitset<>(nv, false))),
-    forbidden_vertices(nv, boost::dynamic_bitset<>(nv, false)),
-    partition_bits(k, false),
+ConstGraph::ConstGraph(size_t nv_, size_t k_, std::vector<std::vector<Vertex>> partitions_, std::vector<uint_t> vertex_to_partition_) :
+    nv(nv_),
+    k(k_),
+    partitions(std::move(partitions_)),
+    vertex_to_partition(std::move(vertex_to_partition_))
+{
+}
+
+Workspace::Workspace(const ConstGraph& graph) :
+    compatible_vertices(graph.k, std::vector<boost::dynamic_bitset<>>(graph.k)),
+    partition_bits(graph.k, false),
     partial_solution()
 {
-    partial_solution.reserve(k);
+    for (uint_t pi = 0; pi < graph.k; ++pi)
+        for (uint_t pj = 0; pj < graph.k; ++pj)
+            compatible_vertices[pi][pj].resize(graph.partitions[pj].size());
+
+    partial_solution.reserve(graph.k);
 }
 
 ConstGraph allocate_const_graph(const StaticConsistencyGraph& static_graph)
 {
-    auto graph = ConstGraph();
-
-    const auto num_vertices = static_graph.get_num_vertices();
-    const auto k = static_graph.get_condition().get_arity();
-    const auto& partitions = static_graph.get_partitions();
-
-    // Initialize metadata
-    graph.k = k;
-    graph.num_vertices = num_vertices;
+    // Fetch data
+    const auto nv = static_graph.get_num_vertices();
+    const auto k = static_graph.get_partitions().size();
 
     // Initialize partitions
-    graph.partition_masks.resize(partitions.size());
-    graph.vertex_to_partition.resize(num_vertices);
-    for (size_t i = 0; i < partitions.size(); ++i)
+    auto partitions = std::vector<std::vector<Vertex>>(k);
+    auto vertex_to_partition = std::vector<uint_t>(nv);
+    for (size_t p = 0; p < k; ++p)
     {
-        auto& partition_mask = graph.partition_masks[i];
-        partition_mask.resize(num_vertices);
-        for (const auto& v : partitions[i])
+        for (const auto& v : static_graph.get_partitions()[p])
         {
-            graph.vertex_to_partition[v] = i;
-            partition_mask.set(v);
+            partitions[p].push_back(Vertex(v));
+            vertex_to_partition[v] = p;
         }
     }
 
-    return graph;
+    return ConstGraph(nv, k, std::move(partitions), std::move(vertex_to_partition));
 }
 
-Graph allocate_empty_graph(const StaticConsistencyGraph& static_graph)
+Graph allocate_empty_graph(const ConstGraph& cg)
 {
     auto graph = Graph();
 
-    const auto num_vertices = static_graph.get_num_vertices();
-
     // Allocate
-    graph.vertices.resize(num_vertices, false);
+    graph.vertices.resize(cg.nv, false);
 
     // Allocate adjacency matrix (V x V)
-    graph.adjacency_matrix.resize(num_vertices);
-    for (uint_t i = 0; i < num_vertices; ++i)
-        graph.adjacency_matrix[i].resize(num_vertices, false);
+    graph.adjacency_matrix.resize(cg.nv);
+    for (uint_t i = 0; i < cg.nv; ++i)
+        graph.adjacency_matrix[i].resize(cg.nv, false);
 
     return graph;
-}
-
-Workspace allocate_empty_workspace(const StaticConsistencyGraph& static_graph)
-{
-    const auto k = static_graph.get_condition().get_arity();
-    const auto nv = static_graph.get_num_vertices();
-
-    const auto& partitions = static_graph.get_partitions();
-
-    auto workspace = Workspace(k, nv);
-
-    // Allocate compatible vertices
-    workspace.compatible_vertices.resize(k);
-    for (uint_t i = 0; i < k; ++i)
-    {
-        workspace.compatible_vertices[i].resize(k);
-        for (uint_t j = 0; j < k; ++j)
-            workspace.compatible_vertices[i][j].resize(partitions[j].size());
-    }
-
-    // Allocate partition bits
-    workspace.partition_bits.resize(k);
-
-    // Allocate partial solution
-    workspace.partial_solution.reserve(k);
-
-    return workspace;
 }
 
 DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
     m_const_graph(allocate_const_graph(static_graph)),
-    m_delta_graph(allocate_empty_graph(static_graph)),
-    m_full_graph(allocate_empty_graph(static_graph)),
-    m_workspace(allocate_empty_workspace(static_graph)),
+    m_delta_graph(allocate_empty_graph(m_const_graph)),
+    m_full_graph(allocate_empty_graph(m_const_graph)),
+    m_workspace(m_const_graph),
     m_iteration(0)
 {
 }
@@ -166,10 +140,8 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
     }
 
     // Initialize compatible vertices: Set bits for depth = 0 because kpkc copies depth i into depth i + 1 before recursive call.
-    for (uint_t i = 0; i < m_const_graph.k; ++i)
-    {
-        m_workspace.compatible_vertices[0][i].set();
-    }
+    for (uint_t p = 0; p < m_const_graph.k; ++p)
+        m_workspace.compatible_vertices[0][p].set();
 
     // Initialize partition bits: Reset the partition bits
     m_workspace.partition_bits.reset();
@@ -177,14 +149,12 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
     /// 3. Set delta graph vertices to those that were added
     m_delta_graph.vertices ^= m_full_graph.vertices;  // OLD ⊕ NEW
     m_delta_graph.vertices &= m_full_graph.vertices;  // (OLD ⊕ NEW) ∧ NEW = NEW ∧ ~OLD
-    // m_delta_graph.vertices = m_full_graph.vertices;
 
     /// 4. Set delta graph edges to those that were added
-    for (uint i = 0; i < m_const_graph.num_vertices; ++i)
+    for (uint v = 0; v < m_const_graph.nv; ++v)
     {
-        m_delta_graph.adjacency_matrix[i] ^= m_full_graph.adjacency_matrix[i];  // OLD ⊕ NEW
-        m_delta_graph.adjacency_matrix[i] &= m_full_graph.adjacency_matrix[i];  // (OLD ⊕ NEW) ∧ NEW = NEW ∧ ~OLD
-        // m_delta_graph.adjacency_matrix[i] = m_full_graph.adjacency_matrix[i];
+        m_delta_graph.adjacency_matrix[v] ^= m_full_graph.adjacency_matrix[v];  // OLD ⊕ NEW
+        m_delta_graph.adjacency_matrix[v] &= m_full_graph.adjacency_matrix[v];  // (OLD ⊕ NEW) ∧ NEW = NEW ∧ ~OLD
     }
 
     // std::cout << "m_full_graph.vertices after:" << std::endl;
