@@ -338,6 +338,7 @@ inline Index<formalism::datalog::Rule> add_rule_move(formalism::datalog::Reposit
         const auto variable = repository.get_or_create(variable_builder, buffer).first;
         conjunctive_condition_builder.variables.push_back(variable);
     }
+    rule_builder.num_fixed_prefix_variables = 2;
 
     for (const auto& [predicate, polarity_and_params_per_atoms] :
          std::vector<std::pair<GripperStaticPredicate, std::vector<std::pair<bool, std::vector<size_t>>>>> {
@@ -431,6 +432,7 @@ inline Index<formalism::datalog::Rule> add_rule_pick(formalism::datalog::Reposit
         const auto variable = repository.get_or_create(variable_builder, buffer).first;
         conjunctive_condition_builder.variables.push_back(variable);
     }
+    rule_builder.num_fixed_prefix_variables = 3;
 
     for (const auto& [predicate, polarity_and_params_per_atoms] :
          std::vector<std::pair<GripperStaticPredicate, std::vector<std::pair<bool, std::vector<size_t>>>>> {
@@ -529,6 +531,7 @@ inline Index<formalism::datalog::Rule> add_rule_drop(formalism::datalog::Reposit
         const auto variable = repository.get_or_create(variable_builder, buffer).first;
         conjunctive_condition_builder.variables.push_back(variable);
     }
+    rule_builder.num_fixed_prefix_variables = 3;
 
     for (const auto& [predicate, polarity_and_params_per_atoms] :
          std::vector<std::pair<GripperStaticPredicate, std::vector<std::pair<bool, std::vector<size_t>>>>> {

@@ -160,6 +160,7 @@ static auto create_applicability_rule(View<Index<formalism::planning::Action>, f
     const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
 
     rule.variables = new_conj_cond.get_variables().get_data();
+    rule.num_fixed_prefix_variables = action.get_arity();
     rule.body = new_conj_cond.get_index();
     rule.head = create_applicability_atom(action, context).first;
 
@@ -200,6 +201,7 @@ static auto create_applicability_rule(View<Index<formalism::planning::Axiom>, fo
     const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
 
     rule.variables = new_conj_cond.get_variables().get_data();
+    rule.num_fixed_prefix_variables = axiom.get_arity();
     rule.body = new_conj_cond.get_index();
     rule.head = create_applicability_atom(axiom, context).first;
 
@@ -234,6 +236,7 @@ static auto create_cond_effect_rule(View<Index<formalism::planning::Action>, for
     const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
 
     rule.variables = new_conj_cond.get_variables().get_data();
+    rule.num_fixed_prefix_variables = 0;
     rule.body = new_conj_cond.get_index();
     rule.head = effect.get_index();
 
@@ -263,6 +266,7 @@ static auto create_effect_rule(View<Index<formalism::planning::Axiom>, formalism
     const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
 
     rule.variables = new_conj_cond.get_variables().get_data();
+    rule.num_fixed_prefix_variables = 0;
     rule.body = new_conj_cond.get_index();
     rule.head = effect.get_index();
 

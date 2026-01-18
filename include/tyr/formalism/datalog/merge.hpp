@@ -451,6 +451,7 @@ auto merge_d2d(View<Index<Rule>, C_SRC> element, MergeContext<C_DST>& context)
 
     for (const auto variable : element.get_variables())
         rule.variables.push_back(merge_d2d(variable, context).first);
+    rule.num_fixed_prefix_variables = element.get_num_fixed_prefix_variables();
     rule.body = merge_d2d(element.get_body(), context).first;
     rule.head = merge_d2d(element.get_head(), context).first;
 

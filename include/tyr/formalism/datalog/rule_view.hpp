@@ -45,6 +45,7 @@ public:
     auto get_index() const noexcept { return m_handle; }
     auto get_arity() const noexcept { return get_body().get_arity(); }
     auto get_variables() const noexcept { return make_view(get_data().variables, *m_context); }
+    auto get_num_fixed_prefix_variables() const noexcept { return get_data().num_fixed_prefix_variables; }
     auto get_body() const noexcept { return make_view(get_data().body, *m_context); }
     auto get_head() const noexcept { return make_view(get_data().head, *m_context); }
     auto get_cost() const noexcept { return get_data().cost; }

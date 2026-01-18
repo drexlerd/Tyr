@@ -109,9 +109,6 @@ private:
 
             grounder_context.binding = make_view(witness.binding, *this->m_workspace.rule_deltas[i].repository).get_data().objects;
 
-            std::cout << make_view(action, grounder_context.destination) << std::endl;
-            // std::cout << make_view(witness.binding, *this->m_workspace.rule_deltas[i].repository) << std::endl;
-
             const auto ground_action_index = formalism::planning::ground(make_view(action, grounder_context.destination),
                                                                          grounder_context,
                                                                          m_task->get_parameter_domains_per_cond_effect_per_action()[uint_t(action)],

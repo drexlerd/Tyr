@@ -49,6 +49,9 @@ static void add_edges(View<Index<fd::Literal<T>>, fd::Repository> element, std::
             adj_matrix[uint_t(p2)].set(uint_t(p1));
         }
     }
+
+    // std::cout << element << std::endl;
+    // std::cout << parameters << std::endl;
 }
 
 static void add_edges(View<Data<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> element, std::vector<boost::dynamic_bitset<>>& adj_matrix)
@@ -63,6 +66,9 @@ static void add_edges(View<Data<fd::BooleanOperator<Data<fd::FunctionExpression>
             adj_matrix[uint_t(p2)].set(uint_t(p1));
         }
     }
+
+    // std::cout << element << std::endl;
+    // std::cout << parameters << std::endl;
 }
 
 inline ::cista::offset::string create_guard_name(View<Index<fd::Rule>, fd::Repository> rule)
@@ -125,8 +131,6 @@ static void append_guarded_rule(View<Index<fd::Rule>, fd::Repository> element,
     auto& body = *body_ptr;
     body.clear();
 
-    std::cout << element << std::endl;
-
     auto adj_matrix = std::vector<boost::dynamic_bitset<>>(element.get_arity(), boost::dynamic_bitset<>(element.get_arity()));
     for (const auto literal : element.get_body().get_literals<f::StaticTag>())
         add_edges(literal, adj_matrix);
@@ -141,6 +145,11 @@ static void append_guarded_rule(View<Index<fd::Rule>, fd::Repository> element,
     {
         stack.push_back(uint_t(p));
         reachable.set(uint_t(p));
+    }
+    for (uint_t p = 0; p < element.get_num_fixed_prefix_variables(); ++p)
+    {
+        stack.push_back(p);
+        reachable.set(p);
     }
 
     while (!stack.empty())
@@ -170,6 +179,7 @@ static void append_guarded_rule(View<Index<fd::Rule>, fd::Repository> element,
             body.variables.push_back(merge_d2d(element.get_body().get_variables()[u], context).first);
         }
     }
+    rule.num_fixed_prefix_variables = element.get_num_fixed_prefix_variables();
 
     for (const auto literal : element.get_body().get_literals<f::StaticTag>())
         if (should_keep(literal, mapping))
@@ -189,9 +199,7 @@ static void append_guarded_rule(View<Index<fd::Rule>, fd::Repository> element,
     rule.cost = element.get_cost();
 
     canonicalize(rule);
-    const auto r = context.destination.get_or_create(rule, context.builder.get_buffer()).first;
-    std::cout << make_view(r, context.destination) << std::endl;
-    out_rules.push_back(r);
+    out_rules.push_back(context.destination.get_or_create(rule, context.builder.get_buffer()).first);
 }
 
 static void append_guard_rule(View<Index<fd::Rule>, fd::Repository> element, fd::MergeContext<fd::Repository>& context, IndexList<fd::Rule>& out_rules)
@@ -218,6 +226,11 @@ static void append_guard_rule(View<Index<fd::Rule>, fd::Repository> element, fd:
     {
         stack.push_back(uint_t(p));
         reachable.set(uint_t(p));
+    }
+    for (uint_t p = 0; p < element.get_num_fixed_prefix_variables(); ++p)
+    {
+        stack.push_back(p);
+        reachable.set(p);
     }
 
     while (!stack.empty())
@@ -258,14 +271,13 @@ static void append_guard_rule(View<Index<fd::Rule>, fd::Repository> element, fd:
         if (should_keep(numeric_constraint, guard_mapping))
             guard_body.numeric_constraints.push_back(merge(numeric_constraint, guard_mapping, context));
 
+    canonicalize(guard_body);
     guard_rule.body = context.destination.get_or_create(guard_body, context.builder.get_buffer()).first;
     guard_rule.head = create_guard_atom(element, context).first;
     guard_rule.cost = 0;
 
     canonicalize(guard_rule);
-    const auto r = context.destination.get_or_create(guard_rule, context.builder.get_buffer()).first;
-    std::cout << make_view(r, context.destination) << std::endl;
-    out_rules.push_back(r);
+    out_rules.push_back(context.destination.get_or_create(guard_rule, context.builder.get_buffer()).first);
 }
 
 Index<fd::Program> eliminate_dangling_existentials(View<Index<fd::Program>, fd::Repository> element, fd::Repository& destination)

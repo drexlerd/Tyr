@@ -265,6 +265,7 @@ static auto create_applicability_rule(View<Index<formalism::planning::Action>, f
     const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
 
     rule.variables = new_conj_cond.get_variables().get_data();
+    rule.num_fixed_prefix_variables = action.get_arity();
     rule.body = new_conj_cond.get_index();
     rule.head = create_applicability_atom(action, parameters, context).first;
     rule.cost = uint_t(1);
@@ -348,6 +349,7 @@ create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::Over
     const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
 
     rule.variables = new_conj_cond.get_variables().get_data();
+    rule.num_fixed_prefix_variables = 0;
     rule.body = new_conj_cond.get_index();
     rule.head = merge(effect, mapping, context).first;
     rule.cost = uint_t(0);
@@ -440,7 +442,6 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, f::Ove
     }
 }
 
-/*
 static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
                                          fd::Repository& destination,
                                          RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
@@ -476,8 +477,8 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     canonicalize(program);
     return destination.get_or_create(program, builder.get_buffer()).first;
 }
-*/
 
+/*
 static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
                                          fd::Repository& destination,
                                          RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
@@ -515,7 +516,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     const auto rpg_program = repository.get_or_create(program, builder.get_buffer()).first;
 
     return d::eliminate_dangling_existentials(make_view(rpg_program, repository), destination);
-}
+}*/
 
 static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
                                    RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
@@ -536,7 +537,7 @@ RPGProgram::RPGProgram(View<Index<fp::Task>, f::OverlayRepository<fp::Repository
     m_program_context(rpg::create_program_context(task, m_predicate_to_actions)),
     m_program_workspace(m_program_context)
 {
-    std::cout << m_program_context.get_program() << std::endl;
+    // std::cout << m_program_context.get_program() << std::endl;
 }
 
 const RPGProgram::AppPredicateToActionsMapping& RPGProgram::get_predicate_to_actions_mapping() const noexcept { return m_predicate_to_actions; }
