@@ -138,7 +138,7 @@ DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_grap
 {
 }
 
-void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets)
+void DeltaKPKC::set_next_assignment_sets(StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets)
 {
     ++m_iteration;
 
@@ -153,20 +153,17 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
     // for (auto& bitset : m_full_graph.adjacency_matrix)
     //     std::cout << bitset << std::endl;
 
-    /// 1. Set delta to the old graph.
-    std::swap(m_delta_graph, m_full_graph);
+    /// 1. Copy old full into delta.
+    m_delta_graph = m_full_graph;
 
     /// 2. Initialize the full graph
 
-    m_full_graph.vertices.reset();
-
     // Compute consistent vertices to speed up consistent edges computation
     for (const auto& vertex : static_graph.consistent_vertices(assignment_sets))
+    {
         m_full_graph.vertices.set(vertex.get_index());
-
-    // Clear the adj matrix
-    for (auto& adj_list : m_full_graph.adjacency_matrix)
-        adj_list.reset();
+        static_graph.deactivate(vertex);
+    }
 
     // Initialize adjacency matrix: Add consistent undirected edges to adj matrix.
     for (const auto& edge : static_graph.consistent_edges(assignment_sets, m_full_graph.vertices))
@@ -179,6 +176,7 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
         auto& second_row = m_full_graph.adjacency_matrix[second_index];
         first_row.set(second_index);
         second_row.set(first_index);
+        static_graph.deactivate(edge);
     }
 
     /// 3. Set delta graph vertices to those that were added

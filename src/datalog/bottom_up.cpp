@@ -142,7 +142,7 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
         {
             const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.gen_time);
 
-            create_general_binding(clique, rctx.cws_rule.static_consistency_graph, rctx.ground_context_delta.binding);
+            create_general_binding(clique, rctx.ws_rule.static_consistency_graph, rctx.ground_context_delta.binding);
 
             assert(ensure_novel_binding(rctx.ground_context_delta.binding, rctx.ws_rule_delta.seen_bindings_dbg));
 

@@ -37,7 +37,18 @@ namespace tyr::datalog
  * RuleIterationWorkspace
  */
 
-RuleIterationWorkspace::RuleIterationWorkspace(const formalism::datalog::Repository& parent, const StaticConsistencyGraph& static_consistency_graph) :
+RuleIterationWorkspace::RuleIterationWorkspace(const formalism::datalog::Repository& parent,
+                                               const ConstRuleWorkspace& cws,
+                                               const analysis::DomainListList& parameter_domains,
+                                               const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets) :
+    static_consistency_graph(cws.get_rule(),
+                             cws.get_rule().get_body(),
+                             cws.get_unary_overapproximation_condition(),
+                             cws.get_binary_overapproximation_condition(),
+                             parameter_domains,
+                             0,
+                             cws.get_rule().get_arity(),
+                             static_assignment_sets),
     kpkc(static_consistency_graph),
     kpkc_workspace(kpkc.get_graph_layout()),
     repository(std::make_shared<fd::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
@@ -52,12 +63,10 @@ void RuleIterationWorkspace::clear() noexcept
 {
     repository->clear();
     heads.clear();
+    static_consistency_graph.reset();
 }
 
-void RuleIterationWorkspace::initialize(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)
-{
-    kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets);
-}
+void RuleIterationWorkspace::initialize(const AssignmentSets& assignment_sets) { kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets); }
 
 /**
  * RulePersistentWorkspace
@@ -108,10 +117,7 @@ static auto create_witness_condition(View<Index<fd::ConjunctiveCondition>, fd::R
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-ConstRuleWorkspace::ConstRuleWorkspace(Index<formalism::datalog::Rule> rule,
-                                       formalism::datalog::Repository& repository,
-                                       const analysis::DomainListList& parameter_domains,
-                                       const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets) :
+ConstRuleWorkspace::ConstRuleWorkspace(Index<formalism::datalog::Rule> rule, formalism::datalog::Repository& repository) :
     rule(rule),
     repository(repository),
     nullary_witness_condition(create_ground_nullary_witness_condition(get_rule().get_body(), repository).first),
@@ -120,15 +126,7 @@ ConstRuleWorkspace::ConstRuleWorkspace(Index<formalism::datalog::Rule> rule,
     unary_overapproximation_condition(create_overapproximation_conjunctive_condition(1, get_rule().get_body(), repository).first),
     binary_overapproximation_condition(create_overapproximation_conjunctive_condition(2, get_rule().get_body(), repository).first),
     conflicting_overapproximation_condition(
-        create_overapproximation_conflicting_conjunctive_condition(get_rule().get_arity() == 1 ? 1 : 2, get_rule().get_body(), repository).first),
-    static_consistency_graph(get_rule(),
-                             get_rule().get_body(),
-                             get_unary_overapproximation_condition(),
-                             get_binary_overapproximation_condition(),
-                             parameter_domains,
-                             0,
-                             get_rule().get_arity(),
-                             static_assignment_sets)
+        create_overapproximation_conflicting_conjunctive_condition(get_rule().get_arity() == 1 ? 1 : 2, get_rule().get_body(), repository).first)
 {
 }
 

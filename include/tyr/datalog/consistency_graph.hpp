@@ -73,11 +73,12 @@ public:
 class Edge
 {
 private:
+    uint_t m_index;
     Vertex m_src;
     Vertex m_dst;
 
 public:
-    Edge(Vertex src, Vertex dst) noexcept;
+    Edge(uint_t index, Vertex src, Vertex dst) noexcept;
 
     template<formalism::FactKind T>
     bool consistent_literals(View<IndexList<formalism::datalog::Literal<T>>, formalism::datalog::Repository> literals,
@@ -89,6 +90,7 @@ public:
 
     Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::datalog::Repository> term) const noexcept;
 
+    uint_t get_index() const noexcept;
     const Vertex& get_src() const noexcept;
     const Vertex& get_dst() const noexcept;
 };
@@ -127,6 +129,7 @@ public:
     {
     private:
         const StaticConsistencyGraph* m_graph;
+        uint_t m_index;
         size_t m_sources_pos;
         size_t m_targets_pos;
 
@@ -154,6 +157,15 @@ public:
     auto get_vertices() const noexcept { return std::ranges::subrange(m_vertices.cbegin(), m_vertices.cend()); }
 
     auto get_edges() const noexcept { return std::ranges::subrange(EdgeIterator(*this, true), EdgeIterator(*this, false)); }
+
+    void reset() noexcept
+    {
+        m_active_sources.set();
+        m_active_targets.set();
+    }
+
+    void deactivate(const details::Vertex& vertex) { m_active_sources.reset(vertex.get_index()); }
+    void deactivate(const details::Edge& edge) { m_active_targets.reset(edge.get_index()); }
 
     auto consistent_vertices(const AssignmentSets& assignment_sets) const
     {
@@ -189,6 +201,9 @@ public:
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> get_condition() const noexcept;
     const std::vector<std::vector<uint_t>>& get_partitions() const noexcept;
 
+    const boost::dynamic_bitset<>& get_active_sources() const noexcept;
+    const boost::dynamic_bitset<>& get_active_targets() const noexcept;
+
 private:
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> m_rule;
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> m_condition;
@@ -202,6 +217,8 @@ private:
     std::vector<uint_t> m_sources;  ///< sources with non-zero out-degree
     std::vector<uint_t> m_target_offsets;
     std::vector<uint_t> m_targets;
+    boost::dynamic_bitset<> m_active_sources;
+    boost::dynamic_bitset<> m_active_targets;
 
     std::vector<std::vector<uint_t>> m_partitions;
 };

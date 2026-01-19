@@ -46,7 +46,7 @@ ProgramWorkspace::ProgramWorkspace(ProgramContext& context, const ConstProgramWo
 {
     for (uint_t i = 0; i < context.get_program().get_rules().size(); ++i)
     {
-        rules.emplace_back(context.get_repository(), cws.rules[i].static_consistency_graph);
+        rules.emplace_back(context.get_repository(), cws.rules[i], context.get_domains().rule_domains[i], cws.facts.assignment_sets);
         rule_persistents.emplace_back(context.get_repository());
     }
 }
@@ -64,10 +64,7 @@ ConstProgramWorkspace::ConstProgramWorkspace(ProgramContext& context) :
     rules()
 {
     for (uint_t i = 0; i < context.get_program().get_rules().size(); ++i)
-        rules.emplace_back(context.get_program().get_rules()[i].get_index(),
-                           context.get_repository(),
-                           context.get_domains().rule_domains[i],
-                           facts.assignment_sets);
+        rules.emplace_back(context.get_program().get_rules()[i].get_index(), context.get_repository());
 }
 
 }

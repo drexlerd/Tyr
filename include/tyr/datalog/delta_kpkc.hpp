@@ -219,7 +219,7 @@ public:
 
     /// @brief Set new fact set to compute deltas.
     /// @param assignment_sets
-    void set_next_assignment_sets(const StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets);
+    void set_next_assignment_sets(StaticConsistencyGraph& static_graph, const AssignmentSets& assignment_sets);
 
     /// @brief Reset should be called before first iteration.
     void reset();

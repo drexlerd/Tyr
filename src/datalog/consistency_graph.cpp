@@ -404,7 +404,7 @@ Index<f::Object> Vertex::get_object_index() const noexcept { return m_object_ind
  * Edge
  */
 
-Edge::Edge(Vertex src, Vertex dst) noexcept : m_src(std::move(src)), m_dst(std::move(dst)) {}
+Edge::Edge(uint_t index, Vertex src, Vertex dst) noexcept : m_index(index), m_src(std::move(src)), m_dst(std::move(dst)) {}
 
 template<f::FactKind T>
 bool Edge::consistent_literals(View<IndexList<fd::Literal<T>>, fd::Repository> literals,
@@ -487,6 +487,8 @@ Index<f::Object> Edge::get_object_if_overlap(View<Data<f::Term>, fd::Repository>
         term.get_variant());
 }
 
+uint_t Edge::get_index() const noexcept { return m_index; }
+
 const Vertex& Edge::get_src() const noexcept { return m_src; }
 
 const Vertex& Edge::get_dst() const noexcept { return m_dst; }
@@ -558,7 +560,7 @@ StaticConsistencyGraph::compute_edges(View<Index<fd::ConjunctiveCondition>, fd::
             assert(first_vertex.get_index() == first_vertex_index);
             assert(second_vertex.get_index() == second_vertex_index);
 
-            auto edge = details::Edge(first_vertex, second_vertex);
+            auto edge = details::Edge(std::numeric_limits<uint_t>::max(), first_vertex, second_vertex);
 
             // Part 1 of definition of substitution consistency graph (Stahlberg-ecai2023): exclude I^\neq
             if (first_vertex.get_parameter_index() != second_vertex.get_parameter_index()
@@ -601,6 +603,8 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_sources = std::move(sources_);
     m_target_offsets = std::move(target_offsets_);
     m_targets = std::move(targets_);
+    m_active_sources.resize(m_vertices.size(), true);  ///< all active
+    m_active_targets.resize(m_targets.size(), true);   ///< all active
 }
 
 const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const noexcept { return m_vertices[index]; }
@@ -615,6 +619,10 @@ View<Index<fd::ConjunctiveCondition>, fd::Repository> StaticConsistencyGraph::ge
 
 const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_partitions() const noexcept { return m_partitions; }
 
+const boost::dynamic_bitset<>& StaticConsistencyGraph::get_active_sources() const noexcept { return m_active_sources; }
+
+const boost::dynamic_bitset<>& StaticConsistencyGraph::get_active_targets() const noexcept { return m_active_targets; }
+
 const StaticConsistencyGraph& StaticConsistencyGraph::EdgeIterator::get_graph() const noexcept
 {
     assert(m_graph);
@@ -623,14 +631,24 @@ const StaticConsistencyGraph& StaticConsistencyGraph::EdgeIterator::get_graph() 
 
 void StaticConsistencyGraph::EdgeIterator::advance() noexcept
 {
+    // Force advance
+    ++m_index;
     if (++m_targets_pos >= get_graph().m_target_offsets[m_sources_pos])
         ++m_sources_pos;
+    // Continue advance until next active edge or end
+    while (m_index < get_graph().get_num_edges() && !get_graph().get_active_targets().test(m_index))
+    {
+        ++m_index;
+        if (++m_targets_pos >= get_graph().m_target_offsets[m_sources_pos])
+            ++m_sources_pos;
+    }
 }
 
 StaticConsistencyGraph::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_sources_pos(0), m_targets_pos(0) {}
 
 StaticConsistencyGraph::EdgeIterator::EdgeIterator(const StaticConsistencyGraph& graph, bool begin) noexcept :
     m_graph(&graph),
+    m_index(begin ? 0 : graph.get_num_edges()),
     m_sources_pos(begin ? 0 : graph.m_sources.size()),
     m_targets_pos(begin ? 0 : graph.m_targets.size())
 {
@@ -640,7 +658,7 @@ StaticConsistencyGraph::EdgeIterator::value_type StaticConsistencyGraph::EdgeIte
 {
     assert(m_sources_pos < get_graph().m_sources.size());
     assert(m_targets_pos < get_graph().m_targets.size());
-    return details::Edge(get_graph().m_vertices[get_graph().m_sources[m_sources_pos]], get_graph().m_vertices[get_graph().m_targets[m_targets_pos]]);
+    return details::Edge(m_index, get_graph().m_vertices[get_graph().m_sources[m_sources_pos]], get_graph().m_vertices[get_graph().m_targets[m_targets_pos]]);
 }
 
 StaticConsistencyGraph::EdgeIterator& StaticConsistencyGraph::EdgeIterator::operator++() noexcept
@@ -658,7 +676,7 @@ StaticConsistencyGraph::EdgeIterator StaticConsistencyGraph::EdgeIterator::opera
 
 bool StaticConsistencyGraph::EdgeIterator::operator==(const StaticConsistencyGraph::EdgeIterator& other) const noexcept
 {
-    return m_targets_pos == other.m_targets_pos && m_sources_pos == other.m_sources_pos;
+    return m_index == other.m_index && m_targets_pos == other.m_targets_pos && m_sources_pos == other.m_sources_pos;
 }
 
 bool StaticConsistencyGraph::EdgeIterator::operator!=(const StaticConsistencyGraph::EdgeIterator& other) const noexcept { return !(*this == other); }
