@@ -32,8 +32,8 @@ struct Vertex
 {
     uint_t index;
 
-    constexpr Vertex() : index(std::numeric_limits<uint_t>::max()) {}
-    constexpr explicit Vertex(uint_t i) : index(i) {}
+    constexpr Vertex() noexcept : index(std::numeric_limits<uint_t>::max()) {}
+    constexpr explicit Vertex(uint_t i) noexcept : index(i) {}
 
     friend constexpr bool operator==(Vertex lhs, Vertex rhs) noexcept { return lhs.index == rhs.index; }
 };
@@ -43,8 +43,8 @@ struct Edge
     Vertex src;
     Vertex dst;
 
-    constexpr Edge() : src(), dst() {}
-    constexpr Edge(Vertex u, Vertex v) : src(u.index < v.index ? u : v), dst(u.index < v.index ? v : u) {}
+    constexpr Edge() noexcept : src(), dst() {}
+    constexpr Edge(Vertex u, Vertex v) noexcept : src(u.index < v.index ? u : v), dst(u.index < v.index ? v : u) {}
 
     friend constexpr bool operator==(Edge lhs, Edge rhs) noexcept { return lhs.src == rhs.src && lhs.dst == rhs.dst; }
 
@@ -97,8 +97,8 @@ struct Graph
             bitset.reset();
     }
 
-    bool contains(Vertex vertex) const { return vertices.test(vertex.index); }
-    bool contains(Edge edge) const { return adjacency_matrix[edge.src.index].test(edge.dst.index); }
+    bool contains(Vertex vertex) const noexcept { return vertices.test(vertex.index); }
+    bool contains(Edge edge) const noexcept { return adjacency_matrix[edge.src.index].test(edge.dst.index); }
 
     struct VertexIterator
     {
@@ -107,7 +107,7 @@ struct Graph
         boost::dynamic_bitset<>::size_type i;
 
     private:
-        void advance_to_next()
+        void advance_to_next() noexcept
         {
             if (i != boost::dynamic_bitset<>::npos)
                 i = m_graph->vertices.find_next(i);
@@ -119,26 +119,26 @@ struct Graph
         using iterator_category = std::input_iterator_tag;
         using iterator_concept = std::input_iterator_tag;
 
-        VertexIterator() : m_graph(nullptr), i(boost::dynamic_bitset<>::npos) {}
-        VertexIterator(const Graph& graph, bool begin) : m_graph(&graph), i(begin ? graph.vertices.find_first() : boost::dynamic_bitset<>::npos) {}
+        VertexIterator() noexcept : m_graph(nullptr), i(boost::dynamic_bitset<>::npos) {}
+        VertexIterator(const Graph& graph, bool begin) noexcept : m_graph(&graph), i(begin ? graph.vertices.find_first() : boost::dynamic_bitset<>::npos) {}
 
-        value_type operator*() const { return Vertex { uint_t(i) }; }
+        value_type operator*() const noexcept { return Vertex { uint_t(i) }; }
 
-        VertexIterator& operator++()
+        VertexIterator& operator++() noexcept
         {
             advance_to_next();
             return *this;
         }
 
-        VertexIterator operator++(int)
+        VertexIterator operator++(int) noexcept
         {
             VertexIterator tmp = *this;
             ++(*this);
             return tmp;
         }
 
-        friend bool operator==(const VertexIterator& lhs, const VertexIterator& rhs) { return lhs.m_graph == rhs.m_graph && lhs.i == rhs.i; }
-        friend bool operator!=(const VertexIterator& lhs, const VertexIterator& rhs) { return !(lhs == rhs); }
+        friend bool operator==(const VertexIterator& lhs, const VertexIterator& rhs) noexcept { return lhs.m_graph == rhs.m_graph && lhs.i == rhs.i; }
+        friend bool operator!=(const VertexIterator& lhs, const VertexIterator& rhs) noexcept { return !(lhs == rhs); }
     };
 
     struct EdgeIterator
@@ -149,7 +149,7 @@ struct Graph
         boost::dynamic_bitset<>::size_type j;
 
     private:
-        void advance_to_next()
+        void advance_to_next() noexcept
         {
             const auto n = uint_t(m_graph->vertices.size());
 
@@ -176,30 +176,33 @@ struct Graph
         using iterator_category = std::input_iterator_tag;
         using iterator_concept = std::input_iterator_tag;
 
-        EdgeIterator() : m_graph(nullptr), i(0), j(boost::dynamic_bitset<>::npos) {}
-        EdgeIterator(const Graph& graph, bool begin) : m_graph(&graph), i(begin ? 0 : uint_t(graph.vertices.size())), j(boost::dynamic_bitset<>::npos)
+        EdgeIterator() noexcept : m_graph(nullptr), i(0), j(boost::dynamic_bitset<>::npos) {}
+        EdgeIterator(const Graph& graph, bool begin) noexcept : m_graph(&graph), i(begin ? 0 : uint_t(graph.vertices.size())), j(boost::dynamic_bitset<>::npos)
         {
             if (begin)
                 advance_to_next();
         }
 
-        value_type operator*() const { return Edge { Vertex { i }, Vertex { uint_t(j) } }; }
+        value_type operator*() const noexcept { return Edge { Vertex { i }, Vertex { uint_t(j) } }; }
 
-        EdgeIterator& operator++()
+        EdgeIterator& operator++() noexcept
         {
             advance_to_next();
             return *this;
         }
 
-        EdgeIterator operator++(int)
+        EdgeIterator operator++(int) noexcept
         {
             EdgeIterator tmp = *this;
             ++(*this);
             return tmp;
         }
 
-        friend bool operator==(const EdgeIterator& lhs, const EdgeIterator& rhs) { return lhs.m_graph == rhs.m_graph && lhs.i == rhs.i && lhs.j == rhs.j; }
-        friend bool operator!=(const EdgeIterator& lhs, const EdgeIterator& rhs) { return !(lhs == rhs); }
+        friend bool operator==(const EdgeIterator& lhs, const EdgeIterator& rhs) noexcept
+        {
+            return lhs.m_graph == rhs.m_graph && lhs.i == rhs.i && lhs.j == rhs.j;
+        }
+        friend bool operator!=(const EdgeIterator& lhs, const EdgeIterator& rhs) noexcept { return !(lhs == rhs); }
     };
 
     auto vertices_range() const noexcept { return std::ranges::subrange(VertexIterator(*this, true), VertexIterator(*this, false)); }
