@@ -545,7 +545,8 @@ StaticConsistencyGraph::compute_edges(View<Index<fd::ConjunctiveCondition>, fd::
     auto sources = std::vector<uint_t> {};
 
     auto target_offsets = std::vector<uint_t> {};
-    target_offsets.reserve(vertices.size());
+    target_offsets.reserve(vertices.size() + 1);
+    target_offsets.push_back(0);
 
     auto targets = std::vector<uint_t> {};
 
@@ -617,6 +618,10 @@ View<Index<fd::ConjunctiveCondition>, fd::Repository> StaticConsistencyGraph::ge
 
 const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_partitions() const noexcept { return m_partitions; }
 
+/**
+ * EdgeIterator
+ */
+
 const StaticConsistencyGraph& StaticConsistencyGraph::EdgeIterator::get_graph() const noexcept
 {
     assert(m_graph);
@@ -625,14 +630,13 @@ const StaticConsistencyGraph& StaticConsistencyGraph::EdgeIterator::get_graph() 
 
 void StaticConsistencyGraph::EdgeIterator::advance() noexcept
 {
-    // Force advance
     ++m_index;
 
-    if (++m_targets_pos >= get_graph().m_target_offsets[m_sources_pos])
+    if (++m_targets_pos >= get_graph().m_target_offsets[m_sources_pos + 1])
         ++m_sources_pos;
 }
 
-StaticConsistencyGraph::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_sources_pos(0), m_targets_pos(0) {}
+StaticConsistencyGraph::EdgeIterator::EdgeIterator() noexcept : m_graph(nullptr), m_index(0), m_sources_pos(0), m_targets_pos(0) {}
 
 StaticConsistencyGraph::EdgeIterator::EdgeIterator(const StaticConsistencyGraph& graph, bool begin) noexcept :
     m_graph(&graph),
@@ -644,6 +648,7 @@ StaticConsistencyGraph::EdgeIterator::EdgeIterator(const StaticConsistencyGraph&
 
 StaticConsistencyGraph::EdgeIterator::value_type StaticConsistencyGraph::EdgeIterator::operator*() const noexcept
 {
+    assert(m_index < get_graph().get_num_edges());
     assert(m_sources_pos < get_graph().m_sources.size());
     assert(m_targets_pos < get_graph().m_targets.size());
     return details::Edge(m_index, get_graph().m_vertices[get_graph().m_sources[m_sources_pos]], get_graph().m_vertices[get_graph().m_targets[m_targets_pos]]);

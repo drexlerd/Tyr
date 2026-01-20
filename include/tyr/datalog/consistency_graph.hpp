@@ -33,6 +33,8 @@
 
 namespace tyr::datalog
 {
+class StaticConsistencyGraph;
+
 namespace details
 {
 /**
@@ -155,39 +157,77 @@ public:
     };
 
     auto get_vertices() const noexcept { return std::ranges::subrange(m_vertices.cbegin(), m_vertices.cend()); }
-
     auto get_edges() const noexcept { return std::ranges::subrange(EdgeIterator(*this, true), EdgeIterator(*this, false)); }
 
+    /// @brief Efficient iteration over delta-consistent vertices.
+    /// @tparam Callback
+    /// @param assignment_sets
+    /// @param active_vertices
+    /// @param callback
     template<typename Callback>
-    void consistent_vertices(const AssignmentSets& assignment_sets, const boost::dynamic_bitset<>& active_vertices, Callback&& callback) const
+    void delta_consistent_vertices(const AssignmentSets& assignment_sets, const boost::dynamic_bitset<>& active_vertices, Callback&& callback) const
     {
-        for (const auto& vertex : get_vertices())
+        assert(active_vertices.size() == get_num_vertices());
+
+        const auto literals = m_unary_overapproximation_condition.template get_literals<formalism::FluentTag>();
+        const auto constraints = m_unary_overapproximation_condition.get_numeric_constraints();
+
+        for (auto index = active_vertices.find_first(); index != boost::dynamic_bitset<>::npos; index = active_vertices.find_next(index))
         {
-            if (active_vertices.test(vertex.get_index())
-                && vertex.consistent_literals(m_unary_overapproximation_condition.template get_literals<formalism::FluentTag>(),
-                                              assignment_sets.fluent_sets.predicate)
-                && vertex.consistent_numeric_constraints(m_unary_overapproximation_condition.get_numeric_constraints(), assignment_sets))
+            const auto vertex = get_vertex(index);
+
+            if (vertex.consistent_literals(literals, assignment_sets.fluent_sets.predicate)
+                && vertex.consistent_numeric_constraints(constraints, assignment_sets))
             {
                 callback(vertex);
             }
         }
     }
 
+    /// @brief Efficient iteration over delta-consistent edges.
+    /// @tparam Callback
+    /// @param assignment_sets
+    /// @param active_edges
+    /// @param consistent_vertices
+    /// @param callback
     template<typename Callback>
-    void consistent_edges(const AssignmentSets& assignment_sets,
-                          const boost::dynamic_bitset<>& active_edges,
-                          const boost::dynamic_bitset<>& consistent_vertices,
-                          Callback&& callback) const
+    void delta_consistent_edges(const AssignmentSets& assignment_sets,
+                                const boost::dynamic_bitset<>& active_edges,
+                                const boost::dynamic_bitset<>& consistent_vertices,
+                                Callback&& callback) const
     {
-        for (const auto& edge : get_edges())
+        assert(m_target_offsets.size() == m_sources.size() + 1);
+        assert(m_target_offsets.back() == m_targets.size());
+        assert(m_targets.size() == active_edges.size());
+        assert(consistent_vertices.size() == get_num_vertices());
+
+        const auto literals = m_binary_overapproximation_condition.template get_literals<formalism::FluentTag>();
+        const auto constraints = m_binary_overapproximation_condition.get_numeric_constraints();
+
+        for (uint_t src_pos = 0; src_pos < m_sources.size(); ++src_pos)
         {
-            if (consistent_vertices.test(edge.get_src().get_index()) && consistent_vertices.test(edge.get_dst().get_index())
-                && active_edges.test(edge.get_index())
-                && edge.consistent_literals(m_binary_overapproximation_condition.template get_literals<formalism::FluentTag>(),
-                                            assignment_sets.fluent_sets.predicate)
-                && edge.consistent_numeric_constraints(m_binary_overapproximation_condition.get_numeric_constraints(), assignment_sets))
+            const auto src = m_sources[src_pos];
+
+            if (!consistent_vertices.test(src))
+                continue;
+
+            for (uint_t index = m_target_offsets[src_pos]; index < m_target_offsets[src_pos + 1]; ++index)
             {
-                callback(edge);
+                if (!active_edges.test(index))
+                    continue;
+
+                const auto dst = m_targets[index];
+
+                if (!consistent_vertices.test(dst))
+                    continue;
+
+                const auto edge = details::Edge(index, get_vertex(src), get_vertex(dst));
+
+                if (edge.consistent_literals(literals, assignment_sets.fluent_sets.predicate)
+                    && edge.consistent_numeric_constraints(constraints, assignment_sets))
+                {
+                    callback(edge);
+                }
             }
         }
     }
@@ -200,9 +240,6 @@ public:
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> get_rule() const noexcept;
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> get_condition() const noexcept;
     const std::vector<std::vector<uint_t>>& get_partitions() const noexcept;
-
-    const boost::dynamic_bitset<>& get_active_sources() const noexcept;
-    const boost::dynamic_bitset<>& get_active_targets() const noexcept;
 
 private:
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> m_rule;

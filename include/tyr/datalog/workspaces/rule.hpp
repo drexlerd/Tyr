@@ -31,7 +31,6 @@ namespace tyr::datalog
 {
 struct RuleIterationWorkspace
 {
-    StaticConsistencyGraph static_consistency_graph;
     kpkc::DeltaKPKC kpkc;
     kpkc::Workspace kpkc_workspace;
 
@@ -45,14 +44,11 @@ struct RuleIterationWorkspace
 
     RuleStatistics statistics;
 
-    RuleIterationWorkspace(const formalism::datalog::Repository& parent,
-                           const ConstRuleWorkspace& cws,
-                           const analysis::DomainListList& parameter_domains,
-                           const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
+    RuleIterationWorkspace(const formalism::datalog::Repository& parent, const ConstRuleWorkspace& cws);
 
     void clear() noexcept;
 
-    void initialize(const AssignmentSets& assignment_sets);
+    void initialize(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets);
 };
 
 struct RulePersistentWorkspace
@@ -76,6 +72,8 @@ struct ConstRuleWorkspace
     Index<formalism::datalog::ConjunctiveCondition> binary_overapproximation_condition;
     Index<formalism::datalog::ConjunctiveCondition> conflicting_overapproximation_condition;
 
+    StaticConsistencyGraph static_consistency_graph;
+
     auto get_rule() const noexcept { return make_view(rule, repository); }
     auto get_witness_condition() const noexcept { return make_view(witness_condition, repository); }
     auto get_nullary_condition() const noexcept { return make_view(nullary_condition, repository); }
@@ -83,7 +81,10 @@ struct ConstRuleWorkspace
     auto get_binary_overapproximation_condition() const noexcept { return make_view(binary_overapproximation_condition, repository); }
     auto get_conflicting_overapproximation_condition() const noexcept { return make_view(conflicting_overapproximation_condition, repository); }
 
-    ConstRuleWorkspace(Index<formalism::datalog::Rule> rule, formalism::datalog::Repository& repository);
+    ConstRuleWorkspace(Index<formalism::datalog::Rule> rule,
+                       formalism::datalog::Repository& repository,
+                       const analysis::DomainListList& parameter_domains,
+                       const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
 };
 }
 

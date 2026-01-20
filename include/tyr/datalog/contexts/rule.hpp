@@ -56,7 +56,7 @@ struct RuleExecutionContext
     {
         ws_worker.clear();
         ws_rule.clear();
-        ws_rule.initialize(AssignmentSets { ctx.ctx.cws.facts.assignment_sets, ctx.ctx.ws.facts.assignment_sets });
+        ws_rule.initialize(cws_rule.static_consistency_graph, AssignmentSets { ctx.ctx.cws.facts.assignment_sets, ctx.ctx.ws.facts.assignment_sets });
     }
 
     /// Inputs

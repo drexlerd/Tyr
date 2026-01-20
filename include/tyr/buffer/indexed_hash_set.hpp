@@ -21,6 +21,7 @@
 #include "cista/serialization.h"
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/segmented_buffer.hpp"
+#include "tyr/common/config.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/observer_ptr.hpp"
@@ -91,7 +92,7 @@ public:
 
     // const T* always points to a valid instantiation of the class.
     // We return const T* here to avoid bugs when using structured bindings.
-    template<::cista::mode Mode = ::cista::mode::NONE>
+    template<::cista::mode Mode = CISTA_MODE>
     std::pair<const Data<Tag>*, bool> insert(const Data<Tag>& element, ::cista::buf<std::vector<uint8_t>>& buf)
     {
         assert(is_canonical(element));

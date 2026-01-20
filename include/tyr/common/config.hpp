@@ -19,6 +19,7 @@
 #define TYR_COMMON_CONFIG_HPP_
 
 #include <cassert>
+#include <cista/mode.h>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -33,6 +34,12 @@ namespace tyr
 using int_t = std::int32_t;
 using uint_t = std::uint32_t;
 using float_t = double;
+
+#ifdef NDEBUG
+static constexpr ::cista::mode CISTA_MODE = ::cista::mode::UNCHECKED;
+#else
+static constexpr ::cista::mode CISTA_MODE = ::cista::mode::NONE;
+#endif
 }
 
 #endif
