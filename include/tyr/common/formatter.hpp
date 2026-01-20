@@ -28,6 +28,7 @@
 #include <fmt/ranges.h>
 #include <map>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <set>
 #include <sstream>
@@ -90,6 +91,9 @@ template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& el);
 
 inline std::ostream& operator<<(std::ostream& os, const std::monostate& el);
+
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::optional<T>& el);
 
 // cista
 
@@ -159,6 +163,9 @@ template<typename Derived>
 std::ostream& print(std::ostream& os, const FixedUintMixin<Derived>& el);
 
 inline std::ostream& print(std::ostream& os, const std::monostate& el);
+
+template<typename T>
+std::ostream& print(std::ostream& os, const std::optional<T>& el);
 
 // cista
 
@@ -343,6 +350,12 @@ std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& el)
 
 inline std::ostream& operator<<(std::ostream& os, const std::monostate& el) { return print(os, el); }
 
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::optional<T>& el)
+{
+    return print(os, el);
+}
+
 // cista
 
 template<typename T>
@@ -488,8 +501,14 @@ std::ostream& print(std::ostream& os, const FixedUintMixin<Derived>& el)
     return print(os, el.value());
 }
 
+inline std::ostream& print(std::ostream& os, const std::monostate& el)
+{
+    os << "monostate";
+    return os;
+}
+
 template<typename T>
-std::ostream& print(std::ostream& os, const ::cista::optional<T>& el)
+std::ostream& print(std::ostream& os, const std::optional<T>& el)
 {
     if (el.has_value())
         print(os, el.value());
@@ -498,9 +517,13 @@ std::ostream& print(std::ostream& os, const ::cista::optional<T>& el)
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const std::monostate& el)
+template<typename T>
+std::ostream& print(std::ostream& os, const ::cista::optional<T>& el)
 {
-    os << "monostate";
+    if (el.has_value())
+        print(os, el.value());
+    else
+        os << "<nullopt>";
     return os;
 }
 

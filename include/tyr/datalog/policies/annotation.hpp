@@ -22,6 +22,7 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/datalog/policies/aggregation.hpp"
 #include "tyr/formalism/binding_index.hpp"
+#include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/ground_atom_index.hpp"
@@ -121,11 +122,11 @@ concept AndAnnotationPolicyConcept =
              uint_t current_cost,
              Index<formalism::datalog::Rule> rule,
              Index<formalism::datalog::ConjunctiveCondition> witness_condition,
+             Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
              Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
              const OrAnnotationsList& or_annot,
              AndAnnotationsMap& and_annot,
              HeadToWitness& delta_head_to_witness,
-             formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& iteration_context,
              formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,
              formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& persistent_context) {
         /// Ground the witness and annotate the cost of it from the given annotations.
@@ -133,11 +134,11 @@ concept AndAnnotationPolicyConcept =
             p.update_annotation(current_cost,
                                 rule,
                                 witness_condition,
+                                program_head,
                                 delta_head,
                                 or_annot,
                                 and_annot,
                                 delta_head_to_witness,
-                                iteration_context,
                                 delta_context,
                                 persistent_context)
         } -> std::same_as<CostUpdate>;
@@ -170,11 +171,11 @@ public:
     update_annotation(uint_t current_cost,
                       Index<formalism::datalog::Rule> rule,
                       Index<formalism::datalog::ConjunctiveCondition> witness_condition,
-                      Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head,
+                      Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
+                      Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
                       const OrAnnotationsList& or_annot,
                       AndAnnotationsMap& and_annot,
                       HeadToWitness& head_to_witness,
-                      formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& iteration_context,
                       formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,
                       formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& persistent_context) const noexcept
     {
@@ -271,110 +272,83 @@ public:
     CostUpdate update_annotation(uint_t current_cost,
                                  Index<formalism::datalog::Rule> rule,
                                  Index<formalism::datalog::ConjunctiveCondition> witness_condition,
+                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
                                  Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
                                  const OrAnnotationsList& or_annot,
                                  AndAnnotationsMap& and_annot,
                                  HeadToWitness& delta_head_to_witness,
-                                 formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& iteration_context,
                                  formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,
                                  formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& persistent_context) const
     {
-        assert(iteration_context.binding == delta_context.binding);
         assert(delta_context.binding == persistent_context.binding);
 
-        // Projection fast path: skip grounding full rule if head cannot be improved.
-        const auto head_cost = ground_head_and_fetch_cost(rule, or_annot, iteration_context);
-        if (head_cost <= current_cost)
-            return CostUpdate(head_cost, head_cost);
+        const auto old_cost = fetch_atom_cost(program_head, or_annot);
+        const auto LB = current_cost + make_view(rule, persistent_context.destination).get_cost();
+        if (old_cost <= LB)
+            return CostUpdate(old_cost, old_cost);
 
-        const auto witness = ground_witness(rule, witness_condition, delta_context, persistent_context);
+        const auto [cost_update, witness] = try_ground_better_witness(rule, witness_condition, program_head, delta_context, persistent_context, or_annot);
+        if (!witness)
+            return cost_update;
+        if (cost_update.old_cost && cost_update.old_cost <= cost_update.new_cost)
+            return cost_update;  ///< no improvement
 
-        auto cost = compute_aggregate_witness_condition_cost(witness.witness_condition, or_annot, persistent_context);
-
-        /// Add cost of rule itself.
-        cost += make_view(rule, iteration_context.destination).get_cost();
-
-        auto [it, inserted] = and_annot.try_emplace(witness, std::numeric_limits<Cost>::max());
-
-        const auto cost_update = update_min_cost(it->second, cost);
-
-        update_if_better_witness_for_head(delta_head, witness, it->second, and_annot, delta_head_to_witness);
+        /// Update witness-cost mappings
+        and_annot.insert_or_assign(*witness, cost_update.new_cost);
+        delta_head_to_witness.insert_or_assign(delta_head, *witness);
 
         return cost_update;
     }
 
 private:
-    static uint_t
-    ground_head_and_fetch_cost(Index<formalism::datalog::Rule> rule,
-                               const OrAnnotationsList& or_annot,
-                               formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& iteration_context)
+    static uint_t fetch_atom_cost(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> atom, const OrAnnotationsList& or_annot)
     {
-        const auto head = formalism::datalog::ground(make_view(rule, iteration_context.destination).get_head(), iteration_context).first;
-        return tyr::get(head.value, or_annot[uint_t(head.group)], std::numeric_limits<uint_t>::max());
+        return tyr::get(atom.value, or_annot[uint_t(atom.group)], std::numeric_limits<uint_t>::max());
     }
 
-    /// @brief Grounds two components to create the witness:
-    /// 1) the binding into the persistent delta context, allowing merge into program when necessary.
-    /// 2) the witness condition into the program context, which is sound, because those ground atoms must already exist.
-    static Witness ground_witness(Index<formalism::datalog::Rule> rule,
-                                  Index<formalism::datalog::ConjunctiveCondition> witness_condition,
-                                  formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,
-                                  formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& persistent_context)
+    static std::pair<CostUpdate, std::optional<Witness>>
+    try_ground_better_witness(Index<formalism::datalog::Rule> rule,
+                              Index<formalism::datalog::ConjunctiveCondition> witness_condition,
+                              Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
+                              formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,
+                              formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& persistent_context,
+                              const OrAnnotationsList& or_annot)
     {
-        return Witness { rule,
-                         formalism::datalog::ground(delta_context.binding, delta_context).first,
-                         formalism::datalog::ground(make_view(witness_condition, persistent_context.destination), persistent_context).first };
-    }
+        const auto old_cost = fetch_atom_cost(program_head, or_annot);
 
-    /// @brief cost(u) = cost(v_1) o ... o cost(v_k)
-    static Cost compute_aggregate_witness_condition_cost(
-        Index<formalism::datalog::GroundConjunctiveCondition> witness_condition,
-        const OrAnnotationsList& or_annot,
-        const formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>>& persistent_context)
-    {
-        auto cost = AggregationFunction::identity();
+        auto new_cost = AggregationFunction::identity();
+        new_cost = agg(new_cost, make_view(rule, persistent_context.destination).get_cost());
+
+        if (new_cost >= old_cost)
+            return std::make_pair(CostUpdate(old_cost, old_cost), std::nullopt);  ///< Cannot improve
+
+        auto ground_conj_cond_ptr = persistent_context.builder.get_builder<formalism::datalog::GroundConjunctiveCondition>();
+        auto& ground_conj_cond = *ground_conj_cond_ptr;
+        ground_conj_cond.clear();
 
         for (const auto& literal : make_view(witness_condition, persistent_context.destination).get_literals<formalism::FluentTag>())
         {
             assert(literal.get_polarity());
+            // TODO: we could get rid of grounding literals by having strictly positive rules
+            const auto ground_literal = formalism::datalog::ground(literal, persistent_context).first;
+            const auto ground_atom = make_view(ground_literal, persistent_context.destination).get_atom().get_index();
+            const auto ground_atom_cost = fetch_atom_cost(ground_atom, or_annot);
+            assert(ground_atom_cost != std::numeric_limits<uint_t>::max());
 
-            const auto atom_index = literal.get_atom().get_index();
+            new_cost = agg(new_cost, ground_atom_cost);
 
-            assert(uint_t(atom_index.group) < or_annot.size());
-            assert(atom_index.value < or_annot[uint_t(atom_index.group)].size());
-            assert(or_annot[uint_t(atom_index.group)][atom_index.value] != std::numeric_limits<Cost>::max());
+            if (new_cost >= old_cost)
+                return std::make_pair(CostUpdate(old_cost, old_cost), std::nullopt);  ///< Cannot improve
 
-            cost = agg(cost, or_annot[uint_t(atom_index.group)][atom_index.value]);
+            ground_conj_cond.fluent_literals.push_back(ground_literal);
         }
 
-        return cost;
-    }
+        canonicalize(ground_conj_cond);
+        const auto new_ground_conj_cond = persistent_context.destination.get_or_create(ground_conj_cond, persistent_context.builder.get_buffer()).first;
 
-    /// @brief Update per-witness cost (min)
-    static CostUpdate update_min_cost(Cost& slot, Cost candidate)
-    {
-        const Cost old = slot;
-        if (candidate < slot)
-            slot = candidate;
-        return CostUpdate(old, slot);
-    }
+        const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first;
 
-    /// @brief Update best witness for head based on updated witness cost
-    static void update_if_better_witness_for_head(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
-                                                  const Witness& candidate,
-                                                  Cost candidate_cost,
-                                                  const AndAnnotationsMap& and_annot,
-                                                  HeadToWitness& delta_head_to_witness)
-    {
-        auto [hit, inserted] = delta_head_to_witness.try_emplace(delta_head, candidate);
-        if (inserted)
-            return;
-
-        const auto it_best = and_annot.find(hit->second);
-        assert(it_best != and_annot.end());
-
-        if (candidate_cost < it_best->second)
-            hit->second = candidate;
+        return std::make_pair(CostUpdate(old_cost, new_cost), Witness { rule, delta_binding, new_ground_conj_cond });
     }
 };
 
