@@ -100,6 +100,7 @@ ATTRIBUTES = [
     "invalid",
 
     # Search
+    "initial_h_value",
     "search_time",
     "num_expanded",
     "num_generated",

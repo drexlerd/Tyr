@@ -230,7 +230,7 @@ class GBFSLazyParser(Parser):
         self.add_pattern("cost", r"\[GBFS\] Plan cost: (\d+)", type=int)
         self.add_pattern("length", r"\[GBFS\] Plan length: (\d+)", type=int)
         
-
+        self.add_pattern("initial_h_value", r"\[GBFS\] Start node h_value: (\d+)", type=int)
         self.add_pattern("search_time_ms", r"\[Search\] Search time: (\d+) ms", type=int)
         self.add_pattern("num_expanded", r"\[Search\] Number of expanded states: (\d+)", type=int)
         self.add_pattern("num_generated", r"\[Search\] Number of generated states: (\d+)", type=int)
