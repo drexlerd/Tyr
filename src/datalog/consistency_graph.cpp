@@ -512,6 +512,7 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
 
         // positions where p/q occur in that literal
         for (auto pos_p : info.parameter_to_positions[p])
+        {
             for (auto pos_q : info.parameter_to_positions[q])
             {
                 // Enforce first_index < second_index to satisfy EdgeAssignment::is_valid()
@@ -531,14 +532,86 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                 auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
                 assert(assignment.is_valid());
 
+                std::cout << assignment << std::endl;
+
                 const auto true_assignment = pred_set.at(assignment);
                 if (info.polarity != true_assignment)
                     return false;
             }
+        }
 
-        // Optional: constant positions if your old EdgeAssignmentRange emitted them and you relied on it.
-        // (In your old code, Edge::consistent_literals used EdgeAssignmentRange only, i.e., pairs,
-        // so constants might not have been checked there. Keep semantics consistent with what you had.)
+        // constant c with position pos_c < pos_p or pos_c > pos_p
+        for (auto pos_p : info.parameter_to_positions[p])
+        {
+            for (const auto& [pos_c, obj_c] : info.constant_positions)
+            {
+                if (pos_p == pos_c)
+                    continue;  // should never happen
+
+                auto first_pos = pos_p;
+                auto second_pos = pos_c;
+                auto first_obj = obj_p;
+                auto second_obj = obj_c;
+
+                if (first_pos > second_pos)
+                {
+                    std::swap(first_pos, second_pos);
+                    std::swap(first_obj, second_obj);
+                }
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                assert(assignment.is_valid());
+
+                if (info.polarity != pred_set.at(assignment))
+                    return false;
+            }
+        }
+
+        // constant c with position pos_c < pos_q or pos_c > pos_q
+        for (auto pos_q : info.parameter_to_positions[q])
+        {
+            for (const auto& [pos_c, obj_c] : info.constant_positions)
+            {
+                if (pos_q == pos_c)
+                    continue;  // should never happen
+
+                auto first_pos = pos_q;
+                auto second_pos = pos_c;
+                auto first_obj = obj_q;
+                auto second_obj = obj_c;
+
+                if (first_pos > second_pos)
+                {
+                    std::swap(first_pos, second_pos);
+                    std::swap(first_obj, second_obj);
+                }
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                assert(assignment.is_valid());
+
+                if (info.polarity != pred_set.at(assignment))
+                    return false;
+            }
+        }
+
+        // constants c,c' with positions pos_c < pos_c'
+        for (uint_t i = 0; i < info.constant_positions.size(); ++i)
+        {
+            const auto& [first_pos, first_obj] = info.constant_positions[i];
+
+            for (uint_t j = i + 1; j < info.constant_positions.size(); ++j)
+            {
+                const auto& [second_pos, second_obj] = info.constant_positions[j];
+                assert(first_pos < second_pos);
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                assert(assignment.is_valid());
+
+                const auto true_assignment = pred_set.at(assignment);
+                if (info.polarity != true_assignment)
+                    return false;
+            }
+        }
     }
 
     return true;
@@ -780,17 +853,16 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_target_offsets = std::move(target_offsets_);
     m_targets = std::move(targets_);
 
-    // std::cout << std::endl;
-    // std::cout << "Unary overapproximation condition" << std::endl;
-    // std::cout << m_unary_overapproximation_condition << std::endl;
-    // std::cout << "Unary overapproximation indexed literals" << std::endl;
-    // std::cout << m_unary_overapproximation_indexed_literals << std::endl;
-
-    // std::cout << std::endl;
-    // std::cout << "Binary overapproximation condition" << std::endl;
-    // std::cout << m_binary_overapproximation_condition << std::endl;
-    // std::cout << "Binary overapproximation indexed literals" << std::endl;
-    // std::cout << m_binary_overapproximation_indexed_literals << std::endl;
+    std::cout << std::endl;
+    std::cout << "Unary overapproximation condition" << std::endl;
+    std::cout << m_unary_overapproximation_condition << std::endl;
+    std::cout << "Unary overapproximation indexed literals" << std::endl;
+    std::cout << m_unary_overapproximation_indexed_literals << std::endl;
+    std::cout << std::endl;
+    std::cout << "Binary overapproximation condition" << std::endl;
+    std::cout << m_binary_overapproximation_condition << std::endl;
+    std::cout << "Binary overapproximation indexed literals" << std::endl;
+    std::cout << m_binary_overapproximation_indexed_literals << std::endl;
 }
 
 const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const noexcept { return m_vertices[index]; }
