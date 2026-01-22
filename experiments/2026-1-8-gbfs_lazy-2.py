@@ -101,13 +101,13 @@ ATTRIBUTES = [
 
     # Search
     "initial_h_value",
-    "search_time",
+    Attribute("search_time", function=geometric_mean),
     "num_expanded",
     "num_generated",
-    "search_time_per_expanded",
+    Attribute("search_time_per_expanded", function=geometric_mean),
 
     # Total
-    "total_time",
+    Attribute("total_time", function=geometric_mean),
     "memory",
 
     # Datalog

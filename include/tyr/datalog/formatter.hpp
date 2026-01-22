@@ -34,6 +34,14 @@ extern std::ostream& print(std::ostream& os, const datalog::details::Vertex& el)
 
 extern std::ostream& print(std::ostream& os, const datalog::details::Edge& el);
 
+template<formalism::FactKind T>
+std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el);
+
+template<formalism::FactKind T>
+std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiterals<T>& el);
+
+extern std::ostream& print(std::ostream& os, const datalog::details::IndexedLiterals& el);
+
 extern std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el);
 
 extern std::ostream& print(std::ostream& os, const datalog::ProgramStatistics& el);
@@ -49,6 +57,14 @@ namespace details
 extern std::ostream& operator<<(std::ostream& os, const Vertex& el);
 
 extern std::ostream& operator<<(std::ostream& os, const Edge& el);
+
+template<formalism::FactKind T>
+std::ostream& operator<<(std::ostream& os, const datalog::details::LiteralInfo<T>& el);
+
+template<formalism::FactKind T>
+std::ostream& operator<<(std::ostream& os, const TaggedIndexedLiterals<T>& el);
+
+extern std::ostream& operator<<(std::ostream& os, const IndexedLiterals& el);
 }  // end namespace details
 
 extern std::ostream& operator<<(std::ostream& os, const VertexAssignment& el);

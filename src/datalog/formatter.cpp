@@ -60,6 +60,61 @@ std::ostream& print(std::ostream& os, const datalog::details::Edge& el)
     return os;
 }
 
+template<formalism::FactKind T>
+std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el)
+{
+    os << "LiteralInfo(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << "constant positions = " << el.constant_positions << "\n";
+
+        os << print_indent << "parameter to positions = " << el.parameter_to_positions << "\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
+template<formalism::FactKind T>
+std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiterals<T>& el)
+{
+    os << "TaggedIndexedLiterals(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << "literal infos = " << el.literal_infos << "\n";
+
+        os << print_indent << "parameter to literalinfos = " << el.parameter_to_literal_infos << "\n";
+
+        os << print_indent << "parameter pair to literal infos = " << el.parameter_pairs_to_literal_infos << "\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
+std::ostream& print(std::ostream& os, const datalog::details::IndexedLiterals& el)
+{
+    os << "IndexedLiterals(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << "static indexed = " << el.static_indexed << "\n";
+
+        os << print_indent << "fluent indexed = " << el.fluent_indexed << "\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
 std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el)
 {
     fmt::print(
@@ -156,6 +211,20 @@ namespace details
 std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const Edge& el) { return print(os, el); }
+
+template<formalism::FactKind T>
+std::ostream& operator<<(std::ostream& os, const LiteralInfo<T>& el)
+{
+    return print(os, el);
+}
+
+template<formalism::FactKind T>
+std::ostream& operator<<(std::ostream& os, const TaggedIndexedLiterals<T>& el)
+{
+    return print(os, el);
+}
+
+std::ostream& operator<<(std::ostream& os, const IndexedLiterals& el) { return print(os, el); }
 
 }  // end namespace details
 

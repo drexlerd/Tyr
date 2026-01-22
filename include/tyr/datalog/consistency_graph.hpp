@@ -37,6 +37,41 @@ class StaticConsistencyGraph;
 
 namespace details
 {
+template<formalism::FactKind T>
+struct LiteralInfo
+{
+    Index<formalism::Predicate<T>> predicate;
+    bool polarity;
+    std::vector<std::pair<uint_t, Index<formalism::Object>>> constant_positions;
+    std::vector<std::vector<uint_t>> parameter_to_positions;
+};
+
+template<formalism::FactKind T>
+struct TaggedIndexedLiterals
+{
+    std::vector<LiteralInfo<T>> literal_infos;
+
+    std::vector<std::vector<uint_t>> parameter_to_literal_infos;
+    std::vector<std::vector<std::vector<uint_t>>> parameter_pairs_to_literal_infos;
+};
+
+struct IndexedLiterals
+{
+    details::TaggedIndexedLiterals<formalism::StaticTag> static_indexed;
+    details::TaggedIndexedLiterals<formalism::FluentTag> fluent_indexed;
+
+    template<formalism::FactKind T>
+    const auto& get() const noexcept
+    {
+        if constexpr (std::is_same_v<T, formalism::StaticTag>)
+            return static_indexed;
+        else if constexpr (std::is_same_v<T, formalism::FluentTag>)
+            return fluent_indexed;
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
+};
+
 /**
  * Vertex
  */
@@ -55,6 +90,8 @@ public:
     template<formalism::FactKind T>
     bool consistent_literals(View<IndexList<formalism::datalog::Literal<T>>, formalism::datalog::Repository> literals,
                              const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+    template<formalism::FactKind T>
+    bool consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
     bool consistent_numeric_constraints(
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
@@ -86,6 +123,9 @@ public:
     bool consistent_literals(View<IndexList<formalism::datalog::Literal<T>>, formalism::datalog::Repository> literals,
                              const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
+    template<formalism::FactKind T>
+    bool consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+
     bool consistent_numeric_constraints(
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
@@ -105,7 +145,7 @@ class StaticConsistencyGraph
 private:
     /// @brief Helper to initialize vertices.
     std::pair<details::Vertices, std::vector<std::vector<uint_t>>>
-    compute_vertices(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
+    compute_vertices(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
                      const analysis::DomainListList& parameter_domains,
                      uint_t begin_parameter_index,
                      uint_t end_parameter_index,
@@ -113,7 +153,7 @@ private:
 
     /// @brief Helper to initialize edges.
     std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>>
-    compute_edges(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
+    compute_edges(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
                   const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
                   const details::Vertices& vertices);
 
@@ -169,14 +209,13 @@ public:
     {
         assert(active_vertices.size() == get_num_vertices());
 
-        const auto literals = m_unary_overapproximation_condition.template get_literals<formalism::FluentTag>();
         const auto constraints = m_unary_overapproximation_condition.get_numeric_constraints();
 
         for (auto index = active_vertices.find_first(); index != boost::dynamic_bitset<>::npos; index = active_vertices.find_next(index))
         {
             const auto vertex = get_vertex(index);
 
-            if (vertex.consistent_literals(literals, assignment_sets.fluent_sets.predicate)
+            if (vertex.consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
                 && vertex.consistent_numeric_constraints(constraints, assignment_sets))
             {
                 callback(vertex);
@@ -201,7 +240,6 @@ public:
         assert(m_targets.size() == active_edges.size());
         assert(consistent_vertices.size() == get_num_vertices());
 
-        const auto literals = m_binary_overapproximation_condition.template get_literals<formalism::FluentTag>();
         const auto constraints = m_binary_overapproximation_condition.get_numeric_constraints();
 
         for (uint_t src_pos = 0; src_pos < m_sources.size(); ++src_pos)
@@ -223,7 +261,7 @@ public:
 
                 const auto edge = details::Edge(index, get_vertex(src), get_vertex(dst));
 
-                if (edge.consistent_literals(literals, assignment_sets.fluent_sets.predicate)
+                if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
                     && edge.consistent_numeric_constraints(constraints, assignment_sets))
                 {
                     callback(edge);
@@ -254,8 +292,10 @@ private:
     std::vector<uint_t> m_sources;  ///< sources with non-zero out-degree
     std::vector<uint_t> m_target_offsets;
     std::vector<uint_t> m_targets;
-
     std::vector<std::vector<uint_t>> m_partitions;
+
+    details::IndexedLiterals m_unary_overapproximation_indexed_literals;
+    details::IndexedLiterals m_binary_overapproximation_indexed_literals;
 };
 
 extern std::pair<Index<formalism::datalog::GroundConjunctiveCondition>, bool>

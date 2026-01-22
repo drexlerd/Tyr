@@ -13,11 +13,11 @@ def process_unsolvable(content, props):
 
 def add_search_time(content, props):
     if "search_time_ms" in props:
-        props["search_time"] = props["search_time_ms"] / 1000
+        props["search_time"] = min(1, props["search_time_ms"]) / 1000
 
 def add_total_time(content, props):
     if "total_time_ms" in props:
-        props["total_time"] = props["total_time_ms"] / 1000
+        props["total_time"] = min(1, props["total_time_ms"]) / 1000
 
 def add_search_time_per_expanded(context, props):
     if "search_time" in props:

@@ -69,6 +69,12 @@ namespace details
 {
 class Vertex;
 class Edge;
+
+template<formalism::FactKind T>
+struct LiteralInfo;
+template<formalism::FactKind T>
+struct TaggedIndexedLiterals;
+struct IndexedLiterals;
 }
 
 struct VertexAssignment;

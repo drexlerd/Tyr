@@ -358,6 +358,50 @@ template bool Vertex::consistent_literals(View<IndexList<fd::Literal<f::StaticTa
 template bool Vertex::consistent_literals(View<IndexList<fd::Literal<f::FluentTag>>, fd::Repository> literals,
                                           const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
 
+template<formalism::FactKind T>
+bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+{
+    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[uint_t(m_parameter_index)])
+    {
+        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto predicate = info.predicate;
+        const auto polarity = info.polarity;
+
+        const auto& pred_set = predicate_assignment_sets.get_set(predicate);
+
+        for (const auto position : info.parameter_to_positions[uint_t(m_parameter_index)])
+        {
+            auto assignment = VertexAssignment(f::ParameterIndex(position), m_object_index);
+
+            assert(assignment.is_valid());
+
+            const auto true_assignment = pred_set.at(assignment);
+
+            if (polarity != true_assignment)
+                return false;
+        }
+
+        for (const auto& [position, object] : info.constant_positions)
+        {
+            auto assignment = VertexAssignment(f::ParameterIndex(position), object);
+
+            assert(assignment.is_valid());
+
+            const auto true_assignment = pred_set.at(assignment);
+
+            if (polarity != true_assignment)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+template bool Vertex::consistent_literals(const TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
+                                          const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
+template bool Vertex::consistent_literals(const TaggedIndexedLiterals<f::FluentTag>& indexed_literals,
+                                          const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
+
 bool Vertex::consistent_numeric_constraints(View<DataList<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> numeric_constraints,
                                             const AssignmentSets& assignment_sets) const noexcept
 {
@@ -421,7 +465,7 @@ bool Edge::consistent_literals(View<IndexList<fd::Literal<T>>, fd::Repository> l
 
         assert(!negated || kpkc_arity(literal) == 2);  ///< Can only handly binary negated literals due to overapproximation
 
-        const auto& predicate_assignment_set = predicate_assignment_sets.get_set(predicate.get_index());
+        const auto& pred_set = predicate_assignment_sets.get_set(predicate.get_index());
         const auto terms = atom.get_terms();
 
         /* Iterate edges. */
@@ -430,7 +474,7 @@ bool Edge::consistent_literals(View<IndexList<fd::Literal<T>>, fd::Repository> l
         {
             assert(assignment.is_valid());
 
-            const auto true_assignment = predicate_assignment_set.at(assignment);
+            const auto true_assignment = pred_set.at(assignment);
 
             if (negated == true_assignment)
                 return false;
@@ -443,6 +487,66 @@ bool Edge::consistent_literals(View<IndexList<fd::Literal<T>>, fd::Repository> l
 template bool Edge::consistent_literals(View<IndexList<fd::Literal<f::StaticTag>>, fd::Repository> literals,
                                         const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
 template bool Edge::consistent_literals(View<IndexList<fd::Literal<f::FluentTag>>, fd::Repository> literals,
+                                        const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
+
+template<formalism::FactKind T>
+bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+{
+    uint_t p = uint_t(m_src.get_parameter_index());
+    uint_t q = uint_t(m_dst.get_parameter_index());
+    if (p == q)
+        return true;  // shouldn't happen for real edges, but safe
+
+    // canonicalize
+    const auto src_is_p = (p < q);
+    if (!src_is_p)
+        std::swap(p, q);
+
+    const auto obj_p = src_is_p ? m_src.get_object_index() : m_dst.get_object_index();
+    const auto obj_q = src_is_p ? m_dst.get_object_index() : m_src.get_object_index();
+
+    for (const auto lit_id : indexed_literals.parameter_pairs_to_literal_infos[p][q])
+    {
+        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+
+        // positions where p/q occur in that literal
+        for (auto pos_p : info.parameter_to_positions[p])
+            for (auto pos_q : info.parameter_to_positions[q])
+            {
+                // Enforce first_index < second_index to satisfy EdgeAssignment::is_valid()
+                assert(pos_p != pos_q);
+
+                auto first_pos = pos_p;
+                auto second_pos = pos_q;
+                auto first_obj = obj_p;
+                auto second_obj = obj_q;
+
+                if (first_pos > second_pos)
+                {
+                    std::swap(first_pos, second_pos);
+                    std::swap(first_obj, second_obj);
+                }
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                assert(assignment.is_valid());
+
+                const auto true_assignment = pred_set.at(assignment);
+                if (info.polarity != true_assignment)
+                    return false;
+            }
+
+        // Optional: constant positions if your old EdgeAssignmentRange emitted them and you relied on it.
+        // (In your old code, Edge::consistent_literals used EdgeAssignmentRange only, i.e., pairs,
+        // so constants might not have been checked there. Keep semantics consistent with what you had.)
+    }
+
+    return true;
+}
+
+template bool Edge::consistent_literals(const TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
+                                        const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
+template bool Edge::consistent_literals(const TaggedIndexedLiterals<f::FluentTag>& indexed_literals,
                                         const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
 
 bool Edge::consistent_numeric_constraints(View<DataList<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> numeric_constraints,
@@ -500,7 +604,7 @@ const Vertex& Edge::get_dst() const noexcept { return m_dst; }
  */
 
 std::pair<details::Vertices, std::vector<std::vector<uint_t>>>
-StaticConsistencyGraph::compute_vertices(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
+StaticConsistencyGraph::compute_vertices(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
                                          const analysis::DomainListList& parameter_domains,
                                          uint_t begin_parameter_index,
                                          uint_t end_parameter_index,
@@ -524,7 +628,7 @@ StaticConsistencyGraph::compute_vertices(View<Index<fd::ConjunctiveCondition>, f
 
             assert(vertex.get_index() == vertex_index);
 
-            if (vertex.consistent_literals(condition.get_literals<f::StaticTag>(), static_assignment_sets.predicate))
+            if (vertex.consistent_literals(indexed_literals, static_assignment_sets.predicate))
             {
                 vertices.push_back(std::move(vertex));
                 partition.push_back(vertex.get_index());
@@ -538,7 +642,7 @@ StaticConsistencyGraph::compute_vertices(View<Index<fd::ConjunctiveCondition>, f
 }
 
 std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>>
-StaticConsistencyGraph::compute_edges(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
+StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
                                       const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets,
                                       const details::Vertices& vertices)
 {
@@ -565,7 +669,7 @@ StaticConsistencyGraph::compute_edges(View<Index<fd::ConjunctiveCondition>, fd::
 
             // Part 1 of definition of substitution consistency graph (Stahlberg-ecai2023): exclude I^\neq
             if (first_vertex.get_parameter_index() != second_vertex.get_parameter_index()
-                && edge.consistent_literals(condition.get_literals<f::StaticTag>(), static_assignment_sets.predicate))
+                && edge.consistent_literals(indexed_literals, static_assignment_sets.predicate))
             {
                 targets.push_back(second_vertex_index);
             }
@@ -581,6 +685,72 @@ StaticConsistencyGraph::compute_edges(View<Index<fd::ConjunctiveCondition>, fd::
     return { std::move(sources), std::move(target_offsets), std::move(targets) };
 }
 
+template<f::FactKind T>
+auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Repository> literals, size_t arity)
+{
+    auto result = details::TaggedIndexedLiterals<T> {};
+
+    result.parameter_to_literal_infos = std::vector<std::vector<uint_t>>(arity);
+    result.parameter_pairs_to_literal_infos = std::vector<std::vector<std::vector<uint_t>>>(arity, std::vector<std::vector<uint_t>>(arity));
+
+    for (const auto literal : literals)
+    {
+        auto literal_info = details::LiteralInfo<T> {};
+        literal_info.predicate = literal.get_atom().get_predicate().get_index();
+        literal_info.polarity = literal.get_polarity();
+        literal_info.parameter_to_positions.resize(arity);
+
+        const auto terms = literal.get_atom().get_terms();
+
+        for (uint_t position = 0; position < terms.size(); ++position)
+        {
+            const auto term = terms[position];
+
+            visit(
+                [&](auto&& arg)
+                {
+                    using Alternative = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
+                    {
+                        literal_info.parameter_to_positions[uint_t(arg)].push_back(position);
+                    }
+                    else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
+                        literal_info.constant_positions.emplace_back(position, arg.get_index());
+                    else
+                        static_assert(dependent_false<Alternative>::value, "Missing case");
+                },
+                term.get_variant());
+        }
+
+        auto parameters = fd::collect_parameters(literal);
+        const auto index = result.literal_infos.size();
+
+        for (const auto param1 : parameters)
+        {
+            result.parameter_to_literal_infos[uint_t(param1)].push_back(index);
+
+            for (const auto param2 : parameters)
+            {
+                if (param1 >= param2)
+                    continue;
+
+                result.parameter_pairs_to_literal_infos[uint_t(param1)][uint_t(param2)].push_back(index);
+            }
+        }
+
+        result.literal_infos.push_back(std::move(literal_info));
+    }
+
+    return result;
+}
+
+auto compute_indexed_literals(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition)
+{
+    return details::IndexedLiterals { compute_tagged_indexed_literals(condition.get_literals<f::StaticTag>(), condition.get_arity()),
+                                      compute_tagged_indexed_literals(condition.get_literals<f::FluentTag>(), condition.get_arity()) };
+}
+
 StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
                                                View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
                                                View<Index<fd::ConjunctiveCondition>, fd::Repository> unary_overapproximation_condition,
@@ -592,18 +762,35 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_rule(rule),
     m_condition(condition),
     m_unary_overapproximation_condition(unary_overapproximation_condition),
-    m_binary_overapproximation_condition(binary_overapproximation_condition)
+    m_binary_overapproximation_condition(binary_overapproximation_condition),
+    m_unary_overapproximation_indexed_literals(compute_indexed_literals(m_unary_overapproximation_condition)),
+    m_binary_overapproximation_indexed_literals(compute_indexed_literals(m_binary_overapproximation_condition))
 {
-    auto [vertices_, partitions_] =
-        compute_vertices(unary_overapproximation_condition, parameter_domains, begin_parameter_index, end_parameter_index, static_assignment_sets);
+    auto [vertices_, partitions_] = compute_vertices(m_unary_overapproximation_indexed_literals.static_indexed,
+                                                     parameter_domains,
+                                                     begin_parameter_index,
+                                                     end_parameter_index,
+                                                     static_assignment_sets);
     m_vertices = std::move(vertices_);
     m_partitions = std::move(partitions_);
 
-    auto [sources_, target_offsets_, targets_] = compute_edges(binary_overapproximation_condition, static_assignment_sets, m_vertices);
+    auto [sources_, target_offsets_, targets_] = compute_edges(m_binary_overapproximation_indexed_literals.static_indexed, static_assignment_sets, m_vertices);
 
     m_sources = std::move(sources_);
     m_target_offsets = std::move(target_offsets_);
     m_targets = std::move(targets_);
+
+    // std::cout << std::endl;
+    // std::cout << "Unary overapproximation condition" << std::endl;
+    // std::cout << m_unary_overapproximation_condition << std::endl;
+    // std::cout << "Unary overapproximation indexed literals" << std::endl;
+    // std::cout << m_unary_overapproximation_indexed_literals << std::endl;
+
+    // std::cout << std::endl;
+    // std::cout << "Binary overapproximation condition" << std::endl;
+    // std::cout << m_binary_overapproximation_condition << std::endl;
+    // std::cout << "Binary overapproximation indexed literals" << std::endl;
+    // std::cout << m_binary_overapproximation_indexed_literals << std::endl;
 }
 
 const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const noexcept { return m_vertices[index]; }

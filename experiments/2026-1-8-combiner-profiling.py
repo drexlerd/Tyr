@@ -31,13 +31,13 @@ ATTRIBUTES = [
 
     # Search
     "initial_h_value",
-    "search_time",
+    Attribute("search_time", function=geometric_mean),
     "num_expanded",
     "num_generated",
-    "search_time_per_expanded",
+    Attribute("search_time_per_expanded", function=geometric_mean),
 
     # Total
-    "total_time",
+    Attribute("total_time", function=geometric_mean),
     "memory",
 ]
 
@@ -82,7 +82,7 @@ EXCLUDED_DOMAINS = [
 
 ]
 
-exp.add_fetcher("profiling/4-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=lambda run: run["domain"] not in EXCLUDED_DOMAINS)
+exp.add_fetcher("profiling/5-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=lambda run: run["domain"] not in EXCLUDED_DOMAINS)
 exp.add_fetcher("profiling/2026-1-9-lazy-gbfs-ff-pref-ff-profiling-eval", filter=lambda run: run["domain"] not in EXCLUDED_DOMAINS)
 
 exp.add_report(BaseReport(attributes=ATTRIBUTES))
