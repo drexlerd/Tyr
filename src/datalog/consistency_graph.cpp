@@ -361,6 +361,8 @@ template bool Vertex::consistent_literals(View<IndexList<fd::Literal<f::FluentTa
 template<formalism::FactKind T>
 bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
 {
+    // std::cout << "Vertex: " << *this << std::endl;
+
     for (const auto lit_id : indexed_literals.parameter_to_literal_infos[uint_t(m_parameter_index)])
     {
         const auto& info = indexed_literals.literal_infos[lit_id];
@@ -372,8 +374,9 @@ bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literal
         for (const auto position : info.parameter_to_positions[uint_t(m_parameter_index)])
         {
             auto assignment = VertexAssignment(f::ParameterIndex(position), m_object_index);
-
             assert(assignment.is_valid());
+
+            // std::cout << assignment << std::endl;
 
             const auto true_assignment = pred_set.at(assignment);
 
@@ -384,8 +387,9 @@ bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literal
         for (const auto& [position, object] : info.constant_positions)
         {
             auto assignment = VertexAssignment(f::ParameterIndex(position), object);
-
             assert(assignment.is_valid());
+
+            // std::cout << assignment << std::endl;
 
             const auto true_assignment = pred_set.at(assignment);
 
@@ -502,6 +506,8 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
     if (!src_is_p)
         std::swap(p, q);
 
+    // std::cout << "Edge: " << p << " " << q << std::endl;
+
     const auto obj_p = src_is_p ? m_src.get_object_index() : m_dst.get_object_index();
     const auto obj_q = src_is_p ? m_dst.get_object_index() : m_src.get_object_index();
 
@@ -532,7 +538,7 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                 auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
                 assert(assignment.is_valid());
 
-                std::cout << assignment << std::endl;
+                // std::cout << assignment << std::endl;
 
                 const auto true_assignment = pred_set.at(assignment);
                 if (info.polarity != true_assignment)
@@ -562,6 +568,8 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                 auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
                 assert(assignment.is_valid());
 
+                // std::cout << assignment << std::endl;
+
                 if (info.polarity != pred_set.at(assignment))
                     return false;
             }
@@ -589,6 +597,8 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                 auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
                 assert(assignment.is_valid());
 
+                // std::cout << assignment << std::endl;
+
                 if (info.polarity != pred_set.at(assignment))
                     return false;
             }
@@ -606,6 +616,8 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
 
                 auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
                 assert(assignment.is_valid());
+
+                // std::cout << assignment << std::endl;
 
                 const auto true_assignment = pred_set.at(assignment);
                 if (info.polarity != true_assignment)
@@ -771,6 +783,7 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
         auto literal_info = details::LiteralInfo<T> {};
         literal_info.predicate = literal.get_atom().get_predicate().get_index();
         literal_info.polarity = literal.get_polarity();
+        literal_info.arity = literal.get_atom().get_predicate().get_arity();
         literal_info.parameter_to_positions.resize(arity);
 
         const auto terms = literal.get_atom().get_terms();
@@ -853,16 +866,18 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_target_offsets = std::move(target_offsets_);
     m_targets = std::move(targets_);
 
-    std::cout << std::endl;
-    std::cout << "Unary overapproximation condition" << std::endl;
-    std::cout << m_unary_overapproximation_condition << std::endl;
-    std::cout << "Unary overapproximation indexed literals" << std::endl;
-    std::cout << m_unary_overapproximation_indexed_literals << std::endl;
-    std::cout << std::endl;
-    std::cout << "Binary overapproximation condition" << std::endl;
-    std::cout << m_binary_overapproximation_condition << std::endl;
-    std::cout << "Binary overapproximation indexed literals" << std::endl;
-    std::cout << m_binary_overapproximation_indexed_literals << std::endl;
+    std::cout << "Num vertices: " << m_vertices.size() << " num edges: " << m_targets.size() << std::endl;
+
+    // std::cout << std::endl;
+    // std::cout << "Unary overapproximation condition" << std::endl;
+    // std::cout << m_unary_overapproximation_condition << std::endl;
+    // std::cout << "Unary overapproximation indexed literals" << std::endl;
+    // std::cout << m_unary_overapproximation_indexed_literals << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "Binary overapproximation condition" << std::endl;
+    // std::cout << m_binary_overapproximation_condition << std::endl;
+    // std::cout << "Binary overapproximation indexed literals" << std::endl;
+    // std::cout << m_binary_overapproximation_indexed_literals << std::endl;
 }
 
 const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const noexcept { return m_vertices[index]; }

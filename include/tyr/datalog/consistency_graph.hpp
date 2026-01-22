@@ -42,6 +42,7 @@ struct LiteralInfo
 {
     Index<formalism::Predicate<T>> predicate;
     bool polarity;
+    size_t arity;
     std::vector<std::pair<uint_t, Index<formalism::Object>>> constant_positions;
     std::vector<std::vector<uint_t>> parameter_to_positions;
 };
