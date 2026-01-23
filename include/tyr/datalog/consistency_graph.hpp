@@ -44,8 +44,11 @@ struct LiteralInfo
     bool polarity;
     size_t kpkc_arity;
     std::vector<std::pair<uint_t, Index<formalism::Object>>> constant_positions;
-    std::vector<uint_t> position_to_constant_positions_offset;
     std::vector<std::vector<uint_t>> parameter_to_positions;
+};
+
+struct ConstraintInfo
+{
 };
 
 template<formalism::FactKind T>
@@ -264,7 +267,7 @@ public:
 
         const auto constraints = m_binary_overapproximation_condition.get_numeric_constraints();
 
-        if (constant_consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate))
+        if (constant_pair_consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate))
         {
             for (uint_t src_pos = 0; src_pos < m_sources.size(); ++src_pos)
             {
