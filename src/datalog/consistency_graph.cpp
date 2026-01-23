@@ -547,22 +547,30 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
 
         for (auto pos_p : info.parameter_to_positions[p])
         {
-            for (const auto& [pos_c, obj_c] : info.constant_positions)
+            const auto offset = info.position_to_constant_positions_offset[pos_p];
+
+            for (uint_t i = 0; i < offset; ++i)
             {
-                assert(pos_p != pos_c);
+                const auto& [pos_c, obj_c] = info.constant_positions[i];
 
-                auto first_pos = pos_p;
-                auto second_pos = pos_c;
-                auto first_obj = obj_p;
-                auto second_obj = obj_c;
+                assert(pos_p > pos_c);
 
-                if (first_pos > second_pos)
-                {
-                    std::swap(first_pos, second_pos);
-                    std::swap(first_obj, second_obj);
-                }
+                auto assignment = EdgeAssignment(f::ParameterIndex(pos_c), obj_c, f::ParameterIndex(pos_p), obj_p);
+                assert(assignment.is_valid());
 
-                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                // std::cout << assignment << std::endl;
+
+                if (polarity != pred_set.at(assignment))
+                    return false;
+            }
+
+            for (uint_t i = offset; i < info.constant_positions.size(); ++i)
+            {
+                const auto& [pos_c, obj_c] = info.constant_positions[i];
+
+                assert(pos_p < pos_c);
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(pos_p), obj_p, f::ParameterIndex(pos_c), obj_c);
                 assert(assignment.is_valid());
 
                 // std::cout << assignment << std::endl;
@@ -584,22 +592,30 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
 
         for (auto pos_q : info.parameter_to_positions[q])
         {
-            for (const auto& [pos_c, obj_c] : info.constant_positions)
+            const auto offset = info.position_to_constant_positions_offset[pos_q];
+
+            for (uint_t i = 0; i < offset; ++i)
             {
-                assert(pos_q != pos_c);
+                const auto& [pos_c, obj_c] = info.constant_positions[i];
 
-                auto first_pos = pos_q;
-                auto second_pos = pos_c;
-                auto first_obj = obj_q;
-                auto second_obj = obj_c;
+                assert(pos_q > pos_c);
 
-                if (first_pos > second_pos)
-                {
-                    std::swap(first_pos, second_pos);
-                    std::swap(first_obj, second_obj);
-                }
+                auto assignment = EdgeAssignment(f::ParameterIndex(pos_c), obj_c, f::ParameterIndex(pos_q), obj_q);
+                assert(assignment.is_valid());
 
-                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                // std::cout << assignment << std::endl;
+
+                if (polarity != pred_set.at(assignment))
+                    return false;
+            }
+
+            for (uint_t i = offset; i < info.constant_positions.size(); ++i)
+            {
+                const auto& [pos_c, obj_c] = info.constant_positions[i];
+
+                assert(pos_q < pos_c);
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(pos_q), obj_q, f::ParameterIndex(pos_c), obj_c);
                 assert(assignment.is_valid());
 
                 // std::cout << assignment << std::endl;
@@ -665,7 +681,6 @@ uint_t Edge::get_index() const noexcept { return m_index; }
 const Vertex& Edge::get_src() const noexcept { return m_src; }
 
 const Vertex& Edge::get_dst() const noexcept { return m_dst; }
-
 }
 
 /**
@@ -855,7 +870,9 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
         literal_info.predicate = literal.get_atom().get_predicate().get_index();
         literal_info.polarity = literal.get_polarity();
         literal_info.kpkc_arity = kpkc_arity(literal);
-        literal_info.parameter_to_positions.resize(arity);
+        literal_info.constant_positions = std::vector<std::pair<uint_t, Index<formalism::Object>>> {};
+        literal_info.position_to_constant_positions_offset = std::vector<uint_t>();
+        literal_info.parameter_to_positions = std::vector<std::vector<uint_t>>(arity);
 
         const auto terms = literal.get_atom().get_terms();
 
@@ -870,6 +887,8 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
                 [&](auto&& arg)
                 {
                     using Alternative = std::decay_t<decltype(arg)>;
+
+                    literal_info.position_to_constant_positions_offset.push_back(literal_info.constant_positions.size());
 
                     if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                     {
@@ -1260,5 +1279,4 @@ create_overapproximation_conflicting_conjunctive_condition(size_t k, View<Index<
     canonicalize(conj_cond);
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
-
 }

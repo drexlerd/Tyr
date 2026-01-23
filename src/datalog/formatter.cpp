@@ -74,6 +74,8 @@ std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el
 
         os << print_indent << "constant positions = " << el.constant_positions << "\n";
 
+        os << print_indent << "position to constant positions offset = " << el.position_to_constant_positions_offset << "\n";
+
         os << print_indent << "parameter to positions = " << el.parameter_to_positions << "\n";
     }
 

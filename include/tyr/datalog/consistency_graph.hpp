@@ -44,6 +44,7 @@ struct LiteralInfo
     bool polarity;
     size_t kpkc_arity;
     std::vector<std::pair<uint_t, Index<formalism::Object>>> constant_positions;
+    std::vector<uint_t> position_to_constant_positions_offset;
     std::vector<std::vector<uint_t>> parameter_to_positions;
 };
 
