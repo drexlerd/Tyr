@@ -68,6 +68,10 @@ std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el
     {
         IndentScope scope(os);
 
+        os << print_indent << "predicate = " << el.predicate << "\n";
+
+        os << print_indent << "polarity = " << el.polarity << "\n";
+
         os << print_indent << "constant positions = " << el.constant_positions << "\n";
 
         os << print_indent << "parameter to positions = " << el.parameter_to_positions << "\n";
@@ -91,6 +95,8 @@ std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiter
         os << print_indent << "parameter to literalinfos = " << el.parameter_to_literal_infos << "\n";
 
         os << print_indent << "parameter pair to literal infos = " << el.parameter_pairs_to_literal_infos << "\n";
+
+        os << print_indent << "literal infos with constants = " << el.literal_infos_with_constants << "\n";
     }
 
     os << ")";

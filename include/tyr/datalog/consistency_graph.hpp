@@ -54,6 +54,8 @@ struct TaggedIndexedLiterals
 
     std::vector<std::vector<uint_t>> parameter_to_literal_infos;
     std::vector<std::vector<std::vector<uint_t>>> parameter_pairs_to_literal_infos;
+
+    std::vector<uint_t> literal_infos_with_constants;
 };
 
 struct IndexedLiterals

@@ -383,6 +383,14 @@ bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literal
             if (polarity != true_assignment)
                 return false;
         }
+    }
+
+    // TODO: this does not depend on vertex
+    for (const auto& info : indexed_literals.literal_infos)
+    {
+        const auto predicate = info.predicate;
+        const auto& pred_set = predicate_assignment_sets.get_set(predicate);
+        const auto polarity = info.polarity;
 
         for (const auto& [position, object] : info.constant_positions)
         {
@@ -496,28 +504,25 @@ template bool Edge::consistent_literals(View<IndexList<fd::Literal<f::FluentTag>
 template<formalism::FactKind T>
 bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
 {
-    uint_t p = uint_t(m_src.get_parameter_index());
-    uint_t q = uint_t(m_dst.get_parameter_index());
-    if (p == q)
-        return true;  // shouldn't happen for real edges, but safe
+    auto p = uint_t(m_src.get_parameter_index());
+    auto q = uint_t(m_dst.get_parameter_index());
+    auto obj_p = m_src.get_object_index();
+    auto obj_q = m_dst.get_object_index();
 
-    // canonicalize
-    const auto src_is_p = (p < q);
-    if (!src_is_p)
+    if (p > q)
+    {
         std::swap(p, q);
+        std::swap(obj_p, obj_q);
+    }
 
     // std::cout << "Edge: " << p << " " << q << std::endl;
 
-    const auto obj_p = src_is_p ? m_src.get_object_index() : m_dst.get_object_index();
-    const auto obj_q = src_is_p ? m_dst.get_object_index() : m_src.get_object_index();
-
-    // TODO: this only considers literal that contain p and q
+    /// positions where p/q occur in that literal
     for (const auto lit_id : indexed_literals.parameter_pairs_to_literal_infos[p][q])
     {
         const auto& info = indexed_literals.literal_infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
 
-        // positions where p/q occur in that literal
         for (auto pos_p : info.parameter_to_positions[p])
         {
             for (auto pos_q : info.parameter_to_positions[q])
@@ -546,8 +551,41 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                     return false;
             }
         }
+    }
 
-        // constant c with position pos_c < pos_p or pos_c > pos_p
+    /// constants c,c' with positions pos_c < pos_c'
+    // TODO: this does not depend on E and should be checked globally in the future.
+    for (const auto& info : indexed_literals.literal_infos)
+    {
+        const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+
+        for (uint_t i = 0; i < info.constant_positions.size(); ++i)
+        {
+            const auto& [first_pos, first_obj] = info.constant_positions[i];
+
+            for (uint_t j = i + 1; j < info.constant_positions.size(); ++j)
+            {
+                const auto& [second_pos, second_obj] = info.constant_positions[j];
+                assert(first_pos < second_pos);
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                assert(assignment.is_valid());
+
+                // std::cout << assignment << std::endl;
+
+                const auto true_assignment = pred_set.at(assignment);
+                if (info.polarity != true_assignment)
+                    return false;
+            }
+        }
+    }
+
+    /// constant c with position pos_c < pos_p or pos_c > pos_p
+    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[p])
+    {
+        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+
         for (auto pos_p : info.parameter_to_positions[p])
         {
             for (const auto& [pos_c, obj_c] : info.constant_positions)
@@ -575,8 +613,14 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                     return false;
             }
         }
+    }
 
-        // constant c with position pos_c < pos_q or pos_c > pos_q
+    /// constant c with position pos_c < pos_q or pos_c > pos_q
+    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[q])
+    {
+        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+
         for (auto pos_q : info.parameter_to_positions[q])
         {
             for (const auto& [pos_c, obj_c] : info.constant_positions)
@@ -604,32 +648,7 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                     return false;
             }
         }
-
-        // constants c,c' with positions pos_c < pos_c'
-        for (uint_t i = 0; i < info.constant_positions.size(); ++i)
-        {
-            const auto& [first_pos, first_obj] = info.constant_positions[i];
-
-            for (uint_t j = i + 1; j < info.constant_positions.size(); ++j)
-            {
-                const auto& [second_pos, second_obj] = info.constant_positions[j];
-                assert(first_pos < second_pos);
-
-                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
-                assert(assignment.is_valid());
-
-                // std::cout << assignment << std::endl;
-
-                const auto true_assignment = pred_set.at(assignment);
-                if (info.polarity != true_assignment)
-                    return false;
-            }
-        }
     }
-
-    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[p]) {}
-
-    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[q]) {}
 
     return true;
 }
@@ -830,6 +849,9 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
             }
         }
 
+        if (!literal_info.constant_positions.empty())
+            result.literal_infos_with_constants.push_back(index);
+
         result.literal_infos.push_back(std::move(literal_info));
     }
 
@@ -871,7 +893,7 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_target_offsets = std::move(target_offsets_);
     m_targets = std::move(targets_);
 
-    std::cout << "Num vertices: " << m_vertices.size() << " num edges: " << m_targets.size() << std::endl;
+    // std::cout << "Num vertices: " << m_vertices.size() << " num edges: " << m_targets.size() << std::endl;
 
     // std::cout << std::endl;
     // std::cout << "Unary overapproximation condition" << std::endl;

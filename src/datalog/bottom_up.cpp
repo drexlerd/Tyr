@@ -111,6 +111,9 @@ ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderCon
     if (!applicable)
     {
         std::cout << "Delta-KPKC generated false positive." << std::endl;
+        std::cout << "Rule:" << std::endl;
+        std::cout << rule << std::endl;
+        std::cout << "GroundRule:" << std::endl;
         std::cout << ground_rule << std::endl;
     }
 
