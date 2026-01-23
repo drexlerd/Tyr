@@ -92,11 +92,15 @@ std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiter
 
         os << print_indent << "literal infos = " << el.literal_infos << "\n";
 
-        os << print_indent << "parameter to literalinfos = " << el.parameter_to_literal_infos << "\n";
+        os << print_indent << "parameter to literal infos = " << el.parameter_to_literal_infos << "\n";
 
-        os << print_indent << "parameter pair to literal infos = " << el.parameter_pairs_to_literal_infos << "\n";
+        os << print_indent << "parameter pairs to literal infos = " << el.parameter_pairs_to_literal_infos << "\n";
+
+        os << print_indent << "parameter to literal infos with constants = " << el.parameter_to_literal_infos_with_constants << "\n";
 
         os << print_indent << "literal infos with constants = " << el.literal_infos_with_constants << "\n";
+
+        os << print_indent << "literal infos with constant pairs = " << el.literal_infos_with_constant_pairs << "\n";
     }
 
     os << ")";

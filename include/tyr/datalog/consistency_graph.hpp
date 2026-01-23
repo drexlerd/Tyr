@@ -42,7 +42,7 @@ struct LiteralInfo
 {
     Index<formalism::Predicate<T>> predicate;
     bool polarity;
-    size_t arity;
+    size_t kpkc_arity;
     std::vector<std::pair<uint_t, Index<formalism::Object>>> constant_positions;
     std::vector<std::vector<uint_t>> parameter_to_positions;
 };
@@ -52,10 +52,17 @@ struct TaggedIndexedLiterals
 {
     std::vector<LiteralInfo<T>> literal_infos;
 
+    // For building vertex assignments (p/o)
     std::vector<std::vector<uint_t>> parameter_to_literal_infos;
-    std::vector<std::vector<std::vector<uint_t>>> parameter_pairs_to_literal_infos;
 
+    // For building edge assignments (p/o,q/c)
+    std::vector<std::vector<std::vector<uint_t>>> parameter_pairs_to_literal_infos;
+    std::vector<std::vector<uint_t>> parameter_to_literal_infos_with_constants;
+
+    // For global vertex assignments (c) for constant c
     std::vector<uint_t> literal_infos_with_constants;
+    // For global edge assignments (c,c') for constants c,c'
+    std::vector<uint_t> literal_infos_with_constant_pairs;
 };
 
 struct IndexedLiterals
@@ -160,6 +167,14 @@ private:
                   const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
                   const details::Vertices& vertices);
 
+    template<formalism::FactKind T>
+    bool constant_consistent_literals(const details::TaggedIndexedLiterals<T>& indexed_literals,
+                                      const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+
+    template<formalism::FactKind T>
+    bool constant_pair_consistent_literals(const details::TaggedIndexedLiterals<T>& indexed_literals,
+                                           const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+
 public:
     StaticConsistencyGraph(View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
                            View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
@@ -214,14 +229,17 @@ public:
 
         const auto constraints = m_unary_overapproximation_condition.get_numeric_constraints();
 
-        for (auto index = active_vertices.find_first(); index != boost::dynamic_bitset<>::npos; index = active_vertices.find_next(index))
+        if (constant_consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate))
         {
-            const auto vertex = get_vertex(index);
-
-            if (vertex.consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                && vertex.consistent_numeric_constraints(constraints, assignment_sets))
+            for (auto index = active_vertices.find_first(); index != boost::dynamic_bitset<>::npos; index = active_vertices.find_next(index))
             {
-                callback(vertex);
+                const auto vertex = get_vertex(index);
+
+                if (vertex.consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
+                    && vertex.consistent_numeric_constraints(constraints, assignment_sets))
+                {
+                    callback(vertex);
+                }
             }
         }
     }
@@ -245,29 +263,32 @@ public:
 
         const auto constraints = m_binary_overapproximation_condition.get_numeric_constraints();
 
-        for (uint_t src_pos = 0; src_pos < m_sources.size(); ++src_pos)
+        if (constant_consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate))
         {
-            const auto src = m_sources[src_pos];
-
-            if (!consistent_vertices.test(src))
-                continue;
-
-            for (uint_t index = m_target_offsets[src_pos]; index < m_target_offsets[src_pos + 1]; ++index)
+            for (uint_t src_pos = 0; src_pos < m_sources.size(); ++src_pos)
             {
-                if (!active_edges.test(index))
+                const auto src = m_sources[src_pos];
+
+                if (!consistent_vertices.test(src))
                     continue;
 
-                const auto dst = m_targets[index];
-
-                if (!consistent_vertices.test(dst))
-                    continue;
-
-                const auto edge = details::Edge(index, get_vertex(src), get_vertex(dst));
-
-                if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                    && edge.consistent_numeric_constraints(constraints, assignment_sets))
+                for (uint_t index = m_target_offsets[src_pos]; index < m_target_offsets[src_pos + 1]; ++index)
                 {
-                    callback(edge);
+                    if (!active_edges.test(index))
+                        continue;
+
+                    const auto dst = m_targets[index];
+
+                    if (!consistent_vertices.test(dst))
+                        continue;
+
+                    const auto edge = details::Edge(index, get_vertex(src), get_vertex(dst));
+
+                    if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
+                        && edge.consistent_numeric_constraints(constraints, assignment_sets))
+                    {
+                        callback(edge);
+                    }
                 }
             }
         }

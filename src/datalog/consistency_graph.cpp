@@ -369,32 +369,13 @@ bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literal
         const auto predicate = info.predicate;
         const auto polarity = info.polarity;
 
+        assert(polarity || info.kpkc_arity == 1);  ///< Can only handly unary negated literals due to overapproximation
+
         const auto& pred_set = predicate_assignment_sets.get_set(predicate);
 
         for (const auto position : info.parameter_to_positions[uint_t(m_parameter_index)])
         {
             auto assignment = VertexAssignment(f::ParameterIndex(position), m_object_index);
-            assert(assignment.is_valid());
-
-            // std::cout << assignment << std::endl;
-
-            const auto true_assignment = pred_set.at(assignment);
-
-            if (polarity != true_assignment)
-                return false;
-        }
-    }
-
-    // TODO: this does not depend on vertex
-    for (const auto& info : indexed_literals.literal_infos)
-    {
-        const auto predicate = info.predicate;
-        const auto& pred_set = predicate_assignment_sets.get_set(predicate);
-        const auto polarity = info.polarity;
-
-        for (const auto& [position, object] : info.constant_positions)
-        {
-            auto assignment = VertexAssignment(f::ParameterIndex(position), object);
             assert(assignment.is_valid());
 
             // std::cout << assignment << std::endl;
@@ -522,12 +503,14 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
     {
         const auto& info = indexed_literals.literal_infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+        const auto polarity = info.polarity;
+
+        assert(polarity || info.kpkc_arity == 2);  ///< Can only handly binary negated literals due to overapproximation
 
         for (auto pos_p : info.parameter_to_positions[p])
         {
             for (auto pos_q : info.parameter_to_positions[q])
             {
-                // Enforce first_index < second_index to satisfy EdgeAssignment::is_valid()
                 assert(pos_p != pos_q);
 
                 auto first_pos = pos_p;
@@ -547,51 +530,26 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
                 // std::cout << assignment << std::endl;
 
                 const auto true_assignment = pred_set.at(assignment);
-                if (info.polarity != true_assignment)
-                    return false;
-            }
-        }
-    }
-
-    /// constants c,c' with positions pos_c < pos_c'
-    // TODO: this does not depend on E and should be checked globally in the future.
-    for (const auto& info : indexed_literals.literal_infos)
-    {
-        const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
-
-        for (uint_t i = 0; i < info.constant_positions.size(); ++i)
-        {
-            const auto& [first_pos, first_obj] = info.constant_positions[i];
-
-            for (uint_t j = i + 1; j < info.constant_positions.size(); ++j)
-            {
-                const auto& [second_pos, second_obj] = info.constant_positions[j];
-                assert(first_pos < second_pos);
-
-                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
-                assert(assignment.is_valid());
-
-                // std::cout << assignment << std::endl;
-
-                const auto true_assignment = pred_set.at(assignment);
-                if (info.polarity != true_assignment)
+                if (polarity != true_assignment)
                     return false;
             }
         }
     }
 
     /// constant c with position pos_c < pos_p or pos_c > pos_p
-    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[p])
+    for (const auto lit_id : indexed_literals.parameter_to_literal_infos_with_constants[p])
     {
         const auto& info = indexed_literals.literal_infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+        const auto polarity = info.polarity;
+
+        assert(polarity || info.kpkc_arity == 2);  ///< Can only handly binary negated literals due to overapproximation
 
         for (auto pos_p : info.parameter_to_positions[p])
         {
             for (const auto& [pos_c, obj_c] : info.constant_positions)
             {
-                if (pos_p == pos_c)
-                    continue;  // should never happen
+                assert(pos_p != pos_c);
 
                 auto first_pos = pos_p;
                 auto second_pos = pos_c;
@@ -609,24 +567,26 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
 
                 // std::cout << assignment << std::endl;
 
-                if (info.polarity != pred_set.at(assignment))
+                if (polarity != pred_set.at(assignment))
                     return false;
             }
         }
     }
 
     /// constant c with position pos_c < pos_q or pos_c > pos_q
-    for (const auto lit_id : indexed_literals.parameter_to_literal_infos[q])
+    for (const auto lit_id : indexed_literals.parameter_to_literal_infos_with_constants[q])
     {
         const auto& info = indexed_literals.literal_infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
+        const auto polarity = info.polarity;
+
+        assert(polarity || info.kpkc_arity == 2);  ///< Can only handly binary negated literals due to overapproximation
 
         for (auto pos_q : info.parameter_to_positions[q])
         {
             for (const auto& [pos_c, obj_c] : info.constant_positions)
             {
-                if (pos_q == pos_c)
-                    continue;  // should never happen
+                assert(pos_q != pos_c);
 
                 auto first_pos = pos_q;
                 auto second_pos = pos_c;
@@ -644,7 +604,7 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
 
                 // std::cout << assignment << std::endl;
 
-                if (info.polarity != pred_set.at(assignment))
+                if (polarity != pred_set.at(assignment))
                     return false;
             }
         }
@@ -723,28 +683,31 @@ StaticConsistencyGraph::compute_vertices(const details::TaggedIndexedLiterals<f:
 
     auto partitions = std::vector<std::vector<uint_t>> {};
 
-    for (uint_t parameter_index = begin_parameter_index; parameter_index < end_parameter_index; ++parameter_index)
+    if (constant_consistent_literals(indexed_literals, static_assignment_sets.predicate))
     {
-        auto& parameter_domain = parameter_domains[parameter_index];
-
-        auto partition = std::vector<uint_t> {};
-
-        for (const auto object_index : parameter_domain)
+        for (uint_t parameter_index = begin_parameter_index; parameter_index < end_parameter_index; ++parameter_index)
         {
-            const auto vertex_index = static_cast<uint_t>(vertices.size());
+            auto& parameter_domain = parameter_domains[parameter_index];
 
-            auto vertex = details::Vertex(vertex_index, f::ParameterIndex(parameter_index), Index<f::Object>(object_index));
+            auto partition = std::vector<uint_t> {};
 
-            assert(vertex.get_index() == vertex_index);
-
-            if (vertex.consistent_literals(indexed_literals, static_assignment_sets.predicate))
+            for (const auto object_index : parameter_domain)
             {
-                vertices.push_back(std::move(vertex));
-                partition.push_back(vertex.get_index());
-            }
-        }
+                const auto vertex_index = static_cast<uint_t>(vertices.size());
 
-        partitions.push_back(partition);
+                auto vertex = details::Vertex(vertex_index, f::ParameterIndex(parameter_index), Index<f::Object>(object_index));
+
+                assert(vertex.get_index() == vertex_index);
+
+                if (vertex.consistent_literals(indexed_literals, static_assignment_sets.predicate))
+                {
+                    vertices.push_back(std::move(vertex));
+                    partition.push_back(vertex.get_index());
+                }
+            }
+
+            partitions.push_back(partition);
+        }
     }
 
     return { std::move(vertices), std::move(partitions) };
@@ -763,36 +726,117 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
 
     auto targets = std::vector<uint_t> {};
 
-    for (uint_t first_vertex_index = 0; first_vertex_index < vertices.size(); ++first_vertex_index)
+    if (constant_pair_consistent_literals(indexed_literals, static_assignment_sets.predicate))
     {
-        const auto targets_before = targets.size();
-        for (uint_t second_vertex_index = (first_vertex_index + 1); second_vertex_index < vertices.size(); ++second_vertex_index)
+        for (uint_t first_vertex_index = 0; first_vertex_index < vertices.size(); ++first_vertex_index)
         {
-            const auto& first_vertex = vertices.at(first_vertex_index);
-            const auto& second_vertex = vertices.at(second_vertex_index);
-
-            assert(first_vertex.get_index() == first_vertex_index);
-            assert(second_vertex.get_index() == second_vertex_index);
-
-            auto edge = details::Edge(std::numeric_limits<uint_t>::max(), first_vertex, second_vertex);
-
-            // Part 1 of definition of substitution consistency graph (Stahlberg-ecai2023): exclude I^\neq
-            if (first_vertex.get_parameter_index() != second_vertex.get_parameter_index()
-                && edge.consistent_literals(indexed_literals, static_assignment_sets.predicate))
+            const auto targets_before = targets.size();
+            for (uint_t second_vertex_index = (first_vertex_index + 1); second_vertex_index < vertices.size(); ++second_vertex_index)
             {
-                targets.push_back(second_vertex_index);
-            }
-        }
+                const auto& first_vertex = vertices.at(first_vertex_index);
+                const auto& second_vertex = vertices.at(second_vertex_index);
 
-        if (targets_before < targets.size())
-        {
-            sources.push_back(first_vertex_index);
-            target_offsets.push_back(targets.size());
+                assert(first_vertex.get_index() == first_vertex_index);
+                assert(second_vertex.get_index() == second_vertex_index);
+
+                auto edge = details::Edge(std::numeric_limits<uint_t>::max(), first_vertex, second_vertex);
+
+                // Part 1 of definition of substitution consistency graph (Stahlberg-ecai2023): exclude I^\neq
+                if (first_vertex.get_parameter_index() != second_vertex.get_parameter_index()
+                    && edge.consistent_literals(indexed_literals, static_assignment_sets.predicate))
+                {
+                    targets.push_back(second_vertex_index);
+                }
+            }
+
+            if (targets_before < targets.size())
+            {
+                sources.push_back(first_vertex_index);
+                target_offsets.push_back(targets.size());
+            }
         }
     }
 
     return { std::move(sources), std::move(target_offsets), std::move(targets) };
 }
+
+template<formalism::FactKind T>
+bool StaticConsistencyGraph::constant_consistent_literals(const details::TaggedIndexedLiterals<T>& indexed_literals,
+                                                          const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+{
+    for (const auto& lit_id : indexed_literals.literal_infos_with_constants)
+    {
+        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto predicate = info.predicate;
+        const auto& pred_set = predicate_assignment_sets.get_set(predicate);
+        const auto polarity = info.polarity;
+
+        assert(polarity || info.kpkc_arity == 1);  ///< Can only handly unary negated literals due to overapproximation
+
+        for (const auto& [position, object] : info.constant_positions)
+        {
+            auto assignment = VertexAssignment(f::ParameterIndex(position), object);
+            assert(assignment.is_valid());
+
+            // std::cout << assignment << std::endl;
+
+            const auto true_assignment = pred_set.at(assignment);
+
+            if (polarity != true_assignment)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+template bool StaticConsistencyGraph::constant_consistent_literals(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
+                                                                   const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
+template bool StaticConsistencyGraph::constant_consistent_literals(const details::TaggedIndexedLiterals<f::FluentTag>& indexed_literals,
+                                                                   const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
+
+template<formalism::FactKind T>
+bool StaticConsistencyGraph::constant_pair_consistent_literals(const details::TaggedIndexedLiterals<T>& indexed_literals,
+                                                               const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+{
+    /// constants c,c' with positions pos_c < pos_c'
+    for (const auto& lit_id : indexed_literals.literal_infos_with_constant_pairs)
+    {
+        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto predicate = info.predicate;
+        const auto& pred_set = predicate_assignment_sets.get_set(predicate);
+        const auto polarity = info.polarity;
+
+        assert(polarity || info.kpkc_arity == 2);  ///< Can only handly binary negated literals due to overapproximation
+
+        for (uint_t i = 0; i < info.constant_positions.size(); ++i)
+        {
+            const auto& [first_pos, first_obj] = info.constant_positions[i];
+
+            for (uint_t j = i + 1; j < info.constant_positions.size(); ++j)
+            {
+                const auto& [second_pos, second_obj] = info.constant_positions[j];
+                assert(first_pos < second_pos);
+
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                assert(assignment.is_valid());
+
+                // std::cout << assignment << std::endl;
+
+                const auto true_assignment = pred_set.at(assignment);
+                if (polarity != true_assignment)
+                    return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+template bool StaticConsistencyGraph::constant_pair_consistent_literals(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
+                                                                        const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
+template bool StaticConsistencyGraph::constant_pair_consistent_literals(const details::TaggedIndexedLiterals<f::FluentTag>& indexed_literals,
+                                                                        const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
 
 template<f::FactKind T>
 auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Repository> literals, size_t arity)
@@ -801,16 +845,22 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
 
     result.parameter_to_literal_infos = std::vector<std::vector<uint_t>>(arity);
     result.parameter_pairs_to_literal_infos = std::vector<std::vector<std::vector<uint_t>>>(arity, std::vector<std::vector<uint_t>>(arity));
+    result.parameter_to_literal_infos_with_constants = std::vector<std::vector<uint_t>>(arity);
+    result.literal_infos_with_constants = std::vector<uint_t> {};
+    result.literal_infos_with_constant_pairs = std::vector<uint_t> {};
 
     for (const auto literal : literals)
     {
         auto literal_info = details::LiteralInfo<T> {};
         literal_info.predicate = literal.get_atom().get_predicate().get_index();
         literal_info.polarity = literal.get_polarity();
-        literal_info.arity = literal.get_atom().get_predicate().get_arity();
+        literal_info.kpkc_arity = kpkc_arity(literal);
         literal_info.parameter_to_positions.resize(arity);
 
         const auto terms = literal.get_atom().get_terms();
+
+        auto num_parameters = uint_t(0);
+        auto num_constants = uint_t(0);
 
         for (uint_t position = 0; position < terms.size(); ++position)
         {
@@ -824,9 +874,13 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
                     if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                     {
                         literal_info.parameter_to_positions[uint_t(arg)].push_back(position);
+                        ++num_parameters;
                     }
                     else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
+                    {
                         literal_info.constant_positions.emplace_back(position, arg.get_index());
+                        ++num_constants;
+                    }
                     else
                         static_assert(dependent_false<Alternative>::value, "Missing case");
                 },
@@ -849,8 +903,21 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
             }
         }
 
-        if (!literal_info.constant_positions.empty())
+        if (num_constants > 0)
+        {
             result.literal_infos_with_constants.push_back(index);
+            if (num_constants > 1)
+                result.literal_infos_with_constant_pairs.push_back(index);
+
+            if (num_parameters > 0)
+            {
+                for (uint_t param = 0; param < arity; ++param)
+                {
+                    if (!literal_info.parameter_to_positions[param].empty())
+                        result.parameter_to_literal_infos_with_constants[param].push_back(index);
+                }
+            }
+        }
 
         result.literal_infos.push_back(std::move(literal_info));
     }
