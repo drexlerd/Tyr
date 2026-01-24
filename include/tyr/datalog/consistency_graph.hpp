@@ -64,6 +64,8 @@ struct LiteralInfo
     Index<formalism::Predicate<T>> predicate;
     bool polarity;
     size_t kpkc_arity;
+    size_t num_parameters;
+    size_t num_constants;
 
     PositionMappings mappings;
 };
@@ -98,6 +100,8 @@ struct FunctionTermInfo
 {
     Index<formalism::Function<T>> function;
     size_t kpkc_arity;
+    size_t num_parameters;
+    size_t num_constants;
 
     PositionMappings mappings;
 };
@@ -114,6 +118,8 @@ struct ConstraintInfo
 {
     TaggedIndexedFunctionTerms<formalism::StaticTag> static_infos;
     TaggedIndexedFunctionTerms<formalism::FluentTag> fluent_infos;
+
+    size_t kpkc_arity;
 
     template<formalism::FactKind T>
     const auto& get() const noexcept
@@ -147,14 +153,20 @@ private:
 public:
     Vertex(uint_t index, formalism::ParameterIndex parameter_index, Index<formalism::Object> object_index) noexcept;
 
-    template<formalism::FactKind T>
-    bool consistent_literals(View<IndexList<formalism::datalog::Literal<T>>, formalism::datalog::Repository> literals,
-                             const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+    /**
+     * Classical
+     */
+
     template<formalism::FactKind T>
     bool consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
+    /**
+     * Numeric
+     */
+
     bool consistent_numeric_constraints(
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
+        const IndexedConstraints& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
     Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::datalog::Repository> term) const noexcept;
@@ -179,15 +191,20 @@ private:
 public:
     Edge(uint_t index, Vertex src, Vertex dst) noexcept;
 
-    template<formalism::FactKind T>
-    bool consistent_literals(View<IndexList<formalism::datalog::Literal<T>>, formalism::datalog::Repository> literals,
-                             const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+    /**
+     * Classical
+     */
 
     template<formalism::FactKind T>
     bool consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
+    /**
+     * Numeric
+     */
+
     bool consistent_numeric_constraints(
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
+        const IndexedConstraints& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
     Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::datalog::Repository> term) const noexcept;
@@ -286,7 +303,7 @@ public:
                 const auto vertex = get_vertex(index);
 
                 if (vertex.consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                    && vertex.consistent_numeric_constraints(constraints, assignment_sets))
+                    && vertex.consistent_numeric_constraints(constraints, m_unary_overapproximation_indexed_constraints, assignment_sets))
                 {
                     callback(vertex);
                 }
@@ -335,7 +352,7 @@ public:
                     const auto edge = details::Edge(index, get_vertex(src), get_vertex(dst));
 
                     if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                        && edge.consistent_numeric_constraints(constraints, assignment_sets))
+                        && edge.consistent_numeric_constraints(constraints, m_binary_overapproximation_indexed_constraints, assignment_sets))
                     {
                         callback(edge);
                     }
