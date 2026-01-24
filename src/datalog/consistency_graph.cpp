@@ -146,8 +146,6 @@ template<formalism::FactKind T>
 ClosedInterval<float_t>
 consistent_interval(const FunctionTermInfo<T>& info, const Vertex& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
-    assert(info.kpkc_arity == 1);  ///< Can only handly unary negated literals due to overapproximation
-
     const auto function = info.function;
     const auto& func_set = function_assignment_sets.get_set(function);
 
@@ -155,28 +153,34 @@ consistent_interval(const FunctionTermInfo<T>& info, const Vertex& vertex, const
     if (empty(bounds))
         return bounds;  // early exit
 
-    for (const auto position : info.mappings.parameter_to_positions[uint_t(vertex.get_parameter_index())])
+    if (info.num_parameters >= 1)
     {
-        auto assignment = VertexAssignment(f::ParameterIndex(position), vertex.get_object_index());
-        assert(assignment.is_valid());
+        for (const auto position : info.mappings.parameter_to_positions[uint_t(vertex.get_parameter_index())])
+        {
+            auto assignment = VertexAssignment(f::ParameterIndex(position), vertex.get_object_index());
+            assert(assignment.is_valid());
 
-        // std::cout << assignment << std::endl;
+            // std::cout << assignment << std::endl;
 
-        bounds = intersect(bounds, func_set.at(assignment));
-        if (empty(bounds))
-            return bounds;  // early exit
+            bounds = intersect(bounds, func_set.at(assignment));
+            if (empty(bounds))
+                return bounds;  // early exit
+        }
     }
 
-    for (const auto& [position, object] : info.mappings.constant_positions)
+    if (info.num_constants >= 1)
     {
-        auto assignment = VertexAssignment(f::ParameterIndex(position), object);
-        assert(assignment.is_valid());
+        for (const auto& [position, object] : info.mappings.constant_positions)
+        {
+            auto assignment = VertexAssignment(f::ParameterIndex(position), object);
+            assert(assignment.is_valid());
 
-        // std::cout << assignment << std::endl;
+            // std::cout << assignment << std::endl;
 
-        bounds = intersect(bounds, func_set.at(assignment));
-        if (empty(bounds))
-            return bounds;  // early exit
+            bounds = intersect(bounds, func_set.at(assignment));
+            if (empty(bounds))
+                return bounds;  // early exit
+        }
     }
 
     return bounds;
@@ -186,8 +190,6 @@ template<formalism::FactKind T>
 ClosedInterval<float_t>
 consistent_interval(const FunctionTermInfo<T>& info, const Edge& edge, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
-    assert(info.kpkc_arity == 2);  ///< Can only handly binary negated literals due to overapproximation
-
     auto p = uint_t(edge.get_src().get_parameter_index());
     auto q = uint_t(edge.get_dst().get_parameter_index());
     auto obj_p = edge.get_src().get_object_index();
@@ -203,7 +205,15 @@ consistent_interval(const FunctionTermInfo<T>& info, const Edge& edge, const Fun
 
     const auto& func_set = function_assignment_sets.get_set(info.function);
 
-    auto bounds = func_set.at(EdgeAssignment());
+    auto bounds = func_set.at(EmptyAssignment());
+    if (empty(bounds))
+        return bounds;  // early exit
+
+    bounds = intersect(bounds, consistent_interval(info, edge.get_src(), function_assignment_sets));
+    if (empty(bounds))
+        return bounds;  // early exit
+
+    bounds = intersect(bounds, consistent_interval(info, edge.get_dst(), function_assignment_sets));
     if (empty(bounds))
         return bounds;  // early exit
 
