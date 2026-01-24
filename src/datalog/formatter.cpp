@@ -67,15 +67,15 @@ std::ostream& print(std::ostream& os, const datalog::details::InfoMappings& el)
     {
         IndentScope scope(os);
 
-        os << print_indent << "parameter to literal infos = " << el.parameter_to_literal_infos << "\n";
+        os << print_indent << "parameter to literal infos = " << el.parameter_to_infos << "\n";
 
-        os << print_indent << "parameter pairs to literal infos = " << el.parameter_pairs_to_literal_infos << "\n";
+        os << print_indent << "parameter pairs to literal infos = " << el.parameter_pairs_to_infos << "\n";
 
-        os << print_indent << "parameter to literal infos with constants = " << el.parameter_to_literal_infos_with_constants << "\n";
+        os << print_indent << "parameter to literal infos with constants = " << el.parameter_to_infos_with_constants << "\n";
 
-        os << print_indent << "literal infos with constants = " << el.literal_infos_with_constants << "\n";
+        os << print_indent << "literal infos with constants = " << el.infos_with_constants << "\n";
 
-        os << print_indent << "literal infos with constant pairs = " << el.literal_infos_with_constant_pairs << "\n";
+        os << print_indent << "literal infos with constant pairs = " << el.infos_with_constant_pairs << "\n";
     }
 
     os << ")";
@@ -128,7 +128,7 @@ std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiter
     {
         IndentScope scope(os);
 
-        os << print_indent << "literal infos = " << el.literal_infos << "\n";
+        os << print_indent << "literal infos = " << el.infos << "\n";
 
         os << print_indent << "mappings = " << el.mappings << "\n";
     }

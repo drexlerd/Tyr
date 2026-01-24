@@ -40,16 +40,16 @@ namespace details
 struct InfoMappings
 {
     // For building vertex assignments (p/o)
-    std::vector<std::vector<uint_t>> parameter_to_literal_infos;
+    std::vector<std::vector<uint_t>> parameter_to_infos;
 
     // For building edge assignments (p/o,q/c)
-    std::vector<std::vector<std::vector<uint_t>>> parameter_pairs_to_literal_infos;
-    std::vector<std::vector<uint_t>> parameter_to_literal_infos_with_constants;
+    std::vector<std::vector<std::vector<uint_t>>> parameter_pairs_to_infos;
+    std::vector<std::vector<uint_t>> parameter_to_infos_with_constants;
 
     // For global vertex assignments (c) for constant c
-    std::vector<uint_t> literal_infos_with_constants;
+    std::vector<uint_t> infos_with_constants;
     // For global edge assignments (c,c') for constants c,c'
-    std::vector<uint_t> literal_infos_with_constant_pairs;
+    std::vector<uint_t> infos_with_constant_pairs;
 };
 
 struct PositionMappings
@@ -71,7 +71,7 @@ struct LiteralInfo
 template<formalism::FactKind T>
 struct TaggedIndexedLiterals
 {
-    std::vector<LiteralInfo<T>> literal_infos;
+    std::vector<LiteralInfo<T>> infos;
 
     InfoMappings mappings;
 };
@@ -96,24 +96,35 @@ struct IndexedLiterals
 template<formalism::FactKind T>
 struct FunctionTermInfo
 {
-    Index<formalism::datalog::FunctionTerm<T>> fterm;
+    Index<formalism::Function<T>> function;
     size_t kpkc_arity;
 
     PositionMappings mappings;
 };
 
 template<formalism::FactKind T>
-struct TaggedFunctionTermInfo
+struct TaggedIndexedFunctionTerms
 {
-    UnorderedMap<Index<formalism::datalog::FunctionTerm<T>>, FunctionTermInfo<T>> fterm_infos;
+    UnorderedMap<Index<formalism::datalog::FunctionTerm<T>>, FunctionTermInfo<T>> infos;
 
     InfoMappings mappings;
 };
 
 struct ConstraintInfo
 {
-    TaggedFunctionTermInfo<formalism::StaticTag> static_infos;
-    TaggedFunctionTermInfo<formalism::FluentTag> fluent_infos;
+    TaggedIndexedFunctionTerms<formalism::StaticTag> static_infos;
+    TaggedIndexedFunctionTerms<formalism::FluentTag> fluent_infos;
+
+    template<formalism::FactKind T>
+    const auto& get() const noexcept
+    {
+        if constexpr (std::is_same_v<T, formalism::StaticTag>)
+            return static_infos;
+        else if constexpr (std::is_same_v<T, formalism::FluentTag>)
+            return fluent_infos;
+        else
+            static_assert(dependent_false<T>::value, "Missing case");
+    }
 };
 
 struct IndexedConstraints
@@ -359,6 +370,9 @@ private:
 
     details::IndexedLiterals m_unary_overapproximation_indexed_literals;
     details::IndexedLiterals m_binary_overapproximation_indexed_literals;
+
+    details::IndexedConstraints m_unary_overapproximation_indexed_constraints;
+    details::IndexedConstraints m_binary_overapproximation_indexed_constraints;
 };
 
 extern std::pair<Index<formalism::datalog::GroundConjunctiveCondition>, bool>

@@ -18,9 +18,9 @@
 #include "tyr/datalog/workspaces/rule.hpp"
 
 #include "tyr/datalog/assignment_sets.hpp"
-#include "tyr/formalism/datalog/arity.hpp"
 #include "tyr/formalism/datalog/builder.hpp"
 #include "tyr/formalism/datalog/canonicalization.hpp"
+#include "tyr/formalism/datalog/expression_arity.hpp"
 #include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/rule_view.hpp"

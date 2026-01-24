@@ -82,7 +82,7 @@ EXCLUDED_DOMAINS = [
 
 ]
 
-exp.add_fetcher("profiling/5-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=lambda run: run["domain"] not in EXCLUDED_DOMAINS)
+exp.add_fetcher("profiling/6-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=lambda run: run["domain"] not in EXCLUDED_DOMAINS)
 exp.add_fetcher("profiling/2026-1-9-lazy-gbfs-ff-pref-ff-profiling-eval", filter=lambda run: run["domain"] not in EXCLUDED_DOMAINS)
 
 exp.add_report(BaseReport(attributes=ATTRIBUTES))

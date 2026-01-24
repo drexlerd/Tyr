@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_DATALOG_ARITY_HPP_
-#define TYR_FORMALISM_DATALOG_ARITY_HPP_
+#ifndef TYR_FORMALISM_DATALOG_EXPRESSION_ARITY_HPP_
+#define TYR_FORMALISM_DATALOG_EXPRESSION_ARITY_HPP_
 
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/views.hpp"
@@ -160,6 +160,14 @@ auto collect_parameters(View<Index<Literal<T>>, C> element)
     return result;
 }
 
+template<FactKind T, Context C>
+auto collect_parameters(View<Index<FunctionTerm<T>>, C> element)
+{
+    auto result = UnorderedSet<ParameterIndex> {};
+    collect_parameters(element, result);
+    return result;
+}
+
 template<Context C>
 auto collect_parameters(View<Data<BooleanOperator<Data<FunctionExpression>>>, C> element)
 {
@@ -256,6 +264,12 @@ template<FactKind T, Context C>
 size_t kpkc_arity(View<Index<Literal<T>>, C> element)
 {
     return element.get_atom().get_predicate().get_arity();
+}
+
+template<FactKind T, Context C>
+size_t kpkc_arity(View<Index<FunctionTerm<T>>, C> element)
+{
+    return element.get_function().get_arity();
 }
 
 template<Context C>

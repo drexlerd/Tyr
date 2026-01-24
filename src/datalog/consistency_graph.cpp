@@ -24,8 +24,9 @@
 #include "tyr/datalog/formatter.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
-#include "tyr/formalism/datalog/arity.hpp"
 #include "tyr/formalism/datalog/builder.hpp"
+#include "tyr/formalism/datalog/expression_arity.hpp"
+#include "tyr/formalism/datalog/expression_properties.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/views.hpp"
@@ -363,9 +364,9 @@ bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literal
 {
     // std::cout << "Vertex: " << *this << std::endl;
 
-    for (const auto lit_id : indexed_literals.mappings.parameter_to_literal_infos[uint_t(m_parameter_index)])
+    for (const auto lit_id : indexed_literals.mappings.parameter_to_infos[uint_t(m_parameter_index)])
     {
-        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& info = indexed_literals.infos[lit_id];
         const auto predicate = info.predicate;
         const auto polarity = info.polarity;
 
@@ -499,9 +500,9 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
     // std::cout << "Edge: " << p << " " << q << std::endl;
 
     /// positions where p/q occur in that literal
-    for (const auto lit_id : indexed_literals.mappings.parameter_pairs_to_literal_infos[p][q])
+    for (const auto lit_id : indexed_literals.mappings.parameter_pairs_to_infos[p][q])
     {
-        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& info = indexed_literals.infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
         const auto polarity = info.polarity;
 
@@ -537,9 +538,9 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
     }
 
     /// constant c with position pos_c < pos_p or pos_c > pos_p
-    for (const auto lit_id : indexed_literals.mappings.parameter_to_literal_infos_with_constants[p])
+    for (const auto lit_id : indexed_literals.mappings.parameter_to_infos_with_constants[p])
     {
-        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& info = indexed_literals.infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
         const auto polarity = info.polarity;
 
@@ -574,9 +575,9 @@ bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals,
     }
 
     /// constant c with position pos_c < pos_q or pos_c > pos_q
-    for (const auto lit_id : indexed_literals.mappings.parameter_to_literal_infos_with_constants[q])
+    for (const auto lit_id : indexed_literals.mappings.parameter_to_infos_with_constants[q])
     {
-        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& info = indexed_literals.infos[lit_id];
         const auto& pred_set = predicate_assignment_sets.get_set(info.predicate);
         const auto polarity = info.polarity;
 
@@ -768,9 +769,9 @@ template<formalism::FactKind T>
 bool StaticConsistencyGraph::constant_consistent_literals(const details::TaggedIndexedLiterals<T>& indexed_literals,
                                                           const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
 {
-    for (const auto& lit_id : indexed_literals.mappings.literal_infos_with_constants)
+    for (const auto& lit_id : indexed_literals.mappings.infos_with_constants)
     {
-        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& info = indexed_literals.infos[lit_id];
         const auto predicate = info.predicate;
         const auto& pred_set = predicate_assignment_sets.get_set(predicate);
         const auto polarity = info.polarity;
@@ -804,9 +805,9 @@ bool StaticConsistencyGraph::constant_pair_consistent_literals(const details::Ta
                                                                const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
 {
     /// constants c,c' with positions pos_c < pos_c'
-    for (const auto& lit_id : indexed_literals.mappings.literal_infos_with_constant_pairs)
+    for (const auto& lit_id : indexed_literals.mappings.infos_with_constant_pairs)
     {
-        const auto& info = indexed_literals.literal_infos[lit_id];
+        const auto& info = indexed_literals.infos[lit_id];
         const auto predicate = info.predicate;
         const auto& pred_set = predicate_assignment_sets.get_set(predicate);
         const auto polarity = info.polarity;
@@ -847,20 +848,20 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
 {
     auto result = details::TaggedIndexedLiterals<T> {};
 
-    result.mappings.parameter_to_literal_infos = std::vector<std::vector<uint_t>>(arity);
-    result.mappings.parameter_pairs_to_literal_infos = std::vector<std::vector<std::vector<uint_t>>>(arity, std::vector<std::vector<uint_t>>(arity));
-    result.mappings.parameter_to_literal_infos_with_constants = std::vector<std::vector<uint_t>>(arity);
-    result.mappings.literal_infos_with_constants = std::vector<uint_t> {};
-    result.mappings.literal_infos_with_constant_pairs = std::vector<uint_t> {};
+    result.mappings.parameter_to_infos = std::vector<std::vector<uint_t>>(arity);
+    result.mappings.parameter_pairs_to_infos = std::vector<std::vector<std::vector<uint_t>>>(arity, std::vector<std::vector<uint_t>>(arity));
+    result.mappings.parameter_to_infos_with_constants = std::vector<std::vector<uint_t>>(arity);
+    result.mappings.infos_with_constants = std::vector<uint_t> {};
+    result.mappings.infos_with_constant_pairs = std::vector<uint_t> {};
 
     for (const auto literal : literals)
     {
-        auto literal_info = details::LiteralInfo<T> {};
-        literal_info.predicate = literal.get_atom().get_predicate().get_index();
-        literal_info.polarity = literal.get_polarity();
-        literal_info.kpkc_arity = kpkc_arity(literal);
-        literal_info.mappings.constant_positions = std::vector<std::pair<uint_t, Index<formalism::Object>>> {};
-        literal_info.mappings.parameter_to_positions = std::vector<std::vector<uint_t>>(arity);
+        auto info = details::LiteralInfo<T> {};
+        info.predicate = literal.get_atom().get_predicate().get_index();
+        info.polarity = literal.get_polarity();
+        info.kpkc_arity = kpkc_arity(literal);
+        info.mappings.constant_positions = std::vector<std::pair<uint_t, Index<formalism::Object>>> {};
+        info.mappings.parameter_to_positions = std::vector<std::vector<uint_t>>(arity);
 
         const auto terms = literal.get_atom().get_terms();
 
@@ -878,12 +879,12 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
 
                     if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                     {
-                        literal_info.mappings.parameter_to_positions[uint_t(arg)].push_back(position);
+                        info.mappings.parameter_to_positions[uint_t(arg)].push_back(position);
                         ++num_parameters;
                     }
                     else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
                     {
-                        literal_info.mappings.constant_positions.emplace_back(position, arg.get_index());
+                        info.mappings.constant_positions.emplace_back(position, arg.get_index());
                         ++num_constants;
                     }
                     else
@@ -893,47 +894,156 @@ auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::Reposit
         }
 
         auto parameters = fd::collect_parameters(literal);
-        const auto index = result.literal_infos.size();
+        const auto index = result.infos.size();
 
         for (const auto param1 : parameters)
         {
-            result.mappings.parameter_to_literal_infos[uint_t(param1)].push_back(index);
+            result.mappings.parameter_to_infos[uint_t(param1)].push_back(index);
 
             for (const auto param2 : parameters)
             {
                 if (param1 >= param2)
                     continue;
 
-                result.mappings.parameter_pairs_to_literal_infos[uint_t(param1)][uint_t(param2)].push_back(index);
+                result.mappings.parameter_pairs_to_infos[uint_t(param1)][uint_t(param2)].push_back(index);
             }
         }
 
         if (num_constants > 0)
         {
-            result.mappings.literal_infos_with_constants.push_back(index);
+            result.mappings.infos_with_constants.push_back(index);
             if (num_constants > 1)
-                result.mappings.literal_infos_with_constant_pairs.push_back(index);
+                result.mappings.infos_with_constant_pairs.push_back(index);
 
             if (num_parameters > 0)
             {
                 for (uint_t param = 0; param < arity; ++param)
                 {
-                    if (!literal_info.mappings.parameter_to_positions[param].empty())
-                        result.mappings.parameter_to_literal_infos_with_constants[param].push_back(index);
+                    if (!info.mappings.parameter_to_positions[param].empty())
+                        result.mappings.parameter_to_infos_with_constants[param].push_back(index);
                 }
             }
         }
 
-        result.literal_infos.push_back(std::move(literal_info));
+        result.infos.push_back(std::move(info));
     }
 
     return result;
 }
 
-auto compute_indexed_literals(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition)
+template<f::FactKind T>
+auto compute_tagged_indexed_fterms(View<IndexList<fd::FunctionTerm<T>>, fd::Repository> fterms, size_t arity)
 {
-    return details::IndexedLiterals { compute_tagged_indexed_literals(condition.get_literals<f::StaticTag>(), condition.get_arity()),
-                                      compute_tagged_indexed_literals(condition.get_literals<f::FluentTag>(), condition.get_arity()) };
+    auto result = details::TaggedIndexedFunctionTerms<T> {};
+
+    result.mappings.parameter_to_infos = std::vector<std::vector<uint_t>>(arity);
+    result.mappings.parameter_pairs_to_infos = std::vector<std::vector<std::vector<uint_t>>>(arity, std::vector<std::vector<uint_t>>(arity));
+    result.mappings.parameter_to_infos_with_constants = std::vector<std::vector<uint_t>>(arity);
+    result.mappings.infos_with_constants = std::vector<uint_t> {};
+    result.mappings.infos_with_constant_pairs = std::vector<uint_t> {};
+
+    for (const auto fterm : fterms)
+    {
+        auto info = details::FunctionTermInfo<T> {};
+        info.function = fterm.get_function().get_index();
+        info.kpkc_arity = kpkc_arity(fterm);
+        info.mappings.constant_positions = std::vector<std::pair<uint_t, Index<formalism::Object>>> {};
+        info.mappings.parameter_to_positions = std::vector<std::vector<uint_t>>(arity);
+
+        const auto terms = fterm.get_terms();
+
+        auto num_parameters = uint_t(0);
+        auto num_constants = uint_t(0);
+
+        for (uint_t position = 0; position < terms.size(); ++position)
+        {
+            const auto term = terms[position];
+
+            visit(
+                [&](auto&& arg)
+                {
+                    using Alternative = std::decay_t<decltype(arg)>;
+
+                    if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
+                    {
+                        info.mappings.parameter_to_positions[uint_t(arg)].push_back(position);
+                        ++num_parameters;
+                    }
+                    else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
+                    {
+                        info.mappings.constant_positions.emplace_back(position, arg.get_index());
+                        ++num_constants;
+                    }
+                    else
+                        static_assert(dependent_false<Alternative>::value, "Missing case");
+                },
+                term.get_variant());
+        }
+
+        auto parameters = fd::collect_parameters(fterm);
+        const auto index = result.infos.size();
+
+        for (const auto param1 : parameters)
+        {
+            result.mappings.parameter_to_infos[uint_t(param1)].push_back(index);
+
+            for (const auto param2 : parameters)
+            {
+                if (param1 >= param2)
+                    continue;
+
+                result.mappings.parameter_pairs_to_infos[uint_t(param1)][uint_t(param2)].push_back(index);
+            }
+        }
+
+        if (num_constants > 0)
+        {
+            result.mappings.infos_with_constants.push_back(index);
+            if (num_constants > 1)
+                result.mappings.infos_with_constant_pairs.push_back(index);
+
+            if (num_parameters > 0)
+            {
+                for (uint_t param = 0; param < arity; ++param)
+                {
+                    if (!info.mappings.parameter_to_positions[param].empty())
+                        result.mappings.parameter_to_infos_with_constants[param].push_back(index);
+                }
+            }
+        }
+
+        result.infos.emplace(fterm.get_index(), std::move(info));
+    }
+
+    return result;
+}
+
+auto compute_constraint_info(View<Data<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> element, size_t arity)
+{
+    auto result = details::ConstraintInfo {};
+
+    auto static_fterms = fd::collect_fterms<f::StaticTag>(element);
+    auto fluent_fterms = fd::collect_fterms<f::FluentTag>(element);
+
+    result.static_infos = compute_tagged_indexed_fterms(make_view(static_fterms, element.get_context()), arity);
+    result.fluent_infos = compute_tagged_indexed_fterms(make_view(fluent_fterms, element.get_context()), arity);
+
+    return result;
+}
+
+auto compute_indexed_constraints(View<Index<fd::ConjunctiveCondition>, fd::Repository> element)
+{
+    auto result = details::IndexedConstraints {};
+    result.infos = std::vector<details::ConstraintInfo> {};
+    for (const auto constraint : element.get_numeric_constraints())
+        result.infos.push_back(compute_constraint_info(constraint, element.get_arity()));
+    return result;
+}
+
+auto compute_indexed_literals(View<Index<fd::ConjunctiveCondition>, fd::Repository> element)
+{
+    return details::IndexedLiterals { compute_tagged_indexed_literals(element.get_literals<f::StaticTag>(), element.get_arity()),
+                                      compute_tagged_indexed_literals(element.get_literals<f::FluentTag>(), element.get_arity()) };
 }
 
 StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
@@ -949,7 +1059,9 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_unary_overapproximation_condition(unary_overapproximation_condition),
     m_binary_overapproximation_condition(binary_overapproximation_condition),
     m_unary_overapproximation_indexed_literals(compute_indexed_literals(m_unary_overapproximation_condition)),
-    m_binary_overapproximation_indexed_literals(compute_indexed_literals(m_binary_overapproximation_condition))
+    m_binary_overapproximation_indexed_literals(compute_indexed_literals(m_binary_overapproximation_condition)),
+    m_unary_overapproximation_indexed_constraints(compute_indexed_constraints(m_unary_overapproximation_condition)),
+    m_binary_overapproximation_indexed_constraints(compute_indexed_constraints(m_binary_overapproximation_condition))
 {
     auto [vertices_, partitions_] = compute_vertices(m_unary_overapproximation_indexed_literals.static_indexed,
                                                      parameter_domains,
