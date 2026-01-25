@@ -133,48 +133,98 @@ bool evaluate(View<Data<formalism::datalog::BooleanOperator<Data<formalism::data
 }
 
 /**
- * evaluate
+ * evaluate_into_buffer
  */
 
+// Forward declarations
+
 template<formalism::datalog::Context C_DST>
-float_t evaluate(float_t element, const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C_DST>& context)
+float_t evaluate_into_buffer(float_t element, const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::ArithmeticOpKind O, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+auto evaluate_into_buffer(View<Index<formalism::datalog::UnaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::OpKind O, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+auto evaluate_into_buffer(View<Index<formalism::datalog::BinaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::ArithmeticOpKind O, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+auto evaluate_into_buffer(View<Index<formalism::datalog::MultiOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::FactKind T, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+    requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
+float_t evaluate_into_buffer(View<Index<formalism::datalog::FunctionTerm<T>>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+float_t evaluate_into_buffer(View<Index<formalism::datalog::FunctionTerm<formalism::AuxiliaryTag>>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+float_t evaluate_into_buffer(View<Data<formalism::datalog::FunctionExpression>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+float_t evaluate_into_buffer(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
+bool evaluate_into_buffer(View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context);
+
+// Implementations
+
+template<formalism::datalog::Context C_DST>
+float_t evaluate_into_buffer(float_t element, const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
     return element;
 }
 
 template<formalism::ArithmeticOpKind O, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-auto evaluate(View<Index<formalism::datalog::UnaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
-              const FactSets& fact_sets,
-              formalism::datalog::ConstGrounderContext<C_DST>& context)
+auto evaluate_into_buffer(View<Index<formalism::datalog::UnaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
-    return formalism::apply(O {}, evaluate(element.get_arg(), fact_sets, context));
+    return formalism::apply(O {}, evaluate_into_buffer(element.get_arg(), fact_sets, context));
 }
 
 template<formalism::OpKind O, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-auto evaluate(View<Index<formalism::datalog::BinaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
-              const FactSets& fact_sets,
-              formalism::datalog::ConstGrounderContext<C_DST>& context)
+auto evaluate_into_buffer(View<Index<formalism::datalog::BinaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
-    return formalism::apply(O {}, evaluate(element.get_lhs(), fact_sets, context), evaluate(element.get_rhs(), fact_sets, context));
+    return formalism::apply(O {}, evaluate_into_buffer(element.get_lhs(), fact_sets, context), evaluate_into_buffer(element.get_rhs(), fact_sets, context));
 }
 
 template<formalism::ArithmeticOpKind O, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-auto evaluate(View<Index<formalism::datalog::MultiOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
-              const FactSets& fact_sets,
-              formalism::datalog::ConstGrounderContext<C_DST>& context)
+auto evaluate_into_buffer(View<Index<formalism::datalog::MultiOperator<O, Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
     const auto child_fexprs = element.get_args();
 
     return std::accumulate(std::next(child_fexprs.begin()),  // Start from the second expression
                            child_fexprs.end(),
-                           evaluate(child_fexprs.front(), fact_sets, context),
-                           [&](const auto& value, const auto& child_expr) { return formalism::apply(O {}, value, evaluate(child_expr, fact_sets, context)); });
+                           evaluate_into_buffer(child_fexprs.front(), fact_sets, context),
+                           [&](const auto& value, const auto& child_expr)
+                           { return formalism::apply(O {}, value, evaluate_into_buffer(child_expr, fact_sets, context)); });
 }
 
 template<formalism::FactKind T, formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
     requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
-float_t
-evaluate(View<Index<formalism::datalog::FunctionTerm<T>>, C_SRC> element, const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C_DST>& context)
+float_t evaluate_into_buffer(View<Index<formalism::datalog::FunctionTerm<T>>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
     auto ground_fterm_ptr = context.builder.template get_builder<formalism::datalog::GroundFunctionTerm<T>>();
     auto& ground_fterm = *ground_fterm_ptr;
@@ -191,34 +241,35 @@ evaluate(View<Index<formalism::datalog::FunctionTerm<T>>, C_SRC> element, const 
 }
 
 template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-float_t evaluate(View<Index<formalism::datalog::FunctionTerm<formalism::AuxiliaryTag>>, C_SRC> element,
-                 const FactSets& fact_sets,
-                 formalism::datalog::ConstGrounderContext<C_DST>& context)
+float_t evaluate_into_buffer(View<Index<formalism::datalog::FunctionTerm<formalism::AuxiliaryTag>>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
     throw std::logic_error("Program does not contain auxiliary function terms.");
 }
 
 template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-float_t
-evaluate(View<Data<formalism::datalog::FunctionExpression>, C_SRC> element, const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C_DST>& context)
+float_t evaluate_into_buffer(View<Data<formalism::datalog::FunctionExpression>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return evaluate(arg, fact_sets, context); }, element.get_variant());
+    return visit([&](auto&& arg) { return evaluate_into_buffer(arg, fact_sets, context); }, element.get_variant());
 }
 
 template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-float_t evaluate(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
-                 const FactSets& fact_sets,
-                 formalism::datalog::ConstGrounderContext<C_DST>& context)
+float_t evaluate_into_buffer(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                             const FactSets& fact_sets,
+                             formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return evaluate(arg, fact_sets, context); }, element.get_variant());
+    return visit([&](auto&& arg) { return evaluate_into_buffer(arg, fact_sets, context); }, element.get_variant());
 }
 
 template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
-bool evaluate(View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
-              const FactSets& fact_sets,
-              formalism::datalog::ConstGrounderContext<C_DST>& context)
+bool evaluate_into_buffer(View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, C_SRC> element,
+                          const FactSets& fact_sets,
+                          formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return evaluate(arg, fact_sets, context); }, element.get_variant());
+    return visit([&](auto&& arg) { return evaluate_into_buffer(arg, fact_sets, context); }, element.get_variant());
 }
 
 /**
@@ -301,7 +352,7 @@ bool is_valid_binding(View<Data<formalism::datalog::BooleanOperator<Data<formali
                       const FactSets& fact_sets,
                       formalism::datalog::ConstGrounderContext<C_DST>& context)
 {
-    return visit([&](auto&& arg) { return evaluate(arg, fact_sets, context); }, element.get_variant());
+    return visit([&](auto&& arg) { return evaluate_into_buffer(arg, fact_sets, context); }, element.get_variant());
 }
 
 template<formalism::datalog::Context C_SRC, formalism::datalog::Context C_DST>
