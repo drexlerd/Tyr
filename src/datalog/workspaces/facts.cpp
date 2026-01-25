@@ -33,7 +33,8 @@ FactsWorkspace::FactsWorkspace(View<IndexList<f::Predicate<f::FluentTag>>, fd::R
                                View<IndexList<fd::GroundFunctionTermValue<formalism::FluentTag>>, fd::Repository> fterm_values) :
     fact_sets(predicates, functions, atoms, fterm_values),
     assignment_sets(predicates, functions, predicate_domains, function_domains, num_objects, fact_sets),
-    goal_fact_sets(predicates)
+    goal_fact_sets(predicates),
+    delta_fact_sets(predicates, functions, atoms, fterm_values)
 {
 }
 
@@ -41,6 +42,7 @@ void FactsWorkspace::reset()
 {
     fact_sets.reset();
     assignment_sets.reset();
+    delta_fact_sets.reset();
 }
 
 ConstFactsWorkspace::ConstFactsWorkspace(View<IndexList<f::Predicate<f::StaticTag>>, fd::Repository> predicates,

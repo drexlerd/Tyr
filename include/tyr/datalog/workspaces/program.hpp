@@ -123,6 +123,7 @@ struct ProgramWorkspace
     formalism::datalog::Repository& repository;
     FactsWorkspace facts;
 
+    std::vector<RuleWorkspace> rules;
     std::vector<RuleIterationWorkspace> rules_iter;
     std::vector<RuleSolveWorkspace> rules_solve;
 

@@ -42,9 +42,7 @@ RuleIterationWorkspace::RuleIterationWorkspace(const formalism::datalog::Reposit
     kpkc_workspace(kpkc.get_graph_layout()),
     repository(std::make_shared<fd::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     overlay_repository(parent, *repository),
-    binding(),
-    heads(),
-    statistics()
+    heads()
 {
 }
 
@@ -63,14 +61,7 @@ void RuleIterationWorkspace::initialize(const StaticConsistencyGraph& static_con
  * RuleSolveWorkspace
  */
 
-RuleSolveWorkspace::RuleSolveWorkspace() :
-    repository(std::make_shared<fd::Repository>()),
-    binding(),
-    seen_bindings_dbg(),
-    applicability_check_pool(),
-    pending_rules()
-{
-}
+RuleSolveWorkspace::RuleSolveWorkspace() : repository(std::make_shared<fd::Repository>()), seen_bindings_dbg(), applicability_check_pool(), pending_rules() {}
 
 void RuleSolveWorkspace::clear() noexcept
 {

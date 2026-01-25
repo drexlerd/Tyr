@@ -26,6 +26,7 @@ namespace tyr::datalog
 struct WorkerWorkspace
 {
     formalism::datalog::Builder builder;
+    IndexList<formalism::Object> binding;
 
     WorkerWorkspace() = default;
 

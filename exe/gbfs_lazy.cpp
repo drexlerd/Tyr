@@ -96,21 +96,21 @@ int main(int argc, char** argv)
         std::cout << "[Successor generator] Summary" << std::endl;
         std::cout << successor_generator.get_workspace().statistics << std::endl;
         auto successor_generator_rule_statistics = std::vector<datalog::RuleStatistics> {};
-        for (const auto& rule_ws : successor_generator.get_workspace().rules_iter)
+        for (const auto& rule_ws : successor_generator.get_workspace().rules)
             successor_generator_rule_statistics.push_back(rule_ws.statistics);
         std::cout << datalog::compute_aggregated_rule_statistics(successor_generator_rule_statistics) << std::endl;
 
         std::cout << "[Axiom evaluator] Summary" << std::endl;
         std::cout << successor_generator.get_state_repository()->get_axiom_evaluator()->get_workspace().statistics << std::endl;
         auto axiom_evaluator_rule_statistics = std::vector<datalog::RuleStatistics> {};
-        for (const auto& rule_ws : successor_generator.get_state_repository()->get_axiom_evaluator()->get_workspace().rules_iter)
+        for (const auto& rule_ws : successor_generator.get_state_repository()->get_axiom_evaluator()->get_workspace().rules)
             axiom_evaluator_rule_statistics.push_back(rule_ws.statistics);
         std::cout << datalog::compute_aggregated_rule_statistics(axiom_evaluator_rule_statistics) << std::endl;
 
         std::cout << "[FFHeuristic] Summary" << std::endl;
         std::cout << ff_heuristic->get_workspace().statistics << std::endl;
         auto ff_heuristic_rule_statistics = std::vector<datalog::RuleStatistics> {};
-        for (const auto& rule_ws : ff_heuristic->get_workspace().rules_iter)
+        for (const auto& rule_ws : ff_heuristic->get_workspace().rules)
             ff_heuristic_rule_statistics.push_back(rule_ws.statistics);
         // for (uint_t i = 0; i < ff_heuristic->get_workspace().rules.size(); ++i)
         //{

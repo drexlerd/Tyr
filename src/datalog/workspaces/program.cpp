@@ -33,6 +33,7 @@ ProgramWorkspace::ProgramWorkspace(ProgramContext& context, const ConstProgramWo
           context.get_program().get_objects().size(),
           context.get_program().get_atoms<formalism::FluentTag>(),
           context.get_program().get_fterm_values<formalism::FluentTag>()),
+    rules(context.get_program().get_rules().size()),
     rules_iter(),
     rules_solve(context.get_program().get_rules().size()),
     d2p(),

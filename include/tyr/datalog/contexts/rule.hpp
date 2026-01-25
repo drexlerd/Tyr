@@ -40,6 +40,7 @@ struct RuleExecutionContext
     RuleExecutionContext(Index<formalism::datalog::Rule> rule, StratumExecutionContext<OrAP, AndAP, TP>& ctx) :
         rule(rule),
         ctx(ctx),
+        ws_rule(ctx.ctx.ws.rules[uint_t(rule)]),
         ws_rule_iter(ctx.ctx.ws.rules_iter[uint_t(rule)]),
         cws_rule(ctx.ctx.cws.rules[uint_t(rule)]),
         ws_rule_solve(ctx.ctx.ws.rules_solve[uint_t(rule)]),
@@ -58,6 +59,7 @@ struct RuleExecutionContext
     StratumExecutionContext<OrAP, AndAP, TP>& ctx;
 
     /// Workspaces
+    RuleWorkspace& ws_rule;
     RuleIterationWorkspace& ws_rule_iter;
     const ConstRuleWorkspace& cws_rule;
     RuleSolveWorkspace& ws_rule_solve;
@@ -71,15 +73,15 @@ struct RuleExecutionContext
     auto get_fact_sets() const noexcept { return FactSets(ctx.ctx.cws.facts.fact_sets, ctx.ctx.ws.facts.fact_sets); }
     auto get_ground_context_solve() const noexcept
     {
-        return formalism::datalog::GrounderContext { ws_worker.builder, *ws_rule_solve.repository, ws_rule_solve.binding };
+        return formalism::datalog::GrounderContext { ws_worker.builder, *ws_rule_solve.repository, ws_worker.binding };
     }
     auto get_ground_context_iter() const noexcept
     {
-        return formalism::datalog::GrounderContext { ws_worker.builder, ws_rule_iter.overlay_repository, ws_rule_solve.binding };
+        return formalism::datalog::GrounderContext { ws_worker.builder, ws_rule_iter.overlay_repository, ws_worker.binding };
     }
     auto get_ground_context_program() const noexcept
     {
-        return formalism::datalog::ConstGrounderContext { ws_worker.builder, ctx.ctx.ws.repository, ws_rule_solve.binding };
+        return formalism::datalog::ConstGrounderContext { ws_worker.builder, ctx.ctx.ws.repository, ws_worker.binding };
     }
 };
 }

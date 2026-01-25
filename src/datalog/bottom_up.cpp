@@ -152,7 +152,7 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     rctx.ws_rule_iter.kpkc.for_each_new_k_clique(
         [&](auto&& clique)
         {
-            const auto stopwatch = StopwatchScope(rctx.ws_rule_iter.statistics.gen_time);
+            const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.gen_time);
 
             create_general_binding(clique, rctx.cws_rule.static_consistency_graph, ground_context_solve.binding);
 
@@ -162,7 +162,7 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             if (rctx.ctx.ctx.ws.facts.fact_sets.predicate.contains(program_head_index))
                 return;  ///< optimal cost proven
 
-            ++rctx.ws_rule_iter.statistics.num_bindings;
+            ++rctx.ws_rule.statistics.num_bindings;
 
             auto applicability_check = rctx.ws_rule_solve.applicability_check_pool.get_or_allocate(rctx.cws_rule.get_nullary_condition(),
                                                                                                    rctx.cws_rule.get_conflicting_overapproximation_condition(),
@@ -231,7 +231,7 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     // std::cout << "Num pending rules before: " << rctx.ws_rule_solve.pending_rules.size() << std::endl;
 
     {
-        const auto stopwatch = StopwatchScope(rctx.ws_rule_iter.statistics.pending_time);
+        const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.pending_time);
 
         for (auto it = rctx.ws_rule_solve.pending_rules.begin(); it != rctx.ws_rule_solve.pending_rules.end();)
         {
@@ -322,8 +322,8 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                            {
                                                const auto i = uint_t(rule_index);
 
-                                               const auto rule_stopwatch = StopwatchScope(ctx.ctx.ws.rules_iter[i].statistics.parallel_time);
-                                               ++ctx.ctx.ws.rules_iter[i].statistics.num_executions;
+                                               const auto rule_stopwatch = StopwatchScope(ctx.ctx.ws.rules[i].statistics.parallel_time);
+                                               ++ctx.ctx.ws.rules[i].statistics.num_executions;
 
                                                // std::cout << make_view(rule_index, ctx.ctx.ws.repository) << std::endl;
 

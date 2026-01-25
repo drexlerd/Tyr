@@ -216,15 +216,10 @@ struct RuleIterationWorkspace
     kpkc::DeltaKPKC kpkc;
     kpkc::Workspace kpkc_workspace;
 
-    /// Merge stage into rule execution context
+    /// Unique heads constructed in this iteration
     std::shared_ptr<formalism::datalog::Repository> repository;
     formalism::OverlayRepository<formalism::datalog::Repository> overlay_repository;
-
-    /// Bindings kept from iteration in stage
-    IndexList<formalism::Object> binding;
     UnorderedSet<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
-
-    RuleStatistics statistics;
 
     RuleIterationWorkspace(const formalism::datalog::Repository& parent, const ConstRuleWorkspace& cws);
 
@@ -238,9 +233,7 @@ struct RuleSolveWorkspace
     /// Merge thread into staging area
     formalism::datalog::RepositoryPtr repository;
 
-    /// Results across iterations
-    IndexList<formalism::Object> binding;
-
+    /// In debug mode, we accumulate all bindings to verify the correctness of delta-kpkc
     UnorderedSet<IndexList<formalism::Object>> seen_bindings_dbg;
 
     /// Pool applicability checks since we dont know how many are needed.
@@ -250,6 +243,14 @@ struct RuleSolveWorkspace
     RuleSolveWorkspace();
 
     void clear() noexcept;
+};
+
+struct RuleWorkspace
+{
+    /// Accumulated statistics
+    RuleStatistics statistics;
+
+    RuleWorkspace() = default;
 };
 
 struct ConstRuleWorkspace
