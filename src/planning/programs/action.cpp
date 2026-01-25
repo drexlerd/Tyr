@@ -68,37 +68,6 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-static auto create_applicability_predicate(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
-                                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
-{
-    auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
-    auto& predicate = *predicate_ptr;
-    predicate.clear();
-
-    predicate.name = create_applicability_name(axiom);
-    predicate.arity = axiom.get_arity();
-
-    canonicalize(predicate);
-    return context.destination.get_or_create(predicate, context.builder.get_buffer());
-}
-
-static auto create_applicability_atom(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom,
-                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
-{
-    auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
-    auto& atom = *atom_ptr;
-    atom.clear();
-
-    const auto applicability_predicate = make_view(create_applicability_predicate(axiom, context).first, context.destination);
-
-    atom.predicate = applicability_predicate.get_index();
-    for (uint_t i = 0; i < applicability_predicate.get_arity(); ++i)
-        atom.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(i)));
-
-    canonicalize(atom);
-    return context.destination.get_or_create(atom, context.builder.get_buffer());
-}
-
 static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
                                          ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions,
                                          fd::Repository& repository)

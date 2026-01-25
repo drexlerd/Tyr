@@ -343,27 +343,8 @@ private:
         {
             assert(literal.get_polarity());
 
-            const auto atom = literal.get_atom();
+            formalism::datalog::ground_into_buffer(literal.get_atom(), delta_context.binding, ground_atom);
 
-            ground_atom.clear();
-            ground_atom.index.group = atom.get_predicate().get_index();
-            for (const auto& term : atom.get_terms().get_data())
-            {
-                std::visit(
-                    [&](auto&& arg)
-                    {
-                        using Alternative = std::decay_t<decltype(arg)>;
-
-                        if constexpr (std::is_same_v<Alternative, formalism::ParameterIndex>)
-                            ground_atom.objects.push_back(delta_context.binding[uint_t(arg)]);
-                        else if constexpr (std::is_same_v<Alternative, Index<formalism::Object>>)
-                            ground_atom.objects.push_back(arg);
-                        else
-                            static_assert(dependent_false<Alternative>::value, "Missing case");
-                    },
-                    term.value);
-            }
-            canonicalize(ground_atom);
             const auto program_ground_atom = program_repository.find(ground_atom);
             assert(program_ground_atom);  // must exist
 
@@ -380,12 +361,12 @@ private:
             ground_literal.atom = *program_ground_atom;
             ground_literal.polarity = literal.get_polarity();
 
-            canonicalize(ground_literal);
+            formalism::datalog::canonicalize(ground_literal);
             ground_conj_cond.fluent_literals.push_back(delta_context.destination.get_or_create(ground_literal, delta_context.builder.get_buffer()).first);
         }
         const auto witness_cost = body_cost + rule_cost;
 
-        canonicalize(ground_conj_cond);
+        formalism::datalog::canonicalize(ground_conj_cond);
         const auto new_ground_conj_cond = delta_context.destination.get_or_create(ground_conj_cond, delta_context.builder.get_buffer()).first;
 
         const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first;

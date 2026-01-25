@@ -100,7 +100,7 @@ public:
     template<formalism::datalog::Context C>
     void initialize(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                     const FactSets& fact_sets,
-                    formalism::datalog::GrounderContext<C>& context)
+                    formalism::datalog::ConstGrounderContext<C>& context)
     {
         m_condition = condition;
         m_unsat_fluent_literals.clear();
@@ -117,7 +117,7 @@ public:
     bool is_statically_applicable() const noexcept { return m_statically_applicable; }
 
     template<formalism::datalog::Context C>
-    bool is_dynamically_applicable(const FactSets& fact_sets, formalism::datalog::GrounderContext<C>& context)
+    bool is_dynamically_applicable(const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C>& context)
     {
         for (auto i = m_unsat_fluent_literals.find_first(); i != boost::dynamic_bitset<>::npos; i = m_unsat_fluent_literals.find_next(i))
             if (is_valid_binding(m_condition->get_literals<formalism::FluentTag>()[i], fact_sets, context))
@@ -144,7 +144,7 @@ public:
     void initialize(View<Index<formalism::datalog::GroundConjunctiveCondition>, formalism::datalog::Repository> nullary,
                     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> conflicting,
                     const FactSets& fact_sets,
-                    formalism::datalog::GrounderContext<C>& context)
+                    formalism::datalog::ConstGrounderContext<C>& context)
     {
         m_nullary.initialize(nullary, fact_sets);
         m_conflicting.initialize(conflicting, fact_sets, context);
@@ -153,7 +153,7 @@ public:
     bool is_statically_applicable() const noexcept { return m_nullary.is_statically_applicable() && m_conflicting.is_statically_applicable(); }
 
     template<formalism::datalog::Context C>
-    bool is_dynamically_applicable(const FactSets& fact_sets, formalism::datalog::GrounderContext<C>& context) noexcept
+    bool is_dynamically_applicable(const FactSets& fact_sets, formalism::datalog::ConstGrounderContext<C>& context) noexcept
     {
         return m_nullary.is_dynamically_applicable(fact_sets) && m_conflicting.is_dynamically_applicable(fact_sets, context);
     }

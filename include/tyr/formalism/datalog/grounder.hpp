@@ -39,6 +39,14 @@ struct GrounderContext
     IndexList<Object>& binding;
 };
 
+template<Context C>
+struct ConstGrounderContext
+{
+    Builder& builder;
+    const C& destination;
+    IndexList<Object>& binding;
+};
+
 template<Context C_SRC, Context C_DST>
 auto ground(View<DataList<Term>, C_SRC> element, GrounderContext<C_DST>& context)
 {
@@ -287,6 +295,63 @@ auto ground(View<Index<Rule>, C_SRC> element, GrounderContext<C_DST>& context)
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
+template<FactKind T, Context C>
+void ground_into_buffer(View<Index<Atom<T>>, C> element, const IndexList<Object>& binding, Data<GroundAtom<T>>& out_atom)
+{
+    // Fetch and clear
+    out_atom.clear();
+
+    // Fill data
+    out_atom.index.group = element.get_predicate().get_index();
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    out_atom.objects.push_back(binding[uint_t(arg)]);
+                else if constexpr (std::is_same_v<Alternative, View<Index<Object>, C>>)
+                    out_atom.objects.push_back(arg.get_index());
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    // Canonicalize and Serialize
+    canonicalize(out_atom);
+}
+
+template<FactKind T, Context C>
+void ground_into_buffer(View<Index<FunctionTerm<T>>, C> element, const IndexList<Object>& binding, Data<GroundFunctionTerm<T>>& out_fterm)
+{
+    // Fetch and clear
+    out_fterm.clear();
+
+    // Fill data
+    out_fterm.index.group = element.get_function().get_index();
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    out_fterm.objects.push_back(binding[uint_t(arg)]);
+                else if constexpr (std::is_same_v<Alternative, View<Index<Object>, C>>)
+                    out_fterm.objects.push_back(arg.get_index());
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    // Canonicalize and Serialize
+    canonicalize(out_fterm);
+}
 }
 
 #endif

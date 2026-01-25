@@ -46,10 +46,7 @@ struct RuleExecutionContext
         ws_worker(ctx.ctx.ws.worker.local()),
         and_ap(ctx.ctx.aps.and_aps[uint_t(rule)]),
         and_annot(ctx.ctx.aps.and_annots[uint_t(rule)]),
-        delta_head_to_witness(ctx.ctx.aps.delta_head_to_witness[uint_t(rule)]),
-        fact_sets(FactSets(ctx.ctx.cws.facts.fact_sets, ctx.ctx.ws.facts.fact_sets)),
-        ground_context_solve(formalism::datalog::GrounderContext { ws_worker.builder, *ws_rule_solve.repository, ws_rule_solve.binding }),
-        ground_context_iter(formalism::datalog::GrounderContext { ws_worker.builder, ws_rule_iter.overlay_repository, ws_rule_solve.binding })
+        delta_head_to_witness(ctx.ctx.aps.delta_head_to_witness[uint_t(rule)])
     {
         ws_worker.clear();
         ws_rule_iter.clear();
@@ -71,10 +68,19 @@ struct RuleExecutionContext
     AndAnnotationsMap& and_annot;
     HeadToWitness& delta_head_to_witness;
 
-    // Derivatives
-    FactSets fact_sets;
-    formalism::datalog::GrounderContext<formalism::datalog::Repository> ground_context_solve;
-    formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>> ground_context_iter;
+    auto get_fact_sets() const noexcept { return FactSets(ctx.ctx.cws.facts.fact_sets, ctx.ctx.ws.facts.fact_sets); }
+    auto get_ground_context_solve() const noexcept
+    {
+        return formalism::datalog::GrounderContext { ws_worker.builder, *ws_rule_solve.repository, ws_rule_solve.binding };
+    }
+    auto get_ground_context_iter() const noexcept
+    {
+        return formalism::datalog::GrounderContext { ws_worker.builder, ws_rule_iter.overlay_repository, ws_rule_solve.binding };
+    }
+    auto get_ground_context_program() const noexcept
+    {
+        return formalism::datalog::ConstGrounderContext { ws_worker.builder, ctx.ctx.ws.repository, ws_rule_solve.binding };
+    }
 };
 }
 

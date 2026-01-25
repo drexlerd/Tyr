@@ -237,14 +237,14 @@ struct FactSets
     const TaggedFactSets<formalism::StaticTag>& static_sets;
     const TaggedFactSets<formalism::FluentTag>& fluent_sets;
 
-    FactSets(const TaggedFactSets<formalism::StaticTag>& static_sets, const TaggedFactSets<formalism::FluentTag>& fluent_sets) :
+    FactSets(const TaggedFactSets<formalism::StaticTag>& static_sets, const TaggedFactSets<formalism::FluentTag>& fluent_sets) noexcept :
         static_sets(static_sets),
         fluent_sets(fluent_sets)
     {
     }
 
     template<formalism::FactKind T>
-    const auto& get() const
+    const auto& get() const noexcept
     {
         if constexpr (std::is_same_v<T, formalism::StaticTag>)
             return static_sets;
