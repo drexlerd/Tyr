@@ -169,8 +169,6 @@ public:
         const IndexedConstraints& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
-    Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::datalog::Repository> term) const noexcept;
-
     uint_t get_index() const noexcept;
     formalism::ParameterIndex get_parameter_index() const noexcept;
     Index<formalism::Object> get_object_index() const noexcept;
@@ -206,8 +204,6 @@ public:
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
         const IndexedConstraints& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
-
-    Index<formalism::Object> get_object_if_overlap(View<Data<formalism::Term>, formalism::datalog::Repository> term) const noexcept;
 
     uint_t get_index() const noexcept;
     const Vertex& get_src() const noexcept;

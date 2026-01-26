@@ -33,6 +33,7 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
     datalog/bottom_up.cpp
     datalog/consistency_graph.cpp
     datalog/delta_kpkc.cpp
+    datalog/delta_kpkc2.cpp
     datalog/fact_set.cpp
     datalog/formatter.cpp
     datalog/rule_scheduler.cpp

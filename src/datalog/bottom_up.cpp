@@ -141,9 +141,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
     // std::cout << std::endl << std::endl << rctx.cws_rule.get_rule() << std::endl;
 
-    // auto generated = uint_t(0);
-    //  auto rules = std::vector<View<Index<fd::GroundRule>, f::OverlayRepository<fd::Repository>>> {};
-
     auto ground_context_iter = rctx.get_ground_context_iter();
     auto ground_context_solve = rctx.get_ground_context_solve();
     auto ground_context_program = rctx.get_ground_context_program();
@@ -172,8 +169,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             if (!applicability_check->is_statically_applicable())
                 return;
 
-            //++generated;
-
             // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
             // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
             // Therefore we must store it as pending (keyed by binding) and recheck in the next fact envelope.
@@ -184,8 +179,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                 // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_solve.binding << std::endl;
 
                 const auto delta_head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), ground_context_solve).first;
-
-                // rules.push_back(make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iter).first, rctx.ground_context_iter.destination));
 
                 // std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iter).first, rctx.ground_context_iter.destination)
                 //           << std::endl;
@@ -210,26 +203,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
         },
         rctx.ws_rule_iter.kpkc_workspace);
 
-    // if (generated > 100)
-    //{
-    //  std::cout << "Generated: " << generated << std::endl;
-    //  std::cout << "Rule:" << std::endl;
-    //  std::cout << rctx.cws_rule.get_rule() << std::endl;
-    //  std::cout << "Witness condition:" << std::endl;
-    //  std::cout << rctx.cws_rule.get_witness_condition() << std::endl;
-    //  std::cout << "Nullary condition:" << std::endl;
-    //  std::cout << rctx.cws_rule.get_nullary_condition() << std::endl;
-    //  std::cout << "Overapproximation condition:" << std::endl;
-    //  std::cout << rctx.cws_rule.get_conflicting_overapproximation_condition() << std::endl;
-    //  std::cout << std::endl;
-    //    for (const auto& r : rules)
-    //{
-    //        std::cout << r << std::endl;
-    //    }
-    //}
-
-    // std::cout << "Num pending rules before: " << rctx.ws_rule_solve.pending_rules.size() << std::endl;
-
     {
         const auto stopwatch = StopwatchScope(rctx.ws_rule.statistics.pending_time);
 
@@ -237,7 +210,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
         {
             ground_context_solve.binding = make_view(it->first, ground_context_solve.destination).get_objects().get_data();
 
-            // Fast path
             assert(ground_context_solve.binding == ground_context_iter.binding);
             const auto program_head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), ground_context_iter).first;
 
@@ -248,8 +220,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             else if (it->second->is_dynamically_applicable(fact_sets, ground_context_program))
             {
                 assert(ensure_applicability(rctx.cws_rule.get_rule(), ground_context_iter, fact_sets));
-
-                // std::cout << rctx.cws_rule.rule << " " << rctx.ground_context_solve.binding << std::endl;
 
                 const auto delta_head_index = fd::ground(rctx.cws_rule.get_rule().get_head(), ground_context_solve).first;
 
@@ -273,8 +243,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                 ++it;
             }
         }
-
-        // std::cout << "Num pending rules after: " << rctx.ws_rule_solve.pending_rules.size() << std::endl;
     }
 }
 

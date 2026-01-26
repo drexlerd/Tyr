@@ -453,28 +453,6 @@ bool Vertex::consistent_numeric_constraints(
     return true;
 }
 
-Index<f::Object> Vertex::get_object_if_overlap(View<Data<f::Term>, fd::Repository> term) const noexcept
-{
-    return visit(
-        [&](auto&& arg)
-        {
-            using Alternative = std::decay_t<decltype(arg)>;
-
-            if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
-            {
-                if (m_parameter_index == arg)
-                    return m_object_index;
-                else
-                    return Index<f::Object>::max();
-            }
-            else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
-                return arg.get_index();
-            else
-                static_assert(dependent_false<Alternative>::value, "Missing case");
-        },
-        term.get_variant());
-}
-
 uint_t Vertex::get_index() const noexcept { return m_index; }
 
 f::ParameterIndex Vertex::get_parameter_index() const noexcept { return m_parameter_index; }
@@ -641,34 +619,6 @@ bool Edge::consistent_numeric_constraints(View<DataList<fd::BooleanOperator<Data
     }
 
     return true;
-}
-
-Index<f::Object> Edge::get_object_if_overlap(View<Data<f::Term>, fd::Repository> term) const noexcept
-{
-    return visit(
-        [&](auto&& arg)
-        {
-            using Alternative = std::decay_t<decltype(arg)>;
-
-            if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
-            {
-                if (m_src.get_parameter_index() == arg)
-                    return m_src.get_object_index();
-                else if (m_dst.get_parameter_index() == arg)
-                    return m_dst.get_object_index();
-                else
-                    return Index<f::Object>::max();
-            }
-            else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
-            {
-                return arg.get_index();
-            }
-            else
-            {
-                static_assert(dependent_false<Alternative>::value, "Missing case");
-            }
-        },
-        term.get_variant());
 }
 
 uint_t Edge::get_index() const noexcept { return m_index; }
