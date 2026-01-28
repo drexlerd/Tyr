@@ -31,6 +31,39 @@ namespace tyr::datalog
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 struct StratumExecutionContext;
 
+template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
+struct RuleExecutionContext;
+
+template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
+         AndAnnotationPolicyConcept AndAP = NoAndAnnotationPolicy,
+         TerminationPolicyConcept TP = NoTerminationPolicy>
+struct RuleWorkerExecutionContext
+{
+    explicit RuleWorkerExecutionContext(RuleExecutionContext<OrAP, AndAP, TP>& ctx) : ctx(ctx), ws_worker(ctx.ws_rule.worker.local())
+    {
+        ws_worker.iteration.clear();
+    }
+
+    auto get_ground_context_solve() const noexcept
+    {
+        return formalism::datalog::GrounderContext { ws_worker.builder, ws_worker.solve.stage_repository, ws_worker.binding };
+    }
+    auto get_ground_context_iter() const noexcept
+    {
+        return formalism::datalog::GrounderContext { ws_worker.builder, ws_worker.iteration.program_overlay_repository, ws_worker.binding };
+    }
+    auto get_ground_context_program() const noexcept
+    {
+        return formalism::datalog::ConstGrounderContext { ws_worker.builder, ctx.ws_rule.common.program_repository, ws_worker.binding };
+    }
+
+    /// Inputs
+    RuleExecutionContext<OrAP, AndAP, TP>& ctx;
+
+    /// Workspaces
+    RuleWorkspace::Worker& ws_worker;
+};
+
 template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
          AndAnnotationPolicyConcept AndAP = NoAndAnnotationPolicy,
          TerminationPolicyConcept TP = NoTerminationPolicy>
@@ -47,10 +80,14 @@ struct RuleExecutionContext
     {
         for (auto& worker : ws_rule.worker)
             worker.iteration.clear();
-        ws_rule.common.kpkc.reset();
+
         ws_rule.common.initialize_iteration(cws_rule.static_consistency_graph,
                                             AssignmentSets { ctx.ctx.cws.facts.assignment_sets, ctx.ctx.ws.facts.assignment_sets });
     }
+
+    auto get_rule_worker_execution_context() { return RuleWorkerExecutionContext<OrAP, AndAP, TP>(*this); }
+
+    auto get_fact_sets() const noexcept { return FactSets(ctx.ctx.cws.facts.fact_sets, ctx.ctx.ws.facts.fact_sets); }
 
     /// Inputs
     Index<formalism::datalog::Rule> rule;
@@ -64,8 +101,6 @@ struct RuleExecutionContext
     AndAP& and_ap;
     AndAnnotationsMap& and_annot;
     HeadToWitness& delta_head_to_witness;
-
-    auto get_fact_sets() const noexcept { return FactSets(ctx.ctx.cws.facts.fact_sets, ctx.ctx.ws.facts.fact_sets); }
 };
 }
 

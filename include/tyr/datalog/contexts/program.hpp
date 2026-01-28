@@ -45,7 +45,7 @@ struct ProgramExecutionContext
         // Clear rule workspaces
         for (auto& rule : ws.rules)
         {
-            rule->common.kpkc.reset();
+            rule->common.clear();
             for (auto& worker : rule->worker)
             {
                 worker.iteration.clear();

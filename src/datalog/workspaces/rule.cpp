@@ -40,8 +40,11 @@ RuleWorkspace::Common::Common(const formalism::datalog::Repository& program_repo
 {
 }
 
+void RuleWorkspace::Common::clear() noexcept { kpkc.reset(); }
+
 void RuleWorkspace::Common::initialize_iteration(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)
 {
+    std::cout << "initialize_iteration" << std::endl;
     kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets);
 }
 
@@ -63,11 +66,12 @@ void RuleWorkspace::Iteration::clear() noexcept
     head_to_witness.clear();
 }
 
-RuleWorkspace::Solve::Solve() : stage_repository(), applicability_check_pool(), pending_rules(), statistics() {}
+RuleWorkspace::Solve::Solve() : stage_repository(), seen_bindings_dbg(), applicability_check_pool(), pending_rules(), statistics() {}
 
 void RuleWorkspace::Solve::clear() noexcept
 {
     stage_repository.clear();
+    seen_bindings_dbg.clear();
     pending_rules.clear();
 }
 

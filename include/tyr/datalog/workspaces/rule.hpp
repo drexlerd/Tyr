@@ -170,6 +170,8 @@ struct RuleWorkspace
 
         void initialize_iteration(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets);
 
+        void clear() noexcept;
+
         /// Program repository to ground witnesses for which ground entities must already exist and we can simply call find.
         const formalism::datalog::Repository& program_repository;
 
@@ -209,6 +211,9 @@ struct RuleWorkspace
 
         /// Persistent memory
         formalism::datalog::Repository stage_repository;
+
+        /// In debug mode, we accumulate all bindings to verify the correctness of delta-kpkc
+        UnorderedSet<IndexList<formalism::Object>> seen_bindings_dbg;
 
         /// Pool applicability checks since we dont know how many are needed.
         UniqueObjectPool<ApplicabilityCheck> applicability_check_pool;
