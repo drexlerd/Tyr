@@ -387,6 +387,7 @@ public:
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> get_condition() const noexcept;
     const std::vector<std::vector<uint_t>>& get_vertex_partitions() const noexcept;
     const std::vector<std::vector<uint_t>>& get_object_to_vertex_partitions() const noexcept;
+    const details::IndexedAnchors& get_predicate_to_anchors() const noexcept;
 
 private:
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> m_rule;

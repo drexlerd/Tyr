@@ -66,7 +66,10 @@ struct ProgramExecutionContext
 
         // Reset the kpkc
         for (auto& rule_iter : ws.rules_iter)
+        {
             rule_iter.kpkc.reset();
+            rule_iter.kpkc2.reset();
+        }
 
         // Reset cost buckets.
         ws.cost_buckets.clear();

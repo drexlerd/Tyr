@@ -40,6 +40,12 @@ namespace tyr::datalog
 RuleIterationWorkspace::RuleIterationWorkspace(const formalism::datalog::Repository& parent, const ConstRuleWorkspace& cws) :
     kpkc(cws.static_consistency_graph),
     kpkc_workspace(kpkc.get_graph_layout()),
+    kpkc2(cws.static_consistency_graph),
+    kpkc2_workspace(kpkc2.get_graph_layout()),
+    kpkc2_anchors_set(),
+    kpkc2_anchors_order(),
+    kpkc2_vertices(),
+    static_vertices(),
     repository(std::make_shared<fd::Repository>()),  // we have to use pointer, since the RuleExecutionContext is moved into a vector
     overlay_repository(parent, *repository),
     heads()
@@ -55,6 +61,7 @@ void RuleIterationWorkspace::clear() noexcept
 void RuleIterationWorkspace::initialize(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)
 {
     kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets);
+    kpkc2.set_next_assignment_sets(static_consistency_graph, assignment_sets);
 }
 
 /**

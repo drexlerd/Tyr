@@ -87,6 +87,12 @@ namespace kpkc
 {
 struct DenseKPartiteGraph;
 struct Workspace;
+struct Vertex;
+}
+
+namespace kpkc2
+{
+struct Vertex;
 }
 }
 

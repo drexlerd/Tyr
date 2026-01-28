@@ -305,9 +305,68 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
                                                auto rctx = ctx.get_rule_execution_context(rule_index);
 
+                                               std::cout << rctx.cws_rule.get_rule() << std::endl;
+
                                                generate(rctx);
 
                                                // std::cout << std::endl << std::endl;
+
+                                               auto& anchors_set = rctx.ws_rule_iter.kpkc2_anchors_set;
+                                               anchors_set.clear();
+
+                                               const auto& static_consistency_graph = rctx.cws_rule.static_consistency_graph;
+                                               for (uint_t predicate = 0; predicate < ctx.ctx.ws.facts.delta_fact_sets.predicate.get_sets().size(); ++predicate)
+                                               {
+                                                   const auto& set = ctx.ctx.ws.facts.delta_fact_sets.predicate.get_sets()[predicate];
+
+                                                   for (const auto& info : static_consistency_graph.get_predicate_to_anchors().predicate_to_infos[predicate])
+                                                   {
+                                                       for (const auto fact : set.get_facts())
+                                                       {
+                                                           auto& vertices = rctx.ws_rule_iter.kpkc2_vertices;
+                                                           auto& static_vertices = rctx.ws_rule_iter.static_vertices;
+                                                           vertices.clear();
+                                                           static_vertices.clear();
+
+                                                           for (uint_t position = 0; position < fact.get_objects().size(); ++position)
+                                                           {
+                                                               const auto object = fact.get_objects()[position];
+                                                               const auto& vertex = static_consistency_graph.get_vertex(
+                                                                   f::ParameterIndex(info.parameter_mappings.position_to_parameter[position]),
+                                                                   object.get_index());
+                                                               vertices.emplace_back(vertex.get_index());
+                                                               static_vertices.emplace_back(vertex);
+                                                           }
+                                                           // print(std::cout, static_vertices);
+                                                           // std::cout << std::endl;
+
+                                                           std::sort(vertices.begin(), vertices.end());
+                                                           vertices.erase(std::unique(vertices.begin(), vertices.end()), vertices.end());
+                                                           anchors_set.insert(vertices);
+                                                       }
+                                                   }
+                                               }
+
+                                               anchors_set.sort(rctx.ws_rule_iter.kpkc2_anchors_order);
+
+                                               for (const auto i : rctx.ws_rule_iter.kpkc2_anchors_order)
+                                               {
+                                                   // std::cout << "Anchor: ";
+                                                   // print(std::cout, anchors_set[i].vertices);
+                                                   // std::cout << std::endl;
+
+                                                   rctx.ws_rule_iter.kpkc2.for_each_k_clique(
+                                                       [&](auto&& clique)
+                                                       {
+                                                           // std::cout << "Clique: ";
+                                                           // print(std::cout, clique);
+                                                           // std::cout << std::endl;
+                                                       },
+                                                       rctx.ws_rule_iter.kpkc2_workspace,
+                                                       anchors_set[i]);
+                                               }
+
+                                               // std::cout << static_consistency_graph << std::endl;
                                            });
         }
 

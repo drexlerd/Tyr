@@ -20,6 +20,7 @@
 
 #include "tyr/common/formatter.hpp"
 #include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/formatter.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <cstddef>
@@ -245,18 +246,6 @@ public:
     auto full_edges_range() const noexcept { return m_full_graph.edges_range(); }
 
     template<typename Callback>
-    void for_each_new_unary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_unary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_new_binary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_binary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
     void for_each_k_clique(Callback&& callback, Workspace& workspace) const;
 
     template<typename Callback>
@@ -271,6 +260,18 @@ public:
     const Graph& get_full_graph() const noexcept { return m_full_graph; }
 
 private:
+    template<typename Callback>
+    void for_each_new_unary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_unary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_new_binary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_binary_clique(Callback&& callback, Workspace& workspace) const;
+
     /// @brief Seed the P part of BronKerbosch.
     ///
     /// Initialize compatible vertices at depth 0 with empty solution
@@ -515,6 +516,9 @@ void DeltaKPKC::complete_from_seed(Callback&& callback, size_t depth, Workspace&
         const auto vertex = m_const_graph.partitions[p][bit];
 
         partial_solution.push_back(vertex);
+
+        print(std::cout, partial_solution);
+        std::cout << std::endl;
 
         if (partial_solution.size() == k)
         {

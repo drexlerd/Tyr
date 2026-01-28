@@ -95,7 +95,7 @@ GraphLayout allocate_const_graph(const StaticConsistencyGraph& static_graph)
     // Initialize partitions
     auto partitions = std::vector<std::vector<Vertex>>(k);
     auto vertex_to_partition = std::vector<uint_t>(nv);
-    for (size_t p = 0; p < k; ++p)
+    for (uint_t p = 0; p < k; ++p)
     {
         for (const auto& v : static_graph.get_vertex_partitions()[p])
         {
@@ -110,6 +110,11 @@ GraphLayout allocate_const_graph(const StaticConsistencyGraph& static_graph)
 GraphActivityMasks allocate_activity_mask(const StaticConsistencyGraph& static_graph)
 {
     return GraphActivityMasks { boost::dynamic_bitset<>(static_graph.get_num_vertices(), true), boost::dynamic_bitset<>(static_graph.get_num_edges(), true) };
+}
+
+DeltaGraphActivityMasks allocate_delta_activity_mask(const StaticConsistencyGraph& static_graph)
+{
+    return DeltaGraphActivityMasks { boost::dynamic_bitset<>(static_graph.get_num_vertices(), false) };
 }
 
 Graph allocate_empty_graph(const GraphLayout& cg)
@@ -133,6 +138,7 @@ DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
     m_full_graph(allocate_empty_graph(m_const_graph)),
     m_read_masks(allocate_activity_mask(static_graph)),
     m_write_masks(allocate_activity_mask(static_graph)),
+    m_delta_masks(allocate_delta_activity_mask(static_graph)),
     m_iteration(0)
 {
 }
@@ -239,8 +245,9 @@ void DeltaKPKC::reset()
     m_iteration = 0;
 }
 
-bool DeltaKPKC::is_clique(const Anchor& anchor) const
+bool DeltaKPKC::seed_from_anchor(const Anchor& anchor, Workspace& workspace) const
 {
+    auto min_delta_rank = std::numeric_limits<uint_t>::max();
     for (uint_t i = 0; i < anchor.vertices.size(); ++i)
     {
         const auto& v_i = anchor.vertices[i];
@@ -249,18 +256,13 @@ bool DeltaKPKC::is_clique(const Anchor& anchor) const
             const auto& v_j = anchor.vertices[j];
             if (!m_full_graph.adjacency_matrix[v_i.index].test(v_j.index))
                 return false;
+
+            if (m_delta_graph.adjacency_matrix[v_i.index].test(v_j.index))
+                min_delta_rank = std::min(min_delta_rank, Edge(v_i, v_j).rank(m_const_graph.nv));
         }
     }
-    return true;
-}
+    workspace.min_delta_ranks.push_back(min_delta_rank);
 
-bool DeltaKPKC::is_delta(const Anchor& anchor) const
-{
-    return std::any_of(anchor.vertices.begin(), anchor.vertices.end(), [&](auto&& vertex) { return m_delta_masks.delta_vertices.test(vertex.index); });
-}
-
-void DeltaKPKC::seed_from_anchor(const Anchor& anchor, Workspace& workspace) const
-{
     workspace.partial_solution.clear();
     workspace.partition_bits.reset();
     for (const auto& vertex : anchor.vertices)
@@ -287,6 +289,8 @@ void DeltaKPKC::seed_from_anchor(const Anchor& anchor, Workspace& workspace) con
                             [&](auto&& vertex) { return m_full_graph.adjacency_matrix[vertex.index].test(partition[bit].index); }))
                 cv_0_p.set(bit);
     }
+
+    return true;
 }
 
 uint_t DeltaKPKC::choose_best_partition(size_t depth, const Workspace& workspace) const
@@ -325,6 +329,50 @@ uint_t DeltaKPKC::num_possible_additions_at_next_depth(size_t depth, const Works
             ++possible_additions;
 
     return possible_additions;
+}
+
+void DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth, Workspace& workspace) const
+{
+    const uint_t k = m_const_graph.k;
+
+    auto& cv_curr = workspace.compatible_vertices[depth];
+    auto& cv_next = workspace.compatible_vertices[depth + 1];
+    const auto& partition_bits = workspace.partition_bits;
+
+    const auto& full_row = m_full_graph.adjacency_matrix[src.index];
+
+    uint_t offset = 0;
+
+    for (uint_t p = 0; p < k; ++p)
+    {
+        auto& cv_next_p = cv_next[p];
+
+        // Restrict neighborhood
+        auto partition_size = cv_next_p.size();
+
+        if (partition_bits.test(p))
+        {
+            offset += partition_size;
+            continue;
+        }
+
+        // Copy current into next
+        cv_next_p = cv_curr[p];
+
+        for (auto bit = cv_next_p.find_first(); bit != boost::dynamic_bitset<>::npos; bit = cv_next_p.find_next(bit))
+        {
+            uint_t dst = bit + offset;
+
+            // Full Graph Check
+            if (!full_row.test(dst))
+            {
+                cv_next_p.reset(bit);
+                continue;
+            }
+        }
+
+        offset += partition_size;
+    }
 }
 
 }

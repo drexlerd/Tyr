@@ -21,6 +21,8 @@
 #include "tyr/common/formatter.hpp"    // for to_string
 #include "tyr/datalog/assignment.hpp"  // for EdgeAssignment, VertexAssignment
 #include "tyr/datalog/consistency_graph.hpp"
+#include "tyr/datalog/delta_kpkc.hpp"
+#include "tyr/datalog/delta_kpkc2.hpp"
 #include "tyr/datalog/formatter.hpp"
 #include "tyr/datalog/statistics/program.hpp"
 #include "tyr/datalog/statistics/rule.hpp"
@@ -184,6 +186,18 @@ std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el)
     return os;
 }
 
+std::ostream& print(std::ostream& os, const datalog::kpkc::Vertex& el)
+{
+    os << el.index;
+    return os;
+}
+
+std::ostream& print(std::ostream& os, const datalog::kpkc2::Vertex& el)
+{
+    os << el.index;
+    return os;
+}
+
 extern std::ostream& print(std::ostream& os, const datalog::ProgramStatistics& el)
 {
     const double parallel_ms = static_cast<double>(to_ms(el.parallel_time));
@@ -294,6 +308,16 @@ std::ostream& operator<<(std::ostream& os, const VertexAssignment& el) { return 
 std::ostream& operator<<(std::ostream& os, const EdgeAssignment& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph& el) { return print(os, el); }
+
+namespace kpkc
+{
+std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
+}
+
+namespace kpkc2
+{
+std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
+}
 
 std::ostream& operator<<(std::ostream& os, const ProgramStatistics& el) { return print(os, el); }
 

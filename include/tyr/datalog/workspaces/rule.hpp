@@ -25,6 +25,7 @@
 #include "tyr/datalog/applicability.hpp"
 #include "tyr/datalog/consistency_graph.hpp"
 #include "tyr/datalog/delta_kpkc.hpp"
+#include "tyr/datalog/delta_kpkc2.hpp"
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/statistics/rule.hpp"
 #include "tyr/formalism/binding_index.hpp"
@@ -215,6 +216,13 @@ struct RuleIterationWorkspace
 {
     kpkc::DeltaKPKC kpkc;
     kpkc::Workspace kpkc_workspace;
+
+    kpkc2::DeltaKPKC kpkc2;
+    kpkc2::Workspace kpkc2_workspace;
+    kpkc2::AnchorsSet kpkc2_anchors_set;
+    std::vector<uint_t> kpkc2_anchors_order;
+    std::vector<kpkc2::Vertex> kpkc2_vertices;
+    std::vector<details::Vertex> static_vertices;
 
     /// Unique heads constructed in this iteration
     std::shared_ptr<formalism::datalog::Repository> repository;

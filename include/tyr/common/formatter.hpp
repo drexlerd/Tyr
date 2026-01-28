@@ -31,6 +31,7 @@
 #include <optional>
 #include <ostream>
 #include <set>
+#include <span>
 #include <sstream>
 #include <tuple>
 #include <unordered_map>
@@ -94,6 +95,9 @@ inline std::ostream& operator<<(std::ostream& os, const std::monostate& el);
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::optional<T>& el);
+
+template<typename T, std::size_t Extent>
+std::ostream& operator<<(std::ostream& os, const std::span<T, Extent>& el);
 
 // cista
 
@@ -166,6 +170,9 @@ inline std::ostream& print(std::ostream& os, const std::monostate& el);
 
 template<typename T>
 std::ostream& print(std::ostream& os, const std::optional<T>& el);
+
+template<typename T, std::size_t Extent>
+std::ostream& print(std::ostream& os, const std::span<T, Extent>& el);
 
 // cista
 
@@ -356,6 +363,12 @@ std::ostream& operator<<(std::ostream& os, const std::optional<T>& el)
     return print(os, el);
 }
 
+template<typename T, std::size_t Extent>
+std::ostream& operator<<(std::ostream& os, const std::span<T, Extent>& el)
+{
+    return print(os, el);
+}
+
 // cista
 
 template<typename T>
@@ -515,6 +528,12 @@ std::ostream& print(std::ostream& os, const std::optional<T>& el)
     else
         os << "<nullopt>";
     return os;
+}
+
+template<typename T, std::size_t Extent>
+std::ostream& print(std::ostream& os, const std::span<T, Extent>& el)
+{
+    return print_range(os, el, "[", "]");
 }
 
 template<typename T>

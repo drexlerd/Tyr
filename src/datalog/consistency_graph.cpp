@@ -1117,6 +1117,8 @@ const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_vertex_parti
 
 const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_object_to_vertex_partitions() const noexcept { return m_object_to_vertex_partitions; }
 
+const details::IndexedAnchors& StaticConsistencyGraph::get_predicate_to_anchors() const noexcept { return m_predicate_to_anchors; }
+
 /**
  * EdgeIterator
  */
