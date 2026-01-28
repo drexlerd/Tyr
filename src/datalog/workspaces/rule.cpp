@@ -75,7 +75,7 @@ RuleWorkspace::Worker::Worker(const Common& common) : builder(), binding(), iter
 
 RuleWorkspace::RuleWorkspace(const formalism::datalog::Repository& program_repository, const ConstRuleWorkspace& cws) :
     common(program_repository, cws.static_consistency_graph),
-    worker([&] { return Worker(common); })
+    worker([this] { return Worker(this->common); })
 {
 }
 

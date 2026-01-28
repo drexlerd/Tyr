@@ -35,8 +35,10 @@
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
 
+#include <atomic>
 #include <chrono>
 #include <oneapi/tbb/enumerable_thread_specific.h>
+#include <oneapi/tbb/spin_mutex.h>
 #include <vector>
 
 namespace tyr::datalog
@@ -174,6 +176,10 @@ struct RuleWorkspace
         kpkc::DeltaKPKC kpkc;
     };
 
+    /// @brief Each iteration consists of
+    /// - generate all k-cliques
+    /// - ground witnesses
+    /// - annotate witnesses
     struct Iteration
     {
         explicit Iteration(const Common& common);
@@ -187,10 +193,10 @@ struct RuleWorkspace
         formalism::datalog::Repository repository;
         formalism::OverlayRepository<formalism::datalog::Repository> program_overlay_repository;
 
-        /// Bindings kept from iteration in stage
+        /// Heads
         UnorderedSet<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
 
-        // Annotations
+        // Annotations stored in stage_repository
         AndAnnotationsMap witness_to_cost;
         HeadToWitness head_to_witness;
     };
@@ -230,6 +236,7 @@ struct RuleWorkspace
     RuleWorkspace& operator=(RuleWorkspace&& other) = delete;
 
     Common common;
+
     oneapi::tbb::enumerable_thread_specific<Worker> worker;
 };
 

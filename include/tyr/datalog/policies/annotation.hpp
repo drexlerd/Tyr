@@ -52,9 +52,9 @@ using OrAnnotationsList = std::vector<std::vector<Cost>>;
 /// The witness lives in the rule delta repository.
 struct Witness
 {
-    Index<formalism::datalog::Rule> rule;
-    Index<formalism::Binding> binding;
-    Index<formalism::datalog::GroundConjunctiveCondition> witness_condition;
+    View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule;
+    View<Index<formalism::Binding>, formalism::datalog::Repository> binding;
+    View<Index<formalism::datalog::GroundConjunctiveCondition>, formalism::datalog::Repository> witness_condition;
 
     auto identifying_members() const noexcept { return std::tie(rule, binding); }
 };
@@ -119,8 +119,8 @@ concept OrAnnotationPolicyConcept = requires(const T& p,
 template<typename T>
 concept AndAnnotationPolicyConcept = requires(const T& p,
                                               uint_t current_cost,
-                                              Index<formalism::datalog::Rule> rule,
-                                              Index<formalism::datalog::ConjunctiveCondition> witness_condition,
+                                              View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
+                                              View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> witness_condition,
                                               Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
                                               Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
                                               const OrAnnotationsList& or_annot,
@@ -167,8 +167,8 @@ public:
     static constexpr bool ShouldAnnotate = false;
 
     void update_annotation(uint_t current_cost,
-                           Index<formalism::datalog::Rule> rule,
-                           Index<formalism::datalog::ConjunctiveCondition> witness_condition,
+                           View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
+                           View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> witness_condition,
                            Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
                            Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
                            const OrAnnotationsList& or_annot,
@@ -219,7 +219,7 @@ public:
         const auto cost_update = update_min_cost(or_cost, and_cost);
 
         if (or_cost < old_cost)
-            program_head_to_witness[program_head] = witness;
+            program_head_to_witness.insert_or_assign(program_head, witness);
 
         return cost_update;
     }
@@ -267,8 +267,8 @@ public:
     static constexpr AggregationFunction agg = AggregationFunction {};
 
     void update_annotation(uint_t current_cost,
-                           Index<formalism::datalog::Rule> rule,
-                           Index<formalism::datalog::ConjunctiveCondition> witness_condition,
+                           View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
+                           View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> witness_condition,
                            Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
                            Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
                            const OrAnnotationsList& or_annot,
@@ -281,12 +281,11 @@ public:
         const auto best_global_cost = fetch_atom_cost(program_head, or_annot);
         const auto best_local_cost = fetch_current_best_cost(delta_head, and_annot, delta_head_to_witness);
         const auto best_cost = std::min(best_global_cost, best_local_cost);
-        const auto cur_cost_lower_bound = current_cost + make_view(rule, program_repository).get_cost();
+        const auto cur_cost_lower_bound = current_cost + rule.get_cost();
         if (best_cost <= cur_cost_lower_bound)
             return;  ///< No local or global improvement
 
-        const auto [witness_cost, witness] =
-            try_ground_better_witness(best_cost, rule, witness_condition, program_head, delta_context, program_repository, or_annot);
+        const auto [witness_cost, witness] = try_ground_better_witness(best_cost, rule, witness_condition, delta_context, program_repository, or_annot);
         if (!witness)
             return;  ///< No local or global improvement
 
@@ -315,15 +314,14 @@ private:
 
     static std::pair<uint_t, std::optional<Witness>>
     try_ground_better_witness(uint_t best_cost,
-                              Index<formalism::datalog::Rule> rule,
-                              Index<formalism::datalog::ConjunctiveCondition> witness_condition,
-                              Index<formalism::datalog::GroundAtom<formalism::FluentTag>> program_head,
+                              View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
+                              View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> witness_condition,
                               formalism::datalog::GrounderContext<formalism::datalog::Repository>& delta_context,
                               const formalism::datalog::Repository& program_repository,
                               const OrAnnotationsList& or_annot)
     {
         auto body_cost = AggregationFunction::identity();
-        const auto rule_cost = make_view(rule, program_repository).get_cost();
+        const auto rule_cost = rule.get_cost();
 
         if (best_cost <= body_cost + rule_cost)
             return std::make_pair(std::numeric_limits<uint_t>::max(), std::nullopt);  ///< No local or global improvement
@@ -339,7 +337,7 @@ private:
         auto ground_literal_ptr = delta_context.builder.get_builder<formalism::datalog::GroundLiteral<formalism::FluentTag>>();
         auto& ground_literal = *ground_literal_ptr;
 
-        for (const auto literal : make_view(witness_condition, program_repository).get_literals<formalism::FluentTag>())
+        for (const auto literal : witness_condition.get_literals<formalism::FluentTag>())
         {
             assert(literal.get_polarity());
 
@@ -367,9 +365,10 @@ private:
         const auto witness_cost = body_cost + rule_cost;
 
         formalism::datalog::canonicalize(ground_conj_cond);
-        const auto new_ground_conj_cond = delta_context.destination.get_or_create(ground_conj_cond, delta_context.builder.get_buffer()).first;
+        const auto new_ground_conj_cond =
+            make_view(delta_context.destination.get_or_create(ground_conj_cond, delta_context.builder.get_buffer()).first, delta_context.destination);
 
-        const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first;
+        const auto delta_binding = make_view(formalism::datalog::ground(delta_context.binding, delta_context).first, delta_context.destination);
         const auto witness = Witness { rule, delta_binding, new_ground_conj_cond };
 
         return std::make_pair(witness_cost, std::move(witness));

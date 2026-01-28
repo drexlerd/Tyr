@@ -288,9 +288,11 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                            [&](auto&& rule_index)
                                            {
                                                const auto i = uint_t(rule_index);
+                                               auto& ws_rule = *ctx.ctx.ws.rules[i];
+                                               auto& ws_rule_worker = ws_rule.worker.local();
 
-                                               const auto rule_stopwatch = StopwatchScope(ctx.ctx.ws.rules[i].statistics.parallel_time);
-                                               ++ctx.ctx.ws.rules[i].statistics.num_executions;
+                                               const auto rule_stopwatch = StopwatchScope(ws_rule_worker.solve.statistics.parallel_time);
+                                               ++ws_rule_worker.solve.statistics.num_executions;
 
                                                // std::cout << make_view(rule_index, ctx.ctx.ws.repository) << std::endl;
 
@@ -320,20 +322,25 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
                 auto merge_context = fd::MergeContext { ctx.ctx.ws.datalog_builder, ctx.ctx.ws.repository };
 
-                for (const auto delta_head : ctx.ctx.ws.rules_iter[i].heads)
+                const auto& ws_rule = ctx.ctx.ws.rules[i];
+
+                for (const auto& worker : ws_rule->worker)
                 {
-                    // Merge head from delta into the program
-                    const auto program_head = fd::merge_d2d(make_view(delta_head, *ctx.ctx.ws.rules_solve[i].repository), merge_context).first;
+                    for (const auto delta_head : worker.iteration.heads)
+                    {
+                        // Merge head from delta into the program
+                        const auto program_head = fd::merge_d2d(make_view(delta_head, worker.solve.stage_repository), merge_context).first;
 
-                    // Update annotation
-                    const auto cost_update = ctx.ctx.aps.or_ap.update_annotation(program_head,
-                                                                                 delta_head,
-                                                                                 ctx.ctx.aps.or_annot,
-                                                                                 ctx.ctx.aps.and_annots[i],
-                                                                                 ctx.ctx.aps.delta_head_to_witness[i],
-                                                                                 ctx.ctx.aps.program_head_to_witness);
+                        // Update annotation
+                        const auto cost_update = ctx.ctx.aps.or_ap.update_annotation(program_head,
+                                                                                     delta_head,
+                                                                                     ctx.ctx.aps.or_annot,
+                                                                                     ctx.ctx.aps.and_annots[i],
+                                                                                     ctx.ctx.aps.delta_head_to_witness[i],
+                                                                                     ctx.ctx.aps.program_head_to_witness);
 
-                    ctx.ctx.ws.cost_buckets.update(cost_update, program_head);
+                        ctx.ctx.ws.cost_buckets.update(cost_update, program_head);
+                    }
                 }
             }
 
