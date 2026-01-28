@@ -205,6 +205,7 @@ void generate_general_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
         wrctx.ws_worker.iteration.kpkc_workspace);
 
     {
+        // TODO: move pending check out of this loop
         const auto stopwatch = StopwatchScope(wrctx.ws_worker.solve.statistics.pending_time);
 
         for (auto it = wrctx.ws_worker.solve.pending_rules.begin(); it != wrctx.ws_worker.solve.pending_rules.end();)
