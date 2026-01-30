@@ -116,7 +116,7 @@ void generate_nullary_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
                                            in.cws_rule().get_witness_condition(),
                                            program_head_index,
                                            worker_head_index,
-                                           in.rctx().ctx.ctx.aps.or_annot,
+                                           in.pctx().aps.or_annot,
                                            out.ws_worker().iteration.witness_to_cost,
                                            out.ws_worker().iteration.head_to_witness,
                                            out.ground_context_solve(),
@@ -215,12 +215,12 @@ void generate_general_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
 
                 out.ws_worker().iteration.heads.insert(worker_head_index);
 
-                in.rctx().and_ap.update_annotation(in.rctx().ctx.ctx.ws.cost_buckets.current_cost(),
+                in.rctx().and_ap.update_annotation(in.pctx().ws.cost_buckets.current_cost(),
                                                    in.cws_rule().get_rule(),
                                                    in.cws_rule().get_witness_condition(),
                                                    program_head_index,
                                                    worker_head_index,
-                                                   in.rctx().ctx.ctx.aps.or_annot,
+                                                   in.pctx().aps.or_annot,
                                                    out.ws_worker().iteration.witness_to_cost,
                                                    out.ws_worker().iteration.head_to_witness,
                                                    out.ground_context_solve(),
@@ -250,10 +250,6 @@ void generate(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
 void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
-    const auto rule = rctx.cws_rule.get_rule();
-    auto fact_sets = rctx.get_fact_sets();
-    auto& aps = rctx.ctx.ctx.aps;
-
     for (auto& worker : rctx.ws_rule.worker)
     {
         auto wrctx = RuleWorkerExecutionContext(rctx, worker);
@@ -268,26 +264,26 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             out.ground_context_solve().binding = make_view(it->first, out.ground_context_solve().destination).get_objects().get_data();
 
             assert(out.ground_context_solve().binding == out.ground_context_iteration().binding);
-            const auto program_head_index = fd::ground(rule.get_head(), out.ground_context_iteration()).first;
+            const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
 
-            if (fact_sets.fluent_sets.predicate.contains(program_head_index))  ///< optimal cost proven
+            if (in.rctx().get_fact_sets().fluent_sets.predicate.contains(program_head_index))  ///< optimal cost proven
             {
                 it = worker.solve.pending_rules.erase(it);
             }
-            else if (it->second->is_dynamically_applicable(fact_sets, out.const_ground_context_program()))
+            else if (it->second->is_dynamically_applicable(in.rctx().get_fact_sets(), out.const_ground_context_program()))
             {
-                assert(ensure_applicability(rule, out.ground_context_iteration(), fact_sets));
+                assert(ensure_applicability(in.cws_rule().get_rule(), out.ground_context_iteration(), in.rctx().get_fact_sets()));
 
-                const auto worker_head_index = fd::ground(rule.get_head(), out.ground_context_solve()).first;
+                const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
 
                 worker.iteration.heads.insert(worker_head_index);
 
                 rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
-                                              rule,
-                                              rctx.cws_rule.get_witness_condition(),
+                                              in.cws_rule().get_rule(),
+                                              in.cws_rule().get_witness_condition(),
                                               program_head_index,
                                               worker_head_index,
-                                              aps.or_annot,
+                                              in.pctx().aps.or_annot,
                                               worker.iteration.witness_to_cost,
                                               worker.iteration.head_to_witness,
                                               out.ground_context_solve(),

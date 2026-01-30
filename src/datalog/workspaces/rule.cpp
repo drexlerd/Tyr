@@ -44,7 +44,6 @@ void RuleWorkspace::Common::clear() noexcept { kpkc.reset(); }
 
 void RuleWorkspace::Common::initialize_iteration(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)
 {
-    std::cout << "initialize_iteration" << std::endl;
     kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets);
 }
 

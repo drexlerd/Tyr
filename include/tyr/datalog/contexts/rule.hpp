@@ -46,6 +46,10 @@ public:
         const RuleWorkspace& m_ws_rule;
         const ConstRuleWorkspace& m_cws_rule;
 
+        const auto& pctx() noexcept { return m_rctx.ctx.ctx; }
+        const auto& pctx() const noexcept { return m_rctx.ctx.ctx; }
+        const auto& sctx() noexcept { return m_rctx.ctx; }
+        const auto& sctx() const noexcept { return m_rctx.ctx; }
         const auto& rctx() noexcept { return m_rctx; }
         const auto& rctx() const noexcept { return m_rctx; }
         const auto& ws_rule() noexcept { return m_ws_rule; }
