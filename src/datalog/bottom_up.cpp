@@ -161,20 +161,6 @@ void generate_general_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
 
     // std::cout << std::endl << std::endl << rctx.cws_rule.get_rule() << std::endl;
 
-    // auto ground_context_iter = wrctx.get_ground_context_iter();
-    // auto ground_context_solve = wrctx.get_ground_context_solve();
-    // auto ground_context_program = wrctx.get_ground_context_program();
-    // auto fact_sets = wrctx.rctx().get_fact_sets();
-    // const auto rule = wrctx.rctx().cws_rule.get_rule();
-    // const auto nullary_condition = wrctx.rctx().cws_rule.get_nullary_condition();
-    // const auto witness_condition = wrctx.rctx().cws_rule.get_witness_condition();
-    // const auto conflicting_overapproximation_condition = wrctx.rctx().cws_rule.get_conflicting_overapproximation_condition();
-    // const auto& kpkc = wrctx.rctx().ws_rule.common.kpkc;
-    // const auto& cost_buckets = wrctx.rctx().ctx.ctx.ws.cost_buckets;
-
-    // oneapi::tbb::parallel_for_each(active_rules.begin(), active_rules.end(), [&](auto&& rule_index) {});
-
-    /// parallel_for_each_new_k_clique([&](auto&&))
     in.ws_rule().common.kpkc.for_each_new_k_clique(
         [&](auto&& clique)
         {
