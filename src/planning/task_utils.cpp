@@ -96,13 +96,11 @@ valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float_t>& nu
 
 void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
                                      const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                     datalog::ProgramWorkspace& ws)
+                                     formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                     datalog::TaggedFactSets<formalism::FluentTag>& fact_sets)
 {
-    /// --- Initialize FactSets
-    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository };
-
     for (auto i = fluent_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = fluent_atoms.find_next(i))
-        ws.facts.fact_sets.predicate.insert(make_view(
+        fact_sets.predicate.insert(make_view(
             formalism::planning::merge_p2d<formalism::FluentTag,
                                            formalism::OverlayRepository<formalism::planning::Repository>,
                                            formalism::datalog::Repository,
@@ -114,13 +112,11 @@ void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms
 
 void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
                                       const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                                      datalog::ProgramWorkspace& ws)
+                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                      datalog::TaggedFactSets<formalism::FluentTag>& fact_sets)
 {
-    /// --- Initialize FactSets
-    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository };
-
     for (auto i = derived_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms.find_next(i))
-        ws.facts.fact_sets.predicate.insert(make_view(
+        fact_sets.predicate.insert(make_view(
             formalism::planning::merge_p2d<formalism::DerivedTag,
                                            formalism::OverlayRepository<formalism::planning::Repository>,
                                            formalism::datalog::Repository,
@@ -132,16 +128,14 @@ void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_ato
 
 void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
                                           const formalism::OverlayRepository<formalism::planning::Repository>& numeric_variables_context,
-                                          datalog::ProgramWorkspace& ws)
+                                          formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                          datalog::TaggedFactSets<formalism::FluentTag>& fact_sets)
 {
-    /// --- Initialize FactSets
-    auto merge_context = formalism::planning::MergeDatalogContext { ws.datalog_builder, ws.repository };
-
     for (uint_t i = 0; i < numeric_variables.size(); ++i)
     {
         if (!std::isnan(numeric_variables[i]))
         {
-            ws.facts.fact_sets.function.insert(
+            fact_sets.function.insert(
                 make_view(formalism::planning::merge_p2d(
                               make_view(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>(i), numeric_variables_context),
                               merge_context)
@@ -152,26 +146,28 @@ void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_va
     }
 }
 
-void insert_fact_sets_into_assignment_sets(datalog::ProgramWorkspace& ws, const datalog::ConstProgramWorkspace& cws)
+void insert_fact_sets_into_assignment_sets(const datalog::TaggedFactSets<formalism::FluentTag>& fact_sets,
+                                           datalog::TaggedAssignmentSets<formalism::FluentTag>& assignment_sets)
 {
-    auto& fluent_fact_sets = ws.facts.fact_sets;
-    auto& fluent_assignment_sets = ws.facts.assignment_sets;
+    assignment_sets.reset();
 
-    fluent_assignment_sets.insert(fluent_fact_sets);
+    assignment_sets.insert(fact_sets);
 }
 
 void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
                            const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
-                           datalog::ProgramWorkspace& ws,
-                           const datalog::ConstProgramWorkspace& cws)
+                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                           datalog::TaggedFactSets<formalism::FluentTag>& fact_sets,
+                           datalog::TaggedAssignmentSets<formalism::FluentTag>& assignment_sets)
 {
-    ws.facts.reset();
+    fact_sets.reset();
+    assignment_sets.reset();
 
-    insert_fluent_atoms_to_fact_set(unpacked_state.get_atoms<formalism::FluentTag>(), atoms_context, ws);
-    insert_derived_atoms_to_fact_set(unpacked_state.get_atoms<formalism::DerivedTag>(), atoms_context, ws);
-    insert_numeric_variables_to_fact_set(unpacked_state.get_numeric_variables(), atoms_context, ws);
+    insert_fluent_atoms_to_fact_set(unpacked_state.get_atoms<formalism::FluentTag>(), atoms_context, merge_context, fact_sets);
+    insert_derived_atoms_to_fact_set(unpacked_state.get_atoms<formalism::DerivedTag>(), atoms_context, merge_context, fact_sets);
+    insert_numeric_variables_to_fact_set(unpacked_state.get_numeric_variables(), atoms_context, merge_context, fact_sets);
 
-    insert_fact_sets_into_assignment_sets(ws, cws);
+    insert_fact_sets_into_assignment_sets(fact_sets, assignment_sets);
 }
 
 std::vector<analysis::DomainListListList>

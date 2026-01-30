@@ -111,16 +111,16 @@ void generate_nullary_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
 
         out.ws_worker().iteration.heads.insert(worker_head_index);
 
-        in.rctx().and_ap.update_annotation(cost_buckets.current_cost(),
-                                           in.cws_rule().get_rule(),
-                                           in.cws_rule().get_witness_condition(),
-                                           program_head_index,
-                                           worker_head_index,
-                                           in.pctx().aps.or_annot,
-                                           out.ws_worker().iteration.witness_to_cost,
-                                           out.ws_worker().iteration.head_to_witness,
-                                           out.ground_context_solve(),
-                                           in.rctx().ws_rule.common.program_repository);
+        in.and_ap().update_annotation(cost_buckets.current_cost(),
+                                      in.cws_rule().get_rule(),
+                                      in.cws_rule().get_witness_condition(),
+                                      program_head_index,
+                                      worker_head_index,
+                                      in.pctx().ws.or_annot,
+                                      out.ws_worker().iteration.witness_to_cost,
+                                      out.ws_worker().iteration.head_to_witness,
+                                      out.ground_context_solve(),
+                                      in.rctx().ws_rule.common.program_repository);
     }
 }
 
@@ -215,16 +215,16 @@ void generate_general_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
 
                 out.ws_worker().iteration.heads.insert(worker_head_index);
 
-                in.rctx().and_ap.update_annotation(in.pctx().ws.cost_buckets.current_cost(),
-                                                   in.cws_rule().get_rule(),
-                                                   in.cws_rule().get_witness_condition(),
-                                                   program_head_index,
-                                                   worker_head_index,
-                                                   in.pctx().aps.or_annot,
-                                                   out.ws_worker().iteration.witness_to_cost,
-                                                   out.ws_worker().iteration.head_to_witness,
-                                                   out.ground_context_solve(),
-                                                   in.rctx().ws_rule.common.program_repository);
+                in.and_ap().update_annotation(in.pctx().ws.cost_buckets.current_cost(),
+                                              in.cws_rule().get_rule(),
+                                              in.cws_rule().get_witness_condition(),
+                                              program_head_index,
+                                              worker_head_index,
+                                              in.pctx().ws.or_annot,
+                                              out.ws_worker().iteration.witness_to_cost,
+                                              out.ws_worker().iteration.head_to_witness,
+                                              out.ground_context_solve(),
+                                              in.rctx().ws_rule.common.program_repository);
             }
             else
             {
@@ -278,12 +278,12 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 
                 worker.iteration.heads.insert(worker_head_index);
 
-                rctx.and_ap.update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
+                in.and_ap().update_annotation(rctx.ctx.ctx.ws.cost_buckets.current_cost(),
                                               in.cws_rule().get_rule(),
                                               in.cws_rule().get_witness_condition(),
                                               program_head_index,
                                               worker_head_index,
-                                              in.pctx().aps.or_annot,
+                                              in.pctx().ws.or_annot,
                                               worker.iteration.witness_to_cost,
                                               worker.iteration.head_to_witness,
                                               out.ground_context_solve(),
@@ -306,8 +306,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
     auto& facts = ctx.ctx.ws.facts;
     auto& cost_buckets = ctx.ctx.ws.cost_buckets;
     auto& ws = ctx.ctx.ws;
-    auto& tp = ctx.ctx.tp;
-    auto& aps = ctx.ctx.aps;
+    auto& tp = ctx.ctx.ws.tp;
 
     scheduler.activate_all();
 
@@ -382,12 +381,12 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                         // std::cout << make_view(program_head, ws.repository) << std::endl;
 
                         // Update annotation
-                        const auto cost_update = aps.or_ap.update_annotation(program_head,
-                                                                             worker_head,
-                                                                             aps.or_annot,
-                                                                             worker.iteration.witness_to_cost,
-                                                                             worker.iteration.head_to_witness,
-                                                                             aps.program_head_to_witness);
+                        const auto cost_update = ctx.ctx.ws.or_ap.update_annotation(program_head,
+                                                                                    worker_head,
+                                                                                    ctx.ctx.ws.or_annot,
+                                                                                    worker.iteration.witness_to_cost,
+                                                                                    worker.iteration.head_to_witness,
+                                                                                    ctx.ctx.ws.head_to_witness);
 
                         cost_buckets.update(cost_update, program_head);
                     }
@@ -436,12 +435,8 @@ void solve_bottom_up(ProgramExecutionContext<OrAP, AndAP, TP>& ctx)
 }
 
 template void solve_bottom_up(ProgramExecutionContext<NoOrAnnotationPolicy, NoAndAnnotationPolicy, NoTerminationPolicy>& ctx);
-
 template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>, NoTerminationPolicy>& ctx);
-
 template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<SumAggregation>, TerminationPolicy<SumAggregation>>& ctx);
-
 template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>, NoTerminationPolicy>& ctx);
-
 template void solve_bottom_up(ProgramExecutionContext<OrAnnotationPolicy, AndAnnotationPolicy<MaxAggregation>, TerminationPolicy<MaxAggregation>>& ctx);
 }

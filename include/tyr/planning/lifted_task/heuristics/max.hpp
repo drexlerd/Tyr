@@ -28,31 +28,29 @@ namespace tyr::planning
 {
 
 template<>
-class MaxHeuristic<LiftedTask> : public RPGBase<MaxHeuristic<LiftedTask>>
+class MaxHeuristic<LiftedTask> :
+    public RPGBase<MaxHeuristic<LiftedTask>,
+                   datalog::OrAnnotationPolicy,
+                   datalog::AndAnnotationPolicy<datalog::MaxAggregation>,
+                   datalog::TerminationPolicy<datalog::MaxAggregation>>
 {
 public:
     MaxHeuristic(std::shared_ptr<LiftedTask> task) :
-        RPGBase<MaxHeuristic<LiftedTask>>(std::move(task)),
-        m_aps(datalog::OrAnnotationPolicy(),
-              std::vector<datalog::AndAnnotationPolicy<datalog::MaxAggregation>>(this->m_workspace.rules.size()),
-              datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
-              std::vector<datalog::AndAnnotationsMap>(this->m_workspace.rules.size()),
-              std::vector<datalog::HeadToWitness>(this->m_workspace.rules.size())),
-        m_tp(datalog::TerminationPolicy<datalog::MaxAggregation>(
-            this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()))
+        RPGBase<MaxHeuristic<LiftedTask>,
+                datalog::OrAnnotationPolicy,
+                datalog::AndAnnotationPolicy<datalog::MaxAggregation>,
+                datalog::TerminationPolicy<datalog::MaxAggregation>>(
+            task,
+            datalog::OrAnnotationPolicy(),
+            datalog::AndAnnotationPolicy<datalog::MaxAggregation>(),
+            datalog::TerminationPolicy<datalog::MaxAggregation>(
+                task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()))
     {
     }
 
     static std::shared_ptr<MaxHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task) { return std::make_shared<MaxHeuristic<LiftedTask>>(task); }
 
-    float_t extract_cost_and_set_preferred_actions_impl(const State<LiftedTask>& state) { return m_tp.get_total_cost(m_aps.or_annot); }
-
-    auto& get_annotation_policies_impl() noexcept { return m_aps; }
-    auto& get_termination_policy_impl() noexcept { return m_tp; }
-
-private:
-    datalog::AnnotationPolicies<datalog::OrAnnotationPolicy, datalog::AndAnnotationPolicy<datalog::MaxAggregation>> m_aps;
-    datalog::TerminationPolicy<datalog::MaxAggregation> m_tp;
+    float_t extract_cost_and_set_preferred_actions_impl(const State<LiftedTask>& state) { return m_workspace.tp.get_total_cost(this->m_workspace.or_annot); }
 };
 
 }

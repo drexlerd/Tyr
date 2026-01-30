@@ -39,15 +39,12 @@ public:
 
     void compute_extended_state(UnpackedState<LiftedTask>& unpacked_state);
 
-    const datalog::ProgramWorkspace& get_workspace() const noexcept { return m_workspace; }
+    const auto& get_workspace() const noexcept { return m_workspace; }
 
 private:
     std::shared_ptr<LiftedTask> m_task;
 
-    datalog::ProgramWorkspace m_workspace;
-
-    datalog::AnnotationPolicies<datalog::NoOrAnnotationPolicy, datalog::NoAndAnnotationPolicy> m_aps;
-    datalog::NoTerminationPolicy m_tp;
+    datalog::ProgramWorkspace<datalog::NoOrAnnotationPolicy, datalog::NoAndAnnotationPolicy, datalog::NoTerminationPolicy> m_workspace;
 };
 
 }

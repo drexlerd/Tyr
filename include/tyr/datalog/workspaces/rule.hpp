@@ -162,6 +162,7 @@ public:
     }
 };
 
+template<typename AndAP>
 struct RuleWorkspace
 {
     struct Common
@@ -205,9 +206,11 @@ struct RuleWorkspace
 
     struct Solve
     {
-        Solve();
+        explicit Solve(const AndAP& and_ap);
 
         void clear() noexcept;
+
+        AndAP and_ap;
 
         /// Persistent memory
         formalism::datalog::Repository stage_repository;
@@ -225,7 +228,9 @@ struct RuleWorkspace
 
     struct Worker
     {
-        explicit Worker(const Common& common);
+        explicit Worker(const Common& common, const AndAP& and_ap);
+
+        void clear() noexcept;
 
         formalism::datalog::Builder builder;
         IndexList<formalism::Object> binding;
@@ -234,7 +239,7 @@ struct RuleWorkspace
         Solve solve;
     };
 
-    RuleWorkspace(const formalism::datalog::Repository& program_repository, const ConstRuleWorkspace& cws);
+    RuleWorkspace(const formalism::datalog::Repository& program_repository, const ConstRuleWorkspace& cws, const AndAP& and_ap);
     RuleWorkspace(const RuleWorkspace& other) = delete;
     RuleWorkspace& operator=(const RuleWorkspace& other) = delete;
     RuleWorkspace(RuleWorkspace&& other) = delete;
@@ -272,6 +277,88 @@ struct ConstRuleWorkspace
                        size_t num_fluent_predicates,
                        const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
 };
+
+/**
+ * Implementations
+ */
+
+template<typename AndAP>
+RuleWorkspace<AndAP>::Common::Common(const formalism::datalog::Repository& program_repository, const StaticConsistencyGraph& static_consistency_graph) :
+    program_repository(program_repository),
+    kpkc(static_consistency_graph)
+{
+}
+
+template<typename AndAP>
+void RuleWorkspace<AndAP>::Common::clear() noexcept
+{
+    kpkc.reset();
+}
+
+template<typename AndAP>
+void RuleWorkspace<AndAP>::Common::initialize_iteration(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)
+{
+    kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets);
+}
+
+template<typename AndAP>
+RuleWorkspace<AndAP>::Iteration::Iteration(const Common& common) :
+    kpkc_workspace(common.kpkc.get_graph_layout()),
+    repository(),
+    program_overlay_repository(common.program_repository, repository),
+    heads(),
+    witness_to_cost(),
+    head_to_witness()
+{
+}
+
+template<typename AndAP>
+void RuleWorkspace<AndAP>::Iteration::clear() noexcept
+{
+    repository.clear();
+    heads.clear();
+    witness_to_cost.clear();
+    head_to_witness.clear();
+}
+
+template<typename AndAP>
+RuleWorkspace<AndAP>::Solve::Solve(const AndAP& and_ap) :
+    and_ap(and_ap),
+    stage_repository(),
+    seen_bindings_dbg(),
+    applicability_check_pool(),
+    pending_rules(),
+    statistics()
+{
+}
+
+template<typename AndAP>
+void RuleWorkspace<AndAP>::Solve::clear() noexcept
+{
+    stage_repository.clear();
+    seen_bindings_dbg.clear();
+    pending_rules.clear();
+}
+
+template<typename AndAP>
+RuleWorkspace<AndAP>::Worker::Worker(const Common& common, const AndAP& and_ap) : builder(), binding(), iteration(common), solve(and_ap)
+{
+}
+
+template<typename AndAP>
+void RuleWorkspace<AndAP>::Worker::clear() noexcept
+{
+    iteration.clear();
+    solve.clear();
+}
+
+template<typename AndAP>
+RuleWorkspace<AndAP>::RuleWorkspace(const formalism::datalog::Repository& program_repository, const ConstRuleWorkspace& cws, const AndAP& and_ap) :
+    common(program_repository, cws.static_consistency_graph),
+    worker([this, and_ap] { return Worker(this->common, and_ap); })
+{
+}
+
 }
 
 #endif

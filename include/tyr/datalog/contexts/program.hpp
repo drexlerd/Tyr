@@ -36,35 +36,32 @@ template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
          TerminationPolicyConcept TP = NoTerminationPolicy>
 struct ProgramExecutionContext
 {
-    ProgramExecutionContext(ProgramWorkspace& ws, const ConstProgramWorkspace& cws, AnnotationPolicies<OrAP, AndAP>& aps, TP& tp) :
-        ws(ws),
-        cws(cws),
-        aps(aps),
-        tp(tp)
+    ProgramExecutionContext(ProgramWorkspace<OrAP, AndAP, TP>& ws, const ConstProgramWorkspace& cws) : ws(ws), cws(cws)
     {
-        // Clear rule workspaces
+        // Clear the rules
         for (auto& rule : ws.rules)
         {
             rule->common.clear();
             for (auto& worker : rule->worker)
-            {
-                worker.iteration.clear();
-                worker.solve.clear();
-            }
+                worker.clear();
         }
-        aps.clear();
-        tp.clear();
+
+        // Clear the annotation policy.
+        for (auto& vec : ws.or_annot)
+            vec.clear();
+        ws.head_to_witness.clear();
 
         // Initialize the termination policy.
-        tp.set_goals(ws.facts.goal_fact_sets);
+        ws.tp.clear();
+        ws.tp.set_goals(ws.facts.goal_fact_sets);
 
         // Initialize first fact layer.
         for (const auto& set : ws.facts.fact_sets.predicate.get_sets())
         {
             for (const auto fact : set.get_facts())
             {
-                aps.or_ap.initialize_annotation(fact.get_index(), aps.or_annot);
-                tp.achieve(fact.get_index());
+                ws.or_ap.initialize_annotation(fact.get_index(), ws.or_annot);
+                ws.tp.achieve(fact.get_index());
             }
         }
 
@@ -81,10 +78,8 @@ struct ProgramExecutionContext
                | std::views::transform([this](RuleSchedulerStratum& scheduler) { return StratumExecutionContext<OrAP, AndAP, TP> { scheduler, *this }; });
     }
 
-    ProgramWorkspace& ws;
+    ProgramWorkspace<OrAP, AndAP, TP>& ws;
     const ConstProgramWorkspace& cws;
-    AnnotationPolicies<OrAP, AndAP>& aps;
-    TP& tp;
 };
 }
 

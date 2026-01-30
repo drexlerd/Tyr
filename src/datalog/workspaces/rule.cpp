@@ -34,54 +34,6 @@ namespace fd = tyr::formalism::datalog;
 namespace tyr::datalog
 {
 
-RuleWorkspace::Common::Common(const formalism::datalog::Repository& program_repository, const StaticConsistencyGraph& static_consistency_graph) :
-    program_repository(program_repository),
-    kpkc(static_consistency_graph)
-{
-}
-
-void RuleWorkspace::Common::clear() noexcept { kpkc.reset(); }
-
-void RuleWorkspace::Common::initialize_iteration(const StaticConsistencyGraph& static_consistency_graph, const AssignmentSets& assignment_sets)
-{
-    kpkc.set_next_assignment_sets(static_consistency_graph, assignment_sets);
-}
-
-RuleWorkspace::Iteration::Iteration(const Common& common) :
-    kpkc_workspace(common.kpkc.get_graph_layout()),
-    repository(),
-    program_overlay_repository(common.program_repository, repository),
-    heads(),
-    witness_to_cost(),
-    head_to_witness()
-{
-}
-
-void RuleWorkspace::Iteration::clear() noexcept
-{
-    repository.clear();
-    heads.clear();
-    witness_to_cost.clear();
-    head_to_witness.clear();
-}
-
-RuleWorkspace::Solve::Solve() : stage_repository(), seen_bindings_dbg(), applicability_check_pool(), pending_rules(), statistics() {}
-
-void RuleWorkspace::Solve::clear() noexcept
-{
-    stage_repository.clear();
-    seen_bindings_dbg.clear();
-    pending_rules.clear();
-}
-
-RuleWorkspace::Worker::Worker(const Common& common) : builder(), binding(), iteration(common), solve() {}
-
-RuleWorkspace::RuleWorkspace(const formalism::datalog::Repository& program_repository, const ConstRuleWorkspace& cws) :
-    common(program_repository, cws.static_consistency_graph),
-    worker([this] { return Worker(this->common); })
-{
-}
-
 /**
  * ConstRuleWorkspace
  */

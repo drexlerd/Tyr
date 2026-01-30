@@ -375,44 +375,6 @@ private:
     }
 };
 
-template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP>
-struct AnnotationPolicies
-{
-    OrAP or_ap;
-    std::vector<AndAP> and_aps;
-
-    OrAnnotationsList or_annot;
-    std::vector<AndAnnotationsMap> and_annots;
-
-    std::vector<HeadToWitness> delta_head_to_witness;
-    HeadToWitness program_head_to_witness;
-
-    AnnotationPolicies(OrAP or_ap,
-                       std::vector<AndAP> and_aps,
-                       OrAnnotationsList or_annot,
-                       std::vector<AndAnnotationsMap> and_annots,
-                       std::vector<HeadToWitness> delta_head_to_witness) :
-        or_ap(std::move(or_ap)),
-        and_aps(std::move(and_aps)),
-        or_annot(std::move(or_annot)),
-        and_annots(std::move(and_annots)),
-        delta_head_to_witness(std::move(delta_head_to_witness)),
-        program_head_to_witness()
-    {
-    }
-
-    void clear() noexcept
-    {
-        for (auto& vec : or_annot)
-            vec.clear();
-        for (auto& map : and_annots)
-            map.clear();
-        for (auto& map : delta_head_to_witness)
-            map.clear();
-        program_head_to_witness.clear();
-    }
-};
-
 }
 
 #endif

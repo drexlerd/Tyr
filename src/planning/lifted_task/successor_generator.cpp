@@ -21,6 +21,7 @@
 #include "tyr/datalog/bottom_up.hpp"
 #include "tyr/datalog/contexts/program.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
+#include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"
 #include "tyr/planning/lifted_task.hpp"
@@ -33,19 +34,18 @@
 namespace d = tyr::datalog;
 namespace f = tyr::formalism;
 namespace fp = tyr::formalism::planning;
+namespace df = tyr::formalism::datalog;
 
 namespace tyr::planning
 {
 
 SuccessorGenerator<LiftedTask>::SuccessorGenerator(std::shared_ptr<LiftedTask> task) :
     m_task(std::move(task)),
-    m_workspace(m_task->get_action_program().get_program_context(), m_task->get_action_program().get_const_program_workspace()),
-    m_aps(d::NoOrAnnotationPolicy(),
-          std::vector<d::NoAndAnnotationPolicy>(m_workspace.rules.size()),
-          d::OrAnnotationsList(),
-          std::vector<d::AndAnnotationsMap>(m_workspace.rules.size()),
-          std::vector<d::HeadToWitness>(m_workspace.rules.size())),
-    m_tp(d::NoTerminationPolicy()),
+    m_workspace(m_task->get_action_program().get_program_context(),
+                m_task->get_action_program().get_const_program_workspace(),
+                d::NoOrAnnotationPolicy(),
+                d::NoAndAnnotationPolicy(),
+                d::NoTerminationPolicy()),
     m_state_repository(std::make_shared<StateRepository<LiftedTask>>(m_task)),
     m_executor()
 {
@@ -77,9 +77,11 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
 
     const auto state = node.get_state();
 
-    insert_extended_state(state.get_unpacked_state(), *m_task->get_repository(), m_workspace, m_task->get_action_program().get_const_program_workspace());
+    auto merge_context = fp::MergeDatalogContext { m_workspace.datalog_builder, m_workspace.repository };
 
-    auto ctx = d::ProgramExecutionContext(m_workspace, m_task->get_action_program().get_const_program_workspace(), m_aps, m_tp);
+    insert_extended_state(state.get_unpacked_state(), *m_task->get_repository(), merge_context, m_workspace.facts.fact_sets, m_workspace.facts.assignment_sets);
+
+    auto ctx = d::ProgramExecutionContext(m_workspace, m_task->get_action_program().get_const_program_workspace());
 
     d::solve_bottom_up(ctx);
 

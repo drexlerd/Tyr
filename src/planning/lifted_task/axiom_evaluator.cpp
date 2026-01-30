@@ -50,29 +50,24 @@ namespace tyr::planning
 
 static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_state,
                                     const f::OverlayRepository<fp::Repository>& atoms_context,
-                                    d::ProgramWorkspace& ws,
-                                    const d::ConstProgramWorkspace& cws)
+                                    fp::MergeDatalogContext<fd::Repository>& merge_context,
+                                    d::TaggedFactSets<f::FluentTag>& fact_sets,
+                                    d::TaggedAssignmentSets<f::FluentTag>& assignment_sets)
 {
-    ws.facts.reset();
+    fact_sets.reset();
 
-    insert_fluent_atoms_to_fact_set(unpacked_state.get_atoms<f::FluentTag>(), atoms_context, ws);
+    insert_fluent_atoms_to_fact_set(unpacked_state.get_atoms<f::FluentTag>(), atoms_context, merge_context, fact_sets);
 
-    insert_fact_sets_into_assignment_sets(ws, cws);
+    insert_fact_sets_into_assignment_sets(fact_sets, assignment_sets);
 }
 
 static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram& axiom_program,
                                                     UnpackedState<LiftedTask>& unpacked_state,
-                                                    f::OverlayRepository<fp::Repository>& task_repository,
-                                                    d::ProgramWorkspace& ws)
+                                                    fp::MergePlanningContext<f::OverlayRepository<fp::Repository>>& merge_context,
+                                                    d::TaggedFactSets<f::FluentTag>& fact_sets)
 {
-    ws.d2p.clear();
-
-    /// --- Initialize derived atoms in unpacked state
-
-    auto merge_context = fp::MergePlanningContext { ws.planning_builder, task_repository };
-
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_predicate_mapping, then facts of the predicate
-    for (const auto& set : ws.facts.fact_sets.predicate.get_sets())
+    for (const auto& set : fact_sets.predicate.get_sets())
     {
         for (const auto& fact : set.get_facts())
         {
@@ -90,25 +85,27 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
 
 AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task) :
     m_task(std::move(task)),
-    m_workspace(m_task->get_axiom_program().get_program_context(), m_task->get_axiom_program().get_const_program_workspace()),
-    m_aps(d::NoOrAnnotationPolicy(),
-          std::vector<d::NoAndAnnotationPolicy>(m_workspace.rules.size()),
-          d::OrAnnotationsList(),
-          std::vector<d::AndAnnotationsMap>(m_workspace.rules.size()),
-          std::vector<d::HeadToWitness>(m_workspace.rules.size())),
-    m_tp(d::NoTerminationPolicy())
+    m_workspace(m_task->get_axiom_program().get_program_context(),
+                m_task->get_axiom_program().get_const_program_workspace(),
+                d::NoOrAnnotationPolicy(),
+                d::NoAndAnnotationPolicy(),
+                d::NoTerminationPolicy())
 {
 }
 
 void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask>& unpacked_state)
 {
-    insert_unextended_state(unpacked_state, *m_task->get_repository(), m_workspace, m_task->get_axiom_program().get_const_program_workspace());
+    auto merge_datalog_context = fp::MergeDatalogContext { m_workspace.datalog_builder, m_workspace.repository };
 
-    auto ctx = d::ProgramExecutionContext(m_workspace, m_task->get_axiom_program().get_const_program_workspace(), m_aps, m_tp);
+    insert_unextended_state(unpacked_state, *m_task->get_repository(), merge_datalog_context, m_workspace.facts.fact_sets, m_workspace.facts.assignment_sets);
+
+    auto ctx = d::ProgramExecutionContext(m_workspace, m_task->get_axiom_program().get_const_program_workspace());
 
     d::solve_bottom_up(ctx);
 
-    read_derived_atoms_from_program_context(m_task->get_axiom_program(), unpacked_state, *m_task->get_repository(), m_workspace);
+    auto merge_planning_context = fp::MergePlanningContext { m_workspace.planning_builder, *m_task->get_repository() };
+
+    read_derived_atoms_from_program_context(m_task->get_axiom_program(), unpacked_state, merge_planning_context, m_workspace.facts.fact_sets);
 }
 
 }

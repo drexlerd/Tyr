@@ -280,15 +280,14 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
     // std::cout << ground_program.get_program_context().get_program() << std::endl;
 
     const auto const_workspace = d::ConstProgramWorkspace(ground_program.get_program_context());
-    auto workspace = d::ProgramWorkspace(ground_program.get_program_context(), const_workspace);
-    auto aps = d::AnnotationPolicies(d::NoOrAnnotationPolicy(),
-                                     std::vector<d::NoAndAnnotationPolicy>(workspace.rules.size()),
-                                     d::OrAnnotationsList(),
-                                     std::vector<d::AndAnnotationsMap>(workspace.rules.size()),
-                                     std::vector<d::HeadToWitness>(workspace.rules.size()));
-    auto tp = d::NoTerminationPolicy();
 
-    auto ctx = d::ProgramExecutionContext(workspace, const_workspace, aps, tp);
+    auto workspace = d::ProgramWorkspace<d::NoOrAnnotationPolicy, d::NoAndAnnotationPolicy, d::NoTerminationPolicy>(ground_program.get_program_context(),
+                                                                                                                    const_workspace,
+                                                                                                                    d::NoOrAnnotationPolicy(),
+                                                                                                                    d::NoAndAnnotationPolicy(),
+                                                                                                                    d::NoTerminationPolicy());
+
+    auto ctx = d::ProgramExecutionContext(workspace, const_workspace);
 
     d::solve_bottom_up(ctx);
 

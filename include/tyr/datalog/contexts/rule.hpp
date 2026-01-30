@@ -43,7 +43,13 @@ public:
     class In
     {
     public:
-        explicit In(const RuleExecutionContext<OrAP, AndAP, TP>& rctx) : m_rctx(rctx), m_ws_rule(rctx.ws_rule), m_cws_rule(rctx.cws_rule) {}
+        explicit In(const RuleExecutionContext<OrAP, AndAP, TP>& rctx, const RuleWorkspace<AndAP>::Worker& ws_worker) :
+            m_rctx(rctx),
+            m_and_ap(ws_worker.solve.and_ap),
+            m_ws_rule(rctx.ws_rule),
+            m_cws_rule(rctx.cws_rule)
+        {
+        }
 
         /**
          * Contexts
@@ -65,16 +71,21 @@ public:
         const auto& cws_rule() noexcept { return m_cws_rule; }
         const auto& cws_rule() const noexcept { return m_cws_rule; }
 
+        const auto& and_ap() noexcept { return m_and_ap; }
+        const auto& and_ap() const noexcept { return m_and_ap; }
+
     private:
         const RuleExecutionContext<OrAP, AndAP, TP>& m_rctx;
-        const RuleWorkspace& m_ws_rule;
+
+        const AndAP& m_and_ap;
+        const RuleWorkspace<AndAP>& m_ws_rule;
         const ConstRuleWorkspace& m_cws_rule;
     };
 
     class Out
     {
     public:
-        Out(RuleExecutionContext<OrAP, AndAP, TP>& rctx, RuleWorkspace::Worker& ws_worker) :
+        Out(RuleExecutionContext<OrAP, AndAP, TP>& rctx, RuleWorkspace<AndAP>::Worker& ws_worker) :
             m_ws_worker(ws_worker),
             m_const_ground_context_program(ws_worker.builder, rctx.ws_rule.common.program_repository, ws_worker.binding),
             m_ground_context_solve(ws_worker.builder, ws_worker.solve.stage_repository, ws_worker.binding),
@@ -92,7 +103,7 @@ public:
          * Workspaces
          */
 
-        RuleWorkspace::Worker& m_ws_worker;
+        RuleWorkspace<AndAP>::Worker& m_ws_worker;
 
         /**
          * Data
@@ -103,7 +114,11 @@ public:
         formalism::datalog::GrounderContext<formalism::OverlayRepository<formalism::datalog::Repository>> m_ground_context_iteration;
     };
 
-    RuleWorkerExecutionContext(RuleExecutionContext<OrAP, AndAP, TP>& rctx, RuleWorkspace::Worker& ws_worker) : m_in(rctx), m_out(rctx, ws_worker) {}
+    RuleWorkerExecutionContext(RuleExecutionContext<OrAP, AndAP, TP>& rctx, RuleWorkspace<AndAP>::Worker& ws_worker) :
+        m_in(rctx, ws_worker),
+        m_out(rctx, ws_worker)
+    {
+    }
 
     /**
      * Getters
@@ -129,10 +144,7 @@ struct RuleExecutionContext
         rule(rule),
         ctx(ctx),
         ws_rule(*ctx.ctx.ws.rules[uint_t(rule)]),
-        cws_rule(ctx.ctx.cws.rules[uint_t(rule)]),
-        and_ap(ctx.ctx.aps.and_aps[uint_t(rule)]),
-        and_annot(ctx.ctx.aps.and_annots[uint_t(rule)]),
-        delta_head_to_witness(ctx.ctx.aps.delta_head_to_witness[uint_t(rule)])
+        cws_rule(ctx.ctx.cws.rules[uint_t(rule)])
     {
         for (auto& worker : ws_rule.worker)
             worker.iteration.clear();
@@ -150,13 +162,8 @@ struct RuleExecutionContext
     const StratumExecutionContext<OrAP, AndAP, TP>& ctx;
 
     /// Workspaces
-    RuleWorkspace& ws_rule;
+    RuleWorkspace<AndAP>& ws_rule;
     const ConstRuleWorkspace& cws_rule;
-
-    /// Annotations
-    const AndAP& and_ap;
-    const AndAnnotationsMap& and_annot;
-    const HeadToWitness& delta_head_to_witness;
 };
 }
 

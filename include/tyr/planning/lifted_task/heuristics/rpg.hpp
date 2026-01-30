@@ -31,7 +31,7 @@
 namespace tyr::planning
 {
 
-template<typename Derived>
+template<typename Derived, typename OrAP, typename AndAP, typename TP>
 class RPGBase : public Heuristic<LiftedTask>
 {
 private:
@@ -40,9 +40,9 @@ private:
     constexpr auto& self() { return static_cast<Derived&>(*this); }
 
 public:
-    explicit RPGBase(std::shared_ptr<LiftedTask> task) :
+    explicit RPGBase(std::shared_ptr<LiftedTask> task, const OrAP& or_ap, const AndAP& and_ap, const TP& tp) :
         m_task(std::move(task)),
-        m_workspace(m_task->get_rpg_program().get_program_context(), m_task->get_rpg_program().get_const_program_workspace())
+        m_workspace(m_task->get_rpg_program().get_program_context(), m_task->get_rpg_program().get_const_program_workspace(), or_ap, and_ap, tp)
     {
     }
 
@@ -63,25 +63,26 @@ public:
     {
         m_workspace.facts.reset();
 
-        insert_fluent_atoms_to_fact_set(state.get_unpacked_state().get_atoms<formalism::FluentTag>(), *m_task->get_repository(), m_workspace);
+        auto merge_context = formalism::planning::MergeDatalogContext { m_workspace.datalog_builder, m_workspace.repository };
 
-        auto ctx = datalog::ProgramExecutionContext(m_workspace,
-                                                    m_task->get_rpg_program().get_const_program_workspace(),
-                                                    self().get_annotation_policies_impl(),
-                                                    self().get_termination_policy_impl());
+        insert_fluent_atoms_to_fact_set(state.get_unpacked_state().get_atoms<formalism::FluentTag>(),
+                                        *m_task->get_repository(),
+                                        merge_context,
+                                        m_workspace.facts.fact_sets);
+
+        auto ctx = datalog::ProgramExecutionContext(m_workspace, m_task->get_rpg_program().get_const_program_workspace());
 
         datalog::solve_bottom_up(ctx);
 
-        return (self().get_termination_policy_impl().check()) ? self().extract_cost_and_set_preferred_actions_impl(state) :
-                                                                std::numeric_limits<float_t>::infinity();
+        return (m_workspace.tp.check()) ? self().extract_cost_and_set_preferred_actions_impl(state) : std::numeric_limits<float_t>::infinity();
     }
 
-    const datalog::ProgramWorkspace& get_workspace() const noexcept { return m_workspace; }
+    const auto& get_workspace() const noexcept { return m_workspace; }
 
 protected:
     std::shared_ptr<LiftedTask> m_task;
 
-    datalog::ProgramWorkspace m_workspace;
+    datalog::ProgramWorkspace<OrAP, AndAP, TP> m_workspace;
 };
 
 }

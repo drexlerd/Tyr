@@ -52,8 +52,10 @@ struct D2PWorkspace;
 struct FactsWorkspace;
 struct ConstFactsWorkspace;
 struct P2DWorkspace;
+template<typename OrAP, typename AndAP, typename TP>
 struct ProgramWorkspace;
 struct ConstProgramWorkspace;
+template<typename AndAP>
 struct RuleWorkspace;
 struct ConstRuleWorkspace;
 

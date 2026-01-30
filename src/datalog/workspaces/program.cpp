@@ -23,28 +23,6 @@ namespace fd = tyr::formalism::datalog;
 
 namespace tyr::datalog
 {
-
-ProgramWorkspace::ProgramWorkspace(ProgramContext& context, const ConstProgramWorkspace& cws) :
-    repository(context.get_repository()),
-    facts(context.get_program().get_predicates<formalism::FluentTag>(),
-          context.get_program().get_functions<formalism::FluentTag>(),
-          context.get_domains().fluent_predicate_domains,
-          context.get_domains().fluent_function_domains,
-          context.get_program().get_objects().size(),
-          context.get_program().get_atoms<formalism::FluentTag>(),
-          context.get_program().get_fterm_values<formalism::FluentTag>()),
-    rules(),
-    d2p(),
-    planning_builder(),
-    datalog_builder(),
-    schedulers(create_schedulers(context.get_strata(), context.get_listeners(), context.get_repository())),
-    cost_buckets(),
-    statistics()
-{
-    for (uint_t i = 0; i < context.get_program().get_rules().size(); ++i)
-        rules.emplace_back(std::make_unique<RuleWorkspace>(context.get_repository(), cws.rules[i]));
-}
-
 ConstProgramWorkspace::ConstProgramWorkspace(ProgramContext& context) :
     facts(context.get_program().get_predicates<formalism::StaticTag>(),
           context.get_program().get_functions<formalism::StaticTag>(),
@@ -63,5 +41,4 @@ ConstProgramWorkspace::ConstProgramWorkspace(ProgramContext& context) :
                            context.get_program().get_predicates<formalism::FluentTag>().size(),
                            facts.assignment_sets);
 }
-
 }

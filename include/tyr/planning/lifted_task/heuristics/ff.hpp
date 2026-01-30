@@ -34,19 +34,24 @@ namespace tyr::planning
 {
 
 template<>
-class FFHeuristic<LiftedTask> : public RPGBase<FFHeuristic<LiftedTask>>
+class FFHeuristic<LiftedTask> :
+    public RPGBase<FFHeuristic<LiftedTask>,
+                   datalog::OrAnnotationPolicy,
+                   datalog::AndAnnotationPolicy<datalog::SumAggregation>,
+                   datalog::TerminationPolicy<datalog::SumAggregation>>
 {
 public:
     FFHeuristic(std::shared_ptr<LiftedTask> task) :
-        RPGBase<FFHeuristic<LiftedTask>>(std::move(task)),
-        m_aps(datalog::OrAnnotationPolicy(),
-              std::vector<datalog::AndAnnotationPolicy<datalog::SumAggregation>>(this->m_workspace.rules.size()),
-              datalog::OrAnnotationsList(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
-              std::vector<datalog::AndAnnotationsMap>(this->m_workspace.rules.size()),
-              std::vector<datalog::HeadToWitness>(this->m_workspace.rules.size())),
-        m_tp(datalog::TerminationPolicy<datalog::SumAggregation>(
-            this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size())),
-        m_markings(this->m_task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
+        RPGBase<FFHeuristic<LiftedTask>,
+                datalog::OrAnnotationPolicy,
+                datalog::AndAnnotationPolicy<datalog::SumAggregation>,
+                datalog::TerminationPolicy<datalog::SumAggregation>>(
+            task,
+            datalog::OrAnnotationPolicy(),
+            datalog::AndAnnotationPolicy<datalog::SumAggregation>(),
+            datalog::TerminationPolicy<datalog::SumAggregation>(
+                task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size())),
+        m_markings(task->get_rpg_program().get_program_context().get_program().get_predicates<formalism::FluentTag>().size()),
         m_binding(),
         m_assign(),
         m_iter_workspace(),
@@ -58,9 +63,6 @@ public:
 
     static std::shared_ptr<FFHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task) { return std::make_shared<FFHeuristic<LiftedTask>>(task); }
 
-    auto& get_annotation_policies_impl() noexcept { return m_aps; }
-    auto& get_termination_policy_impl() noexcept { return m_tp; }
-
     float_t extract_cost_and_set_preferred_actions_impl(const State<LiftedTask>& state)
     {
         m_relaxed_plan.clear();
@@ -71,7 +73,7 @@ public:
         auto state_context = StateContext<LiftedTask>(*this->m_task, state.get_unpacked_state(), float_t(0));
         auto grounder_context = formalism::planning::GrounderContext { this->m_workspace.planning_builder, *this->m_task->get_repository(), m_binding };
 
-        for (const auto atom : m_tp.get_atoms())
+        for (const auto atom : m_workspace.tp.get_atoms())
             extract_relaxed_plan_and_preferred_actions(atom, state_context, grounder_context);
 
         return m_relaxed_plan.size();
@@ -92,8 +94,8 @@ private:
         tyr::set(atom.value, true, m_markings[uint_t(atom.group)]);
 
         // Base case 2: atom has not witness, i.e., was true initially => do not recurse again
-        const auto it = m_aps.program_head_to_witness.find(atom);
-        if (it == m_aps.program_head_to_witness.end())
+        const auto it = m_workspace.head_to_witness.find(atom);
+        if (it == m_workspace.head_to_witness.end())
             return;
 
         const auto& witness = it->second;
@@ -130,9 +132,6 @@ private:
     }
 
 private:
-    datalog::AnnotationPolicies<datalog::OrAnnotationPolicy, datalog::AndAnnotationPolicy<datalog::SumAggregation>> m_aps;
-    datalog::TerminationPolicy<datalog::SumAggregation> m_tp;
-
     std::vector<boost::dynamic_bitset<>> m_markings;
 
     /// For grounding actions
