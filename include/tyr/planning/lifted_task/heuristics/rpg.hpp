@@ -71,6 +71,7 @@ public:
                                         m_workspace.facts.fact_sets);
 
         auto ctx = datalog::ProgramExecutionContext(m_workspace, m_task->get_rpg_program().get_const_program_workspace());
+        ctx.clear();
 
         datalog::solve_bottom_up(ctx);
 

@@ -36,15 +36,17 @@ template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
          TerminationPolicyConcept TP = NoTerminationPolicy>
 struct ProgramExecutionContext
 {
-    ProgramExecutionContext(ProgramWorkspace<OrAP, AndAP, TP>& ws, const ConstProgramWorkspace& cws) : ws(ws), cws(cws)
+    ProgramExecutionContext(ProgramWorkspace<OrAP, AndAP, TP>& ws, const ConstProgramWorkspace& cws) : ws(ws), cws(cws) {}
+
+    /**
+     * Initialization
+     */
+
+    void clear() noexcept
     {
         // Clear the rules
         for (auto& rule : ws.rules)
-        {
-            rule->common.clear();
-            for (auto& worker : rule->worker)
-                worker.clear();
-        }
+            rule->clear();
 
         // Clear the annotation policy.
         for (auto& vec : ws.or_annot)
@@ -71,6 +73,10 @@ struct ProgramExecutionContext
         // Reset cost buckets.
         ws.cost_buckets.clear();
     }
+
+    /**
+     * Subcontext
+     */
 
     auto get_stratum_execution_contexts()
     {

@@ -35,6 +35,14 @@ struct StratumExecutionContext
 {
     StratumExecutionContext(RuleSchedulerStratum& scheduler, const ProgramExecutionContext<OrAP, AndAP, TP>& ctx) : scheduler(scheduler), ctx(ctx) {}
 
+    /**
+     * Initialization
+     */
+
+    /**
+     * Subcontext
+     */
+
     auto get_rule_execution_context(Index<formalism::datalog::Rule> rule) { return RuleExecutionContext<OrAP, AndAP, TP> { rule, *this }; }
 
     RuleSchedulerStratum& scheduler;

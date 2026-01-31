@@ -302,6 +302,8 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                                // std::cout << make_view(rule_index, ws.repository) << std::endl;
 
                                                auto rctx = ctx.get_rule_execution_context(rule_index);
+                                               rctx.clear_iteration();  ///< Clear iteration before process_pending/generate
+                                               rctx.initialize();       ///< Initialize before process_pending/generate
 
                                                process_pending(rctx);
 

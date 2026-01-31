@@ -245,6 +245,8 @@ struct RuleWorkspace
     RuleWorkspace(RuleWorkspace&& other) = delete;
     RuleWorkspace& operator=(RuleWorkspace&& other) = delete;
 
+    void clear() noexcept;
+
     Common common;
 
     oneapi::tbb::enumerable_thread_specific<Worker> worker;
@@ -357,6 +359,14 @@ RuleWorkspace<AndAP>::RuleWorkspace(const formalism::datalog::Repository& progra
     common(program_repository, cws.static_consistency_graph),
     worker([this, and_ap] { return Worker(this->common, and_ap); })
 {
+}
+
+template<typename AndAP>
+void RuleWorkspace<AndAP>::clear() noexcept
+{
+    common.clear();
+    for (auto& w : worker)
+        w.clear();
 }
 
 }

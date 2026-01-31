@@ -48,7 +48,7 @@ public:
             m_and_ap(ws_worker.solve.and_ap),
             m_ws_rule(rctx.ws_rule),
             m_cws_rule(rctx.cws_rule),
-            m_fact_sets(rctx.get_fact_sets())
+            m_fact_sets(rctx.ctx.ctx.cws.facts.fact_sets, rctx.ctx.ctx.ws.facts.fact_sets)
         {
         }
 
@@ -102,18 +102,9 @@ public:
         auto& const_ground_context_program() noexcept { return m_const_ground_context_program; }
         auto& ground_context_solve() noexcept { return m_ground_context_solve; }
         auto& ground_context_iteration() noexcept { return m_ground_context_iteration; }
-        auto get_fact_sets() const noexcept { return; }
 
     private:
-        /**
-         * Workspaces
-         */
-
         RuleWorkspace<AndAP>::Worker& m_ws_worker;
-
-        /**
-         * Data
-         */
 
         formalism::datalog::ConstGrounderContext<formalism::datalog::Repository> m_const_ground_context_program;
         formalism::datalog::GrounderContext<formalism::datalog::Repository> m_ground_context_solve;
@@ -121,9 +112,23 @@ public:
     };
 
     RuleWorkerExecutionContext(RuleExecutionContext<OrAP, AndAP, TP>& rctx, RuleWorkspace<AndAP>::Worker& ws_worker) :
+        m_rctx(rctx),
+        m_ws_worker(ws_worker),
         m_in(rctx, ws_worker),
         m_out(rctx, ws_worker)
     {
+    }
+
+    /**
+     * Initialization
+     */
+
+    void clear_iteration() noexcept { m_ws_worker.iteration.clear(); }
+    void clear_solve() noexcept { m_ws_worker.solve.clear(); }
+    void clear() noexcept
+    {
+        clear_iteration();
+        clear_solve();
     }
 
     /**
@@ -137,6 +142,9 @@ public:
     const auto& out() const noexcept { return m_out; }
 
 private:
+    RuleExecutionContext<OrAP, AndAP, TP>& m_rctx;
+    RuleWorkspace<AndAP>::Worker& m_ws_worker;
+
     In m_in;
     Out m_out;
 };
@@ -150,19 +158,47 @@ struct RuleExecutionContext
         rule(rule),
         ctx(ctx),
         ws_rule(*ctx.ctx.ws.rules[uint_t(rule)]),
-        cws_rule(ctx.ctx.cws.rules[uint_t(rule)]),
-        m_fact_sets(ctx.ctx.cws.facts.fact_sets, ctx.ctx.ws.facts.fact_sets)
+        cws_rule(ctx.ctx.cws.rules[uint_t(rule)])
     {
-        for (auto& worker : ws_rule.worker)
-            worker.iteration.clear();
+    }
 
+    /**
+     * Initialization
+     */
+
+    void initialize()
+    {
         ws_rule.common.initialize_iteration(cws_rule.static_consistency_graph,
                                             AssignmentSets { ctx.ctx.cws.facts.assignment_sets, ctx.ctx.ws.facts.assignment_sets });
     }
 
-    auto get_rule_worker_execution_context() { return RuleWorkerExecutionContext<OrAP, AndAP, TP>(*this, ws_rule.worker.local()); }
+    void clear_common() noexcept { ws_rule.common.clear(); }
+    void clear_worker() noexcept
+    {
+        for (auto& worker : ws_rule.worker)
+            worker.clear();
+    }
+    void clear_iteration() noexcept
+    {
+        for (auto& worker : ws_rule.worker)
+            worker.iteration.clear();
+    }
+    void clear_solve() noexcept
+    {
+        for (auto& worker : ws_rule.worker)
+            worker.solve.clear();
+    }
+    void clear() noexcept
+    {
+        clear_common();
+        clear_worker();
+    }
 
-    const auto& get_fact_sets() const noexcept { return m_fact_sets; }
+    /**
+     * Subcontext
+     */
+
+    auto get_rule_worker_execution_context() { return RuleWorkerExecutionContext<OrAP, AndAP, TP>(*this, ws_rule.worker.local()); }
 
     /// Inputs
     Index<formalism::datalog::Rule> rule;
@@ -171,8 +207,6 @@ struct RuleExecutionContext
     /// Workspaces
     RuleWorkspace<AndAP>& ws_rule;
     const ConstRuleWorkspace& cws_rule;
-
-    const FactSets m_fact_sets;
 };
 }
 

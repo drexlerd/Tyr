@@ -288,6 +288,7 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
                                                                                                                     d::NoTerminationPolicy());
 
     auto ctx = d::ProgramExecutionContext(workspace, const_workspace);
+    ctx.clear();
 
     d::solve_bottom_up(ctx);
 
