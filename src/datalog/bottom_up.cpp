@@ -73,10 +73,15 @@ static void create_general_binding(const std::vector<kpkc::Vertex>& clique, cons
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void generate_nullary_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
+void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
+    auto wrctx = rctx.get_rule_worker_execution_context();
+
     const auto& in = wrctx.in();
     auto& out = wrctx.out();
+
+    const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
+    ++out.statistics().num_executions;
 
     create_nullary_binding(out.ground_context_solve().binding);
 
@@ -132,10 +137,15 @@ ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderCon
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void generate_general_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
+void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
+    auto wrctx = rctx.get_rule_worker_execution_context();
+
     const auto& in = wrctx.in();
     auto& out = wrctx.out();
+
+    const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
+    ++out.statistics().num_executions;
 
     // std::cout << std::endl << std::endl << rctx.cws_rule.get_rule() << std::endl;
 
@@ -198,15 +208,14 @@ void generate_general_case(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void generate(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx)
+void generate(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
-    const auto& in = wrctx.in();
-    const auto arity = in.cws_rule().get_rule().get_arity();
+    const auto arity = rctx.cws_rule.get_rule().get_arity();
 
     if (arity == 0)
-        generate_nullary_case(wrctx);
+        generate_nullary_case(rctx);
     else
-        generate_general_case(wrctx);
+        generate_general_case(rctx);
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
@@ -307,17 +316,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
                                                process_pending(rctx);
 
-                                               {
-                                                   // We can now obtain multiple execution contexts :)
-                                                   auto wrctx = rctx.get_rule_worker_execution_context();
-
-                                                   auto& out = wrctx.out();
-
-                                                   const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
-                                                   ++out.statistics().num_executions;
-
-                                                   generate(wrctx);
-                                               }
+                                               generate(rctx);
                                            });
         }
 

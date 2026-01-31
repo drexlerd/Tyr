@@ -506,21 +506,21 @@ void DeltaKPKC::for_each_new_k_clique(Callback&& callback, Workspace& workspace)
         }
         else
         {
+            /*
             for (const auto& vertex : delta_vertices_range())
             {
                 seed_from_anchor(vertex, workspace);
 
                 complete_from_seed<Vertex>(callback, 0, workspace);
             }
+                */
 
-            /*
-        for (const auto& edge : delta_edges_range())
-        {
-            seed_from_anchor(edge, workspace);
+            for (const auto& edge : delta_edges_range())
+            {
+                seed_from_anchor(edge, workspace);
 
-            complete_from_seed<Edge>(callback, 0, workspace);
-        }
-            */
+                complete_from_seed<Edge>(callback, 0, workspace);
+            }
         }
     }
 }
@@ -621,8 +621,8 @@ void DeltaKPKC::complete_from_seed(Callback&& callback, size_t depth, Workspace&
 
         partial_solution.push_back(vertex);
 
-        print(std::cout, partial_solution);
-        std::cout << std::endl;
+        // print(std::cout, partial_solution);
+        // std::cout << std::endl;
 
         if (partial_solution.size() == k)
         {
