@@ -26,6 +26,9 @@
 #include "tyr/datalog/workspaces/rule.hpp"
 #include "tyr/formalism/datalog/rule_index.hpp"
 
+#include <tbb/global_control.h>
+#include <tbb/info.h>
+
 namespace tyr::datalog
 {
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>

@@ -224,16 +224,6 @@ struct Workspace
     explicit Workspace(const GraphLayout& graph);
 };
 
-template<typename Context>
-struct KCliqueContext
-{
-    Context& context;
-    Workspace& ws;
-};
-
-template<typename T, typename Context>
-concept KCliqueCallback = std::invocable<T&, const std::vector<Vertex>&, KCliqueContext<Context>&>;
-
 class DeltaKPKC
 {
 public:
@@ -257,18 +247,6 @@ public:
     auto full_edges_range() const noexcept { return m_full_graph.edges_range(); }
 
     /**
-     * Parallel API
-     **/
-
-    template<typename Callback, typename Context>
-        requires KCliqueCallback<Callback, Context>
-    void for_each_k_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const;
-
-    template<typename Callback, typename Context>
-        requires KCliqueCallback<Callback, Context>
-    void for_each_new_k_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const;
-
-    /**
      * Sequential API
      */
 
@@ -277,51 +255,6 @@ public:
 
     template<typename Callback>
     void for_each_new_k_clique(Callback&& callback, Workspace& workspace) const;
-
-    /**
-     * Getters
-     */
-
-    const GraphLayout& get_graph_layout() const noexcept { return m_const_graph; }
-    const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
-    const Graph& get_full_graph() const noexcept { return m_full_graph; }
-
-private:
-    /**
-     * Parallel API
-     **/
-
-    template<typename Callback, typename Context>
-        requires KCliqueCallback<Callback, Context>
-    void for_each_new_unary_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const;
-
-    template<typename Callback, typename Context>
-        requires KCliqueCallback<Callback, Context>
-    void for_each_unary_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const;
-
-    template<typename Callback, typename Context>
-        requires KCliqueCallback<Callback, Context>
-    void for_each_new_binary_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const;
-
-    template<typename Callback, typename Context>
-        requires KCliqueCallback<Callback, Context>
-    void for_each_binary_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const;
-
-    /**
-     * Sequential API
-     */
-
-    template<typename Callback>
-    void for_each_new_unary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_unary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_new_binary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_binary_clique(Callback&& callback, Workspace& workspace) const;
 
     /// @brief Seed the P part of BronKerbosch.
     ///
@@ -345,6 +278,40 @@ private:
     /// @param edge is the anchor edge.
     void seed_from_anchor(const Edge& edge, Workspace& workspace) const;
 
+    /// @brief Complete the k-clique recursively.
+    /// @tparam Callback is called upon finding a k-clique.
+    /// @tparam AnchorType is the type of the anchor.
+    /// @param callback is the callback function.
+    /// @param depth is the recursion depth.
+    template<typename AnchorType, class Callback>
+    void complete_from_seed(Callback&& callback, size_t depth, Workspace& workspace) const;
+
+    /**
+     * Getters
+     */
+
+    const GraphLayout& get_graph_layout() const noexcept { return m_const_graph; }
+    const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
+    const Graph& get_full_graph() const noexcept { return m_full_graph; }
+    size_t get_iteration() const noexcept { return m_iteration; }
+
+private:
+    /**
+     * Sequential API
+     */
+
+    template<typename Callback>
+    void for_each_new_unary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_unary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_new_binary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_binary_clique(Callback&& callback, Workspace& workspace) const;
+
     /// @brief Find the pivot partition that greedily minimizes the number of recursive calls,
     /// i.e., the partition with the smallest number of candidate vertices.
     /// @param depth is the recursion depth.
@@ -362,14 +329,6 @@ private:
     /// @param depth is the recursion depth.
     /// @return
     uint_t num_possible_additions_at_next_depth(size_t depth, const Workspace& workspace) const;
-
-    /// @brief Complete the k-clique recursively.
-    /// @tparam Callback is called upon finding a k-clique.
-    /// @tparam AnchorType is the type of the anchor.
-    /// @param callback is the callback function.
-    /// @param depth is the recursion depth.
-    template<typename AnchorType, class Callback>
-    void complete_from_seed(Callback&& callback, size_t depth, Workspace& workspace) const;
 
 private:
     GraphLayout m_const_graph;
@@ -440,18 +399,6 @@ void DeltaKPKC::for_each_binary_clique(Callback&& callback, Workspace& workspace
 
         callback(workspace.partial_solution);
     }
-}
-
-template<typename Callback, typename Context>
-    requires KCliqueCallback<Callback, Context>
-void DeltaKPKC::for_each_k_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const
-{
-}
-
-template<typename Callback, typename Context>
-    requires KCliqueCallback<Callback, Context>
-void DeltaKPKC::for_each_new_k_clique(Callback&& callback, std::vector<KCliqueContext<Context>>& context) const
-{
 }
 
 template<typename Callback>

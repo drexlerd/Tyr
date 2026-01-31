@@ -177,6 +177,9 @@ struct RuleWorkspace
         const formalism::datalog::Repository& program_repository;
 
         kpkc::DeltaKPKC kpkc;
+
+        /// Statistics
+        RuleStatistics statistics;
     };
 
     /// @brief Each iteration consists of
@@ -287,7 +290,8 @@ struct ConstRuleWorkspace
 template<typename AndAP>
 RuleWorkspace<AndAP>::Common::Common(const formalism::datalog::Repository& program_repository, const StaticConsistencyGraph& static_consistency_graph) :
     program_repository(program_repository),
-    kpkc(static_consistency_graph)
+    kpkc(static_consistency_graph),
+    statistics()
 {
 }
 

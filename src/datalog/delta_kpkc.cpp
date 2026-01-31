@@ -265,10 +265,14 @@ void DeltaKPKC::seed_from_anchor(const Vertex& vertex, Workspace& workspace) con
 {
     assert(m_delta_graph.contains(vertex));
 
-    const uint_t pi = m_const_graph.vertex_to_partition[vertex.index];
-
     workspace.partial_solution.clear();
     workspace.partial_solution.push_back(vertex);
+
+    if (m_const_graph.k == 1)
+        return;
+
+    const uint_t pi = m_const_graph.vertex_to_partition[vertex.index];
+
     workspace.contains_delta_edge.push_back(false);
     workspace.anchor_key = vertex.index;
     workspace.partition_bits.reset();
@@ -307,13 +311,17 @@ void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
 {
     assert(m_delta_graph.contains(edge));
 
+    workspace.partial_solution.clear();
+    workspace.partial_solution.push_back(edge.src);
+    workspace.partial_solution.push_back(edge.dst);
+
+    if (m_const_graph.k == 2)
+        return;
+
     const uint_t pi = m_const_graph.vertex_to_partition[edge.src.index];
     const uint_t pj = m_const_graph.vertex_to_partition[edge.dst.index];
     assert(pi != pj);
 
-    workspace.partial_solution.clear();
-    workspace.partial_solution.push_back(edge.src);
-    workspace.partial_solution.push_back(edge.dst);
     workspace.anchor_key = edge.rank(m_const_graph.nv);
     workspace.partition_bits.reset();
     workspace.partition_bits.set(pi);

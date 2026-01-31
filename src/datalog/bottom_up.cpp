@@ -137,74 +137,122 @@ ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderCon
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
+void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, const std::vector<kpkc::Vertex>& clique)
 {
-    auto wrctx = rctx.get_rule_worker_execution_context();
-
     const auto& in = wrctx.in();
     auto& out = wrctx.out();
 
-    const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
-    ++out.statistics().num_executions;
+    const auto stopwatch = StopwatchScope(out.statistics().gen_time);
 
-    // std::cout << std::endl << std::endl << rctx.cws_rule.get_rule() << std::endl;
+    create_general_binding(clique, in.cws_rule().static_consistency_graph, out.ground_context_solve().binding);
 
-    in.ws_rule().common.kpkc.for_each_new_k_clique(
-        [&](auto&& clique)
-        {
-            const auto stopwatch = StopwatchScope(out.statistics().gen_time);
+    assert(ensure_novel_binding(out.ground_context_solve().binding, out.seen_bindings_dbg()));
 
-            create_general_binding(clique, in.cws_rule().static_consistency_graph, out.ground_context_solve().binding);
+    const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
+    if (in.fact_sets().fluent_sets.predicate.contains(program_head_index))
+        return;  ///< optimal cost proven
 
-            assert(ensure_novel_binding(out.ground_context_solve().binding, out.seen_bindings_dbg()));
+    ++out.statistics().num_bindings;
 
-            const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
-            if (in.fact_sets().fluent_sets.predicate.contains(program_head_index))
-                return;  ///< optimal cost proven
+    auto applicability_check = out.applicability_check_pool().get_or_allocate(in.cws_rule().get_nullary_condition(),
+                                                                              in.cws_rule().get_conflicting_overapproximation_condition(),
+                                                                              in.fact_sets(),
+                                                                              out.const_ground_context_program());
 
-            ++out.statistics().num_bindings;
+    if (!applicability_check->is_statically_applicable())
+        return;
 
-            auto applicability_check = out.applicability_check_pool().get_or_allocate(in.cws_rule().get_nullary_condition(),
-                                                                                      in.cws_rule().get_conflicting_overapproximation_condition(),
-                                                                                      in.fact_sets(),
-                                                                                      out.const_ground_context_program());
+    // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
+    // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
+    // Therefore we must store it as pending (keyed by binding) and recheck in the next fact envelope.
+    if (applicability_check->is_dynamically_applicable(in.fact_sets(), out.const_ground_context_program()))
+    {
+        assert(ensure_applicability(in.cws_rule().get_rule(), out.ground_context_iteration(), in.fact_sets()));
 
-            if (!applicability_check->is_statically_applicable())
-                return;
+        // std::cout << rctx.cws_rule.rule << " " << rctx.out.ground_context_solve().binding << std::endl;
 
-            // IMPORTANT: A binding can fail the nullary part (e.g., arm-empty) even though the clique already exists.
-            // Later, nullary may become true without any new kPKC edges/vertices, so delta-kPKC will NOT re-enumerate this binding.
-            // Therefore we must store it as pending (keyed by binding) and recheck in the next fact envelope.
-            if (applicability_check->is_dynamically_applicable(in.fact_sets(), out.const_ground_context_program()))
+        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
+
+        // std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iter).first, rctx.ground_context_iter.destination)
+        //           << std::endl;
+
+        out.heads().insert(worker_head_index);
+
+        in.and_ap().update_annotation(program_head_index,
+                                      worker_head_index,
+                                      in.cost_buckets().current_cost(),
+                                      in.program_repository(),
+                                      in.cws_rule().get_rule(),
+                                      in.cws_rule().get_witness_condition(),
+                                      in.or_annot(),
+                                      out.witness_to_cost(),
+                                      out.head_to_witness(),
+                                      out.ground_context_solve());
+    }
+    else
+    {
+        out.pending_rules().emplace(fd::ground(out.ground_context_solve().binding, out.ground_context_solve()).first, std::move(applicability_check));
+    }
+}
+
+template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
+void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
+{
+    const auto& kpkc = rctx.ws_rule.common.kpkc;
+
+    const auto k = kpkc.get_graph_layout().k;
+
+    assert(k > 0);
+
+    if (k == 1 || kpkc.get_iteration() == 1)
+    {
+        // k = 1 or first iteration: Seed from delta vertex
+
+        const auto range = kpkc.delta_vertices_range();
+
+        oneapi::tbb::parallel_for_each(
+            range.begin(),
+            range.end(),
+            [&](auto&& vertex)
             {
-                assert(ensure_applicability(in.cws_rule().get_rule(), out.ground_context_iteration(), in.fact_sets()));
+                auto wrctx = rctx.get_rule_worker_execution_context();
+                auto& out = wrctx.out();
 
-                // std::cout << rctx.cws_rule.rule << " " << rctx.out.ground_context_solve().binding << std::endl;
+                const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
+                ++out.statistics().num_executions;
 
-                const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
+                kpkc.seed_from_anchor(vertex, out.kpkc_workspace());
 
-                // std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iter).first, rctx.ground_context_iter.destination)
-                //           << std::endl;
+                if (k == 1)
+                    process_clique(wrctx, out.kpkc_workspace().partial_solution);
+                else
+                    kpkc.template complete_from_seed<kpkc::Vertex>([&](auto&& clique) { process_clique(wrctx, clique); }, 0, out.kpkc_workspace());
+            });
+    }
+    else
+    {
+        // Otherwise: Seed from delta edge
+        const auto range = kpkc.delta_edges_range();
 
-                out.heads().insert(worker_head_index);
-
-                in.and_ap().update_annotation(program_head_index,
-                                              worker_head_index,
-                                              in.cost_buckets().current_cost(),
-                                              in.program_repository(),
-                                              in.cws_rule().get_rule(),
-                                              in.cws_rule().get_witness_condition(),
-                                              in.or_annot(),
-                                              out.witness_to_cost(),
-                                              out.head_to_witness(),
-                                              out.ground_context_solve());
-            }
-            else
+        oneapi::tbb::parallel_for_each(
+            range.begin(),
+            range.end(),
+            [&](auto&& edge)
             {
-                out.pending_rules().emplace(fd::ground(out.ground_context_solve().binding, out.ground_context_solve()).first, std::move(applicability_check));
-            }
-        },
-        out.kpkc_workspace());
+                auto wrctx = rctx.get_rule_worker_execution_context();
+                auto& out = wrctx.out();
+
+                const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
+                ++out.statistics().num_executions;
+
+                kpkc.seed_from_anchor(edge, out.kpkc_workspace());
+
+                if (k == 2)
+                    process_clique(wrctx, out.kpkc_workspace().partial_solution);
+                else
+                    kpkc.template complete_from_seed<kpkc::Edge>([&](auto&& clique) { process_clique(wrctx, clique); }, 0, out.kpkc_workspace());
+            });
+    }
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
@@ -312,7 +360,11 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
                                                auto rctx = ctx.get_rule_execution_context(rule_index);
                                                rctx.clear_iteration();  ///< Clear iteration before process_pending/generate
-                                               rctx.initialize();       ///< Initialize before process_pending/generate
+
+                                               const auto rule_stopwatch = StopwatchScope(rctx.ws_rule.common.statistics.parallel_time);
+                                               ++rctx.ws_rule.common.statistics.num_executions;
+
+                                               rctx.initialize();  ///< Initialize before process_pending/generate
 
                                                process_pending(rctx);
 
