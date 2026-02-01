@@ -88,11 +88,7 @@ struct GraphActivityMasks
 struct Graph
 {
     /// Vertices
-    boost::dynamic_bitset<> vertices;  ///< Dimensions V
-    /// Edges
-    std::vector<boost::dynamic_bitset<>> adjacency_matrix;  ///< Dimensions V x V
-
-    /// Vertices
+    boost::dynamic_bitset<> vertices;
     std::vector<boost::dynamic_bitset<>> partition_vertices;
     /// Edges
     std::vector<std::vector<boost::dynamic_bitset<>>> partition_adjacency_matrix;
@@ -100,9 +96,6 @@ struct Graph
     void reset() noexcept
     {
         vertices.reset();
-        for (auto& bitset : adjacency_matrix)
-            bitset.reset();
-
         for (auto& bitset : partition_vertices)
             bitset.reset();
         for (auto& vec : partition_adjacency_matrix)
@@ -110,116 +103,56 @@ struct Graph
                 bitset.reset();
     }
 
-    bool contains(Vertex vertex) const noexcept { return vertices.test(vertex.index); }
-    bool contains(Edge edge) const noexcept { return adjacency_matrix[edge.src.index].test(edge.dst.index); }
-
-    struct VertexIterator
+    template<typename Callback>
+    void for_each_vertex(Callback&& callback) const
     {
-    private:
-        const Graph* m_graph;
-        boost::dynamic_bitset<>::size_type i;
+        auto offset = uint_t(0);
 
-    private:
-        void advance_to_next() noexcept
+        for (uint_t p = 0; p < partition_vertices.size(); ++p)
         {
-            if (i != boost::dynamic_bitset<>::npos)
-                i = m_graph->vertices.find_next(i);
+            const auto& partition = partition_vertices[p];
+
+            for (auto bit = partition.find_first(); bit != boost::dynamic_bitset<>::npos; bit = partition.find_next(bit))
+                callback(Vertex(offset + bit));
+
+            offset += partition.size();
         }
+    }
 
-    public:
-        using difference_type = std::ptrdiff_t;
-        using value_type = Vertex;
-        using iterator_category = std::input_iterator_tag;
-        using iterator_concept = std::input_iterator_tag;
-
-        VertexIterator() noexcept : m_graph(nullptr), i(boost::dynamic_bitset<>::npos) {}
-        VertexIterator(const Graph& graph, bool begin) noexcept : m_graph(&graph), i(begin ? graph.vertices.find_first() : boost::dynamic_bitset<>::npos) {}
-
-        value_type operator*() const noexcept { return Vertex { uint_t(i) }; }
-
-        VertexIterator& operator++() noexcept
-        {
-            advance_to_next();
-            return *this;
-        }
-
-        VertexIterator operator++(int) noexcept
-        {
-            VertexIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        friend bool operator==(const VertexIterator& lhs, const VertexIterator& rhs) noexcept { return lhs.m_graph == rhs.m_graph && lhs.i == rhs.i; }
-        friend bool operator!=(const VertexIterator& lhs, const VertexIterator& rhs) noexcept { return !(lhs == rhs); }
-    };
-
-    struct EdgeIterator
+    template<typename Callback>
+    void for_each_edge(Callback&& callback) const
     {
-    private:
-        const Graph* m_graph;
-        uint_t i;
-        boost::dynamic_bitset<>::size_type j;
+        auto src_offset = uint_t(0);
 
-    private:
-        void advance_to_next() noexcept
+        for (uint_t src_p = 0; src_p < partition_vertices.size(); ++src_p)
         {
-            const auto n = uint_t(m_graph->vertices.size());
+            const auto& src_partition = partition_vertices[src_p];
 
-            while (i < n)
+            for (auto src_bit = src_partition.find_first(); src_bit != boost::dynamic_bitset<>::npos; src_bit = src_partition.find_next(src_bit))
             {
-                const auto& row = m_graph->adjacency_matrix[i];
+                const auto src_index = src_offset + src_bit;
+                const auto src = Vertex(src_index);
 
-                if (j == boost::dynamic_bitset<>::npos)
-                    j = row.find_next(i);  // find first from i; enforces i < j
-                else
-                    j = row.find_next(j);  // continue scanning row
+                const auto& row = partition_adjacency_matrix[src_index];
+                auto dst_offset = src_offset + src_partition.size();
 
-                if (j != boost::dynamic_bitset<>::npos)
-                    return;  // found edge (i,j)
+                for (uint_t dst_p = src_p + 1; dst_p < row.size(); ++dst_p)
+                {
+                    const auto& dst_partition = row[dst_p];
 
-                ++i;
-                j = boost::dynamic_bitset<>::npos;
+                    for (auto dst_bit = dst_partition.find_first(); dst_bit != boost::dynamic_bitset<>::npos; dst_bit = dst_partition.find_next(dst_bit))
+                    {
+                        if (partition_vertices[dst_p].test(dst_bit))
+                            callback(Edge(src, Vertex(dst_offset + dst_bit)));
+                    }
+
+                    dst_offset += dst_partition.size();
+                }
             }
+
+            src_offset += src_partition.size();
         }
-
-    public:
-        using difference_type = std::ptrdiff_t;
-        using value_type = Edge;
-        using iterator_category = std::input_iterator_tag;
-        using iterator_concept = std::input_iterator_tag;
-
-        EdgeIterator() noexcept : m_graph(nullptr), i(0), j(boost::dynamic_bitset<>::npos) {}
-        EdgeIterator(const Graph& graph, bool begin) noexcept : m_graph(&graph), i(begin ? 0 : uint_t(graph.vertices.size())), j(boost::dynamic_bitset<>::npos)
-        {
-            if (begin)
-                advance_to_next();
-        }
-
-        value_type operator*() const noexcept { return Edge { Vertex { i }, Vertex { uint_t(j) } }; }
-
-        EdgeIterator& operator++() noexcept
-        {
-            advance_to_next();
-            return *this;
-        }
-
-        EdgeIterator operator++(int) noexcept
-        {
-            EdgeIterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        friend bool operator==(const EdgeIterator& lhs, const EdgeIterator& rhs) noexcept
-        {
-            return lhs.m_graph == rhs.m_graph && lhs.i == rhs.i && lhs.j == rhs.j;
-        }
-        friend bool operator!=(const EdgeIterator& lhs, const EdgeIterator& rhs) noexcept { return !(lhs == rhs); }
-    };
-
-    auto vertices_range() const noexcept { return std::ranges::subrange(VertexIterator(*this, true), VertexIterator(*this, false)); }
-    auto edges_range() const noexcept { return std::ranges::subrange(EdgeIterator(*this, true), EdgeIterator(*this, false)); }
+    }
 };
 
 /// @brief `Workspace` is preallocated memory for a rule.
@@ -285,11 +218,6 @@ public:
 
     /// @brief Reset should be called before first iteration.
     void reset();
-
-    auto delta_vertices_range() const noexcept { return m_delta_graph.vertices_range(); }
-    auto delta_edges_range() const noexcept { return m_delta_graph.edges_range(); }
-    auto full_vertices_range() const noexcept { return m_full_graph.vertices_range(); }
-    auto full_edges_range() const noexcept { return m_full_graph.edges_range(); }
 
     /**
      * Sequential API
@@ -387,13 +315,14 @@ void DeltaKPKC::for_each_new_unary_clique(Callback&& callback, Workspace& worksp
 {
     assert(m_const_graph.k == 1);
 
-    for (const auto& vertex : delta_vertices_range())
-    {
-        workspace.partial_solution.clear();
-        workspace.partial_solution.push_back(vertex);
+    m_delta_graph.for_each_vertex(
+        [&](auto&& vertex)
+        {
+            workspace.partial_solution.clear();
+            workspace.partial_solution.push_back(vertex);
 
-        callback(workspace.partial_solution);
-    }
+            callback(workspace.partial_solution);
+        });
 }
 
 template<typename Callback>
@@ -401,13 +330,14 @@ void DeltaKPKC::for_each_unary_clique(Callback&& callback, Workspace& workspace)
 {
     assert(m_const_graph.k == 1);
 
-    for (const auto& vertex : full_vertices_range())
-    {
-        workspace.partial_solution.clear();
-        workspace.partial_solution.push_back(vertex);
+    m_full_graph.for_each_vertex(
+        [&](auto&& vertex)
+        {
+            workspace.partial_solution.clear();
+            workspace.partial_solution.push_back(vertex);
 
-        callback(workspace.partial_solution);
-    }
+            callback(workspace.partial_solution);
+        });
 }
 
 template<typename Callback>
@@ -415,14 +345,15 @@ void DeltaKPKC::for_each_new_binary_clique(Callback&& callback, Workspace& works
 {
     assert(m_const_graph.k == 2);
 
-    for (const auto& edge : delta_edges_range())
-    {
-        workspace.partial_solution.clear();
-        workspace.partial_solution.push_back(edge.src);
-        workspace.partial_solution.push_back(edge.dst);
+    m_delta_graph.for_each_edge(
+        [&](auto&& edge)
+        {
+            workspace.partial_solution.clear();
+            workspace.partial_solution.push_back(edge.src);
+            workspace.partial_solution.push_back(edge.dst);
 
-        callback(workspace.partial_solution);
-    }
+            callback(workspace.partial_solution);
+        });
 }
 
 template<typename Callback>
@@ -430,14 +361,15 @@ void DeltaKPKC::for_each_binary_clique(Callback&& callback, Workspace& workspace
 {
     assert(m_const_graph.k == 2);
 
-    for (const auto& edge : full_edges_range())
-    {
-        workspace.partial_solution.clear();
-        workspace.partial_solution.push_back(edge.src);
-        workspace.partial_solution.push_back(edge.dst);
+    m_full_graph.for_each_edge(
+        [&](auto&& edge)
+        {
+            workspace.partial_solution.clear();
+            workspace.partial_solution.push_back(edge.src);
+            workspace.partial_solution.push_back(edge.dst);
 
-        callback(workspace.partial_solution);
-    }
+            callback(workspace.partial_solution);
+        });
 }
 
 template<typename Callback>
@@ -492,12 +424,13 @@ void DeltaKPKC::for_each_new_k_clique(Callback&& callback, Workspace& workspace)
         }
         else
         {
-            for (const auto& edge : delta_edges_range())
-            {
-                seed_from_anchor(edge, workspace);
+            m_delta_graph.for_each_edge(
+                [&](auto&& edge)
+                {
+                    seed_from_anchor(edge, workspace);
 
-                complete_from_seed<Edge>(callback, 0, workspace);
-            }
+                    complete_from_seed<Edge>(callback, 0, workspace);
+                });
         }
     }
 }

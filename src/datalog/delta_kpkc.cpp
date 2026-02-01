@@ -131,11 +131,6 @@ Graph allocate_empty_graph(const GraphLayout& cg)
     for (uint_t p = 0; p < cg.k; ++p)
         graph.partition_vertices[p].resize(cg.partitions[p].size());
 
-    // Allocate adjacency matrix (V x V)
-    graph.adjacency_matrix.resize(cg.nv);
-    for (uint_t i = 0; i < cg.nv; ++i)
-        graph.adjacency_matrix[i].resize(cg.nv, false);
-
     // Allocate partition adjacency matrix
     graph.partition_adjacency_matrix.resize(cg.nv);
     for (uint_t i = 0; i < cg.nv; ++i)
@@ -171,25 +166,12 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
 {
     ++m_iteration;
 
-    // std::cout << "m_delta_graph.vertices before:" << std::endl;
-    // std::cout << m_delta_graph.vertices << std::endl;
-    // std::cout << "m_delta_graph.adjacency_matrix  before:" << std::endl;
-    // for (auto& bitset : m_delta_graph.adjacency_matrix)
-    //     std::cout << bitset << std::endl;
-    // std::cout << "m_full_graph.vertices before:" << std::endl;
-    // std::cout << m_full_graph.vertices << std::endl;
-    // std::cout << "m_full_graph.adjacency_matrix before:" << std::endl;
-    // for (auto& bitset : m_full_graph.adjacency_matrix)
-    //     std::cout << bitset << std::endl;
-
     // Backup old graph
     std::swap(m_delta_graph, m_full_graph);
 
     /// 2. Initialize the full graph
 
     m_full_graph.reset();
-
-    // std::cout << "set_next_assignment_sets" << std::endl;
 
     m_read_masks.vertices = m_write_masks.vertices;
     m_read_masks.edges = m_write_masks.edges;
@@ -234,14 +216,6 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                                             const auto second_index = edge.get_dst().get_index();
                                             // Enforce invariant of static consistency graph
                                             assert(first_index != second_index);
-                                            // Enforce delta update
-                                            assert(!m_delta_graph.adjacency_matrix[first_index].test(second_index));
-                                            assert(!m_delta_graph.adjacency_matrix[second_index].test(first_index));
-
-                                            auto& first_row = m_full_graph.adjacency_matrix[first_index];
-                                            auto& second_row = m_full_graph.adjacency_matrix[second_index];
-                                            first_row.set(second_index);
-                                            second_row.set(first_index);
 
                                             m_write_masks.edges.reset(edge.get_index());
 
@@ -249,6 +223,8 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                                             const auto second_partition = m_const_graph.vertex_to_partition[second_index];
                                             const auto first_bit = m_const_graph.vertex_to_bit[first_index];
                                             const auto second_bit = m_const_graph.vertex_to_bit[second_index];
+                                            assert(!m_delta_graph.partition_adjacency_matrix[first_index][second_partition].test(second_bit));
+                                            assert(!m_delta_graph.partition_adjacency_matrix[second_index][first_partition].test(first_bit));
                                             m_full_graph.partition_adjacency_matrix[first_index][second_partition].set(second_bit);
                                             m_full_graph.partition_adjacency_matrix[second_index][first_partition].set(first_bit);
 
@@ -261,25 +237,10 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                                             m_delta_graph.partition_vertices[second_partition].set(second_bit);
                                         });
 
-    std::swap(m_delta_graph.adjacency_matrix, m_full_graph.adjacency_matrix);
-    for (uint v = 0; v < m_const_graph.nv; ++v)
-        m_full_graph.adjacency_matrix[v] |= m_delta_graph.adjacency_matrix[v];
-
     std::swap(m_delta_graph.partition_adjacency_matrix, m_full_graph.partition_adjacency_matrix);
     for (uint_t v = 0; v < m_const_graph.nv; ++v)
         for (uint_t p = 0; p < m_const_graph.k; ++p)
             m_full_graph.partition_adjacency_matrix[v][p] |= m_delta_graph.partition_adjacency_matrix[v][p];
-
-    // std::cout << "m_full_graph.vertices after:" << std::endl;
-    // std::cout << m_full_graph.vertices << std::endl;
-    // std::cout << "m_full_graph.adjacency_matrix after:" << std::endl;
-    // for (auto& bitset : m_full_graph.adjacency_matrix)
-    //     std::cout << bitset << std::endl;
-    // std::cout << "m_delta_graph.vertices after:" << std::endl;
-    // std::cout << m_delta_graph.vertices << std::endl;
-    // std::cout << "m_delta_graph.adjacency_matrix after:" << std::endl;
-    // for (auto& bitset : m_delta_graph.adjacency_matrix)
-    //     std::cout << bitset << std::endl;
 }
 
 void DeltaKPKC::reset()
@@ -314,8 +275,6 @@ void DeltaKPKC::seed_without_anchor(Workspace& workspace) const
 
 void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
 {
-    assert(m_delta_graph.contains(edge));
-
     workspace.partial_solution.clear();
     workspace.partial_solution.push_back(edge.src);
     workspace.partial_solution.push_back(edge.dst);
