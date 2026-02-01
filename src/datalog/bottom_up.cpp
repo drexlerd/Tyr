@@ -61,7 +61,7 @@ namespace tyr::datalog
 
 static void create_nullary_binding(IndexList<f::Object>& binding) { binding.clear(); }
 
-static void create_general_binding(const std::vector<kpkc::Vertex>& clique, const StaticConsistencyGraph& consistency_graph, IndexList<f::Object>& binding)
+static void create_general_binding(std::span<const kpkc::Vertex> clique, const StaticConsistencyGraph& consistency_graph, IndexList<f::Object>& binding)
 {
     binding.resize(clique.size());
     for (const auto v : clique)
@@ -137,7 +137,7 @@ ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderCon
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>
-void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, const std::vector<kpkc::Vertex>& clique)
+void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::span<const kpkc::Vertex> clique)
 {
     const auto& in = wrctx.in();
     auto& out = wrctx.out();
@@ -199,59 +199,19 @@ template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, Termi
 void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 {
     const auto& kpkc = rctx.ws_rule.common.kpkc;
+    auto& kpkc_cliques = rctx.ws_rule.common.kpkc_cliques;
+    auto& kpkc_workspace = rctx.ws_rule.common.kpkc_workspace;
 
     const auto k = kpkc.get_graph_layout().k;
-
     assert(k > 0);
 
-    if (k == 1 || kpkc.get_iteration() == 1)
+    kpkc.for_each_new_k_clique(kpkc_cliques, kpkc_workspace);
+
+    auto wrctx = rctx.get_rule_worker_execution_context();
+
+    for (size_t i = 0; i < kpkc_cliques.size(); ++i)
     {
-        // k = 1 or first iteration: Seed from delta vertex
-
-        const auto range = kpkc.delta_vertices_range();
-
-        oneapi::tbb::parallel_for_each(
-            range.begin(),
-            range.end(),
-            [&](auto&& vertex)
-            {
-                auto wrctx = rctx.get_rule_worker_execution_context();
-                auto& out = wrctx.out();
-
-                const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
-                ++out.statistics().num_executions;
-
-                kpkc.seed_from_anchor(vertex, out.kpkc_workspace());
-
-                if (k == 1)
-                    process_clique(wrctx, out.kpkc_workspace().partial_solution);
-                else
-                    kpkc.template complete_from_seed<kpkc::Vertex>([&](auto&& clique) { process_clique(wrctx, clique); }, 0, out.kpkc_workspace());
-            });
-    }
-    else
-    {
-        // Otherwise: Seed from delta edge
-        const auto range = kpkc.delta_edges_range();
-
-        oneapi::tbb::parallel_for_each(
-            range.begin(),
-            range.end(),
-            [&](auto&& edge)
-            {
-                auto wrctx = rctx.get_rule_worker_execution_context();
-                auto& out = wrctx.out();
-
-                const auto rule_stopwatch = StopwatchScope(out.statistics().parallel_time);
-                ++out.statistics().num_executions;
-
-                kpkc.seed_from_anchor(edge, out.kpkc_workspace());
-
-                if (k == 2)
-                    process_clique(wrctx, out.kpkc_workspace().partial_solution);
-                else
-                    kpkc.template complete_from_seed<kpkc::Edge>([&](auto&& clique) { process_clique(wrctx, clique); }, 0, out.kpkc_workspace());
-            });
+        process_clique(wrctx, kpkc_cliques[i]);
     }
 }
 

@@ -241,6 +241,13 @@ void DeltaKPKC::reset()
     m_iteration = 0;
 }
 
+void DeltaKPKC::for_each_new_k_clique(Cliques& cliques, Workspace& workspace) const
+{
+    cliques.clear();
+
+    for_each_new_k_clique([&](auto&& clique) { cliques.append(std::span<Vertex>(clique)); }, workspace);
+}
+
 void DeltaKPKC::seed_without_anchor(Workspace& workspace) const
 {
     workspace.partial_solution.clear();

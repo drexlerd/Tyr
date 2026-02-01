@@ -224,6 +224,38 @@ struct Workspace
     explicit Workspace(const GraphLayout& graph);
 };
 
+struct Cliques
+{
+    explicit Cliques(size_t k) : m_k(k), m_size(0), m_data() {}
+
+    void append(std::span<const Vertex> clique)
+    {
+        assert(clique.size() == m_k);
+
+        m_data.insert(m_data.end(), clique.begin(), clique.end());
+        ++m_size;
+    }
+
+    std::span<const Vertex> operator[](size_t index) const noexcept
+    {
+        assert(index < m_size);
+
+        return std::span<const Vertex>(m_data.data() + m_k * index, m_k);
+    }
+
+    void clear() noexcept
+    {
+        m_data.clear();
+        m_size = 0;
+    }
+
+    size_t size() const noexcept { return m_size; }
+
+    size_t m_k;
+    size_t m_size;
+    std::vector<Vertex> m_data;
+};
+
 class DeltaKPKC
 {
 public:
@@ -256,6 +288,34 @@ public:
     template<typename Callback>
     void for_each_new_k_clique(Callback&& callback, Workspace& workspace) const;
 
+    /**
+     * Parallel API
+     */
+
+    void for_each_new_k_clique(Cliques& cliques, Workspace& workspace) const;
+
+    /**
+     * Getters
+     */
+
+    const GraphLayout& get_graph_layout() const noexcept { return m_const_graph; }
+    const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
+    const Graph& get_full_graph() const noexcept { return m_full_graph; }
+    size_t get_iteration() const noexcept { return m_iteration; }
+
+private:
+    template<typename Callback>
+    void for_each_new_unary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_unary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_new_binary_clique(Callback&& callback, Workspace& workspace) const;
+
+    template<typename Callback>
+    void for_each_binary_clique(Callback&& callback, Workspace& workspace) const;
+
     /// @brief Seed the P part of BronKerbosch.
     ///
     /// Initialize compatible vertices at depth 0 with empty solution
@@ -285,32 +345,6 @@ public:
     /// @param depth is the recursion depth.
     template<typename AnchorType, class Callback>
     void complete_from_seed(Callback&& callback, size_t depth, Workspace& workspace) const;
-
-    /**
-     * Getters
-     */
-
-    const GraphLayout& get_graph_layout() const noexcept { return m_const_graph; }
-    const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
-    const Graph& get_full_graph() const noexcept { return m_full_graph; }
-    size_t get_iteration() const noexcept { return m_iteration; }
-
-private:
-    /**
-     * Sequential API
-     */
-
-    template<typename Callback>
-    void for_each_new_unary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_unary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_new_binary_clique(Callback&& callback, Workspace& workspace) const;
-
-    template<typename Callback>
-    void for_each_binary_clique(Callback&& callback, Workspace& workspace) const;
 
     /// @brief Find the pivot partition that greedily minimizes the number of recursive calls,
     /// i.e., the partition with the smallest number of candidate vertices.
@@ -453,15 +487,6 @@ void DeltaKPKC::for_each_new_k_clique(Callback&& callback, Workspace& workspace)
         }
         else
         {
-            /*
-            for (const auto& vertex : delta_vertices_range())
-            {
-                seed_from_anchor(vertex, workspace);
-
-                complete_from_seed<Vertex>(callback, 0, workspace);
-            }
-                */
-
             for (const auto& edge : delta_edges_range())
             {
                 seed_from_anchor(edge, workspace);
