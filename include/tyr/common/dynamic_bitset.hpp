@@ -58,6 +58,8 @@ public:
 
     using U = std::remove_const_t<Block>;
 
+    static constexpr size_t npos = std::numeric_limits<size_t>::max();
+
 public:
     BitsetSpan(Block* data, size_t num_bits) : m_data(data), m_num_bits(num_bits) {}
 
@@ -74,14 +76,83 @@ public:
     {
         assert(pos < m_num_bits);
 
-        return (m_data[block_index(pos)] & (Block { 1 } << block_pos(pos))) != Block { 0 };
+        return (m_data[block_index(pos)] & (U { 1 } << block_pos(pos))) != U { 0 };
     }
 
     void set(size_t pos) noexcept
     {
         assert(pos < m_num_bits);
 
-        m_data[block_index(pos)] |= (Block { 1 } << block_pos(pos));
+        m_data[block_index(pos)] |= (U { 1 } << block_pos(pos));
+    }
+
+    void reset() noexcept
+        requires(!std::is_const_v<Block>)
+    {
+        const size_t n = num_blocks(m_num_bits);
+        std::fill(m_data, m_data + n, U { 0 });
+    }
+
+    size_t count() const noexcept
+    {
+        const size_t n = num_blocks(m_num_bits);
+        size_t cnt = 0;
+
+        for (size_t i = 0; i < n; ++i)
+            cnt += std::popcount(m_data[i]);
+
+        return cnt;
+    }
+
+    bool any() const noexcept
+    {
+        const size_t n = num_blocks(m_num_bits);
+        for (size_t i = 0; i < n; ++i)
+            if (m_data[i] != U { 0 })
+                return true;
+        return false;
+    }
+
+    size_t find_first() const noexcept
+    {
+        const size_t n = num_blocks(m_num_bits);
+
+        for (size_t i = 0; i < n; ++i)
+        {
+            U w = m_data[i];
+            if (w == U { 0 })
+                continue;
+
+            const size_t bit = i * digits + std::countr_zero(w);
+            return bit < m_num_bits ? bit : npos;
+        }
+
+        return npos;
+    }
+
+    size_t find_next(size_t pos) const noexcept
+    {
+        ++pos;
+        if (pos >= m_num_bits)
+            return npos;
+
+        size_t i = block_index(pos);
+        U w = m_data[i] & (~U { 0 } << block_pos(pos));
+
+        const size_t n = num_blocks(m_num_bits);
+        for (;;)
+        {
+            if (w != U { 0 })
+            {
+                const size_t bit = i * digits + std::countr_zero(w);
+                return bit < m_num_bits ? bit : npos;
+            }
+
+            if (++i == n)
+                return npos;
+
+            w = m_data[i];
+        }
     }
 
     BitsetSpan& operator&=(const BitsetSpan<const U>& other) noexcept
