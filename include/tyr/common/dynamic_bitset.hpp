@@ -116,7 +116,6 @@ public:
     size_t find_first() const noexcept
     {
         const size_t n = num_blocks(m_num_bits);
-
         for (size_t i = 0; i < n; ++i)
         {
             U w = m_data[i];

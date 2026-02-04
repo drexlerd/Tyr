@@ -285,22 +285,8 @@ void DeltaKPKC::seed_without_anchor(Workspace& workspace) const
     workspace.anchor_pi = std::numeric_limits<uint_t>::max();   // unused
     workspace.anchor_pj = std::numeric_limits<uint_t>::max();   // unused
 
-    auto* cv_0_row = workspace.compatible_vertices_span(0).data();
-    const auto* partition_row = m_full_graph.partition_vertices_data.data();
+    auto cv_0_row = workspace.compatible_vertices_span(0);
 
-    const auto num_blocks = m_const_graph.info.num_blocks;
-
-    /**
-     * Vectorized loop
-     */
-
-    std::memcpy(cv_0_row, partition_row, num_blocks * sizeof(uint64_t));
-
-    /**
-     * Standard loop
-     */
-
-    /*
     for (uint_t p = 0; p < m_const_graph.k; ++p)
     {
         const auto& info = m_const_graph.info.infos[p];
@@ -309,7 +295,6 @@ void DeltaKPKC::seed_without_anchor(Workspace& workspace) const
         auto partition = BitsetSpan<const uint64_t>(m_full_graph.partition_vertices_data.data() + info.block_offset, info.num_bits);
         cv_0.copy_from(partition);
     }
-    */
 }
 
 void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
@@ -332,48 +317,12 @@ void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
     workspace.partition_bits.set(pi);
     workspace.partition_bits.set(pj);
 
-    auto* cv_0_row = workspace.compatible_vertices_span(0).data();
-    const auto* f_src = m_full_graph.partition_adjacency_matrix_span(edge.src.index).data();
-    const auto* f_dst = m_full_graph.partition_adjacency_matrix_span(edge.dst.index).data();
-    const auto* d_src = m_delta_graph.partition_adjacency_matrix_span(edge.src.index).data();
-    const auto* d_dst = m_delta_graph.partition_adjacency_matrix_span(edge.dst.index).data();
+    auto cv_0_row = workspace.compatible_vertices_span(0);
+    const auto full_src_adj_list_row = m_full_graph.partition_adjacency_matrix_span(edge.src.index);
+    const auto full_dst_adj_list_row = m_full_graph.partition_adjacency_matrix_span(edge.dst.index);
+    const auto delta_src_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(edge.src.index);
+    const auto delta_dst_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(edge.dst.index);
 
-    const auto pi_off = m_const_graph.info.infos[pi].block_offset;
-    const auto pj_off = m_const_graph.info.infos[pj].block_offset;
-    const uint_t min_off = std::min(pi_off, pj_off);
-    const auto num_blocks = m_const_graph.info.num_blocks;
-
-    /**
-     * Vectorized loop
-     */
-
-    // both deltas apply: i < pi_off and i < pj_off
-    uint_t i = 0;
-    for (; i < min_off; ++i)
-        cv_0_row[i] = (f_src[i] & f_dst[i]) & ~d_src[i] & ~d_dst[i];
-
-    // exactly one delta applies in [min_off, max_off)
-    if (pi_off < pj_off)
-    {
-        // i in [pi_off, pj_off): apply ~d_src only (since i < pj_off)
-        for (; i < pj_off; ++i)
-            cv_0_row[i] = (f_src[i] & f_dst[i]) & ~d_src[i];
-    }
-    else
-    {
-        // i in [pj_off, pi_off): apply ~d_dst only (since i < pi_off)
-        for (; i < pi_off; ++i)
-            cv_0_row[i] = (f_src[i] & f_dst[i]) & ~d_dst[i];
-    }
-
-    // no deltas apply: i >= pi_off and i >= pj_off
-    for (; i < num_blocks; ++i)
-        cv_0_row[i] = (f_src[i] & f_dst[i]);
-
-    /**
-     * Standard loop
-     */
-    /*
     for (uint_t p = 0; p < m_const_graph.k; ++p)
     {
         const auto& info = m_const_graph.info.infos[p];
@@ -392,7 +341,6 @@ void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
         if (p < pi)
             cv_0 -= delta_dst_adj_list;
     }
-    */
 }
 
 uint_t DeltaKPKC::choose_best_partition(size_t depth, const Workspace& workspace) const
