@@ -84,23 +84,15 @@ struct GraphLayout
 
     PartitionInfo info;
 
-    /// @brief Constructor enforces invariants.
-    /// @param nv
-    /// @param k
-    /// @param partitions
-    /// @param vertex_to_partition
-    GraphLayout(size_t nv,
-                size_t k,
-                std::vector<Vertex> partitions,
-                std::vector<uint_t> vertex_to_partition,
-                std::vector<uint_t> vertex_to_bit,
-                PartitionInfo info);
+    GraphLayout(const StaticConsistencyGraph& static_graph);
 };
 
 struct GraphActivityMasks
 {
     boost::dynamic_bitset<> vertices;
     boost::dynamic_bitset<> edges;
+
+    explicit GraphActivityMasks(const StaticConsistencyGraph& static_graph);
 
     void reset() noexcept
     {
@@ -240,7 +232,7 @@ public:
     explicit DeltaKPKC(const StaticConsistencyGraph& static_graph);
 
     /// @brief Complete member initialization (for testing purposes)
-    DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph);
+    DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks read_masks, GraphActivityMasks write_masks);
 
     /// @brief Set new fact set to compute deltas.
     /// @param assignment_sets
@@ -299,7 +291,7 @@ private:
     /// for each remaining partition with the vertices that are connected to vertices adjacent to the anchor
     /// through edges that satisfy the delta constraint, i.e., such edges must have higher delta rank.
     /// @param edge is the anchor edge.
-    void seed_from_anchor(const Edge& edge, Workspace& workspace) const;
+    bool seed_from_anchor(const Edge& edge, Workspace& workspace) const;
 
     /// @brief Complete the k-clique recursively.
     /// @tparam Callback is called upon finding a k-clique.
@@ -320,12 +312,7 @@ private:
     /// @param src is the last selected vertex.
     /// @param depth is the recursion depth.
     template<typename AnchorType>
-    void update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth, Workspace& workspace) const;
-
-    /// @brief Early termination helper
-    /// @param depth is the recursion depth.
-    /// @return
-    uint_t num_possible_additions_at_next_depth(size_t depth, const Workspace& workspace) const;
+    bool update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth, Workspace& workspace) const;
 
 private:
     GraphLayout m_const_graph;
@@ -457,16 +444,15 @@ void DeltaKPKC::for_each_new_k_clique(Callback&& callback, Workspace& workspace)
             m_delta_graph.for_each_edge(
                 [&](auto&& edge)
                 {
-                    seed_from_anchor(edge, workspace);
-
-                    complete_from_seed<Edge>(callback, 0, workspace);
+                    if (seed_from_anchor(edge, workspace))
+                        complete_from_seed<Edge>(callback, 0, workspace);
                 });
         }
     }
 }
 
 template<typename AnchorType>
-void DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth, Workspace& workspace) const
+bool DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, size_t depth, Workspace& workspace) const
 {
     const uint_t k = m_const_graph.k;
 
@@ -506,7 +492,11 @@ void DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, si
                 dst_next -= src_delta;
             }
         }
+
+        if (!dst_next.any())
+            return false;
     }
+    return true;
 }
 
 template<typename AnchorType, class Callback>
@@ -541,11 +531,9 @@ void DeltaKPKC::complete_from_seed(Callback&& callback, size_t depth, Workspace&
         }
         else
         {
-            update_compatible_adjacent_vertices_at_next_depth<AnchorType>(vertex, depth, workspace);
-
             partition_bits.set(p);
 
-            if ((partial_solution.size() + num_possible_additions_at_next_depth(depth, workspace)) == k)
+            if (update_compatible_adjacent_vertices_at_next_depth<AnchorType>(vertex, depth, workspace))
                 complete_from_seed<AnchorType>(callback, depth + 1, workspace);
 
             partition_bits.reset(p);

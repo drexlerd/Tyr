@@ -44,19 +44,42 @@ namespace tyr::datalog::kpkc
     return true;
 }
 
-GraphLayout::GraphLayout(size_t nv_,
-                         size_t k_,
-                         std::vector<Vertex> partitions_,
-                         std::vector<uint_t> vertex_to_partition_,
-                         std::vector<uint_t> vertex_to_bit_,
-                         PartitionInfo info_) :
-    nv(nv_),
-    k(k_),
-    partitions(std::move(partitions_)),
-    vertex_to_partition(std::move(vertex_to_partition_)),
-    vertex_to_bit(std::move(vertex_to_bit_)),
-    info(std::move(info_))
+GraphLayout::GraphLayout(const StaticConsistencyGraph& static_graph) :
+    nv(static_graph.get_num_vertices()),
+    k(static_graph.get_vertex_partitions().size()),
+    partitions(),
+    vertex_to_partition(),
+    vertex_to_bit(),
+    info()
 {
+    partitions.reserve(nv);
+    vertex_to_partition.resize(nv);
+    vertex_to_bit.resize(nv);
+    info.infos.reserve(k);
+
+    uint_t block_offset = uint_t(0);
+
+    for (size_t p = 0; p < k; ++p)
+    {
+        const auto& partition = static_graph.get_vertex_partitions()[p];
+
+        const auto partition_size = static_cast<uint_t>(partition.size());
+        const auto partition_blocks = static_cast<uint_t>(BitsetSpan<uint64_t>::num_blocks(partition_size));
+        const auto bit_offset = static_cast<uint_t>(partitions.size());
+        info.infos.push_back(GraphLayout::BitsetInfo { bit_offset, partition_size, block_offset, partition_blocks });
+        block_offset += partition_blocks;
+
+        uint_t bit = 0;
+        for (const auto& v : partition)
+        {
+            vertex_to_bit[v] = bit++;
+            partitions.push_back(Vertex(v));
+            vertex_to_partition[v] = p;
+        }
+    }
+
+    info.num_blocks = block_offset;
+
     assert(verify_partitions(partitions));
     assert(verify_vertex_to_partition(nv, k, vertex_to_partition));
 }
@@ -71,49 +94,10 @@ Workspace::Workspace(const GraphLayout& graph) :
     partial_solution.reserve(graph.k);
 }
 
-GraphLayout allocate_const_graph(const StaticConsistencyGraph& static_graph)
+GraphActivityMasks::GraphActivityMasks(const StaticConsistencyGraph& static_graph) :
+    vertices(static_graph.get_num_vertices(), true),
+    edges(static_graph.get_num_edges(), true)
 {
-    // Fetch data
-    const auto nv = static_graph.get_num_vertices();
-    const auto k = static_graph.get_vertex_partitions().size();
-
-    // Initialize partitions
-    auto partitions = std::vector<Vertex>();
-    partitions.reserve(nv);
-    auto vertex_to_partition = std::vector<uint_t>(nv);
-    auto vertex_to_bit = std::vector<uint_t>(nv);
-    auto partition_info = GraphLayout::PartitionInfo();
-    partition_info.infos.reserve(k);
-
-    uint_t block_offset = uint_t(0);
-
-    for (size_t p = 0; p < k; ++p)
-    {
-        const auto& partition = static_graph.get_vertex_partitions()[p];
-
-        const auto partition_size = static_cast<uint_t>(partition.size());
-        const auto partition_blocks = static_cast<uint_t>(BitsetSpan<uint64_t>::num_blocks(partition_size));
-        const auto bit_offset = static_cast<uint_t>(partitions.size());
-        partition_info.infos.push_back(GraphLayout::BitsetInfo { bit_offset, partition_size, block_offset, partition_blocks });
-        block_offset += partition_blocks;
-
-        uint_t bit = 0;
-        for (const auto& v : partition)
-        {
-            vertex_to_bit[v] = bit++;
-            partitions.push_back(Vertex(v));
-            vertex_to_partition[v] = p;
-        }
-    }
-
-    partition_info.num_blocks = block_offset;
-
-    return GraphLayout(nv, k, std::move(partitions), std::move(vertex_to_partition), std::move(vertex_to_bit), std::move(partition_info));
-}
-
-GraphActivityMasks allocate_activity_mask(const StaticConsistencyGraph& static_graph)
-{
-    return GraphActivityMasks { boost::dynamic_bitset<>(static_graph.get_num_vertices(), true), boost::dynamic_bitset<>(static_graph.get_num_edges(), true) };
 }
 
 Graph::Graph(const GraphLayout& cg) :
@@ -126,19 +110,21 @@ Graph::Graph(const GraphLayout& cg) :
 }
 
 DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
-    m_const_graph(allocate_const_graph(static_graph)),
+    m_const_graph(GraphLayout(static_graph)),
     m_delta_graph(Graph(m_const_graph)),
     m_full_graph(Graph(m_const_graph)),
-    m_read_masks(allocate_activity_mask(static_graph)),
-    m_write_masks(allocate_activity_mask(static_graph)),
+    m_read_masks(GraphActivityMasks(static_graph)),
+    m_write_masks(GraphActivityMasks(static_graph)),
     m_iteration(0)
 {
 }
 
-DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph) :
+DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks read_masks, GraphActivityMasks write_masks) :
     m_const_graph(std::move(const_graph)),
     m_delta_graph(std::move(delta_graph)),
     m_full_graph(std::move(full_graph)),
+    m_read_masks(std::move(read_masks)),
+    m_write_masks(std::move(write_masks)),
     m_iteration(0)
 {
 }
@@ -246,13 +232,17 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
 
     std::swap(m_delta_graph.partition_adjacency_matrix_data, m_full_graph.partition_adjacency_matrix_data);
     std::swap(m_delta_graph.partition_adjacency_matrix_span, m_full_graph.partition_adjacency_matrix_span);
-    for (uint_t v = 0; v < m_const_graph.nv; ++v)
+    for (auto v = m_delta_graph.vertices.find_first(); v != boost::dynamic_bitset<>::npos; v = m_delta_graph.vertices.find_next(v))
     {
+        const auto pv = m_const_graph.vertex_to_partition[v];
         const auto delta_v_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(v);
         auto full_v_adj_list_row = m_full_graph.partition_adjacency_matrix_span(v);
 
         for (uint_t p = 0; p < m_const_graph.k; ++p)
         {
+            if (p == pv)
+                continue;  ///< no edges between vertices in the same partition
+
             const auto& info = m_const_graph.info.infos[p];
             auto delta_v_adj_list = BitsetSpan<const uint64_t>(delta_v_adj_list_row.data() + info.block_offset, info.num_bits);
             auto full_v_adj_list = BitsetSpan<uint64_t>(full_v_adj_list_row.data() + info.block_offset, info.num_bits);
@@ -297,14 +287,11 @@ void DeltaKPKC::seed_without_anchor(Workspace& workspace) const
     }
 }
 
-void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
+bool DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
 {
     workspace.partial_solution.clear();
     workspace.partial_solution.push_back(edge.src);
     workspace.partial_solution.push_back(edge.dst);
-
-    if (m_const_graph.k == 2)
-        return;
 
     const uint_t pi = m_const_graph.vertex_to_partition[edge.src.index];
     const uint_t pj = m_const_graph.vertex_to_partition[edge.dst.index];
@@ -325,6 +312,9 @@ void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
 
     for (uint_t p = 0; p < m_const_graph.k; ++p)
     {
+        if (p == pi || p == pj)
+            continue;
+
         const auto& info = m_const_graph.info.infos[p];
         auto cv_0 = BitsetSpan<uint64_t>(cv_0_row.data() + info.block_offset, info.num_bits);
         auto full_src_adj_list = BitsetSpan<const uint64_t>(full_src_adj_list_row.data() + info.block_offset, info.num_bits);
@@ -340,7 +330,12 @@ void DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
 
         if (p < pi)
             cv_0 -= delta_dst_adj_list;
+
+        if (!cv_0.any())
+            return false;  ///< triangle pruning
     }
+
+    return true;
 }
 
 uint_t DeltaKPKC::choose_best_partition(size_t depth, const Workspace& workspace) const
@@ -368,28 +363,5 @@ uint_t DeltaKPKC::choose_best_partition(size_t depth, const Workspace& workspace
     }
 
     return best_partition;
-}
-
-uint_t DeltaKPKC::num_possible_additions_at_next_depth(size_t depth, const Workspace& workspace) const
-{
-    const uint_t k = m_const_graph.k;
-    const auto& partition_bits = workspace.partition_bits;
-
-    uint_t possible_additions = 0;
-    const auto cv_next = workspace.compatible_vertices_span(depth + 1);
-
-    for (uint_t p = 0; p < k; ++p)
-    {
-        if (!partition_bits.test(p))
-        {
-            const auto& info = m_const_graph.info.infos[p];
-            auto dst = BitsetSpan<const uint64_t>(cv_next.data() + info.block_offset, info.num_bits);
-
-            if (dst.any())
-                ++possible_additions;
-        }
-    }
-
-    return possible_additions;
 }
 }
