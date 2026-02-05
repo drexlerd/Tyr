@@ -168,7 +168,12 @@ private:
     Index<formalism::Object> m_object_index;
 
 public:
-    Vertex(uint_t index, formalism::ParameterIndex parameter_index, Index<formalism::Object> object_index) noexcept;
+    Vertex(uint_t index, formalism::ParameterIndex parameter_index, Index<formalism::Object> object_index) noexcept :
+        m_index(index),
+        m_parameter_index(parameter_index),
+        m_object_index(object_index)
+    {
+    }
 
     /**
      * Classical
@@ -186,9 +191,9 @@ public:
         const IndexedConstraints& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
-    uint_t get_index() const noexcept;
-    formalism::ParameterIndex get_parameter_index() const noexcept;
-    Index<formalism::Object> get_object_index() const noexcept;
+    uint_t get_index() const noexcept { return m_index; }
+    formalism::ParameterIndex get_parameter_index() const noexcept { return m_parameter_index; }
+    Index<formalism::Object> get_object_index() const noexcept { return m_object_index; }
 };
 
 /**
@@ -204,7 +209,7 @@ private:
     Vertex m_dst;
 
 public:
-    Edge(uint_t index, Vertex src, Vertex dst) noexcept;
+    Edge(uint_t index, Vertex src, Vertex dst) noexcept : m_index(index), m_src(std::move(src)), m_dst(std::move(dst)) {}
 
     /**
      * Classical
@@ -222,9 +227,9 @@ public:
         const IndexedConstraints& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
-    uint_t get_index() const noexcept;
-    const Vertex& get_src() const noexcept;
-    const Vertex& get_dst() const noexcept;
+    uint_t get_index() const noexcept { return m_index; }
+    const Vertex& get_src() const noexcept { return m_src; }
+    const Vertex& get_dst() const noexcept { return m_dst; }
 };
 
 using Vertices = std::vector<Vertex>;

@@ -49,13 +49,6 @@ namespace details
  * Vertex
  */
 
-Vertex::Vertex(uint_t index, f::ParameterIndex parameter_index, Index<f::Object> object_index) noexcept :
-    m_index(index),
-    m_parameter_index(parameter_index),
-    m_object_index(object_index)
-{
-}
-
 template<formalism::FactKind T>
 bool Vertex::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
 {
@@ -453,17 +446,9 @@ bool Vertex::consistent_numeric_constraints(
     return true;
 }
 
-uint_t Vertex::get_index() const noexcept { return m_index; }
-
-f::ParameterIndex Vertex::get_parameter_index() const noexcept { return m_parameter_index; }
-
-Index<f::Object> Vertex::get_object_index() const noexcept { return m_object_index; }
-
 /**
  * Edge
  */
-
-Edge::Edge(uint_t index, Vertex src, Vertex dst) noexcept : m_index(index), m_src(std::move(src)), m_dst(std::move(dst)) {}
 
 template<formalism::FactKind T>
 bool Edge::consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
@@ -620,12 +605,6 @@ bool Edge::consistent_numeric_constraints(View<DataList<fd::BooleanOperator<Data
 
     return true;
 }
-
-uint_t Edge::get_index() const noexcept { return m_index; }
-
-const Vertex& Edge::get_src() const noexcept { return m_src; }
-
-const Vertex& Edge::get_dst() const noexcept { return m_dst; }
 }
 
 /**

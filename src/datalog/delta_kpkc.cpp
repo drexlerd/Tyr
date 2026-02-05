@@ -107,6 +107,11 @@ Graph::Graph(const GraphLayout& cg) :
     partition_adjacency_matrix_data(cg.nv * cg.info.num_blocks, 0),
     partition_adjacency_matrix_span(partition_adjacency_matrix_data.data(), std::array<size_t, 2> { cg.nv, cg.info.num_blocks })
 {
+    std::cout << "cg.k: " << cg.k << std::endl;
+    std::cout << "cg.nv: " << cg.nv << std::endl;
+    std::cout << "cg.info.num_blocks: " << cg.info.num_blocks << std::endl;
+    std::cout << "partition_vertices_data.size(): " << partition_vertices_data.size() << std::endl;
+    std::cout << "partition_adjacency_matrix_data.size(): " << partition_adjacency_matrix_data.size() << std::endl;
 }
 
 DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
@@ -166,6 +171,8 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                                                auto full_partition = BitsetSpan<uint64_t>(full_partition_row.data() + info.block_offset, info.num_bits);
                                                full_partition.set(bit);
                                            });
+
+    std::cout << "Num active: " << m_full_graph.vertices.count() << " of " << m_const_graph.nv << std::endl;
 
     std::swap(m_delta_graph.vertices, m_full_graph.vertices);
     m_full_graph.vertices |= m_delta_graph.vertices;
@@ -237,6 +244,8 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                 second_adj_list.set(first_bit);
             }
         });
+
+    std::cout << "Num active2: " << m_delta_graph.vertices.count() << " of " << m_const_graph.nv << std::endl;
 
     std::swap(m_delta_graph.partition_adjacency_matrix_data, m_full_graph.partition_adjacency_matrix_data);
     std::swap(m_delta_graph.partition_adjacency_matrix_span, m_full_graph.partition_adjacency_matrix_span);
