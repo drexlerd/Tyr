@@ -22,6 +22,7 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/datalog/assignment_sets.hpp"
 #include "tyr/datalog/declarations.hpp"
+#include "tyr/datalog/delta_kpkc_graph.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/overlay_repository.hpp"
@@ -240,10 +241,16 @@ using Vertices = std::vector<Vertex>;
 /// Row-major adjacency lists with targets grouped by partition.
 struct PartitionedAdjacencyMatrix
 {
-    PartitionedAdjacencyMatrix() : m_data(), m_row_offsets(), m_k(0) {}
-    PartitionedAdjacencyMatrix(std::vector<uint_t> data, std::vector<uint_t> row_offsets, uint_t k) :
+    PartitionedAdjacencyMatrix() : m_vertex_partitions(), m_data(), m_row_offsets(), m_num_edges(0), m_k(0) {}
+    PartitionedAdjacencyMatrix(std::vector<std::vector<uint_t>> vertex_partitions,
+                               std::vector<uint_t> data,
+                               std::vector<uint_t> row_offsets,
+                               uint_t num_edges,
+                               uint_t k) :
+        m_vertex_partitions(std::move(vertex_partitions)),
         m_data(std::move(data)),
         m_row_offsets(std::move(row_offsets)),
+        m_num_edges(num_edges),
         m_k(k)
     {
     }
@@ -270,7 +277,15 @@ struct PartitionedAdjacencyMatrix
     struct RowView
     {
     public:
-        RowView(uint_t row, uint_t p, std::span<const uint_t> data, uint_t k) noexcept : m_row(row), m_p(p), m_data(data), m_k(k) {}
+        RowView(const PartitionedAdjacencyMatrix& matrix, uint_t row, uint_t p, std::span<const uint_t> data) noexcept :
+            m_matrix(matrix),
+            m_row(row),
+            m_p(p),
+            m_data(data)
+        {
+        }
+
+        static constexpr uint_t FULL = std::numeric_limits<uint_t>::max();
 
         template<typename Callback>
         void for_each_partition(Callback&& callback) const
@@ -281,27 +296,35 @@ struct PartitionedAdjacencyMatrix
             while (i < m_data.size())
             {
                 const uint_t len = m_data[i++];
-                const uint_t start = i;
-                const uint_t end = i + len;
+                if (len == FULL)
+                {
+                    const auto& vertices = m_matrix.vertex_partitions()[p];
+                    callback(PartitionView(p, std::span<const uint_t>(vertices.data(), vertices.size())));
+                }
+                else
+                {
+                    const uint_t start = i;
+                    const uint_t end = i + len;
 
-                assert(end <= m_data.size());
+                    assert(end <= m_data.size());
 
-                callback(PartitionView(p, std::span<const uint_t>(m_data.data() + start, len)));
+                    callback(PartitionView(p, std::span<const uint_t>(m_data.data() + start, len)));
 
-                i = end;
+                    i = end;
+                }
                 ++p;
             }
 
-            assert(p == m_k);
+            assert(p == m_matrix.k());
         }
 
         uint_t row() const noexcept { return m_row; }
 
     private:
+        const PartitionedAdjacencyMatrix& m_matrix;
         uint_t m_row;
         uint_t m_p;
         std::span<const uint_t> m_data;
-        uint_t m_k;
     };
 
     template<typename Callback>
@@ -328,15 +351,19 @@ struct PartitionedAdjacencyMatrix
 
             assert(data_start <= end);  ///< start must be equal to end if there is no target
 
-            callback(RowView(row, p, std::span<const uint_t>(m_data.data() + data_start, end - data_start), m_k));
+            callback(RowView(*this, row, p, std::span<const uint_t>(m_data.data() + data_start, end - data_start)));
         }
     }
 
+    const std::vector<std::vector<uint_t>>& vertex_partitions() const noexcept { return m_vertex_partitions; }
+    uint_t num_edges() const noexcept { return m_num_edges; }
     uint_t k() const noexcept { return m_k; }
 
 private:
+    std::vector<std::vector<uint_t>> m_vertex_partitions;
     std::vector<uint_t> m_data;
     std::vector<uint_t> m_row_offsets;
+    uint_t m_num_edges;
     uint_t m_k;
 };
 
@@ -489,6 +516,12 @@ public:
             }
         }
     }
+
+    void initialize_graphs(const AssignmentSets& assignment_sets,
+                           kpkc::Graph& delta_graph,
+                           kpkc::Graph& full_graph,
+                           kpkc::GraphActivityMasks& read_masks,
+                           kpkc::GraphActivityMasks& write_masks);
 
     const details::Vertex& get_vertex(uint_t index) const;
     const details::Vertex& get_vertex(formalism::ParameterIndex parameter, Index<formalism::Object> object) const;

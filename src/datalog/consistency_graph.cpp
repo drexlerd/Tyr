@@ -698,11 +698,10 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
     target_offsets.push_back(0);
     auto targets = std::vector<uint_t> {};
 
-    std::cout << m_unary_overapproximation_condition << std::endl;
-    std::cout << m_binary_overapproximation_condition << std::endl;
-
     std::cout << "K: " << k << std::endl;
     std::cout << "Num vertices: " << vertices.size() << std::endl;
+
+    uint_t num_edges = 0;
 
     if (constant_pair_consistent_literals(indexed_literals, static_assignment_sets.predicate))
     {
@@ -738,12 +737,23 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
                         {
                             targets.push_back(second_vertex_index);
                             row_data.push_back(second_vertex_index);
+                            ++num_edges;
                         }
                     }
 
                     const auto end_pos = row_data.size();
-                    std::cout << "Num edges to partition: " << end_pos - start_pos << std::endl;
-                    row_data[len_pos] = end_pos - start_pos;  // Fill in the length of the row
+
+                    if (end_pos - start_pos == vertex_partitions[pj].size())
+                    {
+                        // Use partition reference mechanism for dense regions
+                        row_data[len_pos] = details::PartitionedAdjacencyMatrix::RowView::FULL;
+                        row_data.resize(len_pos + 1);
+                    }
+                    else
+                    {
+                        // Fill in the length of the row
+                        row_data[len_pos] = end_pos - start_pos;
+                    }
                 }
 
                 row_offsets.push_back(row_data.size());
@@ -763,7 +773,7 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
     return { std::move(sources),
              std::move(target_offsets),
              std::move(targets),
-             details::PartitionedAdjacencyMatrix(std::move(row_data), std::move(row_offsets), k) };
+             details::PartitionedAdjacencyMatrix(vertex_partitions, std::move(row_data), std::move(row_offsets), num_edges, k) };
 }
 
 template<formalism::FactKind T>
@@ -1082,6 +1092,14 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
     }
 
     return result;
+}
+
+void StaticConsistencyGraph::initialize_graphs(const AssignmentSets& assignment_sets,
+                                               kpkc::Graph& delta_graph,
+                                               kpkc::Graph& full_graph,
+                                               kpkc::GraphActivityMasks& read_masks,
+                                               kpkc::GraphActivityMasks& write_masks)
+{
 }
 
 StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
