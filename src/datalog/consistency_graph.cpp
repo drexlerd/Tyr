@@ -679,7 +679,7 @@ ConjunctiveCondition(
 In the example above, there exist many pairs of variables are unrestricted by static literals, resulting in dense reguiosn
 
  */
-std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>, details::PartitionedAdjacencyMatrix>
+std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>, kpkc::PartitionedAdjacencyMatrix>
 StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
                                       const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets,
                                       const details::Vertices& vertices,
@@ -697,6 +697,9 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
     target_offsets.reserve(vertices.size() + 1);
     target_offsets.push_back(0);
     auto targets = std::vector<uint_t> {};
+
+    print(std::cout, vertex_partitions);
+    std::cout << std::endl;
 
     std::cout << "K: " << k << std::endl;
     std::cout << "Num vertices: " << vertices.size() << std::endl;
@@ -746,7 +749,7 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
                     if (end_pos - start_pos == vertex_partitions[pj].size())
                     {
                         // Use partition reference mechanism for dense regions
-                        row_data[len_pos] = details::PartitionedAdjacencyMatrix::RowView::FULL;
+                        row_data[len_pos] = kpkc::PartitionedAdjacencyMatrix::RowView::FULL;
                         row_data.resize(len_pos + 1);
                     }
                     else
@@ -768,12 +771,22 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
     }
 
     std::cout << "row_data.size(): " << row_data.size() << std::endl;
+    print(std::cout, row_data);
+    std::cout << std::endl;
+    print(std::cout, row_offsets);
+    std::cout << std::endl;
     std::cout << "targets.size(): " << targets.size() << std::endl;
+    print(std::cout, sources);
+    std::cout << std::endl;
+    print(std::cout, target_offsets);
+    std::cout << std::endl;
+    print(std::cout, targets);
+    std::cout << std::endl;
 
     return { std::move(sources),
              std::move(target_offsets),
              std::move(targets),
-             details::PartitionedAdjacencyMatrix(vertex_partitions, std::move(row_data), std::move(row_offsets), num_edges, k) };
+             kpkc::PartitionedAdjacencyMatrix(vertex_partitions, std::move(row_data), std::move(row_offsets), num_edges, k) };
 }
 
 template<formalism::FactKind T>
@@ -1097,8 +1110,7 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
 void StaticConsistencyGraph::initialize_graphs(const AssignmentSets& assignment_sets,
                                                kpkc::Graph& delta_graph,
                                                kpkc::Graph& full_graph,
-                                               kpkc::GraphActivityMasks& read_masks,
-                                               kpkc::GraphActivityMasks& write_masks)
+                                               kpkc::GraphActivityMasks& masks)
 {
 }
 
@@ -1175,7 +1187,7 @@ const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_object_to_ve
 
 const details::IndexedAnchors& StaticConsistencyGraph::get_predicate_to_anchors() const noexcept { return m_predicate_to_anchors; }
 
-const details::PartitionedAdjacencyMatrix& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_adj_matrix; }
+const kpkc::PartitionedAdjacencyMatrix& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_adj_matrix; }
 
 /**
  * EdgeIterator

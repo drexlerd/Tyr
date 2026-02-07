@@ -90,7 +90,7 @@ public:
     explicit DeltaKPKC(const StaticConsistencyGraph& static_graph);
 
     /// @brief Complete member initialization (for testing purposes)
-    DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks read_masks, GraphActivityMasks write_masks);
+    DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks masks);
 
     /// @brief Set new fact set to compute deltas.
     /// @param assignment_sets
@@ -176,8 +176,7 @@ private:
     GraphLayout m_const_graph;
     Graph m_delta_graph;
     Graph m_full_graph;
-    GraphActivityMasks m_read_masks;
-    GraphActivityMasks m_write_masks;
+    GraphActivityMasks m_masks;
     size_t m_iteration;
 };
 

@@ -118,18 +118,16 @@ DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
     m_const_graph(GraphLayout(static_graph)),
     m_delta_graph(Graph(m_const_graph)),
     m_full_graph(Graph(m_const_graph)),
-    m_read_masks(GraphActivityMasks(static_graph)),
-    m_write_masks(GraphActivityMasks(static_graph)),
+    m_masks(GraphActivityMasks(static_graph)),
     m_iteration(0)
 {
 }
 
-DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks read_masks, GraphActivityMasks write_masks) :
+DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks masks) :
     m_const_graph(std::move(const_graph)),
     m_delta_graph(std::move(delta_graph)),
     m_full_graph(std::move(full_graph)),
-    m_read_masks(std::move(read_masks)),
-    m_write_masks(std::move(write_masks)),
+    m_masks(std::move(masks)),
     m_iteration(0)
 {
 }
@@ -145,12 +143,9 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
 
     m_full_graph.reset_vertices();
 
-    m_read_masks.vertices = m_write_masks.vertices;
-    m_read_masks.edges = m_write_masks.edges;
-
     // Compute consistent vertices to speed up consistent edges computation
     static_graph.delta_consistent_vertices(assignment_sets,
-                                           m_read_masks.vertices,
+                                           m_masks.vertices,
                                            [&](auto&& vertex)
                                            {
                                                // std::cout << "deactivate: " << vertex << std::endl;
@@ -163,8 +158,7 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                                                assert(!m_delta_graph.vertices.test(index));
 
                                                m_full_graph.vertices.set(index);
-
-                                               m_write_masks.vertices.reset(index);
+                                               m_masks.vertices.reset(index);
 
                                                const auto& info = m_const_graph.info.infos[partition];
                                                auto& full_partition_row = m_full_graph.partition_vertices_data;
@@ -191,7 +185,7 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
     // Initialize adjacency matrix: Add consistent undirected edges to adj matrix.
     static_graph.delta_consistent_edges(
         assignment_sets,
-        m_read_masks.edges,
+        m_masks.edges,
         m_full_graph.vertices,
         [&](auto&& edge)
         {
@@ -202,7 +196,7 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
             // Enforce invariant of static consistency graph
             assert(first_index != second_index);
 
-            m_write_masks.edges.reset(edge.get_index());
+            m_masks.edges.reset(edge.get_index());
 
             const auto first_partition = m_const_graph.vertex_to_partition[first_index];
             const auto second_partition = m_const_graph.vertex_to_partition[second_index];
@@ -272,8 +266,7 @@ void DeltaKPKC::reset()
 {
     m_delta_graph.reset();
     m_full_graph.reset();
-    m_read_masks.reset();
-    m_write_masks.reset();
+    m_masks.reset();
     m_iteration = 0;
 }
 

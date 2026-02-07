@@ -236,137 +236,6 @@ public:
 
 using Vertices = std::vector<Vertex>;
 
-/// @brief A compact adjacency matrix representation for k partite graphs.
-///
-/// Row-major adjacency lists with targets grouped by partition.
-struct PartitionedAdjacencyMatrix
-{
-    PartitionedAdjacencyMatrix() : m_vertex_partitions(), m_data(), m_row_offsets(), m_num_edges(0), m_k(0) {}
-    PartitionedAdjacencyMatrix(std::vector<std::vector<uint_t>> vertex_partitions,
-                               std::vector<uint_t> data,
-                               std::vector<uint_t> row_offsets,
-                               uint_t num_edges,
-                               uint_t k) :
-        m_vertex_partitions(std::move(vertex_partitions)),
-        m_data(std::move(data)),
-        m_row_offsets(std::move(row_offsets)),
-        m_num_edges(num_edges),
-        m_k(k)
-    {
-    }
-
-    class PartitionView
-    {
-    public:
-        PartitionView(uint_t p, std::span<const uint_t> data) noexcept : m_p(p), m_data(data) {}
-
-        template<typename Callback>
-        void for_each_target(Callback&& callback) const
-        {
-            for (const auto target : m_data)
-                callback(target);
-        }
-
-        uint_t p() const noexcept { return m_p; }
-
-    private:
-        uint_t m_p;
-        std::span<const uint_t> m_data;
-    };
-
-    struct RowView
-    {
-    public:
-        RowView(const PartitionedAdjacencyMatrix& matrix, uint_t row, uint_t p, std::span<const uint_t> data) noexcept :
-            m_matrix(matrix),
-            m_row(row),
-            m_p(p),
-            m_data(data)
-        {
-        }
-
-        static constexpr uint_t FULL = std::numeric_limits<uint_t>::max();
-
-        template<typename Callback>
-        void for_each_partition(Callback&& callback) const
-        {
-            uint_t i = 0;
-            uint_t p = m_p;
-
-            while (i < m_data.size())
-            {
-                const uint_t len = m_data[i++];
-                if (len == FULL)
-                {
-                    const auto& vertices = m_matrix.vertex_partitions()[p];
-                    callback(PartitionView(p, std::span<const uint_t>(vertices.data(), vertices.size())));
-                }
-                else
-                {
-                    const uint_t start = i;
-                    const uint_t end = i + len;
-
-                    assert(end <= m_data.size());
-
-                    callback(PartitionView(p, std::span<const uint_t>(m_data.data() + start, len)));
-
-                    i = end;
-                }
-                ++p;
-            }
-
-            assert(p == m_matrix.k());
-        }
-
-        uint_t row() const noexcept { return m_row; }
-
-    private:
-        const PartitionedAdjacencyMatrix& m_matrix;
-        uint_t m_row;
-        uint_t m_p;
-        std::span<const uint_t> m_data;
-    };
-
-    template<typename Callback>
-    void for_each_row(Callback&& callback) const
-    {
-        assert(!m_row_offsets.empty());
-        assert(m_row_offsets.back() == m_data.size());
-
-        const uint_t nv = static_cast<uint_t>(m_row_offsets.size() - 1);
-
-        for (uint_t row = 0; row < nv; ++row)
-        {
-            const uint_t start = m_row_offsets[row];
-            const uint_t end = m_row_offsets[row + 1];
-
-            assert(start <= end);
-            assert(end <= m_data.size());
-
-            if (start == end)
-                continue;
-
-            const uint_t p = m_data[start];
-            const uint_t data_start = start + 1;
-
-            assert(data_start <= end);  ///< start must be equal to end if there is no target
-
-            callback(RowView(*this, row, p, std::span<const uint_t>(m_data.data() + data_start, end - data_start)));
-        }
-    }
-
-    const std::vector<std::vector<uint_t>>& vertex_partitions() const noexcept { return m_vertex_partitions; }
-    uint_t num_edges() const noexcept { return m_num_edges; }
-    uint_t k() const noexcept { return m_k; }
-
-private:
-    std::vector<std::vector<uint_t>> m_vertex_partitions;
-    std::vector<uint_t> m_data;
-    std::vector<uint_t> m_row_offsets;
-    uint_t m_num_edges;
-    uint_t m_k;
-};
-
 }
 
 class StaticConsistencyGraph
@@ -382,7 +251,7 @@ private:
                      const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
 
     /// @brief Helper to initialize edges.
-    std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>, details::PartitionedAdjacencyMatrix>
+    std::tuple<std::vector<uint_t>, std::vector<uint_t>, std::vector<uint_t>, kpkc::PartitionedAdjacencyMatrix>
     compute_edges(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
                   const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
                   const details::Vertices& vertices,
@@ -517,11 +386,7 @@ public:
         }
     }
 
-    void initialize_graphs(const AssignmentSets& assignment_sets,
-                           kpkc::Graph& delta_graph,
-                           kpkc::Graph& full_graph,
-                           kpkc::GraphActivityMasks& read_masks,
-                           kpkc::GraphActivityMasks& write_masks);
+    void initialize_graphs(const AssignmentSets& assignment_sets, kpkc::Graph& delta_graph, kpkc::Graph& full_graph, kpkc::GraphActivityMasks& masks);
 
     const details::Vertex& get_vertex(uint_t index) const;
     const details::Vertex& get_vertex(formalism::ParameterIndex parameter, Index<formalism::Object> object) const;
@@ -534,7 +399,7 @@ public:
     const std::vector<std::vector<uint_t>>& get_vertex_partitions() const noexcept;
     const std::vector<std::vector<uint_t>>& get_object_to_vertex_partitions() const noexcept;
     const details::IndexedAnchors& get_predicate_to_anchors() const noexcept;
-    const details::PartitionedAdjacencyMatrix& get_adjacency_matrix() const noexcept;
+    const kpkc::PartitionedAdjacencyMatrix& get_adjacency_matrix() const noexcept;
 
 private:
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> m_rule;
@@ -552,7 +417,7 @@ private:
     std::vector<std::vector<uint_t>> m_vertex_partitions;
     std::vector<std::vector<uint_t>> m_object_to_vertex_partitions;
 
-    details::PartitionedAdjacencyMatrix m_adj_matrix;
+    kpkc::PartitionedAdjacencyMatrix m_adj_matrix;
 
     details::IndexedLiterals m_unary_overapproximation_indexed_literals;
     details::IndexedLiterals m_binary_overapproximation_indexed_literals;
