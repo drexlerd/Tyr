@@ -371,7 +371,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                                }
 
                                                {
-                                                   const auto generate_clique_time = StopwatchScope(rctx.ws_rule.common.statistics.generate_clique_time);
+                                                   const auto process_generate_time = StopwatchScope(rctx.ws_rule.common.statistics.process_generate_time);
 
                                                    generate(rctx);
                                                }

@@ -33,7 +33,7 @@ struct RuleStatistics
     std::chrono::nanoseconds generate_clique_time { 0 };
     std::chrono::nanoseconds initialize_time { 0 };
     std::chrono::nanoseconds clear_iteration_time { 0 };
-    std::chrono::nanoseconds process_clique_time { 0 };
+    std::chrono::nanoseconds process_generate_time { 0 };
     std::chrono::nanoseconds process_pending_time { 0 };
     std::chrono::nanoseconds parallel_time { 0 };
     std::chrono::nanoseconds total_time { 0 };
@@ -54,7 +54,7 @@ struct AggregatedRuleStatistics
     std::chrono::nanoseconds generate_clique_time { 0 };
     std::chrono::nanoseconds initialize_time { 0 };
     std::chrono::nanoseconds clear_iteration_time { 0 };
-    std::chrono::nanoseconds process_clique_time { 0 };
+    std::chrono::nanoseconds process_generate_time { 0 };
     std::chrono::nanoseconds process_pending_time { 0 };
     std::chrono::nanoseconds parallel_time { 0 };
     std::chrono::nanoseconds total_time { 0 };
@@ -99,7 +99,7 @@ inline AggregatedRuleStatistics compute_aggregated_rule_statistics(const std::ve
         result.total_time += rs.total_time;
         result.initialize_time += rs.initialize_time;
         result.clear_iteration_time += rs.clear_iteration_time;
-        result.process_clique_time += rs.process_clique_time;
+        result.process_generate_time += rs.process_generate_time;
         result.process_pending_time += rs.process_pending_time;
     }
 

@@ -246,8 +246,8 @@ std::ostream& print(std::ostream& os, const datalog::AggregatedRuleStatistics& e
                "[AggregatedRuleStatistics] T_clique - total wallclock time inside generate clique: {} ms\n"
                "[AggregatedRuleStatistics] T_initialize - total wallclock time inside initialization of delta kpkc: {} ms\n"
                "[AggregatedRuleStatistics] T_clear_iteration - total wallclock time inside clear iteration: {} ms\n"
-               "[AggregatedRuleStatistics] T_process_clique - wallclock time to process pending: {} ms\n"
-               "[AggregatedRuleStatistics] T_process_pending - wallclock time to process cliques: {} ms\n"
+               "[AggregatedRuleStatistics] T_process_generate - wallclock time to process generate: {} ms\n"
+               "[AggregatedRuleStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
                "[AggregatedRuleStatistics] T_par - total wallclock time inside parallel: {} ms\n"
                "[AggregatedRuleStatistics] T_total - total wallclock time: {} ms\n"
                "[AggregatedRuleStatistics] T_tot_min_par - minimum total wallclock time inside parallel: {} ms\n"
@@ -264,7 +264,7 @@ std::ostream& print(std::ostream& os, const datalog::AggregatedRuleStatistics& e
                to_ms(el.generate_clique_time),
                to_ms(el.initialize_time),
                to_ms(el.clear_iteration_time),
-               to_ms(el.process_clique_time),
+               to_ms(el.process_generate_time),
                to_ms(el.process_pending_time),
                to_ms(el.parallel_time),
                to_ms(el.total_time),
@@ -284,8 +284,8 @@ std::ostream& print(std::ostream& os, const datalog::RuleWorkerStatistics& el)
 {
     fmt::print(os,
                "[RuleWorkerStatistics] Num executions: {}\n"
-               "[RuleWorkerStatistics] T_process_clique - wallclock time to process pending: {}\n"
-               "[RuleWorkerStatistics] T_process_pending - wallclock time to process cliques: {} ms\n"
+               "[RuleWorkerStatistics] T_process_clique - wallclock time to process cliques: {}\n"
+               "[RuleWorkerStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
                "[RuleWorkerStatistics] T_total - wallclock time total: {} ms\n",
                el.num_executions,
                to_ms(el.process_clique_time),
@@ -299,8 +299,8 @@ std::ostream& print(std::ostream& os, const datalog::AggregatedRuleWorkerStatist
 {
     fmt::print(os,
                "[AggregatedRuleWorkerStatistics] Num executions: {}\n"
-               "[AggregatedRuleWorkerStatistics] T_process_clique - wallclock time to process pending: {}\n"
-               "[AggregatedRuleWorkerStatistics] T_process_pending - wallclock time to process cliques: {} ms\n"
+               "[AggregatedRuleWorkerStatistics] T_process_clique - wallclock time to process cliques: {}\n"
+               "[AggregatedRuleWorkerStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
                "[AggregatedRuleWorkerStatistics] T_total - wallclock time total: {} ms\n",
                el.num_executions,
                to_ms(el.process_clique_time),
