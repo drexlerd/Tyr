@@ -54,18 +54,18 @@ else:
 
 if REMOTE:
     SUITES = [
-        ("cnot-synthesis", SUITE_CNOT_SYNTHESIS),
-        ("downward-benchmarks", SUITE_IPC_OPTIMAL_STRIPS),
-        ("downward-benchmarks", SUITE_IPC_OPTIMAL_ADL),
-        ("downward-benchmarks", SUITE_IPC_SATISFICING_STRIPS),
-        ("ipc2023-learning", SUITE_IPC_LEARNING),
-        ("autoscale-benchmarks-main/21.11-optimal-strips", SUITE_AUTOSCALE_OPTIMAL_STRIPS),
+        # ("cnot-synthesis", SUITE_CNOT_SYNTHESIS),
+        # ("downward-benchmarks", SUITE_IPC_OPTIMAL_STRIPS),
+        # ("downward-benchmarks", SUITE_IPC_OPTIMAL_ADL),
+        # ("downward-benchmarks", SUITE_IPC_SATISFICING_STRIPS),
+        # ("ipc2023-learning", SUITE_IPC_LEARNING),
+        # ("autoscale-benchmarks-main/21.11-optimal-strips", SUITE_AUTOSCALE_OPTIMAL_STRIPS),
         ("htg-domains/flat", SUITE_HTG),
-        ("ipc2023-numeric", SUITE_IPC2023_NUMERIC),
-        ("pushworld", SUITE_PUSHWORLD),
-        ("beluga2025", SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC),
-        ("mine-pddl", SUITE_MINEPDDL),
-        ("mine-pddl-numeric", SUITE_MINEPDDL)
+        # ("ipc2023-numeric", SUITE_IPC2023_NUMERIC),
+        # ("pushworld", SUITE_PUSHWORLD),
+        # ("beluga2025", SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC),
+        # ("mine-pddl", SUITE_MINEPDDL),
+        # ("mine-pddl-numeric", SUITE_MINEPDDL)
     ]
     TIME_LIMIT = 30 * 60
 else:

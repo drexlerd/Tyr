@@ -56,7 +56,6 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
                                            m_masks.vertices,
                                            [&](auto&& vertex)
                                            {
-                                               // std::cout << "deactivate: " << vertex << std::endl;
                                                // Enforce delta update
                                                const auto index = vertex.get_index();
                                                const auto partition = m_const_graph.vertex_to_partition[index];
@@ -95,8 +94,6 @@ void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_gr
         m_full_graph.vertices,
         [&](auto&& edge)
         {
-            // std::cout << "deactivate: " << edge << std::endl;
-
             const auto first_index = edge.get_src().get_index();
             const auto second_index = edge.get_dst().get_index();
             // Enforce invariant of static consistency graph

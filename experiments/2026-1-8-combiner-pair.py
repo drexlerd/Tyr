@@ -87,7 +87,7 @@ ATTRIBUTES = [
     "succgen_rule_avg_min_ns",
 ]
 
-exp = Experiment("gbfs_combine_12_14")
+exp = Experiment("gbfs_combine_14_15")
 
 def rename_algorithm(properties):
     """Rename algorithm dynamically during fetching."""
@@ -105,8 +105,8 @@ def rename_algorithm(properties):
         properties["id"][0] = "old-gbfs-lazy-ff-8"
     return properties
 
-exp.add_fetcher("../12-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=rename_algorithm)
-exp.add_fetcher("../14-2026-1-8-gbfs_lazy-profiling-classical-combined-eval")
+exp.add_fetcher("../14-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=rename_algorithm)
+exp.add_fetcher("../15-2026-1-8-gbfs_lazy-profiling-classical-combined-eval")
 
 exp.add_report(BaseReport(attributes=ATTRIBUTES, filter_algorithm=[
     "old-gbfs-lazy-ff-1", 
