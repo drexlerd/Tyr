@@ -19,9 +19,9 @@ def add_total_time(content, props):
     if "total_time_ms" in props:
         props["total_time"] = props["total_time_ms"] / 1000
 
-def add_search_time_per_expanded(context, props):
-    if "search_time" in props:
-        props["search_time_per_expanded"] = props["search_time"] / props["num_expanded"]
+def add_search_time_us_per_expanded(context, props):
+    if "search_time_ns" in props:
+        props["search_time_us_per_expanded"] = props["search_time_ns"] / 1000 / props["num_expanded"]
 
 def add_memory(content, props):
     if "peak_memory_usage_bytes" in props:
@@ -304,6 +304,7 @@ class GBFSLazyParser(Parser):
         
         self.add_pattern("initial_h_value", r"\[GBFS\] Start node h_value: (\d+)", type=int)
         self.add_pattern("search_time_ms", r"\[Search\] Search time: (\d+) ms", type=int)
+        self.add_pattern("search_time_ns", r"\[Search\] Search time: \d+ ms \((\d+) ns\)", type=int)
         self.add_pattern("num_expanded", r"\[Search\] Number of expanded states: (\d+)", type=int)
         self.add_pattern("num_generated", r"\[Search\] Number of generated states: (\d+)", type=int)
 
@@ -317,7 +318,7 @@ class GBFSLazyParser(Parser):
         self.add_function(process_unsolvable)
         self.add_function(add_search_time)
         self.add_function(add_total_time)
-        self.add_function(add_search_time_per_expanded)
+        self.add_function(add_search_time_us_per_expanded)
         self.add_function(add_memory)
         self.add_function(add_coverage)
         self.add_function(parse_datalog_summaries)

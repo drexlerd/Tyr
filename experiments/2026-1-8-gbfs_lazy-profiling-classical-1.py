@@ -102,7 +102,7 @@ ATTRIBUTES = [
     Attribute("search_time", function=geometric_mean),
     "num_expanded",
     "num_generated",
-    Attribute("search_time_per_expanded", function=geometric_mean),
+    Attribute("search_time_us_per_expanded", function=geometric_mean),
 
     # Total
     Attribute("total_time", function=geometric_mean),
