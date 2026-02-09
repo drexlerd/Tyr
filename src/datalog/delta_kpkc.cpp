@@ -44,7 +44,7 @@ std::pair<size_t, size_t> DeltaKPKC::set_next_assignment_sets(const StaticConsis
 {
     ++m_iteration;
 
-    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
     // Backup old graph
     std::swap(m_delta_graph, m_full_graph);
@@ -160,10 +160,10 @@ std::pair<size_t, size_t> DeltaKPKC::set_next_assignment_sets(const StaticConsis
         }
     }
 
-    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
-
-    std::cout << "Delta KPKC: " << static_graph.get_num_edges() << " edges, " << num_delta_edges << " delta edges" << std::endl;
-    std::cout << "Delta KPKC computation time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << " ns" << std::endl;
+    // std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+    // std::cout << "Delta KPKC: " << static_graph.get_num_edges() << " edges, " << num_delta_edges << " delta edges" << std::endl;
+    // std::cout << "Delta KPKC computation time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << " ns" <<
+    // std::endl;
 
     return { static_graph.get_num_edges(), num_delta_edges };
 }

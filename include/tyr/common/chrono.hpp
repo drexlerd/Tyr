@@ -35,6 +35,12 @@ template<typename Rep, typename Period>
     return std::chrono::duration_cast<std::chrono::milliseconds>(d).count();
 }
 
+template<typename Rep, typename Period>
+[[nodiscard]] inline std::chrono::nanoseconds::rep to_ns(std::chrono::duration<Rep, Period> d) noexcept
+{
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(d).count();
+}
+
 template<typename T>
 struct StopwatchScope
 {

@@ -17,6 +17,7 @@
 
 #include "tyr/planning/algorithms/gbfs_lazy/event_handler.hpp"
 
+#include "tyr/common/chrono.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/planning/formatter.hpp"
 #include "tyr/planning/ground_task.hpp"
@@ -63,7 +64,7 @@ template<typename Task>
 void DefaultEventHandler<Task>::on_new_best_h_value_impl(float_t h_value, uint64_t num_expanded_states, uint64_t num_generated_states) const
 {
     std::cout << "[GBFS] New best h_value: " << h_value << " with num expanded states " << num_expanded_states << " and num generated states "
-              << num_generated_states << " (" << this->get_statistics().get_current_search_time_ms().count() << " ms)" << std::endl;
+              << num_generated_states << " (" << to_ms(this->get_statistics().get_current_search_time()) << " ms)" << std::endl;
 }
 
 template<typename Task>

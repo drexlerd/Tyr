@@ -193,22 +193,26 @@ std::ostream& print(std::ostream& os, const datalog::kpkc::Vertex& el)
 
 std::ostream& print(std::ostream& os, const datalog::ProgramStatistics& el)
 {
-    const double parallel_ms = static_cast<double>(to_ms(el.parallel_time));
-    const double total_ms = static_cast<double>(to_ms(el.total_time));
-    const double frac = parallel_ms > 0.0 && total_ms > 0.0 ? parallel_ms / total_ms : 1.0;
+    const double parallel_ns = static_cast<double>(to_ns(el.parallel_time));
+    const double total_ns = static_cast<double>(to_ns(el.total_time));
+    const double frac = parallel_ns > 0.0 && total_ns > 0.0 ? parallel_ns / total_ns : 1.0;
 
-    const auto avg_total = el.num_executions > 0 ? to_us(el.total_time) / el.num_executions : 0.0;
+    const auto avg_total_us = el.num_executions > 0 ? to_us(el.total_time) / el.num_executions : 0.0;
+    const auto avg_total_ns = el.num_executions > 0 ? to_ns(el.total_time) / el.num_executions : 0.0;
 
     fmt::print(os,
                "[ProgramStatistics] Num executions: {}\n"
-               "[ProgramStatistics] T_par - wallclock time inside parallel: {} ms\n"
-               "[ProgramStatistics] T_total - wallclock time total: {} ms\n"
-               "[ProgramStatistics] T_avg - average wallclock time total: {} us\n"
+               "[ProgramStatistics] T_par - wallclock time inside parallel: {} ms ({} ns)\n"
+               "[ProgramStatistics] T_total - wallclock time total: {} ms ({} ns)\n"
+               "[ProgramStatistics] T_avg - average wallclock time total: {} us ({} ns)\n"
                "[ProgramStatistics] T_par / T_total - Parallel fraction: {:.2f}",
                el.num_executions,
                to_ms(el.parallel_time),
+               to_ns(el.parallel_time),
                to_ms(el.total_time),
-               avg_total,
+               to_ns(el.total_time),
+               avg_total_us,
+               avg_total_ns,
                frac);
 
     return os;
@@ -219,29 +223,35 @@ std::ostream& print(std::ostream& os, const datalog::RuleStatistics& el)
     fmt::print(os,
                "[RuleStatistics] Num executions: {}\n"
                "[RuleStatistics] Num bindings: {}\n"
-               "[RuleStatistics] T_initialize_delta_kpkc - total wallclock time inside initialization of delta kpkc: {} ms\n"
-               "[RuleStatistics] T_process_generate - wallclock time to process generate: {} ms\n"
-               "[RuleStatistics] T_generate_clique - total wallclock time inside generate clique: {} ms\n"
-               "[RuleStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
-               "[RuleStatistics] T_process_clique -  wallclock time inside process clique: {} ms\n"
-               "[RuleStatistics] T_total - wallclock time total: {} ms\n",
+               "[RuleStatistics] T_initialize_delta_kpkc - total wallclock time inside initialization of delta kpkc: {} ms ({} ns)\n"
+               "[RuleStatistics] T_process_generate - wallclock time to process generate: {} ms ({} ns)\n"
+               "[RuleStatistics] T_generate_clique - total wallclock time inside generate clique: {} ms ({} ns)\n"
+               "[RuleStatistics] T_process_pending - wallclock time to process pending: {} ms ({} ns)\n"
+               "[RuleStatistics] T_process_clique -  wallclock time inside process clique: {} ms ({} ns)\n"
+               "[RuleStatistics] T_total - wallclock time total: {} ms ({} ns)\n",
                el.num_executions,
                el.num_bindings,
                to_ms(el.initialize_time),
+               to_ns(el.initialize_time),
                to_ms(el.process_generate_time),
+               to_ns(el.process_generate_time),
                to_ms(el.generate_clique_time),
+               to_ns(el.generate_clique_time),
                to_ms(el.process_pending_time),
+               to_ns(el.process_pending_time),
                to_ms(el.process_clique_time),
-               to_ms(el.total_time));
+               to_ns(el.process_clique_time),
+               to_ms(el.total_time),
+               to_ns(el.total_time));
 
     return os;
 }
 
 std::ostream& print(std::ostream& os, const datalog::AggregatedRuleStatistics& el)
 {
-    const double tot_max_ms = static_cast<double>(to_ms(el.tot_time_max));
-    const double tot_med_ms = static_cast<double>(to_ms(el.tot_time_median));
-    const double tot_skew = tot_max_ms > 0.0 && tot_med_ms > 0.0 ? tot_max_ms / tot_med_ms : 1.0;
+    const double tot_max_ns = static_cast<double>(to_ns(el.tot_time_max));
+    const double tot_med_ns = static_cast<double>(to_ns(el.tot_time_median));
+    const double tot_skew = tot_max_ns > 0.0 && tot_med_ns > 0.0 ? tot_max_ns / tot_med_ns : 1.0;
 
     const double avg_max_ns = static_cast<double>(el.avg_time_max.count());
     const double avg_med_ns = static_cast<double>(el.avg_time_median.count());
@@ -251,70 +261,56 @@ std::ostream& print(std::ostream& os, const datalog::AggregatedRuleStatistics& e
                "[AggregatedRuleStatistics] Number of executions: {}\n"
                "[AggregatedRuleStatistics] Number of bindings: {}\n"
                "[AggregatedRuleStatistics] Number of samples: {}\n"
-               "[AggregatedRuleStatistics] T_initialize_delta_kpkc - total wallclock time inside initialization of delta kpkc: {} ms\n"
-               "[AggregatedRuleStatistics] T_process_generate - wallclock time to process generate: {} ms\n"
-               "[AggregatedRuleStatistics] T_generate_clique - total wallclock time inside generate clique: {} ms\n"
-               "[AggregatedRuleStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
-               "[AggregatedRuleStatistics] T_process_clique -  wallclock time inside process clique: {} ms\n"
-               "[AggregatedRuleStatistics] T_total - total wallclock time: {} ms\n"
-               "[AggregatedRuleStatistics] T_total_min - minimum total wallclock time inside parallel: {} ms\n"
-               "[AggregatedRuleStatistics] T_total_max - maximum total wallclock time inside parallel: {} ms\n"
-               "[AggregatedRuleStatistics] T_total_med - median total wallclock time inside parallel: {} ms\n"
+               "[AggregatedRuleStatistics] T_initialize_delta_kpkc - total wallclock time inside initialization of delta kpkc: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_process_generate - wallclock time to process generate: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_generate_clique - total wallclock time inside generate clique: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_process_pending - wallclock time to process pending: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_process_clique -  wallclock time inside process clique: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_total - total wallclock time: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_total_min - minimum total wallclock time inside parallel: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_total_max - maximum total wallclock time inside parallel: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_total_med - median total wallclock time inside parallel: {} ms ({} ns)\n"
                "[AggregatedRuleStatistics] T_total_max / T_total_med_par - Total skew: {:.2f}\n"
-               "[AggregatedRuleStatistics] T_avg_min - minimum average wallclock time inside parallel: {} ns\n"
-               "[AggregatedRuleStatistics] T_avg_max - maximum average wallclock time inside parallel: {} ns\n"
-               "[AggregatedRuleStatistics] T_avg_med - median average wallclock time inside parallel: {} ns\n"
+               "[AggregatedRuleStatistics] T_avg_min - minimum average wallclock time inside parallel: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_avg_max - maximum average wallclock time inside parallel: {} ms ({} ns)\n"
+               "[AggregatedRuleStatistics] T_avg_med - median average wallclock time inside parallel: {} ms ({} ns)\n"
                "[AggregatedRuleStatistics] T_avg_max / T_avg_med_par - Average skew: {:.2f}",
                el.num_executions,
                el.num_bindings,
                el.sample_count,
                to_ms(el.initialize_time),
+               to_ns(el.initialize_time),
                to_ms(el.process_generate_time),
+               to_ns(el.process_generate_time),
                to_ms(el.generate_clique_time),
+               to_ns(el.generate_clique_time),
                to_ms(el.process_pending_time),
+               to_ns(el.process_pending_time),
                to_ms(el.process_clique_time),
+               to_ns(el.process_clique_time),
                to_ms(el.total_time),
+               to_ns(el.total_time),
                to_ms(el.tot_time_min),
+               to_ns(el.tot_time_min),
                to_ms(el.tot_time_max),
+               to_ns(el.tot_time_max),
                to_ms(el.tot_time_median),
+               to_ns(el.tot_time_median),
                tot_skew,
-               el.avg_time_min.count(),
-               el.avg_time_max.count(),
-               el.avg_time_median.count(),
+               to_ms(el.avg_time_min),
+               to_ns(el.avg_time_min),
+               to_ms(el.avg_time_max),
+               to_ns(el.avg_time_max),
+               to_ms(el.avg_time_median),
+               to_ns(el.avg_time_median),
                avg_skew);
 
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::RuleWorkerStatistics& el)
-{
-    fmt::print(os,
-               "[RuleWorkerStatistics] Num executions: {}\n"
-               "[RuleWorkerStatistics] T_process_clique - wallclock time to process cliques: {}\n"
-               "[RuleWorkerStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
-               "[RuleWorkerStatistics] T_total - wallclock time total: {} ms\n",
-               el.num_executions,
-               to_ms(el.process_clique_time),
-               to_ms(el.process_pending_time),
-               to_ms(el.total_time));
+std::ostream& print(std::ostream& os, const datalog::RuleWorkerStatistics& el) { return os; }
 
-    return os;
-}
-
-std::ostream& print(std::ostream& os, const datalog::AggregatedRuleWorkerStatistics& el)
-{
-    fmt::print(os,
-               "[AggregatedRuleWorkerStatistics] Num executions: {}\n"
-               "[AggregatedRuleWorkerStatistics] T_process_clique - wallclock time to process cliques: {}\n"
-               "[AggregatedRuleWorkerStatistics] T_process_pending - wallclock time to process pending: {} ms\n"
-               "[AggregatedRuleWorkerStatistics] T_total - wallclock time total: {} ms\n",
-               el.num_executions,
-               to_ms(el.process_clique_time),
-               to_ms(el.process_pending_time),
-               to_ms(el.total_time));
-
-    return os;
-}
+std::ostream& print(std::ostream& os, const datalog::AggregatedRuleWorkerStatistics& el) { return os; }
 
 namespace datalog
 {

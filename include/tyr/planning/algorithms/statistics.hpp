@@ -99,14 +99,8 @@ public:
         return m_num_pruned_per_layer.empty() ? std::nullopt : std::optional<uint64_t>(m_num_pruned_per_layer.back());
     }
 
-    std::chrono::milliseconds get_search_time_ms() const
-    {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(m_search_end_time_point - m_search_start_time_point);
-    }
-    std::chrono::milliseconds get_current_search_time_ms() const
-    {
-        return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - m_search_start_time_point);
-    }
+    auto get_search_time() const { return m_search_end_time_point - m_search_start_time_point; }
+    auto get_current_search_time() const { return std::chrono::high_resolution_clock::now() - m_search_start_time_point; }
 };
 
 /**

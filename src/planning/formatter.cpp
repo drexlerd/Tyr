@@ -17,6 +17,7 @@
 
 #include "tyr/planning/formatter.hpp"
 
+#include "tyr/common/chrono.hpp"
 #include "tyr/common/comparators.hpp"                // for operator!=
 #include "tyr/common/config.hpp"                     // for uint_t, flo...
 #include "tyr/common/formatter.hpp"                  // for operator<<
@@ -232,11 +233,12 @@ std::ostream& print(std::ostream& os, const planning::State<planning::GroundTask
 std::ostream& print(std::ostream& os, const planning::Statistics& el)
 {
     fmt::print(os,
-               "[Search] Search time: {} ms\n"
+               "[Search] Search time: {} ms ({} ns)\n"
                "[Search] Number of expanded states: {}\n"
                "[Search] Number of generated states: {}\n"
                "[Search] Number of pruned states: {}",
-               el.get_search_time_ms().count(),
+               to_ms(el.get_search_time()),
+               to_ns(el.get_search_time()),
                el.get_num_expanded(),
                el.get_num_generated(),
                el.get_num_pruned());
