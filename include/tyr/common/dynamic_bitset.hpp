@@ -23,6 +23,7 @@
 #include <concepts>
 #include <cstddef>
 #include <limits>
+#include <span>
 
 namespace tyr
 {
@@ -62,6 +63,15 @@ public:
 
 public:
     BitsetSpan(Block* data, size_t num_bits) noexcept : m_data(data), m_num_bits(num_bits) {}
+
+    constexpr friend bool operator==(const BitsetSpan& lhs, const BitsetSpan& rhs) noexcept
+    {
+        if (lhs.m_num_bits != rhs.m_num_bits)
+            return false;
+
+        return std::equal(lhs.blocks().begin(), lhs.blocks().end(), rhs.blocks().begin());
+    }
+    constexpr friend bool operator!=(const BitsetSpan& lhs, const BitsetSpan& rhs) noexcept { return !(lhs == rhs); }
 
     void copy_from(const BitsetSpan<const U>& other) noexcept
     {
@@ -186,6 +196,9 @@ public:
 
         return *this;
     }
+
+    std::span<const Block> blocks() const noexcept { return { m_data, num_blocks(m_num_bits) }; }
+    size_t num_bits() const noexcept { return m_num_bits; }
 
 private:
     Block* m_data;

@@ -19,6 +19,7 @@
 #define TYR_COMMON_HASH_HPP_
 
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/observer_ptr.hpp"
 
 #include <cmath>
@@ -290,6 +291,18 @@ template<typename T>
 struct Hash<ObserverPtr<T>>
 {
     size_t operator()(ObserverPtr<T> ptr) const { return Hash<std::remove_cvref_t<T>> {}(*ptr); }
+};
+
+template<std::unsigned_integral Block>
+struct Hash<BitsetSpan<Block>>
+{
+    size_t operator()(const BitsetSpan<Block>& bitset_span) const
+    {
+        size_t aggregated_hash = bitset_span.num_bits();
+        for (const auto& block : bitset_span.blocks())
+            hash_combine(aggregated_hash, block);
+        return aggregated_hash;
+    }
 };
 
 /// @brief std::hash specialization for an `IdentifiableMembersView`

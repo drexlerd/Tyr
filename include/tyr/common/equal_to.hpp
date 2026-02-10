@@ -19,6 +19,7 @@
 #define TYR_COMMON_EQUAL_TO_HPP_
 
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/observer_ptr.hpp"
 
 #include <array>
@@ -262,6 +263,12 @@ template<typename T>
 struct EqualTo<ObserverPtr<T>>
 {
     bool operator()(ObserverPtr<T> lhs, ObserverPtr<T> rhs) const { return EqualTo<std::remove_cvref_t<T>> {}(*lhs, *rhs); }
+};
+
+template<std::unsigned_integral Block>
+struct EqualTo<BitsetSpan<Block>>
+{
+    bool operator()(const BitsetSpan<Block>& lhs, const BitsetSpan<Block>& rhs) const { return lhs == rhs; }
 };
 
 /// @brief EqualTo specialization for an `IdentifiableMembersView`
