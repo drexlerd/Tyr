@@ -44,7 +44,7 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
 {
     ++m_iteration;
 
-    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
     /// 2. Initialize the full graph
 
@@ -197,24 +197,24 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
 
     // if (num_delta_edges > 300000)
     //{
-    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
-    std::cout << "Delta KPKC: " << static_graph.get_num_edges() << " edges, " << num_delta_edges << " delta edges" << std::endl;
-    std::cout << "Full graph partition adjacency matrix size: " << m_full_graph.partition_adjacency_matrix_data.size() << std::endl;
-    std::cout << "Count structure";
-    for (const auto& [partition, edge_sets] : unique_adj_partitions)
-    {
-        std::cout << "\n  Partition " << partition << ": " << edge_sets.size() << " unique adjacency bitsets";
-    }
-    std::cout << std::endl;
-    std::cout << "Num vertices: " << m_const_graph.nv << std::endl;
-    std::cout << "Full partitions: " << full_partitions << std::endl;
-    std::cout << "Total partitions: " << total_partitions << std::endl;
-    std::cout << "Num adj partitions: " << statistics.num_adj_partitions << std::endl;
-    std::cout << "Num unique adj partitions: " << statistics.num_unique_adj_partitions << std::endl;
-    std::cout << "Edges in full partitions: " << edges_in_full_partitions << std::endl;
-    std::cout << "Edges in non-full partitions: " << edges_in_non_full_partitions << std::endl;
-    std::cout << "Delta KPKC computation time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << " ns" << std::endl;
-    std::cout << std::endl;
+    // std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+    // std::cout << "Delta KPKC: " << static_graph.get_num_edges() << " edges, " << num_delta_edges << " delta edges" << std::endl;
+    // std::cout << "Full graph partition adjacency matrix size: " << m_full_graph.partition_adjacency_matrix_data.size() << std::endl;
+    // std::cout << "Count structure";
+    // for (const auto& [partition, edge_sets] : unique_adj_partitions)
+    // {
+    //     std::cout << "\n  Partition " << partition << ": " << edge_sets.size() << " unique adjacency bitsets";
+    // }
+    // std::cout << std::endl;
+    // std::cout << "Num vertices: " << m_const_graph.nv << std::endl;
+    // std::cout << "Full partitions: " << full_partitions << std::endl;
+    // std::cout << "Total partitions: " << total_partitions << std::endl;
+    // std::cout << "Num adj partitions: " << statistics.num_adj_partitions << std::endl;
+    // std::cout << "Num unique adj partitions: " << statistics.num_unique_adj_partitions << std::endl;
+    // std::cout << "Edges in full partitions: " << edges_in_full_partitions << std::endl;
+    // std::cout << "Edges in non-full partitions: " << edges_in_non_full_partitions << std::endl;
+    // std::cout << "Delta KPKC computation time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << " ns" <<
+    // std::endl; std::cout << std::endl;
     //
     //    // std::terminate();
     //}
