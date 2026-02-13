@@ -25,13 +25,11 @@
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 
-#include <boost/dynamic_bitset.hpp>
-
 namespace tyr::formalism::datalog
 {
 class VariableDependencyGraph
 {
-private:
+public:
     struct AdjacencyMatrix
     {
     private:
@@ -46,41 +44,102 @@ private:
     public:
         AdjacencyMatrix() = default;
 
-        explicit AdjacencyMatrix(uint_t k) :
-            m_k(k),
-            m_upper_adj_lists(k * (k - 1) / 2),
-            m_positive_static_predicate_labels(),
-            m_positive_fluent_predicate_labels(),
-            m_negative_static_predicate_labels(),
-            m_negative_fluent_predicate_labels(),
-            m_static_function_labels(),
-            m_fluent_function_labels(),
-            m_numeric_constraint_labels()
-        {
-        }
+        explicit AdjacencyMatrix(uint_t k) : m_k(k), m_upper_adj_lists(k * (k - 1) / 2) {}
 
         struct Cell
         {
-            std::vector<Index<formalism::Predicate<formalism::StaticTag>>> positive_static_predicate_labels;
-            std::vector<Index<formalism::Predicate<formalism::FluentTag>>> positive_fluent_predicate_labels;
-            std::vector<Index<formalism::Predicate<formalism::StaticTag>>> negative_static_predicate_labels;
-            std::vector<Index<formalism::Predicate<formalism::FluentTag>>> negative_fluent_predicate_labels;
-            std::vector<Index<formalism::Function<formalism::StaticTag>>> static_function_labels;
-            std::vector<Index<formalism::Function<formalism::FluentTag>>> fluent_function_labels;
-            std::vector<Data<formalism::datalog::BooleanOperator<formalism::datalog::FunctionExpression>>> numeric_constraint_labels;
+            template<FactKind T, PolarityKind P>
+            auto& get_predicate_labels() noexcept
+            {
+                if constexpr (std::is_same_v<T, StaticTag>)
+                {
+                    if constexpr (std::is_same_v<P, PositiveTag>)
+                        return positive_static_predicate_labels;
+                    else if constexpr (std::is_same_v<P, NegativeTag>)
+                        return negative_static_predicate_labels;
+                    else
+                        static_assert(dependent_false<P>::value, "Missing case");
+                }
+                else if constexpr (std::is_same_v<T, FluentTag>)
+                {
+                    if constexpr (std::is_same_v<P, PositiveTag>)
+                        return positive_fluent_predicate_labels;
+                    else if constexpr (std::is_same_v<P, NegativeTag>)
+                        return negative_fluent_predicate_labels;
+                    else
+                        static_assert(dependent_false<P>::value, "Missing case");
+                }
+                else
+                    static_assert(dependent_false<T>::value, "Missing case");
+            }
+
+            template<FactKind T, PolarityKind P>
+            const auto& get_predicate_labels() const noexcept
+            {
+                if constexpr (std::is_same_v<T, StaticTag>)
+                {
+                    if constexpr (std::is_same_v<P, PositiveTag>)
+                        return positive_static_predicate_labels;
+                    else if constexpr (std::is_same_v<P, NegativeTag>)
+                        return negative_static_predicate_labels;
+                    else
+                        static_assert(dependent_false<P>::value, "Missing case");
+                }
+                else if constexpr (std::is_same_v<T, FluentTag>)
+                {
+                    if constexpr (std::is_same_v<P, PositiveTag>)
+                        return positive_fluent_predicate_labels;
+                    else if constexpr (std::is_same_v<P, NegativeTag>)
+                        return negative_fluent_predicate_labels;
+                    else
+                        static_assert(dependent_false<P>::value, "Missing case");
+                }
+                else
+                    static_assert(dependent_false<T>::value, "Missing case");
+            }
+
+            template<FactKind T>
+            auto& get_function_labels() noexcept
+            {
+                if constexpr (std::is_same_v<T, StaticTag>)
+                    return static_function_labels;
+                else if constexpr (std::is_same_v<T, FluentTag>)
+                    return fluent_function_labels;
+                else
+                    static_assert(dependent_false<T>::value, "Missing case");
+            }
+
+            template<FactKind T>
+            const auto& get_function_labels() const noexcept
+            {
+                if constexpr (std::is_same_v<T, StaticTag>)
+                    return static_function_labels;
+                else if constexpr (std::is_same_v<T, FluentTag>)
+                    return fluent_function_labels;
+                else
+                    static_assert(dependent_false<T>::value, "Missing case");
+            }
+
+            std::vector<Index<Predicate<StaticTag>>> positive_static_predicate_labels;
+            std::vector<Index<Predicate<FluentTag>>> positive_fluent_predicate_labels;
+            std::vector<Index<Predicate<StaticTag>>> negative_static_predicate_labels;
+            std::vector<Index<Predicate<FluentTag>>> negative_fluent_predicate_labels;
+            std::vector<Index<Function<StaticTag>>> static_function_labels;
+            std::vector<Index<Function<FluentTag>>> fluent_function_labels;
+            std::vector<Data<BooleanOperator<FunctionExpression>>> numeric_constraint_labels;
         };
 
-        auto& get_cell(formalism::ParameterIndex lhs, formalism::ParameterIndex rhs) noexcept
+        auto& get_cell(ParameterIndex lhs, ParameterIndex rhs) noexcept
         {
             assert(lhs < rhs);
-            assert(rhs.value < m_k);
-            return m_upper_adj_lists[upper_index(lhs.value, rhs.value, m_k)];
+            assert(uint_t(rhs) < m_k);
+            return m_upper_adj_lists[upper_index(uint_t(lhs), uint_t(rhs), m_k)];
         }
-        const auto& get_cell(formalism::ParameterIndex lhs, formalism::ParameterIndex rhs) const noexcept
+        const auto& get_cell(ParameterIndex lhs, ParameterIndex rhs) const noexcept
         {
             assert(lhs < rhs);
-            assert(rhs.value < m_k);
-            return m_upper_adj_lists[upper_index(lhs.value, rhs.value, m_k)];
+            assert(uint_t(rhs) < m_k);
+            return m_upper_adj_lists[upper_index(uint_t(lhs), uint_t(rhs), m_k)];
         }
 
     private:
@@ -88,8 +147,7 @@ private:
         std::vector<Cell> m_upper_adj_lists;
     };
 
-public:
-    explicit VariableDependencyGraph(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition);
+    explicit VariableDependencyGraph(View<Index<ConjunctiveCondition>, Repository> condition);
 
 private:
     AdjacencyMatrix adj_matrix;

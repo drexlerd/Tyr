@@ -123,7 +123,7 @@ template<f::FactKind T>
 const std::vector<Index<formalism::Object>>& PredicateFactSet<T>::get_column(formalism::ParameterIndex parameter) const noexcept
 {
     assert(parameter.value < m_columns.size());
-    return m_columns[parameter.value];
+    return m_columns[uint_t(parameter)];
 }
 
 template<f::FactKind T>

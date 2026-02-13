@@ -146,6 +146,17 @@ class OverlayRepository;
 template<typename C>
 using OverlayRepositoryPtr = std::shared_ptr<OverlayRepository<C>>;
 
+struct PositiveTag
+{
+};
+
+struct NegativeTag
+{
+};
+
+template<typename T>
+concept PolarityKind = std::same_as<T, PositiveTag> || std::same_as<T, NegativeTag>;
+
 }
 
 #endif
