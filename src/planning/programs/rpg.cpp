@@ -155,7 +155,7 @@ static auto merge(View<Data<f::Term>, fp::Repository> element, const UnorderedMa
 template<f::FactKind T>
 auto merge(View<Index<fp::Atom<T>>, fp::Repository> element,
            const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+           formalism::planning::MergeDatalogContext& context)
 {
     auto atom_ptr = context.builder.get_builder<fd::Atom<T>>();
     auto& atom = *atom_ptr;
@@ -172,7 +172,7 @@ auto merge(View<Index<fp::Atom<T>>, fp::Repository> element,
 template<f::FactKind T>
 auto merge(View<Index<fp::Literal<T>>, fp::Repository> element,
            const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+           formalism::planning::MergeDatalogContext& context)
 {
     auto literal_ptr = context.builder.get_builder<fd::Literal<T>>();
     auto& literal = *literal_ptr;
@@ -187,7 +187,7 @@ auto merge(View<Index<fp::Literal<T>>, fp::Repository> element,
 
 static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                            const UnorderedSet<f::ParameterIndex>& parameters,
-                                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                           formalism::planning::MergeDatalogContext& context)
 {
     auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
     auto& predicate = *predicate_ptr;
@@ -202,7 +202,7 @@ static auto create_applicability_predicate(View<Index<formalism::planning::Actio
 
 static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       const UnorderedSet<f::ParameterIndex>& parameters,
-                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                      formalism::planning::MergeDatalogContext& context)
 {
     auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
     auto& atom = *atom_ptr;
@@ -220,7 +220,7 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
 
 static auto create_applicability_rule(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       const UnorderedSet<f::ParameterIndex>& parameters,
-                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                      formalism::planning::MergeDatalogContext& context)
 {
     auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
@@ -257,7 +257,7 @@ static auto create_applicability_rule(View<Index<formalism::planning::Action>, f
 static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       const UnorderedSet<f::ParameterIndex>& head_parameters,
                                       const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                      formalism::planning::MergeDatalogContext& context)
 {
     auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
     auto& atom = *atom_ptr;
@@ -276,7 +276,7 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
 static auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                          const UnorderedSet<f::ParameterIndex>& head_parameters,
                                          const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-                                         formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                         formalism::planning::MergeDatalogContext& context)
 {
     auto literal_ptr = context.builder.get_builder<formalism::datalog::Literal<formalism::FluentTag>>();
     auto& literal = *literal_ptr;
@@ -294,7 +294,7 @@ static auto create_cond_effect_rule(View<Index<formalism::planning::Action>, for
                                     View<Index<formalism::planning::Atom<formalism::FluentTag>>, formalism::planning::Repository> effect,
                                     const UnorderedSet<f::ParameterIndex>& head_parameters,
                                     const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-                                    formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                    formalism::planning::MergeDatalogContext& context)
 {
     auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
@@ -388,7 +388,7 @@ auto compute_applicability_parameter_mapping(View<Index<fp::Action>, fp::Reposit
 
 static void translate_action_to_delete_free_rules(View<Index<fp::Action>, fp::Repository> action,
                                                   Data<fd::Program>& program,
-                                                  fp::MergeDatalogContext<fd::Repository>& context,
+                                                  fp::MergeDatalogContext& context,
                                                   RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
 {
     // Collect all parameter indices mentioned in positive fluent literals or negative static literals
@@ -424,7 +424,7 @@ static Index<fd::Program>
 create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repository& destination, RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
 {
     auto builder = fd::Builder();
-    auto context = fp::MergeDatalogContext<fd::Repository>(builder, destination);
+    auto context = fp::MergeDatalogContext(builder, destination);
     auto program_ptr = builder.get_builder<fd::Program>();
     auto& program = *program_ptr;
     program.clear();

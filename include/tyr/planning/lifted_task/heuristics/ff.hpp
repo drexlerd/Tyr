@@ -84,7 +84,7 @@ public:
 private:
     void extract_relaxed_plan_and_preferred_actions(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> atom,
                                                     const StateContext<LiftedTask>& state_context,
-                                                    formalism::planning::GrounderContext<formalism::planning::Repository>& grounder_context)
+                                                    formalism::planning::GrounderContext& grounder_context)
     {
         // Base case 1: atom is already marked => do not recurse again
         assert(uint_t(atom.group) < m_markings.size());

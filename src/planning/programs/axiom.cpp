@@ -36,7 +36,7 @@ namespace tyr::planning
 namespace axiom
 {
 static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, fp::Repository> axiom_body,
-                               fp::MergeDatalogContext<fd::Repository>& context,
+                               fp::MergeDatalogContext& context,
                                Data<fd::ConjunctiveCondition>& conj_cond)
 {
     for (const auto literal : axiom_body.get_literals<f::StaticTag>())
@@ -46,13 +46,13 @@ static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, fp::Reposit
         conj_cond.fluent_literals.push_back(fp::merge_p2d(literal, context).first);
 
     for (const auto literal : axiom_body.get_literals<f::DerivedTag>())
-        conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(literal, context).first);
+        conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(literal, context).first);
 
     for (const auto numeric_constraint : axiom_body.get_numeric_constraints())
         conj_cond.numeric_constraints.push_back(fp::merge_p2d(numeric_constraint, context));
 }
 
-static auto create_axiom_rule(View<Index<fp::Axiom>, fp::Repository> axiom, fp::MergeDatalogContext<fd::Repository>& context)
+static auto create_axiom_rule(View<Index<fp::Axiom>, fp::Repository> axiom, fp::MergeDatalogContext& context)
 {
     auto rule_ptr = context.builder.get_builder<fd::Rule>();
     auto& rule = *rule_ptr;
@@ -72,7 +72,7 @@ static auto create_axiom_rule(View<Index<fp::Axiom>, fp::Repository> axiom, fp::
 
     rule.body = new_conj_cond;
 
-    const auto new_head = fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(axiom.get_head(), context).first;
+    const auto new_head = fp::merge_p2d<f::DerivedTag, f::FluentTag>(axiom.get_head(), context).first;
 
     rule.head = new_head;
 
@@ -85,7 +85,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
                                          fd::Repository& repository)
 {
     auto builder = fd::Builder();
-    auto context = fp::MergeDatalogContext<fd::Repository>(builder, repository);
+    auto context = fp::MergeDatalogContext(builder, repository);
     auto program_ptr = builder.get_builder<fd::Program>();
     auto& program = *program_ptr;
     program.clear();
@@ -98,7 +98,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
 
     for (const auto predicate : task.get_domain().get_predicates<f::DerivedTag>())
     {
-        const auto new_predicate = fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first;
+        const auto new_predicate = fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first;
 
         [[maybe_unused]] const auto [it, inserted] = predicate_to_predicate.emplace(new_predicate, predicate.get_index());
         assert(inserted);
@@ -108,7 +108,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
 
     for (const auto predicate : task.get_derived_predicates())
     {
-        const auto new_predicate = fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first;
+        const auto new_predicate = fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first;
 
         [[maybe_unused]] const auto [it, inserted] = predicate_to_predicate.emplace(new_predicate, predicate.get_index());
         assert(inserted);

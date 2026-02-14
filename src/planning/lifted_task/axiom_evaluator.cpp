@@ -49,7 +49,7 @@ namespace tyr::planning
 
 static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_state,
                                     const fp::Repository& atoms_context,
-                                    fp::MergeDatalogContext<fd::Repository>& merge_context,
+                                    fp::MergeDatalogContext& merge_context,
                                     d::TaggedFactSets<f::FluentTag>& fact_sets,
                                     d::TaggedAssignmentSets<f::FluentTag>& assignment_sets)
 {
@@ -62,7 +62,7 @@ static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_st
 
 static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram& axiom_program,
                                                     UnpackedState<LiftedTask>& unpacked_state,
-                                                    fp::MergePlanningContext<fp::Repository>& merge_context,
+                                                    fp::MergePlanningContext& merge_context,
                                                     d::TaggedFactSets<f::FluentTag>& fact_sets)
 {
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over get_predicate_to_predicate_mapping, then facts of the predicate
@@ -73,7 +73,7 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
             if (axiom_program.get_predicate_to_predicate_mapping().contains(fact.get_predicate().get_index()))
             {
                 // TODO: pass the predicate mapping here so that we can skip merging the predicate :)
-                const auto ground_atom = fp::merge_d2p<f::FluentTag, fd::Repository, fp::Repository, f::DerivedTag>(fact, merge_context).first;
+                const auto ground_atom = fp::merge_d2p<f::FluentTag, f::DerivedTag>(fact, merge_context).first;
 
                 unpacked_state.set(ground_atom);
             }

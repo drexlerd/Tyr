@@ -54,17 +54,17 @@ extern valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float
 
 extern void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
                                             const formalism::planning::Repository& atoms_context,
-                                            formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                            formalism::planning::MergeDatalogContext& merge_context,
                                             datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
 extern void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
                                              const formalism::planning::Repository& atoms_context,
-                                             formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                             formalism::planning::MergeDatalogContext& merge_context,
                                              datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
 extern void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
                                                  const formalism::planning::Repository& numeric_variables_context,
-                                                 formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                                 formalism::planning::MergeDatalogContext& merge_context,
                                                  datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
 extern void insert_fact_sets_into_assignment_sets(const datalog::TaggedFactSets<formalism::FluentTag>& fact_sets,
@@ -72,7 +72,7 @@ extern void insert_fact_sets_into_assignment_sets(const datalog::TaggedFactSets<
 
 extern void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
                                   const formalism::planning::Repository& atoms_context,
-                                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
+                                  formalism::planning::MergeDatalogContext& merge_context,
                                   datalog::TaggedFactSets<formalism::FluentTag>& fact_sets,
                                   datalog::TaggedAssignmentSets<formalism::FluentTag>& assignment_sets);
 

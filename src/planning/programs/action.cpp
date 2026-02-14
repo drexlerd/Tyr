@@ -37,7 +37,7 @@ namespace action
 {
 
 static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
-                                           formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                           formalism::planning::MergeDatalogContext& context)
 {
     auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
     auto& predicate = *predicate_ptr;
@@ -51,7 +51,7 @@ static auto create_applicability_predicate(View<Index<formalism::planning::Actio
 }
 
 static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
-                                      formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+                                      formalism::planning::MergeDatalogContext& context)
 {
     auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
     auto& atom = *atom_ptr;
@@ -84,10 +84,10 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
         program.fluent_predicates.push_back(fp::merge_p2d(predicate, context).first);
 
     for (const auto predicate : task.get_domain().get_predicates<f::DerivedTag>())
-        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first);
 
     for (const auto predicate : task.get_derived_predicates())
-        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first);
 
     for (const auto function : task.get_domain().get_functions<f::StaticTag>())
         program.static_functions.push_back(fp::merge_p2d(function, context).first);
@@ -141,7 +141,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
             conj_cond.fluent_literals.push_back(fp::merge_p2d(literal, context).first);
 
         for (const auto literal : action.get_condition().get_literals<f::DerivedTag>())
-            conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(literal, context).first);
+            conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(literal, context).first);
 
         for (const auto numeric_constraint : action.get_condition().get_numeric_constraints())
             conj_cond.numeric_constraints.push_back(fp::merge_p2d(numeric_constraint, context));

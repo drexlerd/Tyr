@@ -25,18 +25,21 @@
 #include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
+#include "tyr/formalism/datalog/repository.hpp"
+#include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/indices.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
+#include "tyr/formalism/views.hpp"
 
 namespace tyr::formalism::planning
 {
 
-template<formalism::datalog::Context C>
 struct MergeDatalogContext
 {
     formalism::datalog::Builder& builder;
-    C& destination;
+    formalism::datalog::Repository& destination;
 };
 
 /**
@@ -45,69 +48,63 @@ struct MergeDatalogContext
 
 // Common
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Variable>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+inline auto merge_p2d(View<Index<formalism::Variable>, Repository> element, MergeDatalogContext& context);
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Object>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+inline auto merge_p2d(View<Index<formalism::Object>, Repository> element, MergeDatalogContext& context);
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Binding>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+inline auto merge_p2d(View<Index<formalism::Binding>, Repository> element, MergeDatalogContext& context);
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<formalism::Term>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+inline auto merge_p2d(View<Data<formalism::Term>, Repository> element, MergeDatalogContext& context);
 
 // Propositional
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST = T_SRC>
-auto merge_p2d(View<Index<formalism::Predicate<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T_SRC, FactKind T_DST = T_SRC>
+inline auto merge_p2d(View<Index<formalism::Predicate<T_SRC>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST = T_SRC>
-auto merge_p2d(View<Index<Atom<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T_SRC, FactKind T_DST = T_SRC>
+inline auto merge_p2d(View<Index<Atom<T_SRC>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST = T_SRC>
-auto merge_p2d(View<Index<GroundAtom<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T_SRC, FactKind T_DST = T_SRC>
+inline auto merge_p2d(View<Index<GroundAtom<T_SRC>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST = T_SRC>
-auto merge_p2d(View<Index<Literal<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T_SRC, FactKind T_DST = T_SRC>
+inline auto merge_p2d(View<Index<Literal<T_SRC>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST = T_SRC>
-auto merge_p2d(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T_SRC, FactKind T_DST = T_SRC>
+inline auto merge_p2d(View<Index<GroundLiteral<T_SRC>>, Repository> element, MergeDatalogContext& context);
 
 // Numeric
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Function<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T>
+inline auto merge_p2d(View<Index<formalism::Function<T>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<FunctionTerm<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T>
+inline auto merge_p2d(View<Index<FunctionTerm<T>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<GroundFunctionTerm<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T>
+inline auto merge_p2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeDatalogContext& context);
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<FactKind T>
+inline auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeDatalogContext& context);
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<FunctionExpression>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+inline auto merge_p2d(View<Data<FunctionExpression>, Repository> element, MergeDatalogContext& context);
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<GroundFunctionExpression>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+inline auto merge_p2d(View<Data<GroundFunctionExpression>, Repository> element, MergeDatalogContext& context);
 
-template<OpKind O, typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<UnaryOperator<O, T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<OpKind O, typename T>
+inline auto merge_p2d(View<Index<UnaryOperator<O, T>>, Repository> element, MergeDatalogContext& context);
 
-template<OpKind O, typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<BinaryOperator<O, T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<OpKind O, typename T>
+inline auto merge_p2d(View<Index<BinaryOperator<O, T>>, Repository> element, MergeDatalogContext& context);
 
-template<OpKind O, typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<MultiOperator<O, T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<OpKind O, typename T>
+inline auto merge_p2d(View<Index<MultiOperator<O, T>>, Repository> element, MergeDatalogContext& context);
 
-template<typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<ArithmeticOperator<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<typename T>
+inline auto merge_p2d(View<Data<ArithmeticOperator<T>>, Repository> element, MergeDatalogContext& context);
 
-template<typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<BooleanOperator<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context);
+template<typename T>
+inline auto merge_p2d(View<Data<BooleanOperator<T>>, Repository> element, MergeDatalogContext& context);
 
 /**
  * Implementations
@@ -136,8 +133,7 @@ using to_datalog_payload_t = typename to_datalog_payload<T>::type;
 
 // Common
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Variable>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+inline auto merge_p2d(View<Index<formalism::Variable>, Repository> element, MergeDatalogContext& context)
 {
     auto variable_ptr = context.builder.template get_builder<formalism::Variable>();
     auto& variable = *variable_ptr;
@@ -149,8 +145,7 @@ auto merge_p2d(View<Index<formalism::Variable>, C_SRC> element, MergeDatalogCont
     return context.destination.get_or_create(variable, context.builder.get_buffer());
 }
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Object>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+inline auto merge_p2d(View<Index<formalism::Object>, Repository> element, MergeDatalogContext& context)
 {
     auto object_ptr = context.builder.template get_builder<formalism::Object>();
     auto& object = *object_ptr;
@@ -162,8 +157,7 @@ auto merge_p2d(View<Index<formalism::Object>, C_SRC> element, MergeDatalogContex
     return context.destination.get_or_create(object, context.builder.get_buffer());
 }
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Binding>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+inline auto merge_p2d(View<Index<formalism::Binding>, Repository> element, MergeDatalogContext& context)
 {
     auto binding_ptr = context.builder.template get_builder<formalism::Binding>();
     auto& binding = *binding_ptr;
@@ -175,8 +169,7 @@ auto merge_p2d(View<Index<formalism::Binding>, C_SRC> element, MergeDatalogConte
     return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<Term>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+inline auto merge_p2d(View<Data<Term>, Repository> element, MergeDatalogContext& context)
 {
     return visit(
         [&](auto&& arg)
@@ -185,7 +178,7 @@ auto merge_p2d(View<Data<Term>, C_SRC> element, MergeDatalogContext<C_DST>& cont
 
             if constexpr (std::is_same_v<Alternative, ParameterIndex>)
                 return Data<Term>(arg);
-            else if constexpr (std::is_same_v<Alternative, View<Index<Object>, C_SRC>>)
+            else if constexpr (std::is_same_v<Alternative, View<Index<Object>, Repository>>)
                 return Data<Term>(merge_p2d(arg, context).first);
             else
                 static_assert(dependent_false<Alternative>::value, "Missing case");
@@ -195,8 +188,8 @@ auto merge_p2d(View<Data<Term>, C_SRC> element, MergeDatalogContext<C_DST>& cont
 
 // Propositional
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST>
-auto merge_p2d(View<Index<formalism::Predicate<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T_SRC, FactKind T_DST>
+inline auto merge_p2d(View<Index<formalism::Predicate<T_SRC>>, Repository> element, MergeDatalogContext& context)
 {
     auto predicate_ptr = context.builder.template get_builder<formalism::Predicate<T_DST>>();
     auto& predicate = *predicate_ptr;
@@ -209,14 +202,14 @@ auto merge_p2d(View<Index<formalism::Predicate<T_SRC>>, C_SRC> element, MergeDat
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST>
-auto merge_p2d(View<Index<Atom<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T_SRC, FactKind T_DST>
+inline auto merge_p2d(View<Index<Atom<T_SRC>>, Repository> element, MergeDatalogContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<formalism::datalog::Atom<T_DST>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.predicate = merge_p2d<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), context).first;
+    atom.predicate = merge_p2d<T_SRC, T_DST>(element.get_predicate(), context).first;
     for (const auto term : element.get_terms())
         atom.terms.push_back(merge_p2d(term, context));
 
@@ -224,43 +217,43 @@ auto merge_p2d(View<Index<Atom<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DS
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST>
-auto merge_p2d(View<Index<GroundAtom<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T_SRC, FactKind T_DST>
+inline auto merge_p2d(View<Index<GroundAtom<T_SRC>>, Repository> element, MergeDatalogContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<formalism::datalog::GroundAtom<T_DST>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.index.group = merge_p2d<T_SRC, C_SRC, C_DST, T_DST>(element.get_predicate(), context).first;
+    atom.index.group = merge_p2d<T_SRC, T_DST>(element.get_predicate(), context).first;
     atom.objects = element.get_data().objects;
 
     canonicalize(atom);
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST>
-auto merge_p2d(View<Index<Literal<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T_SRC, FactKind T_DST>
+inline auto merge_p2d(View<Index<Literal<T_SRC>>, Repository> element, MergeDatalogContext& context)
 {
     auto literal_ptr = context.builder.template get_builder<formalism::datalog::Literal<T_DST>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge_p2d<T_SRC, C_SRC, C_DST, T_DST>(element.get_atom(), context).first;
+    literal.atom = merge_p2d<T_SRC, T_DST>(element.get_atom(), context).first;
 
     canonicalize(literal);
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-template<FactKind T_SRC, Context C_SRC, formalism::datalog::Context C_DST, FactKind T_DST>
-auto merge_p2d(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T_SRC, FactKind T_DST>
+inline auto merge_p2d(View<Index<GroundLiteral<T_SRC>>, Repository> element, MergeDatalogContext& context)
 {
     auto literal_ptr = context.builder.template get_builder<formalism::datalog::GroundLiteral<T_DST>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge_p2d<T_SRC, C_SRC, C_DST, T_DST>(element.get_atom(), context).first;
+    literal.atom = merge_p2d<T_SRC, T_DST>(element.get_atom(), context).first;
 
     canonicalize(literal);
     return context.destination.get_or_create(literal, context.builder.get_buffer());
@@ -268,8 +261,9 @@ auto merge_p2d(View<Index<GroundLiteral<T_SRC>>, C_SRC> element, MergeDatalogCon
 
 // Numeric
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<formalism::Function<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T>
+    requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<formalism::Function<T>>, Repository> element, MergeDatalogContext& context)
 {
     auto function_ptr = context.builder.template get_builder<formalism::Function<T>>();
     auto& function = *function_ptr;
@@ -282,8 +276,16 @@ auto merge_p2d(View<Index<formalism::Function<T>>, C_SRC> element, MergeDatalogC
     return context.destination.get_or_create(function, context.builder.get_buffer());
 }
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<FunctionTerm<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T>
+    requires(std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<formalism::Function<T>>, Repository> element, MergeDatalogContext& context)
+{
+    throw std::runtime_error("We never merge AuxiliaryTag");
+}
+
+template<FactKind T>
+    requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<FunctionTerm<T>>, Repository> element, MergeDatalogContext& context)
 {
     auto fterm_ptr = context.builder.template get_builder<formalism::datalog::FunctionTerm<T>>();
     auto& fterm = *fterm_ptr;
@@ -297,8 +299,16 @@ auto merge_p2d(View<Index<FunctionTerm<T>>, C_SRC> element, MergeDatalogContext<
     return context.destination.get_or_create(fterm, context.builder.get_buffer());
 }
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<GroundFunctionTerm<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T>
+    requires(std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<FunctionTerm<T>>, Repository> element, MergeDatalogContext& context)
+{
+    throw std::runtime_error("We never merge AuxiliaryTag");
+}
+
+template<FactKind T>
+    requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeDatalogContext& context)
 {
     auto fterm_ptr = context.builder.template get_builder<formalism::datalog::GroundFunctionTerm<T>>();
     auto& fterm = *fterm_ptr;
@@ -311,8 +321,16 @@ auto merge_p2d(View<Index<GroundFunctionTerm<T>>, C_SRC> element, MergeDatalogCo
     return context.destination.get_or_create(fterm, context.builder.get_buffer());
 }
 
-template<FactKind T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T>
+    requires(std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeDatalogContext& context)
+{
+    throw std::runtime_error("We never merge AuxiliaryTag");
+}
+
+template<FactKind T>
+    requires(!std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeDatalogContext& context)
 {
     auto fterm_value_ptr = context.builder.template get_builder<formalism::datalog::GroundFunctionTermValue<T>>();
     auto& fterm_value = *fterm_value_ptr;
@@ -325,44 +343,53 @@ auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, C_SRC> element, MergeData
     return context.destination.get_or_create(fterm_value, context.builder.get_buffer());
 }
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<FunctionExpression>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<FactKind T>
+    requires(std::is_same_v<T, formalism::AuxiliaryTag>)
+inline auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeDatalogContext& context)
+{
+    throw std::runtime_error("We never merge AuxiliaryTag");
+}
+
+inline auto merge_p2d(View<Data<FunctionExpression>, Repository> element, MergeDatalogContext& context)
 {
     return visit(
-        [&](auto&& arg)
+        [&](auto&& arg) -> Data<formalism::datalog::FunctionExpression>
         {
             using Alternative = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<Alternative, float_t>)
                 return Data<formalism::datalog::FunctionExpression>(arg);
-            else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, C_SRC>>)
+            else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository>>)
                 return Data<formalism::datalog::FunctionExpression>(merge_p2d(arg, context));
+            else if constexpr (std::is_same_v<Alternative, View<Index<FunctionTerm<AuxiliaryTag>>, Repository>>)
+                throw std::logic_error("AuxiliaryTag FunctionTerm must not be merged.");
             else
                 return Data<formalism::datalog::FunctionExpression>(merge_p2d(arg, context).first);
         },
         element.get_variant());
 }
 
-template<Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<GroundFunctionExpression>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+inline auto merge_p2d(View<Data<GroundFunctionExpression>, Repository> element, MergeDatalogContext& context)
 {
     return visit(
-        [&](auto&& arg)
+        [&](auto&& arg) -> Data<formalism::datalog::GroundFunctionExpression>
         {
             using Alternative = std::decay_t<decltype(arg)>;
 
             if constexpr (std::is_same_v<Alternative, float_t>)
                 return Data<formalism::datalog::GroundFunctionExpression>(arg);
-            else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, C_SRC>>)
+            else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>>)
                 return Data<formalism::datalog::GroundFunctionExpression>(merge_p2d(arg, context));
+            else if constexpr (std::is_same_v<Alternative, View<Index<GroundFunctionTerm<AuxiliaryTag>>, Repository>>)
+                throw std::logic_error("AuxiliaryTag GroundFunctionTerm must not be merged.");
             else
                 return Data<formalism::datalog::GroundFunctionExpression>(merge_p2d(arg, context).first);
         },
         element.get_variant());
 }
 
-template<OpKind O, typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<UnaryOperator<O, T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<OpKind O, typename T>
+inline auto merge_p2d(View<Index<UnaryOperator<O, T>>, Repository> element, MergeDatalogContext& context)
 {
     using T_DST = to_datalog_payload_t<T>;
 
@@ -376,8 +403,8 @@ auto merge_p2d(View<Index<UnaryOperator<O, T>>, C_SRC> element, MergeDatalogCont
     return context.destination.get_or_create(unary, context.builder.get_buffer());
 }
 
-template<OpKind O, typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<BinaryOperator<O, T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<OpKind O, typename T>
+inline auto merge_p2d(View<Index<BinaryOperator<O, T>>, Repository> element, MergeDatalogContext& context)
 {
     using T_DST = to_datalog_payload_t<T>;
 
@@ -392,8 +419,8 @@ auto merge_p2d(View<Index<BinaryOperator<O, T>>, C_SRC> element, MergeDatalogCon
     return context.destination.get_or_create(binary, context.builder.get_buffer());
 }
 
-template<OpKind O, typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Index<MultiOperator<O, T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<OpKind O, typename T>
+inline auto merge_p2d(View<Index<MultiOperator<O, T>>, Repository> element, MergeDatalogContext& context)
 {
     using T_DST = to_datalog_payload_t<T>;
 
@@ -408,16 +435,16 @@ auto merge_p2d(View<Index<MultiOperator<O, T>>, C_SRC> element, MergeDatalogCont
     return context.destination.get_or_create(multi, context.builder.get_buffer());
 }
 
-template<typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<ArithmeticOperator<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<typename T>
+inline auto merge_p2d(View<Data<ArithmeticOperator<T>>, Repository> element, MergeDatalogContext& context)
 {
     using T_DST = to_datalog_payload_t<T>;
 
     return visit([&](auto&& arg) { return Data<formalism::datalog::ArithmeticOperator<T_DST>>(merge_p2d(arg, context).first); }, element.get_variant());
 }
 
-template<typename T, Context C_SRC, formalism::datalog::Context C_DST>
-auto merge_p2d(View<Data<BooleanOperator<T>>, C_SRC> element, MergeDatalogContext<C_DST>& context)
+template<typename T>
+inline auto merge_p2d(View<Data<BooleanOperator<T>>, Repository> element, MergeDatalogContext& context)
 {
     using T_DST = to_datalog_payload_t<T>;
 
