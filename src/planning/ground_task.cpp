@@ -37,7 +37,7 @@ namespace tyr::planning
 GroundTask::GroundTask(DomainPtr domain,
                        fp::RepositoryPtr overlay_repository,
                        View<Index<fp::FDRTask>, fp::Repository> fdr_task,
-                       fp::GeneralFDRContext<fp::Repository> fdr_context) :
+                       fp::GeneralFDRContext fdr_context) :
     m_domain(std::move(domain)),
     m_overlay_repository(std::move(overlay_repository)),
     m_fdr_task(fdr_task),

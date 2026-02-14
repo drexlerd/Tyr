@@ -25,6 +25,7 @@
 #include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
+#include "tyr/formalism/planning/canonicalization.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/indices.hpp"
 #include "tyr/formalism/planning/views.hpp"

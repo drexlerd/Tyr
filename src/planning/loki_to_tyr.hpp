@@ -1187,10 +1187,8 @@ private:
     }
 
     template<formalism::planning::Context C>
-    IndexGroundAtomOrFactVariant translate_grounded(loki::Atom element,
-                                                    formalism::planning::Builder& builder,
-                                                    C& context,
-                                                    formalism::planning::BinaryFDRContext<formalism::planning::Repository>& fdr_context)
+    IndexGroundAtomOrFactVariant
+    translate_grounded(loki::Atom element, formalism::planning::Builder& builder, C& context, formalism::planning::BinaryFDRContext& fdr_context)
     {
         auto atom_variant = translate_grounded(element, builder, context);
 
@@ -1245,10 +1243,8 @@ private:
     }
 
     template<formalism::planning::Context C>
-    IndexGroundLiteralOrFactVariant translate_grounded(loki::Literal element,
-                                                       formalism::planning::Builder& builder,
-                                                       C& context,
-                                                       formalism::planning::BinaryFDRContext<formalism::planning::Repository>& fdr_context)
+    IndexGroundLiteralOrFactVariant
+    translate_grounded(loki::Literal element, formalism::planning::Builder& builder, C& context, formalism::planning::BinaryFDRContext& fdr_context)
     {
         auto literal_variant = translate_grounded(element, builder, context);
 
@@ -1487,10 +1483,7 @@ private:
 
     template<formalism::planning::Context C>
     Index<formalism::planning::GroundConjunctiveCondition>
-    translate_grounded(loki::Condition element,
-                       formalism::planning::Builder& builder,
-                       C& context,
-                       formalism::planning::BinaryFDRContext<formalism::planning::Repository>& fdr_context)
+    translate_grounded(loki::Condition element, formalism::planning::Builder& builder, C& context, formalism::planning::BinaryFDRContext& fdr_context)
     {
         auto conj_condition_ptr = builder.template get_builder<formalism::planning::GroundConjunctiveCondition>();
         auto& conj_condition = *conj_condition_ptr;

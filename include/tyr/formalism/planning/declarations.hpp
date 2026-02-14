@@ -302,10 +302,8 @@ concept Context = requires(const T& a) {
     { get_repository(a) } -> RepositoryConcept;
 };
 
-template<Context C>
 class BinaryFDRContext;
 
-template<Context C>
 class GeneralFDRContext;
 
 }

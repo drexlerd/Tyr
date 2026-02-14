@@ -43,7 +43,7 @@ public:
     LiftedTask(DomainPtr domain,
                formalism::planning::RepositoryPtr overlay_repository,
                View<Index<formalism::planning::Task>, formalism::planning::Repository> task,
-               std::shared_ptr<formalism::planning::BinaryFDRContext<formalism::planning::Repository>> fdr_context);
+               std::shared_ptr<formalism::planning::BinaryFDRContext> fdr_context);
 
     GroundTaskPtr get_ground_task();
 
@@ -79,7 +79,7 @@ private:
     DomainPtr m_domain;
     formalism::planning::RepositoryPtr m_overlay_repository;
     View<Index<formalism::planning::Task>, formalism::planning::Repository> m_task;
-    std::shared_ptr<formalism::planning::BinaryFDRContext<formalism::planning::Repository>> m_fdr_context;
+    std::shared_ptr<formalism::planning::BinaryFDRContext> m_fdr_context;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
 

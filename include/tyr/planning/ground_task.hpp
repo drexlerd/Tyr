@@ -41,7 +41,7 @@ public:
     GroundTask(DomainPtr domain,
                formalism::planning::RepositoryPtr overlay_repository,
                View<Index<formalism::planning::FDRTask>, formalism::planning::Repository> fdr_task,
-               formalism::planning::GeneralFDRContext<formalism::planning::Repository> fdr_context);
+               formalism::planning::GeneralFDRContext fdr_context);
 
     template<formalism::FactKind T>
     size_t get_num_atoms() const noexcept;

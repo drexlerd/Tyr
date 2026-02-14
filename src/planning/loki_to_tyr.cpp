@@ -332,7 +332,7 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
 
     auto task_context = std::make_shared<fp::Repository>(domain_context.get());
 
-    auto fdr_context = std::make_shared<fp::BinaryFDRContext<fp::Repository>>(*task_context);
+    auto fdr_context = std::make_shared<fp::BinaryFDRContext>(*task_context);
 
     /* Name */
     task.name = element->get_name();

@@ -38,7 +38,7 @@ namespace tyr::planning
 LiftedTask::LiftedTask(DomainPtr domain,
                        fp::RepositoryPtr overlay_repository,
                        View<Index<fp::Task>, fp::Repository> task,
-                       std::shared_ptr<fp::BinaryFDRContext<fp::Repository>> fdr_context) :
+                       std::shared_ptr<fp::BinaryFDRContext> fdr_context) :
     m_domain(std::move(domain)),
     m_overlay_repository(std::move(overlay_repository)),
     m_task(task),
