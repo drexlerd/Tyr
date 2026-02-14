@@ -25,7 +25,6 @@
 #include "tyr/datalog/delta_kpkc_graph.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 
 #include <boost/dynamic_bitset/dynamic_bitset.hpp>
 #include <optional>

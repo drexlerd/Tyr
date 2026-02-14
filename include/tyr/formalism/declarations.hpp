@@ -140,12 +140,6 @@ struct Function
 {
 };
 
-template<typename C>
-class OverlayRepository;
-
-template<typename C>
-using OverlayRepositoryPtr = std::shared_ptr<OverlayRepository<C>>;
-
 struct PositiveTag
 {
 };

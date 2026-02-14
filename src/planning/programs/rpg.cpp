@@ -22,7 +22,6 @@
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/formalism/planning/repository.hpp"
@@ -38,7 +37,7 @@ namespace tyr::planning
 namespace rpg
 {
 template<f::FactKind T>
-void collect_parameters(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> atom, UnorderedSet<f::ParameterIndex>& result)
+void collect_parameters(View<Index<fp::Atom<T>>, fp::Repository> atom, UnorderedSet<f::ParameterIndex>& result)
 {
     for (const auto term : atom.get_terms())
     {
@@ -49,7 +48,7 @@ void collect_parameters(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Reposi
 
                 if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                     result.insert(arg);
-                else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, f::OverlayRepository<fp::Repository>>>) {}
+                else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fp::Repository>>) {}
                 else
                     static_assert(dependent_false<Alternative>::value, "Missing case");
             },
@@ -58,12 +57,12 @@ void collect_parameters(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Reposi
 }
 
 template<f::FactKind T>
-void collect_parameters(View<Index<fp::Literal<T>>, f::OverlayRepository<fp::Repository>> literal, UnorderedSet<f::ParameterIndex>& result)
+void collect_parameters(View<Index<fp::Literal<T>>, fp::Repository> literal, UnorderedSet<f::ParameterIndex>& result)
 {
     collect_parameters(literal.get_atom(), result);
 }
 
-static void collect_parameters(View<Index<fp::ConjunctiveCondition>, f::OverlayRepository<fp::Repository>> condition, UnorderedSet<f::ParameterIndex>& result)
+static void collect_parameters(View<Index<fp::ConjunctiveCondition>, fp::Repository> condition, UnorderedSet<f::ParameterIndex>& result)
 {
     for (const auto literal : condition.get_literals<f::StaticTag>())
         collect_parameters(literal, result);
@@ -73,20 +72,20 @@ static void collect_parameters(View<Index<fp::ConjunctiveCondition>, f::OverlayR
             collect_parameters(literal, result);
 }
 
-static void collect_parameters(View<Index<fp::ConjunctiveEffect>, f::OverlayRepository<fp::Repository>> effect, UnorderedSet<f::ParameterIndex>& result)
+static void collect_parameters(View<Index<fp::ConjunctiveEffect>, fp::Repository> effect, UnorderedSet<f::ParameterIndex>& result)
 {
     for (const auto literal : effect.get_literals())
         if (literal.get_polarity())
             collect_parameters(literal, result);
 }
 
-static void collect_parameters(View<Index<fp::ConditionalEffect>, f::OverlayRepository<fp::Repository>> effect, UnorderedSet<f::ParameterIndex>& result)
+static void collect_parameters(View<Index<fp::ConditionalEffect>, fp::Repository> effect, UnorderedSet<f::ParameterIndex>& result)
 {
     collect_parameters(effect.get_condition(), result);
     collect_parameters(effect.get_effect(), result);
 }
 
-static void collect_parameters(View<Index<fp::Action>, f::OverlayRepository<fp::Repository>> action, UnorderedSet<f::ParameterIndex>& result)
+static void collect_parameters(View<Index<fp::Action>, fp::Repository> action, UnorderedSet<f::ParameterIndex>& result)
 {
     for (const auto effect : action.get_effects())
         collect_parameters(effect, result);
@@ -99,7 +98,7 @@ static auto sorted_params(const UnorderedSet<f::ParameterIndex>& s)
     return v;
 }
 
-static bool should_keep(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> term, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+static bool should_keep(View<Data<f::Term>, fp::Repository> term, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return visit(
         [&](auto&& arg)
@@ -108,7 +107,7 @@ static bool should_keep(View<Data<f::Term>, f::OverlayRepository<fp::Repository>
 
             if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                 return mapping.contains(arg);
-            else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, f::OverlayRepository<fp::Repository>>>)
+            else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fp::Repository>>)
                 return true;
             else
                 static_assert(dependent_false<Alternative>::value, "Missing case");
@@ -117,28 +116,26 @@ static bool should_keep(View<Data<f::Term>, f::OverlayRepository<fp::Repository>
 }
 
 template<f::FactKind T>
-bool should_keep(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> atom, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+bool should_keep(View<Index<fp::Atom<T>>, fp::Repository> atom, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return std::all_of(atom.get_terms().begin(), atom.get_terms().end(), [&](auto&& term) { return should_keep(term, mapping); });
 }
 
-static bool should_keep(View<Index<fp::Literal<f::StaticTag>>, f::OverlayRepository<fp::Repository>> literal,
-                        const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+static bool should_keep(View<Index<fp::Literal<f::StaticTag>>, fp::Repository> literal, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return should_keep(literal.get_atom(), mapping);
 }
 
-static bool should_keep(View<Index<fp::Literal<f::FluentTag>>, f::OverlayRepository<fp::Repository>> literal,
-                        const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+static bool should_keep(View<Index<fp::Literal<f::FluentTag>>, fp::Repository> literal, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return literal.get_polarity() && should_keep(literal.get_atom(), mapping);
 }
 
-static bool should_keep(View<Index<fp::Literal<f::StaticTag>>, f::OverlayRepository<fp::Repository>> literal) { return true; }
+static bool should_keep(View<Index<fp::Literal<f::StaticTag>>, fp::Repository> literal) { return true; }
 
-static bool should_keep(View<Index<fp::Literal<f::FluentTag>>, f::OverlayRepository<fp::Repository>> literal) { return literal.get_polarity(); }
+static bool should_keep(View<Index<fp::Literal<f::FluentTag>>, fp::Repository> literal) { return literal.get_polarity(); }
 
-static auto merge(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> element, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
+static auto merge(View<Data<f::Term>, fp::Repository> element, const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping)
 {
     return visit(
         [&](auto&& arg)
@@ -147,7 +144,7 @@ static auto merge(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> elem
 
             if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                 return Data<f::Term>(mapping.at(arg));
-            else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, f::OverlayRepository<fp::Repository>>>)
+            else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fp::Repository>>)
                 return Data<f::Term>(arg.get_index());
             else
                 static_assert(dependent_false<Alternative>::value, "Missing case");
@@ -156,7 +153,7 @@ static auto merge(View<Data<f::Term>, f::OverlayRepository<fp::Repository>> elem
 }
 
 template<f::FactKind T>
-auto merge(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> element,
+auto merge(View<Index<fp::Atom<T>>, fp::Repository> element,
            const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
            formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -173,7 +170,7 @@ auto merge(View<Index<fp::Atom<T>>, f::OverlayRepository<fp::Repository>> elemen
 }
 
 template<f::FactKind T>
-auto merge(View<Index<fp::Literal<T>>, f::OverlayRepository<fp::Repository>> element,
+auto merge(View<Index<fp::Literal<T>>, fp::Repository> element,
            const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
            formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -188,7 +185,7 @@ auto merge(View<Index<fp::Literal<T>>, f::OverlayRepository<fp::Repository>> ele
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                            const UnorderedSet<f::ParameterIndex>& parameters,
                                            formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -203,7 +200,7 @@ static auto create_applicability_predicate(View<Index<formalism::planning::Actio
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       const UnorderedSet<f::ParameterIndex>& parameters,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -221,7 +218,7 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-static auto create_applicability_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_rule(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       const UnorderedSet<f::ParameterIndex>& parameters,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
@@ -257,7 +254,7 @@ static auto create_applicability_rule(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       const UnorderedSet<f::ParameterIndex>& head_parameters,
                                       const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
@@ -276,7 +273,7 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-static auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_literal(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                          const UnorderedSet<f::ParameterIndex>& head_parameters,
                                          const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
                                          formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
@@ -292,13 +289,12 @@ static auto create_applicability_literal(View<Index<formalism::planning::Action>
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
-static auto
-create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                        View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff,
-                        View<Index<formalism::planning::Atom<formalism::FluentTag>>, formalism::OverlayRepository<formalism::planning::Repository>> effect,
-                        const UnorderedSet<f::ParameterIndex>& head_parameters,
-                        const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
-                        formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
+static auto create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
+                                    View<Index<formalism::planning::ConditionalEffect>, formalism::planning::Repository> cond_eff,
+                                    View<Index<formalism::planning::Atom<formalism::FluentTag>>, formalism::planning::Repository> effect,
+                                    const UnorderedSet<f::ParameterIndex>& head_parameters,
+                                    const UnorderedMap<f::ParameterIndex, f::ParameterIndex>& mapping,
+                                    formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
     auto& rule = *rule_ptr;
@@ -340,7 +336,7 @@ create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::Over
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-auto compute_applicability_head_parameters(View<Index<fp::Action>, f::OverlayRepository<fp::Repository>> action)
+auto compute_applicability_head_parameters(View<Index<fp::Action>, fp::Repository> action)
 {
     // Collect all parameter indices mentioned in positive fluent literals or negative static literals
     auto parameters = UnorderedSet<f::ParameterIndex> {};
@@ -358,8 +354,8 @@ auto compute_applicability_head_parameters(View<Index<fp::Action>, f::OverlayRep
     return parameters;
 }
 
-auto compute_applicability_parameter_mapping(View<Index<fp::Action>, f::OverlayRepository<fp::Repository>> action,
-                                             View<Index<fp::ConditionalEffect>, f::OverlayRepository<fp::Repository>> effect,
+auto compute_applicability_parameter_mapping(View<Index<fp::Action>, fp::Repository> action,
+                                             View<Index<fp::ConditionalEffect>, fp::Repository> effect,
                                              const UnorderedSet<f::ParameterIndex>& head_parameters)
 {
     auto mapping = UnorderedMap<f::ParameterIndex, f::ParameterIndex> {};
@@ -390,7 +386,7 @@ auto compute_applicability_parameter_mapping(View<Index<fp::Action>, f::OverlayR
     return mapping;
 }
 
-static void translate_action_to_delete_free_rules(View<Index<fp::Action>, f::OverlayRepository<fp::Repository>> action,
+static void translate_action_to_delete_free_rules(View<Index<fp::Action>, fp::Repository> action,
                                                   Data<fd::Program>& program,
                                                   fp::MergeDatalogContext<fd::Repository>& context,
                                                   RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
@@ -424,9 +420,8 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, f::Ove
     }
 }
 
-static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
-                                         fd::Repository& destination,
-                                         RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
+static Index<fd::Program>
+create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repository& destination, RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
 {
     auto builder = fd::Builder();
     auto context = fp::MergeDatalogContext<fd::Repository>(builder, destination);
@@ -460,8 +455,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     return destination.get_or_create(program, builder.get_buffer()).first;
 }
 
-static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
-                                   RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
+static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, RPGProgram::AppPredicateToActionsMapping& predicate_to_actions)
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, *repository, predicate_to_actions);
@@ -474,7 +468,7 @@ static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp
 
 }
 
-RPGProgram::RPGProgram(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task) :
+RPGProgram::RPGProgram(View<Index<fp::Task>, fp::Repository> task) :
     m_predicate_to_actions(),
     m_program_context(rpg::create_program_context(task, m_predicate_to_actions)),
     m_program_workspace(m_program_context)

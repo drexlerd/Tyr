@@ -19,7 +19,6 @@
 
 #include "tyr/common/comparators.hpp"             // for operator!=
 #include "tyr/common/config.hpp"                  // for float_t
-#include "tyr/formalism/overlay_repository.hpp"   // for Overlay...
 #include "tyr/formalism/planning/repository.hpp"  // for Repository
 #include "tyr/formalism/planning/views.hpp"       // for View
 #include "tyr/planning/applicability.hpp"         // for StateCo...

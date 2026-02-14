@@ -18,10 +18,9 @@
 #ifndef TYR_PLANNING_LIFTED_TASK_HPP_
 #define TYR_PLANNING_LIFTED_TASK_HPP_
 
-#include "tyr/common/config.hpp"          // for float_t, uint_t
-#include "tyr/common/dynamic_bitset.hpp"  // for test
-#include "tyr/common/vector.hpp"          // for get
-#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/common/config.hpp"                    // for float_t, uint_t
+#include "tyr/common/dynamic_bitset.hpp"            // for test
+#include "tyr/common/vector.hpp"                    // for get
 #include "tyr/formalism/planning/declarations.hpp"  // for OverlayRepos...
 #include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/planning/views.hpp"  // for View
@@ -42,10 +41,9 @@ class LiftedTask
 {
 public:
     LiftedTask(DomainPtr domain,
-               formalism::planning::RepositoryPtr repository,
-               formalism::OverlayRepositoryPtr<formalism::planning::Repository> overlay_repository,
-               View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task,
-               std::shared_ptr<formalism::planning::BinaryFDRContext<formalism::OverlayRepository<formalism::planning::Repository>>> fdr_context);
+               formalism::planning::RepositoryPtr overlay_repository,
+               View<Index<formalism::planning::Task>, formalism::planning::Repository> task,
+               std::shared_ptr<formalism::planning::BinaryFDRContext<formalism::planning::Repository>> fdr_context);
 
     GroundTaskPtr get_ground_task();
 
@@ -79,10 +77,9 @@ public:
 
 private:
     DomainPtr m_domain;
-    formalism::planning::RepositoryPtr m_repository;
-    formalism::OverlayRepositoryPtr<formalism::planning::Repository> m_overlay_repository;
-    View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> m_task;
-    std::shared_ptr<formalism::planning::BinaryFDRContext<formalism::OverlayRepository<formalism::planning::Repository>>> m_fdr_context;
+    formalism::planning::RepositoryPtr m_overlay_repository;
+    View<Index<formalism::planning::Task>, formalism::planning::Repository> m_task;
+    std::shared_ptr<formalism::planning::BinaryFDRContext<formalism::planning::Repository>> m_fdr_context;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
 

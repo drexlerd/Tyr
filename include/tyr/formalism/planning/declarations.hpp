@@ -297,13 +297,6 @@ using RepositoryPtr = std::shared_ptr<Repository>;
 /// @return
 inline const Repository& get_repository(const Repository& context) noexcept { return context; }
 
-/// @brief Make OverlayRepository a trivial context.
-template<typename C>
-inline const OverlayRepository<C>& get_repository(const OverlayRepository<C>& context) noexcept
-{
-    return context;
-}
-
 template<typename T>
 concept Context = requires(const T& a) {
     { get_repository(a) } -> RepositoryConcept;

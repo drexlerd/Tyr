@@ -22,7 +22,6 @@
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/formalism/planning/repository.hpp"
@@ -36,7 +35,7 @@ namespace tyr::planning
 {
 namespace axiom
 {
-static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, f::OverlayRepository<fp::Repository>> axiom_body,
+static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, fp::Repository> axiom_body,
                                fp::MergeDatalogContext<fd::Repository>& context,
                                Data<fd::ConjunctiveCondition>& conj_cond)
 {
@@ -47,14 +46,13 @@ static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, f::OverlayR
         conj_cond.fluent_literals.push_back(fp::merge_p2d(literal, context).first);
 
     for (const auto literal : axiom_body.get_literals<f::DerivedTag>())
-        conj_cond.fluent_literals.push_back(
-            fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(literal, context).first);
+        conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(literal, context).first);
 
     for (const auto numeric_constraint : axiom_body.get_numeric_constraints())
         conj_cond.numeric_constraints.push_back(fp::merge_p2d(numeric_constraint, context));
 }
 
-static auto create_axiom_rule(View<Index<fp::Axiom>, f::OverlayRepository<fp::Repository>> axiom, fp::MergeDatalogContext<fd::Repository>& context)
+static auto create_axiom_rule(View<Index<fp::Axiom>, fp::Repository> axiom, fp::MergeDatalogContext<fd::Repository>& context)
 {
     auto rule_ptr = context.builder.get_builder<fd::Rule>();
     auto& rule = *rule_ptr;
@@ -74,7 +72,7 @@ static auto create_axiom_rule(View<Index<fp::Axiom>, f::OverlayRepository<fp::Re
 
     rule.body = new_conj_cond;
 
-    const auto new_head = fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(axiom.get_head(), context).first;
+    const auto new_head = fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(axiom.get_head(), context).first;
 
     rule.head = new_head;
 
@@ -82,7 +80,7 @@ static auto create_axiom_rule(View<Index<fp::Axiom>, f::OverlayRepository<fp::Re
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
+static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> task,
                                          AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate,
                                          fd::Repository& repository)
 {
@@ -100,7 +98,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
 
     for (const auto predicate : task.get_domain().get_predicates<f::DerivedTag>())
     {
-        const auto new_predicate = fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(predicate, context).first;
+        const auto new_predicate = fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first;
 
         [[maybe_unused]] const auto [it, inserted] = predicate_to_predicate.emplace(new_predicate, predicate.get_index());
         assert(inserted);
@@ -110,7 +108,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
 
     for (const auto predicate : task.get_derived_predicates())
     {
-        const auto new_predicate = fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(predicate, context).first;
+        const auto new_predicate = fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first;
 
         [[maybe_unused]] const auto [it, inserted] = predicate_to_predicate.emplace(new_predicate, predicate.get_index());
         assert(inserted);
@@ -150,8 +148,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     return repository.get_or_create(program, builder.get_buffer()).first;
 }
 
-static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
-                                   AxiomEvaluatorProgram::PredicateToPredicateMapping& mapping)
+static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, AxiomEvaluatorProgram::PredicateToPredicateMapping& mapping)
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, mapping, *repository);
@@ -163,7 +160,7 @@ static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp
 }
 }
 
-AxiomEvaluatorProgram::AxiomEvaluatorProgram(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task) :
+AxiomEvaluatorProgram::AxiomEvaluatorProgram(View<Index<fp::Task>, fp::Repository> task) :
     m_predicate_to_predicate(),
     m_program_context(axiom::create_program_context(task, m_predicate_to_predicate)),
     m_program_workspace(m_program_context)

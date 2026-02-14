@@ -20,7 +20,6 @@
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/views.hpp"
 
@@ -41,8 +40,7 @@ struct GroundAxiomStrata
 /// Source: https://users.cecs.anu.edu.au/~thiebaux/papers/ijcai03.pdf
 /// @param task is the task
 /// @return is the GroundAxiomStrata
-extern GroundAxiomStrata
-compute_ground_axiom_stratification(View<Index<formalism::planning::FDRTask>, formalism::OverlayRepository<formalism::planning::Repository>> task);
+extern GroundAxiomStrata compute_ground_axiom_stratification(View<Index<formalism::planning::FDRTask>, formalism::planning::Repository> task);
 }
 
 #endif

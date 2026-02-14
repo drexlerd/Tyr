@@ -83,7 +83,7 @@ static std::optional<StackEntry<Tag>> try_create_stack_entry(BaseEntry<Tag> base
 template<typename Tag>
 struct GetResultContext
 {
-    Repository<Tag, formalism::OverlayRepository<formalism::planning::Repository>>& destination;
+    Repository<Tag, formalism::planning::Repository>& destination;
     buffer::Buffer& buffer;
 };
 
@@ -535,7 +535,7 @@ class MatchTree
 private:
     IndexList<Tag> m_elements;
 
-    RepositoryPtr<Tag, formalism::OverlayRepository<formalism::planning::Repository>> m_context;
+    RepositoryPtr<Tag, formalism::planning::Repository> m_context;
 
     std::optional<Data<Node<Tag>>> m_root;
 
@@ -545,7 +545,7 @@ public:
     template<formalism::planning::Context C>
     MatchTree(IndexList<Tag> elements_, const C& context_) :
         m_elements(std::move(elements_)),
-        m_context(std::make_unique<Repository<Tag, formalism::OverlayRepository<formalism::planning::Repository>>>(context_)),
+        m_context(std::make_unique<Repository<Tag, formalism::planning::Repository>>(context_)),
         m_root(),
         m_evaluate_stack()
     {

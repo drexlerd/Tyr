@@ -22,7 +22,6 @@
 #include "tyr/common/config.hpp"
 #include "tyr/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
@@ -54,17 +53,17 @@ extern valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float
                                                          valla::IndexedHashSet<float_t, uint_t>& float_nodes);
 
 extern void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms,
-                                            const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
+                                            const formalism::planning::Repository& atoms_context,
                                             formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
                                             datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
 extern void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
-                                             const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
+                                             const formalism::planning::Repository& atoms_context,
                                              formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
                                              datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
 extern void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
-                                                 const formalism::OverlayRepository<formalism::planning::Repository>& numeric_variables_context,
+                                                 const formalism::planning::Repository& numeric_variables_context,
                                                  formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
                                                  datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
@@ -72,13 +71,13 @@ extern void insert_fact_sets_into_assignment_sets(const datalog::TaggedFactSets<
                                                   datalog::TaggedAssignmentSets<formalism::FluentTag>& assignment_sets);
 
 extern void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
-                                  const formalism::OverlayRepository<formalism::planning::Repository>& atoms_context,
+                                  const formalism::planning::Repository& atoms_context,
                                   formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& merge_context,
                                   datalog::TaggedFactSets<formalism::FluentTag>& fact_sets,
                                   datalog::TaggedAssignmentSets<formalism::FluentTag>& assignment_sets);
 
-extern std::vector<analysis::DomainListListList> compute_parameter_domains_per_cond_effect_per_action(
-    View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);
+extern std::vector<analysis::DomainListListList>
+compute_parameter_domains_per_cond_effect_per_action(View<Index<formalism::planning::Task>, formalism::planning::Repository> task);
 }
 
 #endif

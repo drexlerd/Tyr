@@ -33,7 +33,6 @@
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/object_index.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -196,8 +195,7 @@ struct RuleWorkspace
         void clear() noexcept;
 
         /// Merge stage into rule execution context
-        formalism::datalog::Repository repository;
-        formalism::OverlayRepository<formalism::datalog::Repository> program_overlay_repository;
+        formalism::datalog::Repository program_overlay_repository;
 
         /// Heads
         UnorderedSet<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>> heads;
@@ -312,8 +310,7 @@ SetNewAssignmentSetsStatistics RuleWorkspace<AndAP>::Common::initialize_iteratio
 
 template<typename AndAP>
 RuleWorkspace<AndAP>::Iteration::Iteration(const Common& common) :
-    repository(),
-    program_overlay_repository(common.program_repository, repository),
+    program_overlay_repository(&common.program_repository),
     heads(),
     witness_to_cost(),
     head_to_witness()
@@ -323,7 +320,7 @@ RuleWorkspace<AndAP>::Iteration::Iteration(const Common& common) :
 template<typename AndAP>
 void RuleWorkspace<AndAP>::Iteration::clear() noexcept
 {
-    repository.clear();
+    program_overlay_repository.clear();
     heads.clear();
     witness_to_cost.clear();
     head_to_witness.clear();

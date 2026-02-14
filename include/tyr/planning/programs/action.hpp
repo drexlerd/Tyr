@@ -24,7 +24,6 @@
 #include "tyr/datalog/workspaces/program.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/declarations.hpp"
@@ -38,7 +37,7 @@ public:
     // Mapping from program rule to task action; there may be multiple actions
     using AppPredicateToActionsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, Index<formalism::planning::Action>>;
 
-    explicit ApplicableActionProgram(View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);
+    explicit ApplicableActionProgram(View<Index<formalism::planning::Task>, formalism::planning::Repository> task);
 
     const AppPredicateToActionsMapping& get_predicate_to_actions_mapping() const noexcept;
     datalog::ProgramContext& get_program_context() noexcept;

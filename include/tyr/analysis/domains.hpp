@@ -62,7 +62,7 @@ struct TaskVariableDomains
 
 extern ProgramVariableDomains compute_variable_domains(View<Index<formalism::datalog::Program>, formalism::datalog::Repository> program);
 
-extern TaskVariableDomains compute_variable_domains(View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);
+extern TaskVariableDomains compute_variable_domains(View<Index<formalism::planning::Task>, formalism::planning::Repository> task);
 }
 
 #endif

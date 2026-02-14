@@ -30,7 +30,6 @@
 #include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/rule_index.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 
 #include <algorithm>
 #include <cassert>

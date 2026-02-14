@@ -82,10 +82,9 @@ public:
     const UnorderedSet<Index<formalism::planning::GroundAction>>& get_preferred_actions() override { return m_preferred_actions; }
 
 private:
-    void extract_relaxed_plan_and_preferred_actions(
-        Index<formalism::datalog::GroundAtom<formalism::FluentTag>> atom,
-        const StateContext<LiftedTask>& state_context,
-        formalism::planning::GrounderContext<formalism::OverlayRepository<formalism::planning::Repository>>& grounder_context)
+    void extract_relaxed_plan_and_preferred_actions(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> atom,
+                                                    const StateContext<LiftedTask>& state_context,
+                                                    formalism::planning::GrounderContext<formalism::planning::Repository>& grounder_context)
     {
         // Base case 1: atom is already marked => do not recurse again
         assert(uint_t(atom.group) < m_markings.size());

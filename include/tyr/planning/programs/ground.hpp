@@ -24,7 +24,6 @@
 #include "tyr/datalog/workspaces/program.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/declarations.hpp"
@@ -40,7 +39,7 @@ public:
 
     using AppPredicateToAxiomsMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, Index<formalism::planning::Axiom>>;
 
-    explicit GroundTaskProgram(View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);
+    explicit GroundTaskProgram(View<Index<formalism::planning::Task>, formalism::planning::Repository> task);
 
     const AppPredicateToActionsMapping& get_predicate_to_actions_mapping() const noexcept;
     const AppPredicateToAxiomsMapping& get_predicate_to_axioms_mapping() const noexcept;

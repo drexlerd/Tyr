@@ -20,7 +20,6 @@
 #include "tyr/common/comparators.hpp"                         // for operat...
 #include "tyr/common/dynamic_bitset.hpp"                      // for set
 #include "tyr/common/vector.hpp"                              // for View, set
-#include "tyr/formalism/overlay_repository.hpp"               // for Overla...
 #include "tyr/formalism/planning/fdr_context.hpp"             // for Genera...
 #include "tyr/formalism/planning/repository.hpp"              // for Reposi...
 #include "tyr/formalism/planning/views.hpp"                   // for Index
@@ -36,12 +35,10 @@ namespace tyr::planning
 {
 
 GroundTask::GroundTask(DomainPtr domain,
-                       fp::RepositoryPtr m_repository,
-                       f::OverlayRepositoryPtr<fp::Repository> overlay_repository,
-                       View<Index<fp::FDRTask>, f::OverlayRepository<fp::Repository>> fdr_task,
-                       fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>> fdr_context) :
+                       fp::RepositoryPtr overlay_repository,
+                       View<Index<fp::FDRTask>, fp::Repository> fdr_task,
+                       fp::GeneralFDRContext<fp::Repository> fdr_context) :
     m_domain(std::move(domain)),
-    m_repository(std::move(m_repository)),
     m_overlay_repository(std::move(overlay_repository)),
     m_fdr_task(fdr_task),
     m_static_atoms_bitset(),

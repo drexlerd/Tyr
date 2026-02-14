@@ -25,7 +25,6 @@
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
@@ -40,7 +39,7 @@ public:
     // Mapping from program fluent predicate to task derived predicate
     using PredicateToPredicateMapping = UnorderedMap<Index<formalism::Predicate<formalism::FluentTag>>, Index<formalism::Predicate<formalism::DerivedTag>>>;
 
-    explicit AxiomEvaluatorProgram(View<Index<formalism::planning::Task>, formalism::OverlayRepository<formalism::planning::Repository>> task);
+    explicit AxiomEvaluatorProgram(View<Index<formalism::planning::Task>, formalism::planning::Repository> task);
 
     const PredicateToPredicateMapping& get_predicate_to_predicate_mapping() const noexcept;
     datalog::ProgramContext& get_program_context() noexcept;

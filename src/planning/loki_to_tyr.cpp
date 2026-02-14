@@ -330,10 +330,9 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
     auto& task = *task_ptr;
     task.clear();
 
-    auto task_context = std::make_shared<fp::Repository>();
-    auto overlay_task_context = std::make_shared<f::OverlayRepository<fp::Repository>>(*domain_context, *task_context);
+    auto task_context = std::make_shared<fp::Repository>(domain_context.get());
 
-    auto fdr_context = std::make_shared<fp::BinaryFDRContext<f::OverlayRepository<fp::Repository>>>(*overlay_task_context);
+    auto fdr_context = std::make_shared<fp::BinaryFDRContext<fp::Repository>>(*task_context);
 
     /* Name */
     task.name = element->get_name();
@@ -344,7 +343,7 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
     /* Requirements section */
 
     /* Objects section */
-    task.objects = translate_common(element->get_objects(), builder, *overlay_task_context);
+    task.objects = translate_common(element->get_objects(), builder, *task_context);
 
     /* Predicates section */
     const auto func_insert_predicate = [](IndexPredicateVariant index_predicate_variant, IndexList<f::Predicate<f::DerivedTag>>& derived_predicates)
@@ -366,7 +365,7 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
             index_predicate_variant);
     };
 
-    for (const auto& index_predicate_variant : translate_common(element->get_predicates(), builder, *overlay_task_context))
+    for (const auto& index_predicate_variant : translate_common(element->get_predicates(), builder, *task_context))
     {
         func_insert_predicate(index_predicate_variant, task.derived_predicates);
     }
@@ -382,9 +381,9 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
                 using T = std::decay_t<decltype(arg)>;
 
                 if constexpr (std::is_same_v<T, Index<fp::GroundLiteral<f::StaticTag>>>)
-                    static_atoms.push_back(make_view(arg, *overlay_task_context).get_atom().get_index());
+                    static_atoms.push_back(make_view(arg, *task_context).get_atom().get_index());
                 else if constexpr (std::is_same_v<T, Data<fp::FDRFact<f::FluentTag>>>)
-                    fluent_atoms.push_back(make_view(arg, *overlay_task_context).get_atom().get_index());  // we know it must have a value
+                    fluent_atoms.push_back(make_view(arg, *task_context).get_atom().get_index());  // we know it must have a value
                 else if constexpr (std::is_same_v<T, Index<fp::GroundLiteral<f::DerivedTag>>>)
                     throw std::runtime_error("Derived ground atoms are not allowed to be defined in the initial section.");
                 else
@@ -395,7 +394,7 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
 
     for (const auto& literal : element->get_initial_literals())
     {
-        const auto index_atom_variant = translate_grounded(literal, builder, *overlay_task_context, *fdr_context);
+        const auto index_atom_variant = translate_grounded(literal, builder, *task_context, *fdr_context);
 
         func_insert_ground_atom(index_atom_variant, task.static_atoms, task.fluent_atoms);
     }
@@ -425,7 +424,7 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
             index_fterm_value_variant);
     };
 
-    for (const auto index_fterm_value_variant : translate_grounded(element->get_initial_function_values(), builder, *overlay_task_context))
+    for (const auto index_fterm_value_variant : translate_grounded(element->get_initial_function_values(), builder, *task_context))
     {
         func_insert_fterm_values(index_fterm_value_variant, task.static_fterm_values, task.fluent_fterm_values, task.auxiliary_fterm_value);
     }
@@ -434,7 +433,7 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
 
     if (element->get_goal_condition().has_value())
     {
-        task.goal = translate_grounded(element->get_goal_condition().value(), builder, *overlay_task_context, *fdr_context);
+        task.goal = translate_grounded(element->get_goal_condition().value(), builder, *task_context, *fdr_context);
     }
     else
     {
@@ -443,13 +442,13 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
         auto& conj_cond = *conj_cond_ptr;
         conj_cond.clear();
         canonicalize(conj_cond);
-        task.goal = overlay_task_context->get_or_create(conj_cond, builder.get_buffer()).first;
+        task.goal = task_context->get_or_create(conj_cond, builder.get_buffer()).first;
     }
 
     /* Metric section */
     if (element->get_optimization_metric().has_value())
     {
-        task.metric = translate_grounded(element->get_optimization_metric().value(), builder, *overlay_task_context);
+        task.metric = translate_grounded(element->get_optimization_metric().value(), builder, *task_context);
     }
     else
     {
@@ -457,13 +456,12 @@ LiftedTaskPtr LokiToTyrTranslator::translate(const loki::Problem& element, fp::B
     }
 
     /* Structures section */
-    task.axioms = translate_lifted(element->get_axioms(), builder, *overlay_task_context);
+    task.axioms = translate_lifted(element->get_axioms(), builder, *task_context);
 
     canonicalize(task);
     return std::make_shared<LiftedTask>(domain,
                                         task_context,
-                                        overlay_task_context,
-                                        make_view(overlay_task_context->get_or_create(task, builder.get_buffer()).first, *overlay_task_context),
+                                        make_view(task_context->get_or_create(task, builder.get_buffer()).first, *task_context),
                                         std::move(fdr_context));
 }
 

@@ -17,7 +17,6 @@
 
 #include "tyr/datalog/fact_sets.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <limits>

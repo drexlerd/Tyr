@@ -22,7 +22,6 @@
 #include "tyr/formalism/datalog/formatter.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/merge.hpp"
 #include "tyr/formalism/planning/repository.hpp"
@@ -37,7 +36,7 @@ namespace tyr::planning
 namespace action
 {
 
-static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                            formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
@@ -51,7 +50,7 @@ static auto create_applicability_predicate(View<Index<formalism::planning::Actio
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
+static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
                                       formalism::planning::MergeDatalogContext<formalism::datalog::Repository>& context)
 {
     auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
@@ -68,7 +67,7 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
+static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> task,
                                          ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions,
                                          fd::Repository& repository)
 {
@@ -85,12 +84,10 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
         program.fluent_predicates.push_back(fp::merge_p2d(predicate, context).first);
 
     for (const auto predicate : task.get_domain().get_predicates<f::DerivedTag>())
-        program.fluent_predicates.push_back(
-            fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first);
 
     for (const auto predicate : task.get_derived_predicates())
-        program.fluent_predicates.push_back(
-            fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(predicate, context).first);
 
     for (const auto function : task.get_domain().get_functions<f::StaticTag>())
         program.static_functions.push_back(fp::merge_p2d(function, context).first);
@@ -144,8 +141,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
             conj_cond.fluent_literals.push_back(fp::merge_p2d(literal, context).first);
 
         for (const auto literal : action.get_condition().get_literals<f::DerivedTag>())
-            conj_cond.fluent_literals.push_back(
-                fp::merge_p2d<f::DerivedTag, f::OverlayRepository<fp::Repository>, fd::Repository, f::FluentTag>(literal, context).first);
+            conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, fp::Repository, fd::Repository, f::FluentTag>(literal, context).first);
 
         for (const auto numeric_constraint : action.get_condition().get_numeric_constraints())
             conj_cond.numeric_constraints.push_back(fp::merge_p2d(numeric_constraint, context));
@@ -169,8 +165,7 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, f::OverlayReposit
     return repository.get_or_create(program, builder.get_buffer()).first;
 }
 
-static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
-                                   ApplicableActionProgram::AppPredicateToActionsMapping& mapping)
+static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, ApplicableActionProgram::AppPredicateToActionsMapping& mapping)
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, mapping, *repository);
@@ -182,7 +177,7 @@ static auto create_program_context(View<Index<fp::Task>, f::OverlayRepository<fp
 }
 }
 
-ApplicableActionProgram::ApplicableActionProgram(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task) :
+ApplicableActionProgram::ApplicableActionProgram(View<Index<fp::Task>, fp::Repository> task) :
     m_predicate_to_actions(),
     m_program_context(action::create_program_context(task, m_predicate_to_actions)),
     m_program_workspace(m_program_context)

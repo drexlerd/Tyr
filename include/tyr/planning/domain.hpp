@@ -18,7 +18,6 @@
 #ifndef TYR_PLANNING_DOMAIN_HPP_
 #define TYR_PLANNING_DOMAIN_HPP_
 
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"

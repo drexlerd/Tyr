@@ -24,7 +24,6 @@
 #include "tyr/formalism/datalog/merge.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
 #include "tyr/formalism/planning/repository.hpp"
@@ -33,15 +32,12 @@
 
 namespace tyr::planning
 {
-extern ::cista::offset::string
-create_applicability_name(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action);
+extern ::cista::offset::string create_applicability_name(View<Index<formalism::planning::Action>, formalism::planning::Repository> action);
 
-extern ::cista::offset::string
-create_triggered_name(View<Index<formalism::planning::Action>, formalism::OverlayRepository<formalism::planning::Repository>> action,
-                      View<Index<formalism::planning::ConditionalEffect>, formalism::OverlayRepository<formalism::planning::Repository>> cond_eff);
+extern ::cista::offset::string create_triggered_name(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
+                                                     View<Index<formalism::planning::ConditionalEffect>, formalism::planning::Repository> cond_eff);
 
-extern ::cista::offset::string
-create_applicability_name(View<Index<formalism::planning::Axiom>, formalism::OverlayRepository<formalism::planning::Repository>> axiom);
+extern ::cista::offset::string create_applicability_name(View<Index<formalism::planning::Axiom>, formalism::planning::Repository> axiom);
 
 }
 

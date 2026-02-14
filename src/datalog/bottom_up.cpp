@@ -108,7 +108,7 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 }
 
 [[maybe_unused]] static bool
-ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderContext<f::OverlayRepository<fd::Repository>>& context, const FactSets& fact_sets)
+ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderContext<fd::Repository>& context, const FactSets& fact_sets)
 {
     const auto ground_rule = make_view(ground(rule, context).first, context.destination);
 

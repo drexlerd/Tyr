@@ -19,7 +19,6 @@
 
 #include "tyr/common/chrono.hpp"
 #include "tyr/common/segmented_vector.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/algorithms/gbfs_lazy/event_handler.hpp"

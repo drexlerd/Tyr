@@ -21,7 +21,6 @@
 #include "tyr/common/config.hpp"
 #include "tyr/common/declarations.hpp"
 #include "tyr/formalism/declarations.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/ground_action_view.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/state.hpp"
@@ -44,7 +43,7 @@ using NodeList = std::vector<Node<Task>>;
 template<typename Task>
 struct LabeledNode
 {
-    View<Index<formalism::planning::GroundAction>, formalism::OverlayRepository<formalism::planning::Repository>> label;
+    View<Index<formalism::planning::GroundAction>, formalism::planning::Repository> label;
     Node<Task> node;
 };
 

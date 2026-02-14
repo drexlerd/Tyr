@@ -17,10 +17,9 @@
 
 #include "tyr/planning/lifted_task.hpp"
 
-#include "tyr/common/comparators.hpp"            // for operat...
-#include "tyr/common/dynamic_bitset.hpp"         // for set
-#include "tyr/common/vector.hpp"                 // for View, set
-#include "tyr/formalism/overlay_repository.hpp"  // for Overla...
+#include "tyr/common/comparators.hpp"     // for operat...
+#include "tyr/common/dynamic_bitset.hpp"  // for set
+#include "tyr/common/vector.hpp"          // for View, set
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/views.hpp"  // for View
 #include "tyr/planning/domain.hpp"
@@ -37,12 +36,10 @@ namespace tyr::planning
 {
 
 LiftedTask::LiftedTask(DomainPtr domain,
-                       fp::RepositoryPtr repository,
-                       f::OverlayRepositoryPtr<fp::Repository> overlay_repository,
-                       View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
-                       std::shared_ptr<fp::BinaryFDRContext<f::OverlayRepository<fp::Repository>>> fdr_context) :
+                       fp::RepositoryPtr overlay_repository,
+                       View<Index<fp::Task>, fp::Repository> task,
+                       std::shared_ptr<fp::BinaryFDRContext<fp::Repository>> fdr_context) :
     m_domain(std::move(domain)),
-    m_repository(std::move(repository)),
     m_overlay_repository(std::move(overlay_repository)),
     m_task(task),
     m_fdr_context(fdr_context),

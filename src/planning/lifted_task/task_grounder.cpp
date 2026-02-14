@@ -26,7 +26,6 @@
 #include "tyr/datalog/policies/termination.hpp"
 #include "tyr/datalog/workspaces/program.hpp"
 #include "tyr/formalism/canonicalization.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/builder.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
@@ -47,9 +46,9 @@ namespace fp = tyr::formalism::planning;
 
 namespace tyr::planning
 {
-static auto remap_fdr_fact(View<Data<fp::FDRFact<f::FluentTag>>, f::OverlayRepository<fp::Repository>> fact,
-                           fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>& fdr_context,
-                           fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto remap_fdr_fact(View<Data<fp::FDRFact<f::FluentTag>>, fp::Repository> fact,
+                           fp::GeneralFDRContext<fp::Repository>& fdr_context,
+                           fp::MergeContext<fp::Repository>& context)
 {
     // Ensure that remapping is unambiguous
     assert(fact.get_variable().get_domain_size() == 2);
@@ -67,9 +66,9 @@ static auto remap_fdr_fact(View<Data<fp::FDRFact<f::FluentTag>>, f::OverlayRepos
     return new_fact;
 }
 
-static auto create_ground_fdr_conjunctive_condition(View<Index<fp::GroundConjunctiveCondition>, f::OverlayRepository<fp::Repository>> element,
-                                                    fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>& fdr_context,
-                                                    fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto create_ground_fdr_conjunctive_condition(View<Index<fp::GroundConjunctiveCondition>, fp::Repository> element,
+                                                    fp::GeneralFDRContext<fp::Repository>& fdr_context,
+                                                    fp::MergeContext<fp::Repository>& context)
 {
     auto fdr_conj_cond_ptr = context.builder.get_builder<fp::GroundConjunctiveCondition>();
     auto& fdr_conj_cond = *fdr_conj_cond_ptr;
@@ -91,9 +90,9 @@ static auto create_ground_fdr_conjunctive_condition(View<Index<fp::GroundConjunc
     return context.destination.get_or_create(fdr_conj_cond, context.builder.get_buffer());
 }
 
-static auto create_ground_conjunctive_effect(View<Index<fp::GroundConjunctiveEffect>, f::OverlayRepository<fp::Repository>> element,
-                                             fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>& fdr_context,
-                                             fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto create_ground_conjunctive_effect(View<Index<fp::GroundConjunctiveEffect>, fp::Repository> element,
+                                             fp::GeneralFDRContext<fp::Repository>& fdr_context,
+                                             fp::MergeContext<fp::Repository>& context)
 {
     auto fdr_conj_eff_ptr = context.builder.get_builder<fp::GroundConjunctiveEffect>();
     auto& fdr_conj_eff = *fdr_conj_eff_ptr;
@@ -114,9 +113,9 @@ static auto create_ground_conjunctive_effect(View<Index<fp::GroundConjunctiveEff
     return context.destination.get_or_create(fdr_conj_eff, context.builder.get_buffer());
 }
 
-static auto create_ground_conditional_effect(View<Index<fp::GroundConditionalEffect>, f::OverlayRepository<fp::Repository>> element,
-                                             fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>& fdr_context,
-                                             fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto create_ground_conditional_effect(View<Index<fp::GroundConditionalEffect>, fp::Repository> element,
+                                             fp::GeneralFDRContext<fp::Repository>& fdr_context,
+                                             fp::MergeContext<fp::Repository>& context)
 {
     auto fdr_cond_eff_ptr = context.builder.get_builder<fp::GroundConditionalEffect>();
     auto& fdr_cond_eff = *fdr_cond_eff_ptr;
@@ -129,9 +128,9 @@ static auto create_ground_conditional_effect(View<Index<fp::GroundConditionalEff
     return context.destination.get_or_create(fdr_cond_eff, context.builder.get_buffer());
 }
 
-static auto create_ground_action(View<Index<fp::GroundAction>, f::OverlayRepository<fp::Repository>> element,
-                                 fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>& fdr_context,
-                                 fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto create_ground_action(View<Index<fp::GroundAction>, fp::Repository> element,
+                                 fp::GeneralFDRContext<fp::Repository>& fdr_context,
+                                 fp::MergeContext<fp::Repository>& context)
 {
     auto fdr_action_ptr = context.builder.get_builder<fp::GroundAction>();
     auto& fdr_action = *fdr_action_ptr;
@@ -147,9 +146,9 @@ static auto create_ground_action(View<Index<fp::GroundAction>, f::OverlayReposit
     return context.destination.get_or_create(fdr_action, context.builder.get_buffer());
 }
 
-static auto create_ground_axiom(View<Index<fp::GroundAxiom>, f::OverlayRepository<fp::Repository>> element,
-                                fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>& fdr_context,
-                                fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto create_ground_axiom(View<Index<fp::GroundAxiom>, fp::Repository> element,
+                                fp::GeneralFDRContext<fp::Repository>& fdr_context,
+                                fp::MergeContext<fp::Repository>& context)
 {
     auto fdr_axiom_ptr = context.builder.get_builder<fp::GroundAxiom>();
     auto& fdr_axiom = *fdr_axiom_ptr;
@@ -165,14 +164,13 @@ static auto create_ground_axiom(View<Index<fp::GroundAxiom>, f::OverlayRepositor
 }
 
 // TODO: create stronger mutex groups
-static auto create_mutex_groups(View<IndexList<fp::GroundAtom<f::FluentTag>>, f::OverlayRepository<fp::Repository>> atoms,
-                                fp::MergeContext<f::OverlayRepository<fp::Repository>>& context)
+static auto create_mutex_groups(View<IndexList<fp::GroundAtom<f::FluentTag>>, fp::Repository> atoms, fp::MergeContext<fp::Repository>& context)
 {
-    auto mutex_groups = std::vector<std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, f::OverlayRepository<fp::Repository>>>> {};
+    auto mutex_groups = std::vector<std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, fp::Repository>>> {};
 
     for (const auto atom : atoms)
     {
-        auto group = std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, f::OverlayRepository<fp::Repository>>> {};
+        auto group = std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, fp::Repository>> {};
         group.push_back(make_view(merge_p2p(atom, context).first, context.destination));
         mutex_groups.push_back(group);
     }
@@ -180,13 +178,13 @@ static auto create_mutex_groups(View<IndexList<fp::GroundAtom<f::FluentTag>>, f:
     return mutex_groups;
 }
 
-static auto create_task(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
-                        View<IndexList<fp::GroundAtom<f::FluentTag>>, f::OverlayRepository<fp::Repository>> fluent_atoms,
-                        View<IndexList<fp::GroundAtom<f::DerivedTag>>, f::OverlayRepository<fp::Repository>> derived_atoms,
-                        View<IndexList<fp::GroundFunctionTerm<f::FluentTag>>, f::OverlayRepository<fp::Repository>> fluent_fterms,
-                        View<IndexList<fp::GroundAction>, f::OverlayRepository<fp::Repository>> actions,
-                        View<IndexList<fp::GroundAxiom>, f::OverlayRepository<fp::Repository>> axioms,
-                        f::OverlayRepository<fp::Repository>& repository)
+static auto create_task(View<Index<fp::Task>, fp::Repository> task,
+                        View<IndexList<fp::GroundAtom<f::FluentTag>>, fp::Repository> fluent_atoms,
+                        View<IndexList<fp::GroundAtom<f::DerivedTag>>, fp::Repository> derived_atoms,
+                        View<IndexList<fp::GroundFunctionTerm<f::FluentTag>>, fp::Repository> fluent_fterms,
+                        View<IndexList<fp::GroundAction>, fp::Repository> actions,
+                        View<IndexList<fp::GroundAxiom>, fp::Repository> axioms,
+                        fp::Repository& repository)
 {
     auto builder = fp::Builder();
     auto fdr_task_ptr = builder.get_builder<fp::FDRTask>();
@@ -224,7 +222,7 @@ static auto create_task(View<Index<fp::Task>, f::OverlayRepository<fp::Repositor
 
     /// --- Create FDR context
     auto mutex_groups = create_mutex_groups(fluent_atoms, merge_context);
-    auto fdr_context = fp::GeneralFDRContext<f::OverlayRepository<fp::Repository>>(mutex_groups, repository);
+    auto fdr_context = fp::GeneralFDRContext<fp::Repository>(mutex_groups, repository);
 
     /// --- Create FDR variables
     for (const auto variable : fdr_context.get_variables())
@@ -249,15 +247,14 @@ static auto create_task(View<Index<fp::Task>, f::OverlayRepository<fp::Repositor
 }
 
 static auto create_fdr_task(DomainPtr domain,
-                            View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task,
+                            View<Index<fp::Task>, fp::Repository> task,
                             IndexList<fp::GroundAtom<f::FluentTag>> fluent_atoms,
                             IndexList<fp::GroundAtom<f::DerivedTag>> derived_atoms,
                             IndexList<fp::GroundFunctionTerm<f::FluentTag>> fluent_fterms,
                             IndexList<fp::GroundAction> actions,
                             IndexList<fp::GroundAxiom> axioms)
 {
-    auto repository = std::make_shared<fp::Repository>();
-    auto overlay_repository = std::make_shared<f::OverlayRepository<fp::Repository>>(*domain->get_repository(), *repository);
+    auto task_repository = std::make_shared<fp::Repository>(domain->get_repository().get());
 
     const auto [fdr_task, fdr_context] = create_task(task,
                                                      make_view(fluent_atoms, task.get_context()),
@@ -265,9 +262,9 @@ static auto create_fdr_task(DomainPtr domain,
                                                      make_view(fluent_fterms, task.get_context()),
                                                      make_view(actions, task.get_context()),
                                                      make_view(axioms, task.get_context()),
-                                                     *overlay_repository);
+                                                     *task_repository);
 
-    return std::make_shared<GroundTask>(domain, repository, overlay_repository, fdr_task, fdr_context);
+    return std::make_shared<GroundTask>(domain, task_repository, fdr_task, fdr_context);
 }
 
 GroundTaskPtr ground_task(LiftedTask& lifted_task)

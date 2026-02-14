@@ -21,7 +21,6 @@
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/optional.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
@@ -36,9 +35,9 @@ namespace tyr::planning
 {
 
 template<typename T>
-float_t evaluate_metric(View<::cista::optional<Index<formalism::planning::Metric>>, formalism::OverlayRepository<formalism::planning::Repository>> metric,
-                        View<::cista::optional<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>>,
-                             formalism::OverlayRepository<formalism::planning::Repository>> auxiliary_fterm_value,
+float_t evaluate_metric(View<::cista::optional<Index<formalism::planning::Metric>>, formalism::planning::Repository> metric,
+                        View<::cista::optional<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>>, formalism::planning::Repository>
+                            auxiliary_fterm_value,
                         const StateContext<T>& state_context)
 {
     if (auxiliary_fterm_value)

@@ -46,7 +46,7 @@ public:
     {
     }
 
-    void set_goal(View<Index<formalism::planning::GroundConjunctiveCondition>, formalism::OverlayRepository<formalism::planning::Repository>> goal) override
+    void set_goal(View<Index<formalism::planning::GroundConjunctiveCondition>, formalism::planning::Repository> goal) override
     {
         m_workspace.facts.goal_fact_sets.reset();
 

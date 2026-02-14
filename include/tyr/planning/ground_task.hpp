@@ -18,10 +18,9 @@
 #ifndef TYR_PLANNING_GROUND_TASK_HPP_
 #define TYR_PLANNING_GROUND_TASK_HPP_
 
-#include "tyr/common/config.hpp"          // for float_t, uint_t
-#include "tyr/common/dynamic_bitset.hpp"  // for test
-#include "tyr/common/vector.hpp"          // for get
-#include "tyr/formalism/overlay_repository.hpp"
+#include "tyr/common/config.hpp"                    // for float_t, uint_t
+#include "tyr/common/dynamic_bitset.hpp"            // for test
+#include "tyr/common/vector.hpp"                    // for get
 #include "tyr/formalism/planning/declarations.hpp"  // for OverlayRepos...
 #include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/planning/views.hpp"  // for View
@@ -40,10 +39,9 @@ class GroundTask
 {
 public:
     GroundTask(DomainPtr domain,
-               formalism::planning::RepositoryPtr m_repository,
-               formalism::OverlayRepositoryPtr<formalism::planning::Repository> overlay_repository,
-               View<Index<formalism::planning::FDRTask>, formalism::OverlayRepository<formalism::planning::Repository>> fdr_task,
-               formalism::planning::GeneralFDRContext<formalism::OverlayRepository<formalism::planning::Repository>> fdr_context);
+               formalism::planning::RepositoryPtr overlay_repository,
+               View<Index<formalism::planning::FDRTask>, formalism::planning::Repository> fdr_task,
+               formalism::planning::GeneralFDRContext<formalism::planning::Repository> fdr_context);
 
     template<formalism::FactKind T>
     size_t get_num_atoms() const noexcept;
@@ -71,9 +69,8 @@ public:
 private:
     DomainPtr m_domain;
 
-    formalism::planning::RepositoryPtr m_repository;
-    formalism::OverlayRepositoryPtr<formalism::planning::Repository> m_overlay_repository;
-    View<Index<formalism::planning::FDRTask>, formalism::OverlayRepository<formalism::planning::Repository>> m_fdr_task;
+    formalism::planning::RepositoryPtr m_overlay_repository;
+    View<Index<formalism::planning::FDRTask>, formalism::planning::Repository> m_fdr_task;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
 

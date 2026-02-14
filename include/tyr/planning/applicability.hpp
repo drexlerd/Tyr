@@ -24,7 +24,6 @@
 #include "tyr/common/vector.hpp"
 #include "tyr/formalism/arithmetic_operator_utils.hpp"
 #include "tyr/formalism/boolean_operator_utils.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_numeric_effect_operator_utils.hpp"
 #include "tyr/formalism/planning/repository.hpp"

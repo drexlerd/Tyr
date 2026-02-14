@@ -18,7 +18,6 @@
 #include "tyr/planning/ground_task/successor_generator.hpp"
 
 #include "../metric.hpp"
-#include "tyr/formalism/overlay_repository.hpp"  // for View
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"  // for View
 #include "tyr/planning/applicability.hpp"    // for StateC...

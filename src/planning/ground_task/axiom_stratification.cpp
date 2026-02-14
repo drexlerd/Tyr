@@ -19,7 +19,6 @@
 
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
@@ -60,7 +59,7 @@ using DagV = boost::graph_traits<Dag>::vertex_descriptor;
 using DagE = boost::graph_traits<Dag>::edge_descriptor;
 
 // Build dependency graph: nodes = derived ground atoms
-static DepGraph build_dependency_graph(View<Index<fp::FDRTask>, f::OverlayRepository<fp::Repository>> task, size_t num_atoms)
+static DepGraph build_dependency_graph(View<Index<fp::FDRTask>, fp::Repository> task, size_t num_atoms)
 {
     DepGraph graph(num_atoms);
 
@@ -164,7 +163,7 @@ static std::vector<uint_t> compute_component_strata(const Dag& dag)
 }
 }
 
-GroundAxiomStrata compute_ground_axiom_stratification(View<Index<fp::FDRTask>, f::OverlayRepository<fp::Repository>> task)
+GroundAxiomStrata compute_ground_axiom_stratification(View<Index<fp::FDRTask>, fp::Repository> task)
 {
     const auto num_atoms = task.get_atoms<f::DerivedTag>().size();
 

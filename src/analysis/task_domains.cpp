@@ -23,7 +23,6 @@
 #include "tyr/common/unordered_set.hpp"
 #include "tyr/common/variant.hpp"
 #include "tyr/common/vector.hpp"
-#include "tyr/formalism/overlay_repository.hpp"
 #include "tyr/formalism/planning/datas.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/repository.hpp"
@@ -657,7 +656,7 @@ bool lift_parameter_domain(View<Data<fp::NumericEffectOperator<T>>, C> element, 
     return visit([&](auto&& arg) { return lift_parameter_domain(arg, parameter_domains, function_domain_sets); }, element.get_variant());
 }
 
-TaskVariableDomains compute_variable_domains(View<Index<fp::Task>, f::OverlayRepository<fp::Repository>> task)
+TaskVariableDomains compute_variable_domains(View<Index<fp::Task>, fp::Repository> task)
 {
     auto objects = std::vector<Index<f::Object>> {};
     for (const auto object : task.get_domain().get_constants())

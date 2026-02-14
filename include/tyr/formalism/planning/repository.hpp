@@ -137,31 +137,47 @@ private:
 
     RepositoryStorage m_repository;
 
-public:
-    Repository() = default;
+    const Repository* m_parent;
 
     template<typename T>
-    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
+    std::optional<Index<T>> find_impl(const Data<T>& builder) const noexcept
     {
         const auto& indexed_hash_set = get_container<T>(m_repository);
 
-        if (const auto ptr = indexed_hash_set.find(builder))
+        if (auto ptr = indexed_hash_set.find(builder))
             return ptr->index;
 
         return std::nullopt;
     }
 
-    template<typename T, bool AssignIndex = true>
+public:
+    Repository(const Repository* parent = nullptr) : m_parent(parent) {}
+
+    template<typename T>
+    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
+    {
+        if (m_parent)
+            if (auto ptr = m_parent->find(builder))
+                return ptr;
+
+        return find_impl(builder);
+    }
+
+    template<typename T>
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
+        if (m_parent)
+            if (auto ptr = m_parent->find(builder))
+                return { *ptr, false };
+
         auto& indexed_hash_set = get_container<T>(m_repository);
 
-        if constexpr (AssignIndex)
-            builder.index.value = indexed_hash_set.size();
+        // Manually assign index to continue indexing.
+        builder.index.value = (m_parent ? m_parent->template size<T>() : 0) + indexed_hash_set.size();
 
         const auto [ptr, success] = indexed_hash_set.insert(builder, buf);
 
-        return std::make_pair(ptr->index, success);
+        return { ptr->index, success };
     }
 
     /// @brief Access the element with the given index.
@@ -170,26 +186,35 @@ public:
     {
         assert(index != Index<T>::max() && "Unassigned index.");
 
-        const auto& repository = get_container<T>(m_repository);
+        const size_t parent_size = m_parent ? m_parent->template size<T>() : 0;
 
-        return repository[index];
+        // In parent range -> delegate
+        if (m_parent && index.value < parent_size)
+            return (*m_parent)[index];
+
+        // Local range -> shift down
+        index.value -= parent_size;
+
+        const auto& repo = get_container<T>(m_repository);
+        return repo[index];
     }
 
     template<typename T>
     const Data<T>& front() const
     {
-        const auto& repository = get_container<T>(m_repository);
+        if (m_parent && m_parent->template size<T>() > 0)
+            return m_parent->template front<T>();  // recurse to root-most non-empty
 
-        return repository.front();
+        const auto& repo = get_container<T>(m_repository);
+        return repo.front();
     }
 
     /// @brief Get the number of stored elements.
     template<typename T>
     size_t size() const noexcept
     {
-        const auto& repository = get_container<T>(m_repository);
-
-        return repository.size();
+        const auto& repo = get_container<T>(m_repository);
+        return (m_parent ? m_parent->template size<T>() : 0) + repo.size();
     }
 
     /// @brief Clear the repository but keep memory allocated.
