@@ -68,10 +68,10 @@ using MatchTreePtr = std::unique_ptr<MatchTree<Tag>>;
  * Aliases
  */
 
-template<typename Tag, formalism::planning::Context C>
+template<typename Tag>
 class Repository;
-template<typename Tag, formalism::planning::Context C>
-using RepositoryPtr = std::unique_ptr<Repository<Tag, C>>;
+template<typename Tag>
+using RepositoryPtr = std::unique_ptr<Repository<Tag>>;
 
 template<typename Repo, typename Tag>
 concept RepositoryAccess = requires(const Repo& r, Index<Tag> idx) {
@@ -96,8 +96,8 @@ concept RepositoryConcept =
 /// @brief Make Repository a trivial context.
 /// @param context
 /// @return
-template<typename Tag, formalism::planning::Context C>
-inline const Repository<Tag, C>& get_repository(const Repository<Tag, C>& context) noexcept
+template<typename Tag>
+inline const Repository<Tag>& get_repository(const Repository<Tag>& context) noexcept
 {
     return context;
 }

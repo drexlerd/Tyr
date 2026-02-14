@@ -273,10 +273,10 @@ private:
 
     ParameterIndexMapping m_param_map;
 
-    template<typename T, formalism::planning::Context C>
-    auto translate_common(const std::vector<const T*>& input, formalism::planning::Builder& builder, C& context)
+    template<typename T>
+    auto translate_common(const std::vector<const T*>& input, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
-        using ReturnType = decltype(this->translate_common(std::declval<const T*>(), builder, std::declval<C&>()));
+        using ReturnType = decltype(this->translate_common(std::declval<const T*>(), builder, context));
         auto output = ::cista::offset::vector<ReturnType> {};
         output.reserve(input.size());
         std::transform(std::begin(input),
@@ -286,8 +286,7 @@ private:
         return output;
     }
 
-    template<formalism::planning::Context C>
-    IndexFunctionVariant translate_common(loki::FunctionSkeleton element, formalism::planning::Builder& builder, C& context)
+    IndexFunctionVariant translate_common(loki::FunctionSkeleton element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_function = [&](auto fact_tag) -> IndexFunctionVariant
         {
@@ -310,8 +309,7 @@ private:
             return build_function(formalism::StaticTag {});
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::Object> translate_common(loki::Object element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::Object> translate_common(loki::Object element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto object_ptr = builder.template get_builder<formalism::Object>();
         auto& object = *object_ptr;
@@ -321,14 +319,12 @@ private:
         return context.get_or_create(object, builder.get_buffer()).first;
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::Variable> translate_common(loki::Parameter element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::Variable> translate_common(loki::Parameter element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return translate_common(element->get_variable(), builder, context);
     }
 
-    template<formalism::planning::Context C>
-    IndexPredicateVariant translate_common(loki::Predicate element, formalism::planning::Builder& builder, C& context)
+    IndexPredicateVariant translate_common(loki::Predicate element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_predicate = [&](auto fact_tag) -> IndexPredicateVariant
         {
@@ -351,8 +347,7 @@ private:
             return build_predicate(formalism::StaticTag {});
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::Variable> translate_common(loki::Variable element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::Variable> translate_common(loki::Variable element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto variable_ptr = builder.template get_builder<formalism::Variable>();
         auto& variable = *variable_ptr;
@@ -366,10 +361,10 @@ private:
      * Lifted translation.
      */
 
-    template<typename T, formalism::planning::Context C>
-    auto translate_lifted(const std::vector<const T*>& input, formalism::planning::Builder& builder, C& context)
+    template<typename T>
+    auto translate_lifted(const std::vector<const T*>& input, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
-        using ReturnType = decltype(this->translate_lifted(std::declval<const T*>(), builder, std::declval<C&>()));
+        using ReturnType = decltype(this->translate_lifted(std::declval<const T*>(), builder, context));
         auto output = ::cista::offset::vector<ReturnType> {};
         output.reserve(input.size());
         std::transform(std::begin(input),
@@ -379,8 +374,7 @@ private:
         return output;
     }
 
-    template<formalism::planning::Context C>
-    Data<formalism::Term> translate_lifted(loki::Term element, formalism::planning::Builder& builder, C& context)
+    Data<formalism::Term> translate_lifted(loki::Term element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return std::visit(
             [&](auto&& arg) -> Data<formalism::Term>
@@ -396,8 +390,7 @@ private:
             element->get_object_or_variable());
     }
 
-    template<formalism::planning::Context C>
-    IndexAtomVariant translate_lifted(loki::Atom element, formalism::planning::Builder& builder, C& context)
+    IndexAtomVariant translate_lifted(loki::Atom element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_predicate_variant = translate_common(element->get_predicate(), builder, context);
 
@@ -430,8 +423,7 @@ private:
             index_predicate_variant);
     }
 
-    template<formalism::planning::Context C>
-    IndexLiteralVariant translate_lifted(loki::Literal element, formalism::planning::Builder& builder, C& context)
+    IndexLiteralVariant translate_lifted(loki::Literal element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_atom_variant = translate_lifted(element->get_atom(), builder, context);
 
@@ -464,15 +456,14 @@ private:
             index_atom_variant);
     }
 
-    template<formalism::planning::Context C>
-    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionNumber element, formalism::planning::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression>
+    translate_lifted(loki::FunctionExpressionNumber element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return Data<formalism::planning::FunctionExpression>(float_t(element->get_number()));
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::FunctionExpression>
-    translate_lifted(loki::FunctionExpressionBinaryOperator element, formalism::planning::Builder& builder, C& context)
+    translate_lifted(loki::FunctionExpressionBinaryOperator element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::FunctionExpression>
         {
@@ -503,9 +494,8 @@ private:
         }
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::FunctionExpression>
-    translate_lifted(loki::FunctionExpressionMultiOperator element, formalism::planning::Builder& builder, C& context)
+    translate_lifted(loki::FunctionExpressionMultiOperator element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_multi_op = [&](auto op_tag) -> Data<formalism::planning::FunctionExpression>
         {
@@ -531,8 +521,8 @@ private:
         }
     }
 
-    template<formalism::planning::Context C>
-    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionMinus element, formalism::planning::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression>
+    translate_lifted(loki::FunctionExpressionMinus element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto minus_ptr = builder.template get_builder<formalism::planning::UnaryOperator<formalism::OpSub, Data<formalism::planning::FunctionExpression>>>();
         auto& minus = *minus_ptr;
@@ -543,8 +533,8 @@ private:
             context.get_or_create(minus, builder.get_buffer()).first));
     }
 
-    template<formalism::planning::Context C>
-    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpressionFunction element, formalism::planning::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression>
+    translate_lifted(loki::FunctionExpressionFunction element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         const auto index_fterm_variant = translate_lifted(element->get_function(), builder, context);
 
@@ -565,14 +555,13 @@ private:
             index_fterm_variant);
     }
 
-    template<formalism::planning::Context C>
-    Data<formalism::planning::FunctionExpression> translate_lifted(loki::FunctionExpression element, formalism::planning::Builder& builder, C& context)
+    Data<formalism::planning::FunctionExpression>
+    translate_lifted(loki::FunctionExpression element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return std::visit([&](auto&& arg) { return translate_lifted(arg, builder, context); }, element->get_function_expression());
     }
 
-    template<formalism::planning::Context C>
-    IndexFunctionTermVariant translate_lifted(loki::Function element, formalism::planning::Builder& builder, C& context)
+    IndexFunctionTermVariant translate_lifted(loki::Function element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_function_variant = translate_common(element->get_function_skeleton(), builder, context);
 
@@ -606,9 +595,8 @@ private:
             index_function_variant);
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
-    translate_lifted(loki::ConditionNumericConstraint element, formalism::planning::Builder& builder, C& context)
+    translate_lifted(loki::ConditionNumericConstraint element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::BooleanOperator<Data<formalism::planning::FunctionExpression>>>
         {
@@ -643,9 +631,10 @@ private:
         }
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::planning::ConjunctiveCondition>
-    translate_lifted(loki::Condition element, const IndexList<formalism::Variable>& parameters, formalism::planning::Builder& builder, C& context)
+    Index<formalism::planning::ConjunctiveCondition> translate_lifted(loki::Condition element,
+                                                                      const IndexList<formalism::Variable>& parameters,
+                                                                      formalism::planning::Builder& builder,
+                                                                      formalism::planning::Repository& context)
     {
         auto conj_condition_ptr = builder.template get_builder<formalism::planning::ConjunctiveCondition>();
         auto& conj_condition = *conj_condition_ptr;
@@ -743,8 +732,7 @@ private:
             element->get_condition());
     }
 
-    template<formalism::planning::Context C>
-    IndexNumericEffectVariant translate_lifted(loki::EffectNumeric element, formalism::planning::Builder& builder, C& context)
+    IndexNumericEffectVariant translate_lifted(loki::EffectNumeric element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_fterm_variant = translate_lifted(element->get_function(), builder, context);
 
@@ -811,9 +799,10 @@ private:
             index_fterm_variant);
     }
 
-    template<formalism::planning::Context C>
-    IndexList<formalism::planning::ConditionalEffect>
-    translate_lifted(loki::Effect element, const IndexList<formalism::Variable>& parameters, formalism::planning::Builder& builder, C& context)
+    IndexList<formalism::planning::ConditionalEffect> translate_lifted(loki::Effect element,
+                                                                       const IndexList<formalism::Variable>& parameters,
+                                                                       formalism::planning::Builder& builder,
+                                                                       formalism::planning::Repository& context)
     {
         using ConditionalEffectData = UnorderedMap<Index<formalism::planning::ConjunctiveCondition>,
                                                    std::tuple<IndexList<formalism::Variable>,
@@ -1025,8 +1014,7 @@ private:
         return conditional_effects;
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::planning::Action> translate_lifted(loki::Action element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::planning::Action> translate_lifted(loki::Action element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto action_ptr = builder.template get_builder<formalism::planning::Action>();
         auto& action = *action_ptr;
@@ -1073,8 +1061,7 @@ private:
         return context.get_or_create(action, builder.get_buffer()).first;
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::planning::Axiom> translate_lifted(loki::Axiom element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::planning::Axiom> translate_lifted(loki::Axiom element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto axiom_ptr = builder.template get_builder<formalism::planning::Axiom>();
         auto& axiom = *axiom_ptr;
@@ -1111,10 +1098,10 @@ private:
      * Grounded translation
      */
 
-    template<typename T, formalism::planning::Context C>
-    auto translate_grounded(const std::vector<const T*>& input, formalism::planning::Builder& builder, C& context)
+    template<typename T>
+    auto translate_grounded(const std::vector<const T*>& input, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
-        using ReturnType = decltype(this->translate_grounded(std::declval<const T*>(), builder, std::declval<C&>()));
+        using ReturnType = decltype(this->translate_grounded(std::declval<const T*>(), builder, context));
         auto output = ::cista::offset::vector<ReturnType> {};
         output.reserve(input.size());
         std::transform(std::begin(input),
@@ -1124,8 +1111,7 @@ private:
         return output;
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::Object> translate_grounded(loki::Term element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::Object> translate_grounded(loki::Term element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return std::visit(
             [&](auto&& arg) -> Index<formalism::Object>
@@ -1141,8 +1127,8 @@ private:
             element->get_object_or_variable());
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::Binding> to_binding(const IndexList<formalism::Object>& element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::Binding>
+    to_binding(const IndexList<formalism::Object>& element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto binding_ptr = builder.get_builder<formalism::Binding>();
         auto& binding = *binding_ptr;
@@ -1152,8 +1138,7 @@ private:
         return context.get_or_create(binding, builder.get_buffer()).first;
     }
 
-    template<formalism::planning::Context C>
-    IndexGroundAtomVariant translate_grounded(loki::Atom element, formalism::planning::Builder& builder, C& context)
+    IndexGroundAtomVariant translate_grounded(loki::Atom element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_predicate_variant = translate_common(element->get_predicate(), builder, context);
 
@@ -1186,9 +1171,10 @@ private:
             index_predicate_variant);
     }
 
-    template<formalism::planning::Context C>
-    IndexGroundAtomOrFactVariant
-    translate_grounded(loki::Atom element, formalism::planning::Builder& builder, C& context, formalism::planning::BinaryFDRContext& fdr_context)
+    IndexGroundAtomOrFactVariant translate_grounded(loki::Atom element,
+                                                    formalism::planning::Builder& builder,
+                                                    formalism::planning::Repository& context,
+                                                    formalism::planning::BinaryFDRContext& fdr_context)
     {
         auto atom_variant = translate_grounded(element, builder, context);
 
@@ -1196,20 +1182,19 @@ private:
             [&](auto&& arg) -> IndexGroundAtomOrFactVariant
             {
                 using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, View<Index<formalism::planning::GroundAtom<formalism::StaticTag>>, C>>)
-                    return arg.get_index();
-                else if constexpr (std::is_same_v<T, View<Index<formalism::planning::GroundAtom<formalism::FluentTag>>, C>>)
+                if constexpr (std::is_same_v<T, Index<formalism::planning::GroundAtom<formalism::StaticTag>>>)
+                    return arg;
+                else if constexpr (std::is_same_v<T, Index<formalism::planning::GroundAtom<formalism::FluentTag>>>)
                     return fdr_context.get_fact(arg);
-                else if constexpr (std::is_same_v<T, View<Index<formalism::planning::GroundAtom<formalism::DerivedTag>>, C>>)
-                    return arg.get_index();
+                else if constexpr (std::is_same_v<T, Index<formalism::planning::GroundAtom<formalism::DerivedTag>>>)
+                    return arg;
                 else
                     static_assert(dependent_false<T>::value, "Missing case for type");
             },
             atom_variant);
     }
 
-    template<formalism::planning::Context C>
-    IndexGroundLiteralVariant translate_grounded(loki::Literal element, formalism::planning::Builder& builder, C& context)
+    IndexGroundLiteralVariant translate_grounded(loki::Literal element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto atom_variant = translate_grounded(element->get_atom(), builder, context);
 
@@ -1242,9 +1227,10 @@ private:
             atom_variant);
     }
 
-    template<formalism::planning::Context C>
-    IndexGroundLiteralOrFactVariant
-    translate_grounded(loki::Literal element, formalism::planning::Builder& builder, C& context, formalism::planning::BinaryFDRContext& fdr_context)
+    IndexGroundLiteralOrFactVariant translate_grounded(loki::Literal element,
+                                                       formalism::planning::Builder& builder,
+                                                       formalism::planning::Repository& context,
+                                                       formalism::planning::BinaryFDRContext& fdr_context)
     {
         auto literal_variant = translate_grounded(element, builder, context);
 
@@ -1264,16 +1250,14 @@ private:
             literal_variant);
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::GroundFunctionExpression>
-    translate_grounded(loki::FunctionExpressionNumber element, formalism::planning::Builder& builder, C& context)
+    translate_grounded(loki::FunctionExpressionNumber element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return Data<formalism::planning::GroundFunctionExpression>(float_t(element->get_number()));
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::GroundFunctionExpression>
-    translate_grounded(loki::FunctionExpressionBinaryOperator element, formalism::planning::Builder& builder, C& context)
+    translate_grounded(loki::FunctionExpressionBinaryOperator element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::GroundFunctionExpression>
         {
@@ -1305,9 +1289,8 @@ private:
         }
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::GroundFunctionExpression>
-    translate_grounded(loki::FunctionExpressionMultiOperator element, formalism::planning::Builder& builder, C& context)
+    translate_grounded(loki::FunctionExpressionMultiOperator element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_multi_op = [&](auto op_tag) -> Data<formalism::planning::GroundFunctionExpression>
         {
@@ -1334,9 +1317,8 @@ private:
         }
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::GroundFunctionExpression>
-    translate_grounded(loki::FunctionExpressionMinus element, formalism::planning::Builder& builder, C& context)
+    translate_grounded(loki::FunctionExpressionMinus element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto minus_ptr =
             builder.template get_builder<formalism::planning::UnaryOperator<formalism::OpSub, Data<formalism::planning::GroundFunctionExpression>>>();
@@ -1349,9 +1331,8 @@ private:
                 context.get_or_create(minus, builder.get_buffer()).first));
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::GroundFunctionExpression>
-    translate_grounded(loki::FunctionExpressionFunction element, formalism::planning::Builder& builder, C& context)
+    translate_grounded(loki::FunctionExpressionFunction element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         const auto index_fterm_variant = translate_grounded(element->get_function(), builder, context);
 
@@ -1372,14 +1353,13 @@ private:
             index_fterm_variant);
     }
 
-    template<formalism::planning::Context C>
-    Data<formalism::planning::GroundFunctionExpression> translate_grounded(loki::FunctionExpression element, formalism::planning::Builder& builder, C& context)
+    Data<formalism::planning::GroundFunctionExpression>
+    translate_grounded(loki::FunctionExpression element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         return std::visit([&](auto&& arg) { return translate_grounded(arg, builder, context); }, element->get_function_expression());
     }
 
-    template<formalism::planning::Context C>
-    IndexGroundFunctionTermVariant translate_grounded(loki::Function element, formalism::planning::Builder& builder, C& context)
+    IndexGroundFunctionTermVariant translate_grounded(loki::Function element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_function_variant = translate_common(element->get_function_skeleton(), builder, context);
 
@@ -1412,8 +1392,8 @@ private:
             index_function_variant);
     }
 
-    template<formalism::planning::Context C>
-    IndexGroundFunctionTermValueVariant translate_grounded(loki::FunctionValue element, formalism::planning::Builder& builder, C& context)
+    IndexGroundFunctionTermValueVariant
+    translate_grounded(loki::FunctionValue element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto index_fterm_variant = translate_grounded(element->get_function(), builder, context);
 
@@ -1446,9 +1426,8 @@ private:
             index_fterm_variant);
     }
 
-    template<formalism::planning::Context C>
     Data<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>>
-    translate_grounded(loki::ConditionNumericConstraint element, formalism::planning::Builder& builder, C& context)
+    translate_grounded(loki::ConditionNumericConstraint element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto build_binary_op = [&](auto op_tag) -> Data<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>>
         {
@@ -1481,9 +1460,10 @@ private:
         }
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::planning::GroundConjunctiveCondition>
-    translate_grounded(loki::Condition element, formalism::planning::Builder& builder, C& context, formalism::planning::BinaryFDRContext& fdr_context)
+    Index<formalism::planning::GroundConjunctiveCondition> translate_grounded(loki::Condition element,
+                                                                              formalism::planning::Builder& builder,
+                                                                              formalism::planning::Repository& context,
+                                                                              formalism::planning::BinaryFDRContext& fdr_context)
     {
         auto conj_condition_ptr = builder.template get_builder<formalism::planning::GroundConjunctiveCondition>();
         auto& conj_condition = *conj_condition_ptr;
@@ -1579,8 +1559,8 @@ private:
             element->get_condition());
     }
 
-    template<formalism::planning::Context C>
-    Index<formalism::planning::Metric> translate_grounded(loki::OptimizationMetric element, formalism::planning::Builder& builder, C& context)
+    Index<formalism::planning::Metric>
+    translate_grounded(loki::OptimizationMetric element, formalism::planning::Builder& builder, formalism::planning::Repository& context)
     {
         auto metric_ptr = builder.template get_builder<formalism::planning::Metric>();
         auto& metric = *metric_ptr;

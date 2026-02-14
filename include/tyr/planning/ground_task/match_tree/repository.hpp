@@ -45,7 +45,7 @@
 namespace tyr::planning::match_tree
 {
 
-template<typename Tag, formalism::planning::Context C>
+template<typename Tag>
 class Repository
 {
 private:
@@ -71,12 +71,12 @@ private:
 
     RepositoryStorage m_repository;
 
-    const C& m_formalism_repository;
+    const formalism::planning::Repository& m_formalism_repository;
 
 public:
-    explicit Repository(const C& formalism_repository) : m_formalism_repository(formalism_repository) {}
+    explicit Repository(const formalism::planning::Repository& formalism_repository) : m_formalism_repository(formalism_repository) {}
 
-    const C& get_formalism_repository() const noexcept { return m_formalism_repository; }
+    const formalism::planning::Repository& get_formalism_repository() const noexcept { return m_formalism_repository; }
 
     template<typename T>
     std::optional<Index<T>> find(const Data<T>& builder) const noexcept
@@ -137,9 +137,9 @@ public:
     }
 };
 
-static_assert(RepositoryConcept<Repository<formalism::planning::GroundAction, formalism::planning::Repository>>);
+static_assert(RepositoryConcept<Repository<formalism::planning::GroundAction>>);
 
-static_assert(Context<Repository<formalism::planning::GroundAction, formalism::planning::Repository>>);
+static_assert(Context<Repository<formalism::planning::GroundAction>>);
 
 }
 
