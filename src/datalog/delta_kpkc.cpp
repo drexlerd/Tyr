@@ -44,13 +44,13 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
 {
     ++m_iteration;
 
-    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 
     /// 2. Initialize the full graph
 
     m_delta_graph.reset();
 
-    std::chrono::steady_clock::time_point start_time_vertices = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point start_time_vertices = std::chrono::steady_clock::now();
 
     // Compute consistent vertices to speed up consistent edges computation
     static_graph.delta_consistent_vertices(assignment_sets,
@@ -79,9 +79,9 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
                                                delta_partition.set(bit);
                                            });
 
-    std::chrono::steady_clock::time_point end_time_vertices = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point end_time_vertices = std::chrono::steady_clock::now();
 
-    std::chrono::steady_clock::time_point start_time_edges = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point start_time_edges = std::chrono::steady_clock::now();
 
     auto num_delta_edges = size_t { 0 };
 
@@ -137,7 +137,7 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
             }
         });
 
-    std::chrono::steady_clock::time_point end_time_edges = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point end_time_edges = std::chrono::steady_clock::now();
 
     for (uint_t p = 0; p < m_const_graph.k; ++p)
     {
