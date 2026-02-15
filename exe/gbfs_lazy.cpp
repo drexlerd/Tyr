@@ -63,6 +63,10 @@ int main(int argc, char** argv)
 
         auto lifted_task = parser.parse_task(problem_filepath);
 
+        std::cout << "Num objects: " << lifted_task->get_task().get_objects().size() << std::endl;
+
+        std::terminate();
+
         if (verbosity > 0)
             std::cout << *domain << std::endl;
 

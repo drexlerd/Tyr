@@ -172,15 +172,9 @@ inline std::ostream& print(std::ostream& os, const formalism::datalog::VariableD
 
             auto labels = std::vector<std::string> {};
 
-            for (const auto& label : cell.get_predicate_labels<formalism::StaticTag, formalism::PositiveTag>())
+            for (const auto& label : cell.get_literal_labels<formalism::StaticTag>())
                 labels.push_back(to_string(label));
-            for (const auto& label : cell.get_predicate_labels<formalism::StaticTag, formalism::NegativeTag>())
-                labels.push_back(to_string(label));
-            for (const auto& label : cell.get_predicate_labels<formalism::FluentTag, formalism::PositiveTag>())
-                labels.push_back(to_string(label));
-            for (const auto& label : cell.get_function_labels<formalism::StaticTag>())
-                labels.push_back(to_string(label));
-            for (const auto& label : cell.get_function_labels<formalism::FluentTag>())
+            for (const auto& label : cell.get_literal_labels<formalism::FluentTag>())
                 labels.push_back(to_string(label));
             for (const auto& label : cell.get_numeric_constraint_labels())
                 labels.push_back(to_string(label));

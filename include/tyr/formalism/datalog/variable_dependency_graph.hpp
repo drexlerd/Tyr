@@ -48,87 +48,34 @@ public:
 
         struct Cell
         {
-            template<FactKind T, PolarityKind P>
-            auto& get_predicate_labels() noexcept
+            template<FactKind T>
+            auto& get_literal_labels() noexcept
             {
                 if constexpr (std::is_same_v<T, StaticTag>)
-                {
-                    if constexpr (std::is_same_v<P, PositiveTag>)
-                        return positive_static_predicate_labels;
-                    else if constexpr (std::is_same_v<P, NegativeTag>)
-                        return negative_static_predicate_labels;
-                    else
-                        static_assert(dependent_false<P>::value, "Missing case");
-                }
+                    return static_literal_labels;
                 else if constexpr (std::is_same_v<T, FluentTag>)
-                {
-                    if constexpr (std::is_same_v<P, PositiveTag>)
-                        return positive_fluent_predicate_labels;
-                    else if constexpr (std::is_same_v<P, NegativeTag>)
-                        return negative_fluent_predicate_labels;
-                    else
-                        static_assert(dependent_false<P>::value, "Missing case");
-                }
-                else
-                    static_assert(dependent_false<T>::value, "Missing case");
-            }
-
-            template<FactKind T, PolarityKind P>
-            const auto& get_predicate_labels() const noexcept
-            {
-                if constexpr (std::is_same_v<T, StaticTag>)
-                {
-                    if constexpr (std::is_same_v<P, PositiveTag>)
-                        return positive_static_predicate_labels;
-                    else if constexpr (std::is_same_v<P, NegativeTag>)
-                        return negative_static_predicate_labels;
-                    else
-                        static_assert(dependent_false<P>::value, "Missing case");
-                }
-                else if constexpr (std::is_same_v<T, FluentTag>)
-                {
-                    if constexpr (std::is_same_v<P, PositiveTag>)
-                        return positive_fluent_predicate_labels;
-                    else if constexpr (std::is_same_v<P, NegativeTag>)
-                        return negative_fluent_predicate_labels;
-                    else
-                        static_assert(dependent_false<P>::value, "Missing case");
-                }
+                    return fluent_literal_labels;
                 else
                     static_assert(dependent_false<T>::value, "Missing case");
             }
 
             template<FactKind T>
-            auto& get_function_labels() noexcept
+            const auto& get_literal_labels() const noexcept
             {
                 if constexpr (std::is_same_v<T, StaticTag>)
-                    return static_function_labels;
+                    return static_literal_labels;
                 else if constexpr (std::is_same_v<T, FluentTag>)
-                    return fluent_function_labels;
+                    return fluent_literal_labels;
                 else
                     static_assert(dependent_false<T>::value, "Missing case");
             }
 
-            template<FactKind T>
-            const auto& get_function_labels() const noexcept
-            {
-                if constexpr (std::is_same_v<T, StaticTag>)
-                    return static_function_labels;
-                else if constexpr (std::is_same_v<T, FluentTag>)
-                    return fluent_function_labels;
-                else
-                    static_assert(dependent_false<T>::value, "Missing case");
-            }
-
+            auto& get_numeric_constraint_labels() noexcept { return numeric_constraint_labels; }
             const auto& get_numeric_constraint_labels() const noexcept { return numeric_constraint_labels; }
 
-            std::vector<Index<Predicate<StaticTag>>> positive_static_predicate_labels;
-            std::vector<Index<Predicate<FluentTag>>> positive_fluent_predicate_labels;
-            std::vector<Index<Predicate<StaticTag>>> negative_static_predicate_labels;
-            std::vector<Index<Predicate<FluentTag>>> negative_fluent_predicate_labels;
-            std::vector<Index<Function<StaticTag>>> static_function_labels;
-            std::vector<Index<Function<FluentTag>>> fluent_function_labels;
-            std::vector<Data<BooleanOperator<FunctionExpression>>> numeric_constraint_labels;
+            std::vector<Index<Literal<StaticTag>>> static_literal_labels;
+            std::vector<Index<Literal<FluentTag>>> fluent_literal_labels;
+            std::vector<Data<BooleanOperator<Data<FunctionExpression>>>> numeric_constraint_labels;
         };
 
         auto& get_cell(ParameterIndex lhs, ParameterIndex rhs) noexcept

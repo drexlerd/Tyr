@@ -88,6 +88,8 @@ else:
 ATTRIBUTES = [
     "run_dir",
 
+    "num_objects",
+
     Attribute("coverage", min_wins=False),
     # GBFS Lazy
     "cost",

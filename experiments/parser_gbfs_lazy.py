@@ -325,6 +325,8 @@ class GBFSLazyParser(Parser):
 
         self.add_pattern("unsolvable", r"(Task is unsolvable!)", type=str)
         self.add_pattern("invalid", r"(Plan invalid)", type=str)
+
+        self.add_pattern("num_objects", r"Num objects: (\d+)", type=int)
         
         self.add_function(process_invalid)
         self.add_function(process_unsolvable)

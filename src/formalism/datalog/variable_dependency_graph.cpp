@@ -27,7 +27,6 @@ namespace tyr::formalism::datalog
 template<FactKind T>
 static void insert_literal(View<Index<Literal<T>>, Repository> literal, VariableDependencyGraph::AdjacencyMatrix& adj_matrix)
 {
-    const auto predicate = literal.get_atom().get_predicate().get_index();
     const auto parameters_set = collect_parameters(literal);
     auto parameters = std::vector<ParameterIndex>(parameters_set.begin(), parameters_set.end());
     std::sort(parameters.begin(), parameters.end());
@@ -42,10 +41,29 @@ static void insert_literal(View<Index<Literal<T>>, Repository> literal, Variable
 
             auto& cell = adj_matrix.get_cell(first_param, second_param);
 
-            if (literal.get_polarity())
-                cell.template get_predicate_labels<T, PositiveTag>().push_back(predicate);
-            else
-                cell.template get_predicate_labels<T, NegativeTag>().push_back(predicate);
+            cell.template get_literal_labels<T>().push_back(literal.get_index());
+        }
+    }
+}
+
+static void insert_numeric_constraint(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> numeric_constraint,
+                                      VariableDependencyGraph::AdjacencyMatrix& adj_matrix)
+{
+    const auto parameters_set = collect_parameters(numeric_constraint);
+    auto parameters = std::vector<ParameterIndex>(parameters_set.begin(), parameters_set.end());
+    std::sort(parameters.begin(), parameters.end());
+
+    for (uint_t i = 0; i < parameters.size(); ++i)
+    {
+        const auto first_param = parameters[i];
+
+        for (uint_t j = i + 1; j < parameters.size(); ++j)
+        {
+            const auto second_param = parameters[j];
+
+            auto& cell = adj_matrix.get_cell(first_param, second_param);
+
+            cell.get_numeric_constraint_labels().push_back(numeric_constraint.get_data());
         }
     }
 }
@@ -58,7 +76,8 @@ VariableDependencyGraph::VariableDependencyGraph(View<Index<ConjunctiveCondition
     for (const auto literal : condition.get_literals<FluentTag>())
         insert_literal(literal, adj_matrix);
 
-    for (const auto numeric_constraint : condition.get_numeric_constraints()) {}
+    for (const auto numeric_constraint : condition.get_numeric_constraints())
+        insert_numeric_constraint(numeric_constraint, adj_matrix);
 
     auto dedup = [](auto& v)
     {
@@ -72,12 +91,8 @@ VariableDependencyGraph::VariableDependencyGraph(View<Index<ConjunctiveCondition
         for (uint_t j = i + 1; j < condition.get_variables().size(); ++j)
         {
             auto& cell = adj_matrix.get_cell(ParameterIndex(i), ParameterIndex(j));
-            dedup(cell.positive_static_predicate_labels);
-            dedup(cell.negative_static_predicate_labels);
-            dedup(cell.positive_fluent_predicate_labels);
-            dedup(cell.negative_fluent_predicate_labels);
-            dedup(cell.static_function_labels);
-            dedup(cell.fluent_function_labels);
+            dedup(cell.static_literal_labels);
+            dedup(cell.fluent_literal_labels);
             dedup(cell.numeric_constraint_labels);
         }
     }
