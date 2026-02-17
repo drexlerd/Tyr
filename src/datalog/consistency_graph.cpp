@@ -1169,6 +1169,11 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     delta_graph.partitions.reset();
     delta_graph.matrix.copy_from(full_graph.matrix);
 
+    // std::cout << "Delta graph:" << std::endl;
+    // std::cout << delta_graph.matrix << std::endl;
+    // std::cout << "Full graph:" << std::endl;
+    // std::cout << full_graph.matrix << std::endl;
+
     /// 2. Monotonically update full consistent vertices partition
 
     auto vertex_index_offset = uint_t(0);
@@ -1216,6 +1221,9 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                 auto full_vertices_i = BitsetSpan<uint64_t>(full_graph.partitions.data().data() + info_i.block_offset, info_i.num_bits);
                 auto delta_vertices_i = BitsetSpan<uint64_t>(delta_graph.partitions.data().data() + info_i.block_offset, info_i.num_bits);
 
+                if (!full_vertices_i.test(bi))
+                    return;  ///< vi vertex inconsisitent
+
                 row.for_each_partition(
                     [&](auto&& partition)
                     {
@@ -1228,11 +1236,18 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                             [&](auto&& vj)
                             {
                                 const auto bj = layout.vertex_to_bit[vj];
+                                const auto info_j = layout.info.infos[pj];
+                                auto full_vertices_j = BitsetSpan<uint64_t>(full_graph.partitions.data().data() + info_j.block_offset, info_j.num_bits);
+
+                                if (!full_vertices_j.test(bj))
+                                    return;  ///< vj vertex inconsistent
+
+                                auto delta_vertices_j = BitsetSpan<uint64_t>(delta_graph.partitions.data().data() + info_j.block_offset, info_j.num_bits);
 
                                 if (full_graph.matrix.get_bitset(vi, pj).test(bj))
                                 {
                                     assert(full_graph.matrix.get_bitset(vj, pi).test(bi));
-                                    return;
+                                    return;  ///< already edge consistent
                                 }
 
                                 const auto& vertex_j = get_vertex(vj);
@@ -1247,10 +1262,6 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
                                     full_graph.matrix.get_bitset(vi, pj).set(bj);
                                     full_graph.matrix.get_bitset(vj, pi).set(bi);
-
-                                    const auto info_j = layout.info.infos[pj];
-                                    auto full_vertices_j = BitsetSpan<uint64_t>(full_graph.partitions.data().data() + info_j.block_offset, info_j.num_bits);
-                                    auto delta_vertices_j = BitsetSpan<uint64_t>(delta_graph.partitions.data().data() + info_j.block_offset, info_j.num_bits);
 
                                     full_vertices_i.set(bi);
                                     full_vertices_j.set(bj);
