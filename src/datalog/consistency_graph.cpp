@@ -1176,7 +1176,8 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
             for (auto bit = vertices.find_first_zero(); bit != BitsetSpan<uint64_t>::npos; bit = vertices.find_next_zero(bit))
             {
-                const auto& vertex = get_vertex(vertex_index_offset + bit);
+                const auto v = vertex_index_offset + bit;
+                const auto& vertex = get_vertex(v);
 
                 if (vertex.consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
                     && vertex.consistent_numeric_constraints(m_unary_overapproximation_condition.get_numeric_constraints(),

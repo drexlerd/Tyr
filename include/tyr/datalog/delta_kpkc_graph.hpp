@@ -32,6 +32,31 @@
 
 namespace tyr::datalog::kpkc
 {
+struct Vertex
+{
+    uint_t index;
+
+    constexpr Vertex() noexcept : index(std::numeric_limits<uint_t>::max()) {}
+    constexpr explicit Vertex(uint_t i) noexcept : index(i) {}
+
+    friend constexpr bool operator==(Vertex lhs, Vertex rhs) noexcept { return lhs.index == rhs.index; }
+};
+
+struct Edge
+{
+    Vertex src;
+    Vertex dst;
+
+    constexpr Edge() noexcept : src(), dst() {}
+    constexpr Edge(Vertex u, Vertex v) noexcept : src(u.index < v.index ? u : v), dst(u.index < v.index ? v : u) {}
+
+    friend constexpr bool operator==(Edge lhs, Edge rhs) noexcept { return lhs.src == rhs.src && lhs.dst == rhs.dst; }
+
+    /// @brief Get the rank relative to a given number of vertices.
+    /// @param nv is the total number of vertices.
+    /// @return is the rank of the edge.
+    uint_t rank(uint_t nv) const noexcept { return src.index * nv + dst.index; }
+};
 
 /// @brief A compact adjacency matrix representation for k partite graphs.
 ///
@@ -404,6 +429,69 @@ public:
         }
     }
 
+    template<typename Callback>
+    void for_each_vertex(Callback&& callback) noexcept
+    {
+        auto offset = uint_t(0);
+
+        for (uint_t p = 0; p < m_layout.get().k; ++p)
+        {
+            const auto& info = m_layout.get().info.infos[p];
+            auto partition = BitsetSpan<const uint64_t>(m_partition_vertices_data.data() + info.num_blocks, info.num_bits);
+
+            for (auto bit = partition.find_first(); bit != BitsetSpan<const uint64_t>::npos; bit = partition.find_next(bit))
+            {
+                const uint_t v = offset + static_cast<uint_t>(bit);
+
+                callback(Vertex(v));
+            }
+
+            offset += info.num_bits;
+        }
+    }
+
+    template<typename Callback>
+    void for_each_edge(Callback&& callback) noexcept
+    {
+        uint_t src_offset = 0;
+
+        for (uint_t pi = 0; pi < m_layout.get().k; ++pi)
+        {
+            const auto& info_i = m_layout.get().info.infos[pi];
+            auto src_bits = BitsetSpan<const uint64_t>(m_partition_vertices_data.data() + info_i.block_offset, info_i.num_bits);
+
+            for (auto bi = src_bits.find_first(); bi != BitsetSpan<const uint64_t>::npos; bi = src_bits.find_next(bi))
+            {
+                const uint_t vi = src_offset + static_cast<uint_t>(bi);
+
+                uint_t dst_offset = src_offset + info_i.num_bits;
+
+                for (uint_t pj = pi + 1; pj < m_layout.get().k; ++pj)
+                {
+                    const auto& info_j = m_layout.get().info.infos[pj];
+
+                    auto dst_active = BitsetSpan<const uint64_t>(m_partition_vertices_data.data() + info_j.block_offset, info_j.num_bits);
+
+                    auto adj = get_bitset(vi, pj);
+
+                    for (auto bj = adj.find_first(); bj != BitsetSpan<const uint64_t>::npos; bj = adj.find_next(bj))
+                    {
+                        if (!dst_active.test(bj))
+                            continue;
+
+                        const uint_t vj = dst_offset + static_cast<uint_t>(bj);
+
+                        callback(Edge(vi, vj));
+                    }
+
+                    dst_offset += info_j.num_bits;
+                }
+            }
+
+            src_offset += info_i.num_bits;
+        }
+    }
+
     void reset() noexcept
     {
         std::memset(m_bitset_data.data(), 0, m_bitset_data.size() * sizeof(uint64_t));
@@ -431,32 +519,6 @@ private:
     std::vector<uint64_t> m_partition_vertices_data;
 };
 
-struct Vertex
-{
-    uint_t index;
-
-    constexpr Vertex() noexcept : index(std::numeric_limits<uint_t>::max()) {}
-    constexpr explicit Vertex(uint_t i) noexcept : index(i) {}
-
-    friend constexpr bool operator==(Vertex lhs, Vertex rhs) noexcept { return lhs.index == rhs.index; }
-};
-
-struct Edge
-{
-    Vertex src;
-    Vertex dst;
-
-    constexpr Edge() noexcept : src(), dst() {}
-    constexpr Edge(Vertex u, Vertex v) noexcept : src(u.index < v.index ? u : v), dst(u.index < v.index ? v : u) {}
-
-    friend constexpr bool operator==(Edge lhs, Edge rhs) noexcept { return lhs.src == rhs.src && lhs.dst == rhs.dst; }
-
-    /// @brief Get the rank relative to a given number of vertices.
-    /// @param nv is the total number of vertices.
-    /// @return is the rank of the edge.
-    uint_t rank(uint_t nv) const noexcept { return src.index * nv + dst.index; }
-};
-
 struct GraphActivityMasks
 {
     boost::dynamic_bitset<> vertices;
@@ -481,6 +543,7 @@ struct Graph2
     }
 
     void reset() noexcept { matrix.reset(); }
+
     void copy_from(const Graph2& other) noexcept { matrix.copy_from(other.matrix); }
     void diff_from(const Graph2& other) noexcept { matrix.diff_from(other.matrix); }
 
@@ -510,20 +573,8 @@ struct Graph
     template<typename Callback>
     void for_each_vertex(Callback&& callback) const
     {
-        auto offset = uint_t(0);
-        for (uint_t p = 0; p < cg.get().k; ++p)
-        {
-            const auto& info = cg.get().info.infos[p];
-            auto bits = BitsetSpan<const uint64_t>(partition_vertices_data.data() + info.block_offset, info.num_bits);
-
-            for (auto bit = bits.find_first(); bit != BitsetSpan<const uint64_t>::npos; bit = bits.find_next(bit))
-            {
-                assert(vertices.test(offset + bit));
-                callback(Vertex(offset + bit));
-            }
-
-            offset += info.num_bits;
-        }
+        for (auto v = vertices.find_first(); v != boost::dynamic_bitset<>::npos; v = vertices.find_next(v))
+            callback(Vertex(v));
     }
 
     template<typename Callback>
@@ -533,12 +584,13 @@ struct Graph
         for (uint_t src_p = 0; src_p < cg.get().k; ++src_p)
         {
             const auto& src_info = cg.get().info.infos[src_p];
-            auto src_bits = BitsetSpan<const uint64_t>(partition_vertices_data.data() + src_info.block_offset, src_info.num_bits);
 
-            for (auto src_bit = src_bits.find_first(); src_bit != BitsetSpan<const uint64_t>::npos; src_bit = src_bits.find_next(src_bit))
+            for (uint_t src_bit = 0; src_bit < src_info.num_bits; ++src_bit)
             {
                 const auto src_index = src_offset + src_bit;
-                assert(vertices.test(src_index));
+                if (!vertices.test(src_index))
+                    continue;
+
                 const auto src = Vertex(src_index);
 
                 const auto adjacency_list = partition_adjacency_matrix_span(src_index);
@@ -547,16 +599,15 @@ struct Graph
                 for (uint_t dst_p = src_p + 1; dst_p < cg.get().k; ++dst_p)
                 {
                     const auto& dst_info = cg.get().info.infos[dst_p];
-                    auto dst_bits = BitsetSpan<const uint64_t>(partition_vertices_data.data() + dst_info.block_offset, dst_info.num_bits);
+
                     auto adj_bits = BitsetSpan<const uint64_t>(adjacency_list.data() + dst_info.block_offset, dst_info.num_bits);
 
                     for (auto dst_bit = adj_bits.find_first(); dst_bit != BitsetSpan<const uint64_t>::npos; dst_bit = adj_bits.find_next(dst_bit))
                     {
-                        if (dst_bits.test(dst_bit))
-                        {
-                            assert(vertices.test(dst_offset + dst_bit));
-                            callback(Edge(src, Vertex(dst_offset + dst_bit)));
-                        }
+                        const auto dst_index = dst_offset + dst_bit;
+
+                        if (vertices.test(dst_index))
+                            callback(Edge(src, Vertex(dst_index)));
                     }
 
                     dst_offset += dst_info.num_bits;

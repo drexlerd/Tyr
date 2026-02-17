@@ -48,6 +48,8 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
 {
     std::chrono::steady_clock::time_point start_time2 = std::chrono::steady_clock::now();
 
+    std::cout << "Iteration: " << m_iteration << std::endl;
+
     static_graph.initialize_dynamic_consistency_graphs(assignment_sets, m_const_graph, m_delta_graph2, m_full_graph2);
 
     std::chrono::steady_clock::time_point end_time2 = std::chrono::steady_clock::now();
@@ -123,13 +125,6 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
                 // This wont affect the k = 1 case.
                 m_delta_graph.vertices.set(first_index);
                 m_delta_graph.vertices.set(second_index);
-
-                auto& first_delta_partition_row = m_delta_graph.partition_vertices_data;
-                auto& second_delta_partition_row = m_delta_graph.partition_vertices_data;
-                auto first_delta_partition = BitsetSpan<uint64_t>(first_delta_partition_row.data() + first_info.block_offset, first_info.num_bits);
-                auto second_delta_partition = BitsetSpan<uint64_t>(second_delta_partition_row.data() + second_info.block_offset, second_info.num_bits);
-                first_delta_partition.set(first_bit);
-                second_delta_partition.set(second_bit);
             }
 
             {
@@ -157,9 +152,23 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
         auto& full_partition_row = m_full_graph.partition_vertices_data;
         auto full_partition = BitsetSpan<uint64_t>(full_partition_row.data() + info.block_offset, info.num_bits);
         full_partition |= delta_partition;
+
+        const auto& delta_partition_row2 = m_delta_graph2.matrix.partition_vertices_data();
+        auto& full_partition_row2 = m_full_graph2.matrix.partition_vertices_data();
+        const auto delta_partition2 = BitsetSpan<const uint64_t>(delta_partition_row2.data() + info.block_offset, info.num_bits);
+        const auto full_partition2 = BitsetSpan<uint64_t>(full_partition_row2.data() + info.block_offset, info.num_bits);
+
+        // Ensure new matches old implementation
+        if (delta_partition != delta_partition2)
+        {
+            std::cout << "Delta partition 1: " << delta_partition << std::endl;
+            std::cout << "Delta partition 2: " << delta_partition2 << std::endl;
+        }
+        assert(delta_partition == delta_partition2);
+        assert(full_partition == full_partition2);
     }
 
-    for (auto v = m_delta_graph.vertices.find_first(); v != boost::dynamic_bitset<>::npos; v = m_delta_graph.vertices.find_next(v))
+    for (uint_t v = 0; v < m_const_graph.nv; ++v)
     {
         const auto pv = m_const_graph.vertex_to_partition[v];
         const auto delta_v_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(v);
@@ -191,7 +200,9 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
         for (uint_t p = 0; p < m_const_graph.k; ++p)
         {
             const auto& info = m_const_graph.info.infos[p];
+
             auto full_v_adj_list = BitsetSpan<uint64_t>(full_v_adj_list_row.data() + info.block_offset, info.num_bits);
+
             ++total_partitions;
             if (full_v_adj_list.count() == info.num_bits)
             {
@@ -251,6 +262,8 @@ void DeltaKPKC::reset()
 {
     m_delta_graph.reset();
     m_full_graph.reset();
+    m_delta_graph2.reset();
+    m_full_graph2.reset();
     m_masks.reset();
     m_iteration = 0;
 }

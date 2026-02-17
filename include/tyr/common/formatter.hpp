@@ -19,6 +19,7 @@
 #define TYR_COMMON_FORMATTER_HPP_
 
 #include "tyr/common/declarations.hpp"
+#include "tyr/common/dynamic_bitset.hpp"
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/uint_mixins.hpp"
 
@@ -90,6 +91,9 @@ std::ostream& operator<<(std::ostream& os, const GroupIndexMixin<Derived, Group>
 
 template<typename Derived>
 std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& el);
+
+template<std::unsigned_integral Block>
+std::ostream& operator<<(std::ostream& os, const BitsetSpan<Block>& el);
 
 inline std::ostream& operator<<(std::ostream& os, const std::monostate& el);
 
@@ -165,6 +169,9 @@ std::ostream& print(std::ostream& os, const GroupIndexMixin<Derived, Group>& el)
 
 template<typename Derived>
 std::ostream& print(std::ostream& os, const FixedUintMixin<Derived>& el);
+
+template<std::unsigned_integral Block>
+std::ostream& print(std::ostream& os, const BitsetSpan<Block>& el);
 
 inline std::ostream& print(std::ostream& os, const std::monostate& el);
 
@@ -355,6 +362,12 @@ std::ostream& operator<<(std::ostream& os, const FixedUintMixin<Derived>& el)
     return print(os, el);
 }
 
+template<std::unsigned_integral Block>
+std::ostream& operator<<(std::ostream& os, const BitsetSpan<Block>& el)
+{
+    return print(os, el);
+}
+
 inline std::ostream& operator<<(std::ostream& os, const std::monostate& el) { return print(os, el); }
 
 template<typename T>
@@ -512,6 +525,28 @@ template<typename Derived>
 std::ostream& print(std::ostream& os, const FixedUintMixin<Derived>& el)
 {
     return print(os, el.value());
+}
+
+template<std::unsigned_integral Block>
+std::ostream& print(std::ostream& os, const BitsetSpan<Block>& el)
+{
+    os << "{";
+
+    size_t pos = el.find_first();
+    bool first = true;
+
+    while (pos != BitsetSpan<Block>::npos)
+    {
+        if (!first)
+            os << ", ";
+        first = false;
+
+        os << pos;
+        pos = el.find_next(pos);
+    }
+
+    os << "}";
+    return os;
 }
 
 inline std::ostream& print(std::ostream& os, const std::monostate& el)
