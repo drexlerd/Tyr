@@ -278,10 +278,10 @@ public:
                                const std::vector<std::vector<uint_t>>& vertex_partitions,
                                const formalism::datalog::VariableDependencyGraph& dependency_graph) :
         m_layout(layout),
-        m_adj_data(m_layout.get().nv * m_layout.get().k),
+        m_adj_data(m_layout.get().nv * m_layout.get().k, Cell { Cell::Mode::IMPLICIT, std::numeric_limits<uint_t>::max() }),
         m_adj_span(m_adj_data.data(), std::array<size_t, 2> { m_layout.get().nv, m_layout.get().k }),
         m_bitset_data(),
-        m_partition_vertices_data()
+        m_partition_vertices_data(layout.info.num_blocks, 0)
     {
         for (uint_t pi = 0; pi < m_layout.get().k; ++pi)
         {
@@ -368,9 +368,8 @@ public:
             for (uint_t p = 0; p < m_layout.get().k; ++p)
             {
                 auto& cell = m_adj_span(v, p);
-                const auto& other_cell = other.m_adj_span(v, p);
 
-                assert(cell.mode == other_cell.mode);
+                assert(cell.mode == other.m_adj_span(v, p).mode);
 
                 if (cell.mode == PartitionedAdjacencyMatrix::Cell::Mode::IMPLICIT)
                     continue;
@@ -394,9 +393,8 @@ public:
             for (uint_t p = 0; p < m_layout.get().k; ++p)
             {
                 auto& cell = m_adj_span(v, p);
-                const auto& other_cell = other.m_adj_span(v, p);
 
-                assert(cell.mode == other_cell.mode);
+                assert(cell.mode == other.m_adj_span(v, p).mode);
 
                 if (cell.mode == PartitionedAdjacencyMatrix::Cell::Mode::IMPLICIT)
                     continue;
@@ -416,6 +414,8 @@ public:
 
     auto& partition_vertices_data() noexcept { return m_partition_vertices_data; }
     const auto& partition_vertices_data() const noexcept { return m_partition_vertices_data; }
+
+    const auto& bitset_data() const noexcept { return m_bitset_data; }
 
 private:
     std::reference_wrapper<const GraphLayout> m_layout;
