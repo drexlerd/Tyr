@@ -318,10 +318,12 @@ class PartitionedAdjacencyMatrix
 public:
     PartitionedAdjacencyMatrix(const GraphLayout& layout,
                                const VertexPartitions& partitions,
+                               const VertexPartitions& consistent,
                                const std::vector<std::vector<uint_t>>& static_partitions,
                                const formalism::datalog::VariableDependencyGraph& dependency_graph) :
         m_layout(layout),
         m_partitions(partitions),
+        m_consistent(consistent),
         m_adj_data(m_layout.get().nv * m_layout.get().k, Cell { Cell::Mode::IMPLICIT, std::numeric_limits<uint_t>::max() }),
         m_adj_span(m_adj_data.data(), std::array<size_t, 2> { m_layout.get().nv, m_layout.get().k }),
         m_bitset_data()
@@ -340,8 +342,7 @@ public:
                     if (ppi > ppj)
                         std::swap(ppi, ppj);
 
-                    if (ppi < ppj
-                        && dependency_graph.get_adj_matrix().get_cell(formalism::ParameterIndex(ppi), formalism::ParameterIndex(ppj)).dynamically_empty())
+                    if (ppi < ppj && dependency_graph.get_adj_matrix().get_cell(formalism::ParameterIndex(ppi), formalism::ParameterIndex(ppj)).empty())
                     {
                         cell.mode = Cell::Mode::IMPLICIT;
                         cell.offset = std::numeric_limits<uint_t>::max();  // unused
@@ -381,6 +382,9 @@ public:
         else
         {
             assert(cell.mode == Cell::Mode::IMPLICIT);
+            // TODO: if v is new, then return
+            // return BitsetSpan<const uint64_t>(m_partitions.get().data().data() + info.block_offset, info.num_bits);
+            // else
             return BitsetSpan<const uint64_t>(m_partitions.get().data().data() + info.block_offset, info.num_bits);
         }
     }
@@ -510,6 +514,7 @@ public:
 private:
     std::reference_wrapper<const GraphLayout> m_layout;
     std::reference_wrapper<const VertexPartitions> m_partitions;
+    std::reference_wrapper<const VertexPartitions> m_consistent;
 
     /// k x k matrix where each cell refers to a bitset either stored explicitly or referring implicitly to a vertex partition.
     std::vector<Cell> m_adj_data;
@@ -525,17 +530,20 @@ struct Graph2
            const std::vector<std::vector<uint_t>>& static_partitions,
            const formalism::datalog::VariableDependencyGraph& dependency_graph) :
         partitions(layout),
-        matrix(layout, partitions, static_partitions, dependency_graph)
+        consistent(layout),
+        matrix(layout, partitions, consistent, static_partitions, dependency_graph)
     {
     }
 
     void reset() noexcept
     {
         partitions.reset();
+        consistent.reset();
         matrix.reset();
     }
 
     VertexPartitions partitions;
+    VertexPartitions consistent;
     PartitionedAdjacencyMatrix matrix;
 };
 

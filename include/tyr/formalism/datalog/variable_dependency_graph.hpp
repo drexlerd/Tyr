@@ -75,6 +75,7 @@ public:
 
             bool statically_empty() const noexcept { return static_literal_labels.empty(); }
             bool dynamically_empty() const noexcept { return fluent_literal_labels.empty() && numeric_constraint_labels.empty(); }
+            bool empty() const noexcept { return statically_empty() && dynamically_empty(); }
 
             std::vector<Index<Literal<StaticTag>>> static_literal_labels;
             std::vector<Index<Literal<FluentTag>>> fluent_literal_labels;

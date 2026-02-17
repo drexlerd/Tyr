@@ -1167,6 +1167,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     std::cout << m_binary_overapproximation_condition << std::endl;
 
     delta_graph.partitions.reset();
+    delta_graph.consistent.reset();
     delta_graph.matrix.copy_from(full_graph.matrix);
 
     // std::cout << "Delta graph:" << std::endl;
@@ -1185,6 +1186,9 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
             auto full_vertices = BitsetSpan<uint64_t>(full_graph.partitions.data().data() + info.block_offset, info.num_bits);
             auto delta_vertices = BitsetSpan<uint64_t>(delta_graph.partitions.data().data() + info.block_offset, info.num_bits);
 
+            auto full_consistent = BitsetSpan<uint64_t>(full_graph.consistent.data().data() + info.block_offset, info.num_bits);
+            auto delta_consistent = BitsetSpan<uint64_t>(delta_graph.consistent.data().data() + info.block_offset, info.num_bits);
+
             for (auto bit = full_vertices.find_first_zero(); bit != BitsetSpan<uint64_t>::npos; bit = full_vertices.find_next_zero(bit))
             {
                 const auto v = vertex_index_offset + bit;
@@ -1199,6 +1203,9 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
                     full_vertices.set(bit);
                     delta_vertices.set(bit);
+
+                    full_consistent.set(bit);
+                    delta_consistent.set(bit);
                 }
             }
 
