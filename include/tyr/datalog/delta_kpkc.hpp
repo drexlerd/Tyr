@@ -91,7 +91,7 @@ public:
     explicit DeltaKPKC(const StaticConsistencyGraph& static_graph);
 
     /// @brief Complete member initialization (for testing purposes)
-    DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks masks, Graph2 delta_graph2, Graph2 full_graph2);
+    DeltaKPKC(GraphLayout const_graph, Graph2 delta_graph2, Graph2 full_graph2);
 
     /// @brief Set new fact set to compute deltas.
     /// @param assignment_sets
@@ -121,8 +121,8 @@ public:
      */
 
     const GraphLayout& get_graph_layout() const noexcept { return m_const_graph; }
-    const Graph& get_delta_graph() const noexcept { return m_delta_graph; }
-    const Graph& get_full_graph() const noexcept { return m_full_graph; }
+    const Graph2& get_delta_graph() const noexcept { return m_delta_graph2; }
+    const Graph2& get_full_graph() const noexcept { return m_full_graph2; }
     size_t get_iteration() const noexcept { return m_iteration; }
 
 private:
@@ -175,9 +175,6 @@ private:
 
 private:
     GraphLayout m_const_graph;
-    Graph m_delta_graph;
-    Graph m_full_graph;
-    GraphActivityMasks m_masks;
     size_t m_iteration;
 
     Graph2 m_delta_graph2;
@@ -193,7 +190,7 @@ void DeltaKPKC::for_each_new_unary_clique(Callback&& callback, Workspace& worksp
 {
     assert(m_const_graph.k == 1);
 
-    m_delta_graph.for_each_vertex(
+    m_delta_graph2.matrix.for_each_vertex(
         [&](auto&& vertex)
         {
             workspace.partial_solution.clear();
@@ -208,7 +205,7 @@ void DeltaKPKC::for_each_unary_clique(Callback&& callback, Workspace& workspace)
 {
     assert(m_const_graph.k == 1);
 
-    m_full_graph.for_each_vertex(
+    m_full_graph2.matrix.for_each_vertex(
         [&](auto&& vertex)
         {
             workspace.partial_solution.clear();
@@ -223,7 +220,7 @@ void DeltaKPKC::for_each_new_binary_clique(Callback&& callback, Workspace& works
 {
     assert(m_const_graph.k == 2);
 
-    m_delta_graph.for_each_edge(
+    m_delta_graph2.matrix.for_each_edge(
         [&](auto&& edge)
         {
             workspace.partial_solution.clear();
@@ -239,7 +236,7 @@ void DeltaKPKC::for_each_binary_clique(Callback&& callback, Workspace& workspace
 {
     assert(m_const_graph.k == 2);
 
-    m_full_graph.for_each_edge(
+    m_full_graph2.matrix.for_each_edge(
         [&](auto&& edge)
         {
             workspace.partial_solution.clear();
@@ -302,7 +299,7 @@ void DeltaKPKC::for_each_new_k_clique(Callback&& callback, Workspace& workspace)
         }
         else
         {
-            m_delta_graph.for_each_edge(
+            m_delta_graph2.matrix.for_each_edge(
                 [&](auto&& edge)
                 {
                     if (seed_from_anchor(edge, workspace))
@@ -325,8 +322,6 @@ bool DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, si
 
     const auto cv_curr = workspace.compatible_vertices_span(depth);
     auto cv_next = workspace.compatible_vertices_span(depth + 1);
-    const auto full_adj_list = m_full_graph.partition_adjacency_matrix_span(src.index);
-    const auto delta_adj_list = m_delta_graph.partition_adjacency_matrix_span(src.index);
 
     for (uint_t p = 0; p < k; ++p)
     {
@@ -336,7 +331,7 @@ bool DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, si
         const auto& info = m_const_graph.info.infos[p];
         auto src_cur = BitsetSpan<const uint64_t>(cv_curr.data() + info.block_offset, info.num_bits);
         auto dst_next = BitsetSpan<uint64_t>(cv_next.data() + info.block_offset, info.num_bits);
-        auto src_full = BitsetSpan<const uint64_t>(full_adj_list.data() + info.block_offset, info.num_bits);
+        auto src_full = m_full_graph2.matrix.get_bitset(src.index, p);
 
         dst_next.copy_from(src_cur);
         dst_next &= src_full;
@@ -350,7 +345,7 @@ bool DeltaKPKC::update_compatible_adjacent_vertices_at_next_depth(Vertex src, si
 
             if (p_src < workspace.anchor_pi || p < workspace.anchor_pi)
             {
-                auto src_delta = BitsetSpan<const uint64_t>(delta_adj_list.data() + info.block_offset, info.num_bits);
+                auto src_delta = m_delta_graph2.matrix.get_bitset(src.index, p);
 
                 dst_next -= src_delta;
 

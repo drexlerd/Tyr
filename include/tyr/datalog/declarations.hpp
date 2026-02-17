@@ -90,6 +90,8 @@ namespace kpkc
 struct DenseKPartiteGraph;
 struct Workspace;
 struct Vertex;
+struct PartitionedAdjacencyLists;
+struct PartitionedAdjacencyMatrix;
 }
 
 }

@@ -22,6 +22,7 @@
 #include "tyr/datalog/assignment.hpp"  // for EdgeAssignment, VertexAssignment
 #include "tyr/datalog/consistency_graph.hpp"
 #include "tyr/datalog/delta_kpkc.hpp"
+#include "tyr/datalog/delta_kpkc_graph.hpp"
 #include "tyr/datalog/formatter.hpp"
 #include "tyr/datalog/statistics/program.hpp"
 #include "tyr/datalog/statistics/rule.hpp"
@@ -188,6 +189,39 @@ std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el)
 std::ostream& print(std::ostream& os, const datalog::kpkc::Vertex& el)
 {
     os << el.index;
+    return os;
+}
+
+std::ostream& print(std::ostream& os, const datalog::kpkc::PartitionedAdjacencyMatrix& el)
+{
+    os << "PartitionedAdjacencyMatrix(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << "partitions = [";
+        for (uint_t p = 0; p < el.layout().k; ++p)
+        {
+            const auto& info = el.layout().info.infos[p];
+            os << BitsetSpan<const uint64_t>(el.partitions().data().data() + info.block_offset, info.num_bits) << ", ";
+        }
+        os << "]\n";
+
+        os << print_indent << "adjacency lists = [\n";
+        for (uint_t v = 0; v < el.layout().nv; ++v)
+        {
+            IndentScope scope2(os);
+            os << print_indent << v << ": [";
+
+            for (uint_t p = 0; p < el.layout().k; ++p)
+                os << el.get_bitset(v, p) << ", ";
+            os << "]\n";
+        }
+        os << "]\n";
+    }
+
+    os << ")";
+
     return os;
 }
 
@@ -361,6 +395,8 @@ std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph& el) { r
 namespace kpkc
 {
 std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
+
+std::ostream& operator<<(std::ostream& os, const PartitionedAdjacencyMatrix& el) { return print(os, el); }
 }
 
 std::ostream& operator<<(std::ostream& os, const ProgramStatistics& el) { return print(os, el); }

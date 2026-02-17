@@ -93,19 +93,4 @@ Workspace::Workspace(const GraphLayout& graph) :
     partial_solution.reserve(graph.k);
 }
 
-GraphActivityMasks::GraphActivityMasks(const StaticConsistencyGraph& static_graph) :
-    vertices(static_graph.get_num_vertices(), true),
-    edges(static_graph.get_num_edges(), true)
-{
-}
-
-Graph::Graph(const GraphLayout& cg) :
-    cg(cg),
-    vertices(cg.nv, false),
-    partition_vertices_data(cg.info.num_blocks, 0),
-    partition_adjacency_matrix_data(cg.nv * cg.info.num_blocks, 0),
-    partition_adjacency_matrix_span(partition_adjacency_matrix_data.data(), std::array<size_t, 2> { cg.nv, cg.info.num_blocks })
-{
-}
-
 }

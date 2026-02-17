@@ -24,20 +24,14 @@ namespace tyr::datalog::kpkc
 
 DeltaKPKC::DeltaKPKC(const StaticConsistencyGraph& static_graph) :
     m_const_graph(GraphLayout(static_graph)),
-    m_delta_graph(Graph(m_const_graph)),
-    m_full_graph(Graph(m_const_graph)),
-    m_masks(GraphActivityMasks(static_graph)),
     m_iteration(0),
     m_delta_graph2(m_const_graph, static_graph.get_vertex_partitions(), static_graph.get_variable_dependeny_graph()),
     m_full_graph2(m_const_graph, static_graph.get_vertex_partitions(), static_graph.get_variable_dependeny_graph())
 {
 }
 
-DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph delta_graph, Graph full_graph, GraphActivityMasks masks, Graph2 delta_graph2, Graph2 full_graph2) :
+DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph2 delta_graph2, Graph2 full_graph2) :
     m_const_graph(std::move(const_graph)),
-    m_delta_graph(std::move(delta_graph)),
-    m_full_graph(std::move(full_graph)),
-    m_masks(std::move(masks)),
     m_iteration(0),
     m_delta_graph2(std::move(delta_graph2)),
     m_full_graph2(std::move(full_graph2))
@@ -48,262 +42,19 @@ SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticC
 {
     std::chrono::steady_clock::time_point start_time2 = std::chrono::steady_clock::now();
 
-    std::cout << "Iteration: " << m_iteration << std::endl;
-
     static_graph.initialize_dynamic_consistency_graphs(assignment_sets, m_const_graph, m_delta_graph2, m_full_graph2);
 
     std::chrono::steady_clock::time_point end_time2 = std::chrono::steady_clock::now();
 
     ++m_iteration;
 
-    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-
-    /// 2. Initialize the full graph
-
-    m_delta_graph.reset();
-
-    std::chrono::steady_clock::time_point start_time_vertices = std::chrono::steady_clock::now();
-
-    // Compute consistent vertices to speed up consistent edges computation
-    static_graph.delta_consistent_vertices(assignment_sets,
-                                           m_masks.vertices,
-                                           [&](auto&& vertex)
-                                           {
-                                               // Enforce delta update
-                                               const auto index = vertex.get_index();
-                                               const auto partition = m_const_graph.vertex_to_partition[index];
-                                               const auto bit = m_const_graph.vertex_to_bit[index];
-
-                                               // Enforce delta update
-                                               assert(!m_full_graph.vertices.test(index));
-
-                                               m_masks.vertices.reset(index);
-
-                                               m_full_graph.vertices.set(index);
-                                               m_delta_graph.vertices.set(index);
-
-                                               const auto& info = m_const_graph.info.infos[partition];
-                                               auto& full_partition_row = m_full_graph.partition_vertices_data;
-                                               auto full_partition = BitsetSpan<uint64_t>(full_partition_row.data() + info.block_offset, info.num_bits);
-                                               full_partition.set(bit);
-                                               auto& delta_partition_row = m_delta_graph.partition_vertices_data;
-                                               auto delta_partition = BitsetSpan<uint64_t>(delta_partition_row.data() + info.block_offset, info.num_bits);
-                                               delta_partition.set(bit);
-                                           });
-
-    std::chrono::steady_clock::time_point end_time_vertices = std::chrono::steady_clock::now();
-
-    std::chrono::steady_clock::time_point start_time_edges = std::chrono::steady_clock::now();
-
-    auto num_delta_edges = size_t { 0 };
-
-    // Initialize adjacency matrix: Add consistent undirected edges to adj matrix.
-    static_graph.delta_consistent_edges(
-        assignment_sets,
-        m_masks.edges,
-        m_full_graph.vertices,
-        [&](auto&& edge)
-        {
-            ++num_delta_edges;
-
-            const auto first_index = edge.get_src().get_index();
-            const auto second_index = edge.get_dst().get_index();
-            // Enforce invariant of static consistency graph
-            assert(first_index != second_index);
-
-            m_masks.edges.reset(edge.get_index());
-
-            const auto first_partition = m_const_graph.vertex_to_partition[first_index];
-            const auto second_partition = m_const_graph.vertex_to_partition[second_index];
-            const auto first_bit = m_const_graph.vertex_to_bit[first_index];
-            const auto second_bit = m_const_graph.vertex_to_bit[second_index];
-            const auto& first_info = m_const_graph.info.infos[first_partition];
-            const auto& second_info = m_const_graph.info.infos[second_partition];
-
-            {
-                // Enforce vertices adjacent to delta edges as delta vertices.
-                // This wont affect the k = 1 case.
-                m_delta_graph.vertices.set(first_index);
-                m_delta_graph.vertices.set(second_index);
-            }
-
-            {
-                assert(!BitsetSpan<uint64_t>(m_full_graph.partition_adjacency_matrix_span(first_index).data() + second_info.block_offset, second_info.num_bits)
-                            .test(second_bit));
-                assert(!BitsetSpan<uint64_t>(m_full_graph.partition_adjacency_matrix_span(second_index).data() + first_info.block_offset, first_info.num_bits)
-                            .test(first_bit));
-
-                auto first_delta_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(first_index);
-                auto second_delta_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(second_index);
-                auto first_delta_adj_list = BitsetSpan<uint64_t>(first_delta_adj_list_row.data() + second_info.block_offset, second_info.num_bits);
-                auto second_delta_adj_list = BitsetSpan<uint64_t>(second_delta_adj_list_row.data() + first_info.block_offset, first_info.num_bits);
-                first_delta_adj_list.set(second_bit);
-                second_delta_adj_list.set(first_bit);
-            }
-        });
-
-    std::chrono::steady_clock::time_point end_time_edges = std::chrono::steady_clock::now();
-
-    for (uint_t p = 0; p < m_const_graph.k; ++p)
-    {
-        const auto& info = m_const_graph.info.infos[p];
-        auto& delta_partition_row = m_delta_graph.partition_vertices_data;
-        auto delta_partition = BitsetSpan<const uint64_t>(delta_partition_row.data() + info.block_offset, info.num_bits);
-        auto& full_partition_row = m_full_graph.partition_vertices_data;
-        auto full_partition = BitsetSpan<uint64_t>(full_partition_row.data() + info.block_offset, info.num_bits);
-        full_partition |= delta_partition;
-
-        const auto& delta_partition_row2 = m_delta_graph2.matrix.partition_vertices_data();
-        auto& full_partition_row2 = m_full_graph2.matrix.partition_vertices_data();
-        const auto delta_partition2 = BitsetSpan<const uint64_t>(delta_partition_row2.data() + info.block_offset, info.num_bits);
-        const auto full_partition2 = BitsetSpan<uint64_t>(full_partition_row2.data() + info.block_offset, info.num_bits);
-
-        // Ensure new matches old implementation
-        assert(delta_partition == delta_partition2);
-        assert(full_partition == full_partition2);
-
-        std::cout << delta_partition << " " << delta_partition2 << " " << full_partition << " " << full_partition2 << std::endl;
-    }
-
-    for (uint_t v = 0; v < m_const_graph.nv; ++v)
-    {
-        const auto pv = m_const_graph.vertex_to_partition[v];
-        const auto delta_v_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(v);
-        auto full_v_adj_list_row = m_full_graph.partition_adjacency_matrix_span(v);
-
-        for (uint_t p = 0; p < m_const_graph.k; ++p)
-        {
-            if (p == pv)
-                continue;  ///< no edges between vertices in the same partition
-
-            const auto& info = m_const_graph.info.infos[p];
-            auto delta_v_adj_list = BitsetSpan<const uint64_t>(delta_v_adj_list_row.data() + info.block_offset, info.num_bits);
-            auto full_v_adj_list = BitsetSpan<uint64_t>(full_v_adj_list_row.data() + info.block_offset, info.num_bits);
-            full_v_adj_list |= delta_v_adj_list;
-        }
-    }
-
-    uint_t offset = 0;
-
-    for (uint_t pi = 0; pi < m_const_graph.k; ++pi)
-    {
-        const auto& info_i = m_const_graph.info.infos[pi];
-        const auto& delta_partition_row = m_delta_graph.partition_vertices_data;
-        const auto delta_partition = BitsetSpan<const uint64_t>(delta_partition_row.data() + info_i.block_offset, info_i.num_bits);
-
-        const auto& delta_partition_row2 = m_delta_graph2.matrix.partition_vertices_data();
-        const auto delta_partition2 = BitsetSpan<const uint64_t>(delta_partition_row2.data() + info_i.block_offset, info_i.num_bits);
-
-        for (auto bit = delta_partition.find_first(); bit != BitsetSpan<const uint64_t>::npos; bit = delta_partition.find_next(bit))
-        {
-            const auto v = offset + bit;
-            const auto delta_v_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(v);
-            auto full_v_adj_list_row = m_full_graph.partition_adjacency_matrix_span(v);
-
-            for (uint_t pj = 0; pj < m_const_graph.k; ++pj)
-            {
-                if (pi == pj)
-                    continue;  ///< no edges between vertices in the same partition
-
-                const auto& info_j = m_const_graph.info.infos[pj];
-                auto delta_v_adj_list = BitsetSpan<const uint64_t>(delta_v_adj_list_row.data() + info_j.block_offset, info_j.num_bits);
-                auto full_v_adj_list = BitsetSpan<uint64_t>(full_v_adj_list_row.data() + info_j.block_offset, info_j.num_bits);
-                full_v_adj_list |= delta_v_adj_list;
-
-                const auto& matrix = m_delta_graph2.matrix;
-                const auto delta_v_adj_list2 = matrix.get_bitset(v, pj);
-                if (delta_v_adj_list != delta_v_adj_list2)
-                {
-                    std::cout << v << " " << pi << " " << bit << " " << pj << std::endl;
-                    std::cout << "Delta adj partition 1: " << delta_v_adj_list << std::endl;
-                    std::cout << "Delta adj partition 2: " << delta_v_adj_list2 << std::endl;
-                }
-                //  assert(delta_v_adj_list == delta_v_adj_list2);
-            }
-        }
-
-        offset += info_i.num_bits;
-    }
-
-    size_t full_partitions = 0;
-    size_t total_partitions = 0;
-    size_t edges_in_non_full_partitions = 0;
-    size_t edges_in_full_partitions = 0;
-
-    auto unique_adj_partitions = UnorderedMap<size_t, UnorderedSet<BitsetSpan<uint64_t>>> {};
-
-    for (uint_t v = 0; v < m_const_graph.nv; ++v)
-    {
-        auto full_v_adj_list_row = m_full_graph.partition_adjacency_matrix_span(v);
-
-        for (uint_t p = 0; p < m_const_graph.k; ++p)
-        {
-            const auto& info = m_const_graph.info.infos[p];
-
-            auto full_v_adj_list = BitsetSpan<uint64_t>(full_v_adj_list_row.data() + info.block_offset, info.num_bits);
-
-            ++total_partitions;
-            if (full_v_adj_list.count() == info.num_bits)
-            {
-                ++full_partitions;
-                edges_in_full_partitions += full_v_adj_list.count();
-            }
-            else
-            {
-                edges_in_non_full_partitions += full_v_adj_list.count();
-            }
-
-            unique_adj_partitions[p].insert(full_v_adj_list);
-        }
-    }
-
-    auto statistics = SetNewAssignmentSetsStatistics {};
-    statistics.num_adj_partitions = m_const_graph.k * m_const_graph.nv;
-    statistics.num_unique_adj_partitions = 0;
-    for (const auto& [partition, edge_sets] : unique_adj_partitions)
-        statistics.num_unique_adj_partitions += edge_sets.size();
-
-    if (num_delta_edges > 100000)
-    {
-        std::cout << static_graph.get_variable_dependeny_graph() << std::endl;
-        std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
-        std::cout << "Delta KPKC: " << static_graph.get_num_edges() << " edges, " << num_delta_edges << " delta edges" << std::endl;
-        std::cout << "Full graph partition adjacency matrix size: " << m_full_graph.partition_adjacency_matrix_data.size() << std::endl;
-        std::cout << "Count structure";
-        for (const auto& [partition, edge_sets] : unique_adj_partitions)
-        {
-            std::cout << "\n  Partition " << partition << ": " << edge_sets.size() << " unique adjacency bitsets";
-        }
-        std::cout << std::endl;
-        std::cout << "Num vertices: " << m_const_graph.nv << std::endl;
-        std::cout << "Full partitions: " << full_partitions << std::endl;
-        std::cout << "Total partitions: " << total_partitions << std::endl;
-        std::cout << "Num adj partitions: " << statistics.num_adj_partitions << std::endl;
-        std::cout << "Num unique adj partitions: " << statistics.num_unique_adj_partitions << std::endl;
-        std::cout << "Edges in full partitions: " << edges_in_full_partitions << std::endl;
-        std::cout << "Edges in non-full partitions: " << edges_in_non_full_partitions << std::endl;
-        std::cout << "Vertices time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_vertices - start_time_vertices).count() << " ns"
-                  << std::endl;
-        std::cout << "Edge time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_edges - start_time_edges).count() << " ns" << std::endl;
-        std::cout << "Full adjacency data:" << m_full_graph.partition_adjacency_matrix_data.size() << std::endl;
-        std::cout << "Full adjacency data 2:" << m_full_graph2.matrix.bitset_data().size() << std::endl;
-        std::cout << "Total time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << " ns" << std::endl;
-        std::cout << "Total time 2: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time2 - start_time2).count() << " ns" << std::endl;
-        std::cout << std::endl;
-
-        // std::terminate();
-    }
-
-    return statistics;
+    return SetNewAssignmentSetsStatistics();
 }
 
 void DeltaKPKC::reset()
 {
-    m_delta_graph.reset();
-    m_full_graph.reset();
     m_delta_graph2.reset();
     m_full_graph2.reset();
-    m_masks.reset();
     m_iteration = 0;
 }
 
@@ -329,7 +80,7 @@ void DeltaKPKC::seed_without_anchor(Workspace& workspace) const
         const auto& info = m_const_graph.info.infos[p];
         auto cv_0 = BitsetSpan<uint64_t>(cv_0_row.data() + info.block_offset, info.num_bits);
 
-        auto partition = BitsetSpan<const uint64_t>(m_full_graph.partition_vertices_data.data() + info.block_offset, info.num_bits);
+        auto partition = BitsetSpan<const uint64_t>(m_full_graph2.matrix.partitions().data().data() + info.block_offset, info.num_bits);
         cv_0.copy_from(partition);
     }
 }
@@ -352,10 +103,6 @@ bool DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
     workspace.partition_bits.set(pj);
 
     auto cv_0_row = workspace.compatible_vertices_span(0);
-    const auto full_src_adj_list_row = m_full_graph.partition_adjacency_matrix_span(edge.src.index);
-    const auto full_dst_adj_list_row = m_full_graph.partition_adjacency_matrix_span(edge.dst.index);
-    const auto delta_src_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(edge.src.index);
-    const auto delta_dst_adj_list_row = m_delta_graph.partition_adjacency_matrix_span(edge.dst.index);
 
     for (uint_t p = 0; p < m_const_graph.k; ++p)
     {
@@ -364,8 +111,8 @@ bool DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
 
         const auto& info = m_const_graph.info.infos[p];
         auto cv_0 = BitsetSpan<uint64_t>(cv_0_row.data() + info.block_offset, info.num_bits);
-        auto full_src_adj_list = BitsetSpan<const uint64_t>(full_src_adj_list_row.data() + info.block_offset, info.num_bits);
-        auto full_dst_adj_list = BitsetSpan<const uint64_t>(full_dst_adj_list_row.data() + info.block_offset, info.num_bits);
+        auto full_src_adj_list = m_full_graph2.matrix.get_bitset(edge.src.index, p);
+        auto full_dst_adj_list = m_full_graph2.matrix.get_bitset(edge.dst.index, p);
 
         cv_0.copy_from(full_src_adj_list);
         cv_0 &= full_dst_adj_list;
@@ -373,7 +120,7 @@ bool DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
         if (!cv_0.any())
             return false;  ///< triangle pruning
 
-        auto delta_src_adj_list = BitsetSpan<const uint64_t>(delta_src_adj_list_row.data() + info.block_offset, info.num_bits);
+        auto delta_src_adj_list = m_delta_graph2.matrix.get_bitset(edge.src.index, p);
 
         if (p < pj)
             cv_0 -= delta_src_adj_list;
@@ -381,7 +128,7 @@ bool DeltaKPKC::seed_from_anchor(const Edge& edge, Workspace& workspace) const
         if (!cv_0.any())
             return false;  ///< triangle pruning
 
-        auto delta_dst_adj_list = BitsetSpan<const uint64_t>(delta_dst_adj_list_row.data() + info.block_offset, info.num_bits);
+        auto delta_dst_adj_list = m_delta_graph2.matrix.get_bitset(edge.dst.index, p);
 
         if (p < pi)
             cv_0 -= delta_dst_adj_list;
