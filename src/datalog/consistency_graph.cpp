@@ -718,7 +718,7 @@ kpkc::PartitionedAdjacencyLists StaticConsistencyGraph::compute_edges(const deta
 {
     const auto k = vertex_partitions.size();
 
-    auto adj_matrix = kpkc::PartitionedAdjacencyLists(vertex_partitions);
+    auto adj_lists = kpkc::PartitionedAdjacencyLists(vertex_partitions);
 
     // std::cout << m_condition << std::endl;
     // std::cout << m_unary_overapproximation_condition << std::endl;
@@ -735,15 +735,15 @@ kpkc::PartitionedAdjacencyLists StaticConsistencyGraph::compute_edges(const deta
 
                 const uint_t start_p = pi + 1;
 
-                adj_matrix.start_row(first_index, start_p);
+                adj_lists.start_row(first_index, start_p);
 
                 for (uint_t pj = start_p; pj < k; ++pj)
                 {
-                    adj_matrix.start_partition();
+                    adj_lists.start_partition();
 
                     if (m_binary_overapproximation_vdg.get_adj_matrix().get_cell(f::ParameterIndex(pi), f::ParameterIndex(pj)).statically_empty())
                     {
-                        adj_matrix.finish_partition_without_edge(pj);
+                        adj_lists.finish_partition_without_edge(pj);
 
                         // Ensure soundness of skipping the computation
                         assert(std::all_of(vertex_partitions[pj].begin(),
@@ -773,20 +773,20 @@ kpkc::PartitionedAdjacencyLists StaticConsistencyGraph::compute_edges(const deta
 
                             if (edge.consistent_literals(indexed_literals, static_assignment_sets.predicate))
                             {
-                                adj_matrix.add_target(second_index);
+                                adj_lists.add_target(second_index);
                             }
                         }
 
-                        adj_matrix.finish_partition_with_edge(pj);
+                        adj_lists.finish_partition_with_edge(pj);
                     }
                 }
 
-                adj_matrix.finish_row();
+                adj_lists.finish_row();
             }
         }
     }
 
-    return adj_matrix;
+    return adj_lists;
 }
 
 template<formalism::FactKind T>
@@ -1107,21 +1107,25 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
     return result;
 }
 
-StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
-                                               View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
-                                               View<Index<fd::ConjunctiveCondition>, fd::Repository> unary_overapproximation_condition,
-                                               View<Index<fd::ConjunctiveCondition>, fd::Repository> binary_overapproximation_condition,
-                                               const analysis::DomainListList& parameter_domains,
-                                               size_t num_objects,
-                                               size_t num_fluent_predicates,
-                                               uint_t begin_parameter_index,
-                                               uint_t end_parameter_index,
-                                               const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets) :
+StaticConsistencyGraph::StaticConsistencyGraph(
+    View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
+    View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
+    View<Index<fd::ConjunctiveCondition>, fd::Repository> unary_overapproximation_condition,
+    View<Index<fd::ConjunctiveCondition>, fd::Repository> binary_overapproximation_condition,
+    View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> static_binary_overapproximation_condition,
+    const analysis::DomainListList& parameter_domains,
+    size_t num_objects,
+    size_t num_fluent_predicates,
+    uint_t begin_parameter_index,
+    uint_t end_parameter_index,
+    const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets) :
     m_rule(rule),
     m_condition(condition),
     m_unary_overapproximation_condition(unary_overapproximation_condition),
     m_binary_overapproximation_condition(binary_overapproximation_condition),
+    m_static_binary_overapproximation_condition(static_binary_overapproximation_condition),
     m_binary_overapproximation_vdg(binary_overapproximation_condition),
+    m_static_binary_overapproximation_vdg(static_binary_overapproximation_condition),
     m_unary_overapproximation_indexed_literals(compute_indexed_literals(m_unary_overapproximation_condition)),
     m_binary_overapproximation_indexed_literals(compute_indexed_literals(m_binary_overapproximation_condition)),
     m_unary_overapproximation_indexed_constraints(compute_indexed_constraints(m_unary_overapproximation_condition)),
@@ -1138,7 +1142,7 @@ StaticConsistencyGraph::StaticConsistencyGraph(View<Index<formalism::datalog::Ru
     m_vertex_partitions = std::move(vertex_partitions_);
     m_object_to_vertex_partitions = std::move(object_to_vertex_partitions_);
 
-    m_adj_matrix = compute_edges(m_binary_overapproximation_indexed_literals.static_indexed, static_assignment_sets, m_vertices, m_vertex_partitions);
+    m_adj_lists = compute_edges(m_binary_overapproximation_indexed_literals.static_indexed, static_assignment_sets, m_vertices, m_vertex_partitions);
 
     // std::cout << "Num vertices: " << m_vertices.size() << " num edges: " << m_targets.size() << std::endl;
 
@@ -1184,12 +1188,9 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     // std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
-    delta_graph.affected_partitions.reset();
-    delta_graph.delta_partitions.reset();
-
     // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-    delta_graph.matrix.copy_from(full_graph.matrix);
+    delta_graph.reset();
 
     // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
@@ -1211,7 +1212,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
             auto full_delta_partition = full_graph.delta_partitions.get_bitset(info);
             auto delta_delta_partition = delta_graph.delta_partitions.get_bitset(info);
 
-            /// Iterate over deltas
+            /// TODO: Iterate over deltas only
             for (auto bit = full_affected_partition.find_first_zero(); bit != BitsetSpan<uint64_t>::npos; bit = full_affected_partition.find_next_zero(bit))
             {
                 const auto v = vertex_index_offset + bit;
@@ -1243,7 +1244,11 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     if (constant_pair_consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate))
     {
-        m_adj_matrix.for_each_row(
+        // TODO: The upper triangle CSR in the static graph is annoying here.
+        // We cannot easily anchor at the delta consistent vertices.
+        // On the other hand, this avoids symmetric consistency checks.
+        // But i guess those can easily be avoid by always testing again full_graph.matrix.
+        m_adj_lists.for_each_row(
             [&](auto&& row)
             {
                 const auto vi = row.v();
@@ -1299,6 +1304,9 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                                     full_graph.matrix.get_bitset(vi, pj).set(bj);
                                     full_graph.matrix.get_bitset(vj, pi).set(bi);
 
+                                    delta_graph.matrix.get_bitset(vi, pj).set(bj);
+                                    delta_graph.matrix.get_bitset(vj, pi).set(bi);
+
                                     full_affected_partition_i.set(bi);
                                     full_affected_partition_j.set(bj);
                                     delta_affected_partition_i.set(bi);
@@ -1345,10 +1353,6 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     // std::chrono::steady_clock::time_point t5 = std::chrono::steady_clock::now();
 
-    /// 4. Set delta to diff accordingly
-
-    delta_graph.matrix.diff_from(full_graph.matrix);
-
     // std::chrono::steady_clock::time_point t6 = std::chrono::steady_clock::now();
 
     // std::cout << "Delta graph:" << std::endl;
@@ -1368,12 +1372,10 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     //
     //    if ((T.calls % 1000) == 0)
     //    {
-    //        std::cout << "avg reset " << (T.reset_ns / T.calls) << " ns\n"
-    //                  << "avg copy " << (T.copy_ns / T.calls) << " ns\n"
+    //        std::cout << "avg reset " << (T.copy_ns / T.calls) << " ns\n"
     //                  << "avg vertex " << (T.vertex_ns / T.calls) << " ns\n"
     //                  << "avg edge " << (T.edge_ns / T.calls) << " ns\n"
     //                  << "avg implicit " << (T.implicit_ns / T.calls) << " ns\n"
-    //                  << "avg diff " << (T.diff_ns / T.calls) << " ns\n"
     //                  << "delta touched partitions " << static_cast<double>(T.delta_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
     //                  << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n";
     //    }
@@ -1388,7 +1390,7 @@ const details::Vertex& StaticConsistencyGraph::get_vertex(formalism::ParameterIn
 
 size_t StaticConsistencyGraph::get_num_vertices() const noexcept { return m_vertices.size(); }
 
-size_t StaticConsistencyGraph::get_num_edges() const noexcept { return m_adj_matrix.num_edges(); }
+size_t StaticConsistencyGraph::get_num_edges() const noexcept { return m_adj_lists.num_edges(); }
 
 View<Index<fd::Rule>, fd::Repository> StaticConsistencyGraph::get_rule() const noexcept { return m_rule; }
 
@@ -1405,7 +1407,7 @@ const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_object_to_ve
 
 const details::IndexedAnchors& StaticConsistencyGraph::get_predicate_to_anchors() const noexcept { return m_predicate_to_anchors; }
 
-const kpkc::PartitionedAdjacencyLists& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_adj_matrix; }
+const kpkc::PartitionedAdjacencyLists& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_adj_lists; }
 
 std::pair<Index<fd::GroundConjunctiveCondition>, bool> create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
                                                                                        fd::Repository& context)
@@ -1456,6 +1458,25 @@ create_overapproximation_conjunctive_condition(size_t k, View<Index<fd::Conjunct
     for (const auto numeric_constraint : condition.get_numeric_constraints())
         if (kpkc_arity(numeric_constraint) >= k)
             conj_cond.numeric_constraints.push_back(numeric_constraint.get_data());
+
+    canonicalize(conj_cond);
+    return context.get_or_create(conj_cond, builder.get_buffer());
+}
+
+std::pair<Index<fd::ConjunctiveCondition>, bool>
+create_static_overapproximation_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
+{
+    auto builder = fd::Builder {};
+    auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
+    auto& conj_cond = *conj_cond_ptr;
+    conj_cond.clear();
+
+    for (const auto variable : condition.get_variables())
+        conj_cond.variables.push_back(variable.get_index());
+
+    for (const auto literal : condition.get_literals<f::StaticTag>())
+        if ((!literal.get_polarity() && kpkc_arity(literal) == k) || (literal.get_polarity() && kpkc_arity(literal) >= k))
+            conj_cond.static_literals.push_back(literal.get_index());
 
     canonicalize(conj_cond);
     return context.get_or_create(conj_cond, builder.get_buffer());

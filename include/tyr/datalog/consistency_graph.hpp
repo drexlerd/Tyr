@@ -269,6 +269,7 @@ public:
                            View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                            View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> unary_overapproximation_condition,
                            View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> binary_overapproximation_condition,
+                           View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> static_binary_overapproximation_condition,
                            const analysis::DomainListList& parameter_domains,
                            size_t num_objects,
                            size_t num_fluent_predicates,
@@ -302,8 +303,10 @@ private:
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> m_condition;
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> m_unary_overapproximation_condition;
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> m_binary_overapproximation_condition;
+    View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> m_static_binary_overapproximation_condition;
 
     formalism::datalog::VariableDependencyGraph m_binary_overapproximation_vdg;
+    formalism::datalog::VariableDependencyGraph m_static_binary_overapproximation_vdg;
 
     /* The data member of the consistency graph. */
     details::Vertices m_vertices;
@@ -312,7 +315,8 @@ private:
     std::vector<std::vector<uint_t>> m_vertex_partitions;
     std::vector<std::vector<uint_t>> m_object_to_vertex_partitions;
 
-    kpkc::PartitionedAdjacencyLists m_adj_matrix;
+    kpkc::PartitionedAdjacencyLists m_adj_lists;
+    // kpkc::PartitionedAdjacencyMatrix m_adj_matrix;
 
     details::IndexedLiterals m_unary_overapproximation_indexed_literals;
     details::IndexedLiterals m_binary_overapproximation_indexed_literals;
@@ -331,6 +335,11 @@ extern std::pair<Index<formalism::datalog::ConjunctiveCondition>, bool>
 create_overapproximation_conjunctive_condition(size_t k,
                                                View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                                                formalism::datalog::Repository& context);
+
+extern std::pair<Index<formalism::datalog::ConjunctiveCondition>, bool>
+create_static_overapproximation_conjunctive_condition(size_t k,
+                                                      View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
+                                                      formalism::datalog::Repository& context);
 
 extern std::pair<Index<formalism::datalog::ConjunctiveCondition>, bool>
 create_overapproximation_conflicting_conjunctive_condition(size_t k,

@@ -369,6 +369,46 @@ public:
         }
     }
 
+    PartitionedAdjacencyMatrix(const PartitionedAdjacencyLists& adj_lists,
+                               const GraphLayout& layout,
+                               const VertexPartitions& affected_partitions,
+                               const VertexPartitions& delta_partitions,
+                               const std::vector<std::vector<uint_t>>& static_partitions,
+                               const formalism::datalog::VariableDependencyGraph& dependency_graph) :
+        PartitionedAdjacencyMatrix(layout, affected_partitions, delta_partitions, static_partitions, dependency_graph)
+    {
+        adj_lists.for_each_row(
+            [&](auto&& row)
+            {
+                const auto vi = row.v();
+                const auto bi = layout.vertex_to_bit[vi];
+                const auto pi = layout.vertex_to_partition[vi];
+
+                row.for_each_partition(
+                    [&](auto&& partition)
+                    {
+                        const auto pj = partition.p();
+
+                        assert(pi < pj);
+
+                        if (dependency_graph.get_adj_matrix().get_cell(formalism::ParameterIndex(pi), formalism::ParameterIndex(pj)).empty())
+                            return;
+
+                        partition.for_each_target(
+                            [&](auto&& vj)
+                            {
+                                const auto bj = layout.vertex_to_bit[vj];
+
+                                auto ci = get_bitset(vi, pj);
+                                auto cj = get_bitset(vj, pi);
+
+                                ci.set(bj);
+                                cj.set(bi);
+                            });
+                    });
+            });
+    }
+
     auto get_bitset(uint_t v, uint_t p) noexcept
     {
         assert(m_adj_span(v, p).mode == Cell::Mode::EXPLICIT);
