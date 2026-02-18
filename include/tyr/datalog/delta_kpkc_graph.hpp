@@ -334,6 +334,7 @@ public:
         m_delta_partitions(delta_partitions),
         m_adj_data(m_layout.get().nv * m_layout.get().k, Cell { Cell::Mode::IMPLICIT, std::numeric_limits<uint_t>::max() }),
         m_adj_span(m_adj_data.data(), std::array<size_t, 2> { m_layout.get().nv, m_layout.get().k }),
+        m_touched_partitions(m_layout.get().nv * m_layout.get().k, false),
         m_bitset_data()
     {
         for (uint_t pi = 0; pi < m_layout.get().k; ++pi)
@@ -513,13 +514,19 @@ public:
         }
     }
 
-    void reset() noexcept { std::memset(m_bitset_data.data(), 0, m_bitset_data.size() * sizeof(uint64_t)); }
+    void reset() noexcept
+    {
+        m_touched_partitions.reset();
+        std::memset(m_bitset_data.data(), 0, m_bitset_data.size() * sizeof(uint64_t));
+    }
 
     const auto& get_cell(uint_t v, uint_t p) const noexcept { return m_adj_span(v, p); }
 
     const auto& layout() const noexcept { return m_layout.get(); }
     const auto& affected_partitions() const noexcept { return m_affected_partitions.get(); }
     const auto& delta_partitions() const noexcept { return m_delta_partitions.get(); }
+    const auto& touched_partitions() const noexcept { return m_touched_partitions; }
+    auto touched_partitions(uint_t v, uint_t p) noexcept { return m_touched_partitions[v * m_layout.get().k + p]; }
     const auto& adj_data() const noexcept { return m_adj_data; }
     auto adj_span() const noexcept { return m_adj_span; }
 
@@ -530,9 +537,12 @@ private:
     std::reference_wrapper<const VertexPartitions> m_affected_partitions;
     std::reference_wrapper<const VertexPartitions> m_delta_partitions;
 
-    /// k x k matrix where each cell refers to a bitset either stored explicitly or referring implicitly to a vertex partition.
+    /// v x k matrix where each cell refers to a bitset either stored explicitly or referring implicitly to a vertex partition.
     std::vector<Cell> m_adj_data;
     MDSpan<Cell, 2> m_adj_span;
+
+    /// v x k bitset to track touched cell bitsets
+    boost::dynamic_bitset<> m_touched_partitions;
 
     /// Explicit storage
     std::vector<uint64_t> m_bitset_data;
