@@ -38,19 +38,13 @@ DeltaKPKC::DeltaKPKC(GraphLayout const_graph, Graph2 delta_graph2, Graph2 full_g
 {
 }
 
-SetNewAssignmentSetsStatistics DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph,
-                                                                   const TaggedFactSets<formalism::FluentTag>& delta_fact_sets,
-                                                                   const AssignmentSets& assignment_sets)
+void DeltaKPKC::set_next_assignment_sets(const StaticConsistencyGraph& static_graph,
+                                         const TaggedFactSets<formalism::FluentTag>& delta_fact_sets,
+                                         const AssignmentSets& assignment_sets)
 {
-    std::chrono::steady_clock::time_point start_time2 = std::chrono::steady_clock::now();
-
     static_graph.initialize_dynamic_consistency_graphs(assignment_sets, delta_fact_sets, m_const_graph, m_delta_graph2, m_full_graph2);
 
-    std::chrono::steady_clock::time_point end_time2 = std::chrono::steady_clock::now();
-
     ++m_iteration;
-
-    return SetNewAssignmentSetsStatistics();
 }
 
 void DeltaKPKC::reset()

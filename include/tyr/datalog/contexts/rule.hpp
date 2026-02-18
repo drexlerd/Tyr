@@ -173,12 +173,9 @@ struct RuleExecutionContext
     {
         // std::cout << cws_rule.get_rule() << std::endl;
 
-        auto statistics = ws_rule.common.initialize_iteration(cws_rule.static_consistency_graph,
-                                                              ctx.ctx.ws.facts.delta_fact_sets,
-                                                              AssignmentSets { ctx.ctx.cws.facts.assignment_sets, ctx.ctx.ws.facts.assignment_sets });
-
-        ws_rule.common.statistics.num_adj_partitions += statistics.num_adj_partitions;
-        ws_rule.common.statistics.num_unique_adj_partitions += statistics.num_unique_adj_partitions;
+        ws_rule.common.initialize_iteration(cws_rule.static_consistency_graph,
+                                            ctx.ctx.ws.facts.delta_fact_sets,
+                                            AssignmentSets { ctx.ctx.cws.facts.assignment_sets, ctx.ctx.ws.facts.assignment_sets });
     }
 
     void clear_common() noexcept { ws_rule.common.clear(); }

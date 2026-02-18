@@ -26,11 +26,6 @@
 
 namespace tyr::datalog
 {
-struct SetNewAssignmentSetsStatistics
-{
-    size_t num_adj_partitions;
-    size_t num_unique_adj_partitions;
-};
 
 struct RuleStatistics
 {
@@ -42,9 +37,6 @@ struct RuleStatistics
     std::chrono::nanoseconds process_pending_time { 0 };
     std::chrono::nanoseconds process_clique_time { 0 };
     std::chrono::nanoseconds total_time { 0 };
-
-    uint64_t num_adj_partitions;
-    uint64_t num_unique_adj_partitions;
 };
 
 struct RuleWorkerStatistics
@@ -73,9 +65,6 @@ struct AggregatedRuleStatistics
     std::chrono::nanoseconds avg_time_min { 0 };
     std::chrono::nanoseconds avg_time_max { 0 };
     std::chrono::nanoseconds avg_time_median { 0 };
-
-    uint64_t num_adj_partitions;
-    uint64_t num_unique_adj_partitions;
 };
 
 struct AggregatedRuleWorkerStatistics
@@ -110,8 +99,6 @@ inline AggregatedRuleStatistics compute_aggregated_rule_statistics(const std::ve
         result.initialize_time += rs.initialize_time;
         result.process_generate_time += rs.process_generate_time;
         result.process_pending_time += rs.process_pending_time;
-        result.num_adj_partitions += rs.num_adj_partitions;
-        result.num_unique_adj_partitions += rs.num_unique_adj_partitions;
     }
 
     result.sample_count = samples.size();
