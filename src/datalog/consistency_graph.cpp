@@ -1161,6 +1161,7 @@ StaticConsistencyGraph::StaticConsistencyGraph(
 }
 
 void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const AssignmentSets& assignment_sets,
+                                                                   const TaggedFactSets<formalism::FluentTag>& delta_fact_sets,
                                                                    const kpkc::GraphLayout& layout,
                                                                    kpkc::Graph2& delta_graph,
                                                                    kpkc::Graph2& full_graph) const
@@ -1174,6 +1175,10 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
         uint64_t implicit_ns = 0;
         uint64_t delta_touched_partitions = 0;
         uint64_t full_touched_partitions = 0;
+        uint64_t delta_consistent_vertices = 0;
+        uint64_t delta_consistent_edges = 0;
+        uint64_t static_vertices = 0;
+        uint64_t static_edges = 0;
     };
 
     static PhaseTimes T;
@@ -1227,6 +1232,8 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
                     delta_graph.matrix.touched_partitions(v, layout.vertex_to_partition[v]) = true;
                     full_graph.matrix.touched_partitions(v, layout.vertex_to_partition[v]) = true;
+
+                    ++T.delta_consistent_vertices;
                 }
             }
 
@@ -1315,6 +1322,8 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                                     full_graph.matrix.touched_partitions(vi, pj) = true;
                                     delta_graph.matrix.touched_partitions(vj, pi) = true;
                                     full_graph.matrix.touched_partitions(vj, pi) = true;
+
+                                    ++T.delta_consistent_edges;
                                 }
                             });
                     });
@@ -1361,6 +1370,8 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     T.implicit_ns += to_ns(t4 - t3);
     T.delta_touched_partitions += delta_graph.matrix.touched_partitions().count();
     T.full_touched_partitions += full_graph.matrix.touched_partitions().count();
+    T.static_vertices += get_num_vertices();
+    T.static_edges += get_num_edges();
 
     if ((T.calls % 1000) == 0)
     {
@@ -1369,7 +1380,11 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                   << "avg edge " << (T.edge_ns / T.calls) << " ns\n"
                   << "avg implicit " << (T.implicit_ns / T.calls) << " ns\n"
                   << "delta touched partitions " << static_cast<double>(T.delta_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
-                  << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n";
+                  << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
+                  << "delta consistent vertices " << T.delta_consistent_vertices / T.calls << "\n"
+                  << "delta consistent edges " << T.delta_consistent_edges / T.calls << "\n"
+                  << "static vertices " << T.static_vertices / T.calls << "\n"
+                  << "static edges " << T.static_edges / T.calls << "\n";
     }
 }
 

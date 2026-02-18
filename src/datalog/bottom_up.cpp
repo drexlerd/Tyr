@@ -325,16 +325,23 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
     {
         // std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
 
-        // for (const auto& set : facts.fact_sets.predicate.get_sets())
-        //{
-        //     std::cout << set.get_facts() << std::endl;
-        // }
-
         // Check whether min cost for goal was proven.
         if (tp.check())
         {
             return;
         }
+
+        // std::cout << "Facts: " << std::endl;
+        // for (const auto& set : facts.fact_sets.predicate.get_sets())
+        // {
+        //     std::cout << set.get_facts() << std::endl;
+        // }
+        // std::cout << "Delta facts: " << std::endl;
+        // for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
+        // {
+        //     std::cout << set.get_facts() << std::endl;
+        // }
+        // std::cout << std::endl;
 
         scheduler.on_start_iteration();
 
@@ -380,14 +387,17 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                            });
         }
 
+        // Clear delta facts
+        facts.delta_fact_sets.reset();
+
+        // Clear current bucket to avoid duplicate handling
+        cost_buckets.clear_current();
+
         /**
          * Sequential merge results from workers into program
          */
 
         {
-            // Clear current bucket to avoid duplicate handling
-            cost_buckets.clear_current();
-
             for (const auto rule_index : active_rules)
             {
                 const auto i = uint_t(rule_index);
@@ -435,6 +445,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     // Update fact sets
                     facts.fact_sets.predicate.insert(head);
                     facts.assignment_sets.predicate.insert(head);
+                    facts.delta_fact_sets.predicate.insert(head);
                 }
             }
         }

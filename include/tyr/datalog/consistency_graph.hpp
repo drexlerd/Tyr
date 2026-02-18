@@ -278,6 +278,7 @@ public:
                            const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
 
     void initialize_dynamic_consistency_graphs(const AssignmentSets& assignment_sets,
+                                               const TaggedFactSets<formalism::FluentTag>& delta_fact_sets,
                                                const kpkc::GraphLayout& layout,
                                                kpkc::Graph2& delta_graph,
                                                kpkc::Graph2& full_graph) const;
