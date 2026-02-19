@@ -156,7 +156,7 @@ struct IndexedAnchors
 {
     std::vector<std::vector<LiteralAnchorInfo>> predicate_to_infos;
 
-    std::vector<uint_t> unbound_parameters;
+    boost::dynamic_bitset<> bound_parameters;
 };
 
 /**

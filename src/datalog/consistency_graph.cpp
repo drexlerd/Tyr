@@ -1053,7 +1053,7 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
 {
     auto result = details::IndexedAnchors {};
     result.predicate_to_infos = std::vector<std::vector<details::LiteralAnchorInfo>>(num_fluent_predicates);
-    result.unbound_parameters = std::vector<uint_t> {};
+    result.bound_parameters = boost::dynamic_bitset<>(element.get_arity(), false);
 
     auto bound_parameters = UnorderedSet<uint_t> {};
 
@@ -1077,7 +1077,7 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
                     if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                     {
                         info.parameter_mappings.position_to_parameter[position] = uint_t(arg);
-                        bound_parameters.insert(uint_t(arg));
+                        result.bound_parameters.set(uint_t(arg));
                     }
                     else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>) {}
                     else
@@ -1087,12 +1087,6 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
         }
 
         result.predicate_to_infos[uint_t(literal.get_atom().get_predicate().get_index())].push_back(std::move(info));
-    }
-
-    for (uint_t p = 0; p < element.get_arity(); ++p)
-    {
-        if (!bound_parameters.contains(p))
-            result.unbound_parameters.push_back(p);
     }
 
     return result;
