@@ -251,11 +251,10 @@ private:
                      const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
 
     /// @brief Helper to initialize edges.
-    std::tuple<kpkc::PartitionedAdjacencyLists, kpkc::DeduplicatedAdjacencyMatrix>
-    compute_edges(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
-                  const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
-                  const details::Vertices& vertices,
-                  const std::vector<std::vector<uint_t>>& vertex_partitions);
+    kpkc::DeduplicatedAdjacencyMatrix compute_edges(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
+                                                    const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
+                                                    const details::Vertices& vertices,
+                                                    const std::vector<std::vector<uint_t>>& vertex_partitions);
 
     template<formalism::FactKind T>
     bool constant_consistent_literals(const details::TaggedIndexedLiterals<T>& indexed_literals,
@@ -290,7 +289,6 @@ public:
     const details::Vertex& get_vertex(formalism::ParameterIndex parameter, Index<formalism::Object> object) const;
 
     size_t get_num_vertices() const noexcept;
-    size_t get_num_edges() const noexcept;
 
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> get_rule() const noexcept;
     View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> get_condition() const noexcept;
@@ -298,7 +296,7 @@ public:
     const std::vector<std::vector<uint_t>>& get_vertex_partitions() const noexcept;
     const std::vector<std::vector<uint_t>>& get_object_to_vertex_partitions() const noexcept;
     const details::IndexedAnchors& get_predicate_to_anchors() const noexcept;
-    const kpkc::PartitionedAdjacencyLists& get_adjacency_matrix() const noexcept;
+    const kpkc::DeduplicatedAdjacencyMatrix& get_adjacency_matrix() const noexcept;
 
 private:
     View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> m_rule;
@@ -319,8 +317,6 @@ private:
 
     kpkc::GraphLayout m_layout;
     kpkc::DeduplicatedAdjacencyMatrix m_matrix;
-
-    kpkc::PartitionedAdjacencyLists m_adj_lists;
 
     details::IndexedLiterals m_unary_overapproximation_indexed_literals;
     details::IndexedLiterals m_binary_overapproximation_indexed_literals;

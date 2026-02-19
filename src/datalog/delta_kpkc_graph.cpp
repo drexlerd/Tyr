@@ -45,7 +45,7 @@ namespace tyr::datalog::kpkc
 
 GraphLayout::GraphLayout(size_t nv, const std::vector<std::vector<uint_t>>& vertex_partitions_) :
     nv(nv),
-    k(vertex_partitions.size()),
+    k(vertex_partitions_.size()),
     vertex_partitions(vertex_partitions_),
     partitions(),
     vertex_to_partition(),

@@ -43,6 +43,8 @@ private:
 public:
     explicit PredicateFactSet(View<Index<formalism::Predicate<T>>, formalism::datalog::Repository> predicate);
 
+    void insert(const PredicateFactSet<T>& other) { insert(other.get_facts()); }
+
     void reset();
 
     void insert(Index<formalism::datalog::GroundAtom<T>> ground_atom);
@@ -78,6 +80,14 @@ public:
         /* Initialize sets. */
         for (const auto predicate : predicates)
             m_sets.emplace_back(PredicateFactSet<T>(predicate));
+    }
+
+    void insert(const PredicateFactSets<T>& other)
+    {
+        assert(m_sets.size() == other.m_sets.size());
+
+        for (uint_t i = 0; i < m_sets.size(); ++i)
+            m_sets[i].insert(other.m_sets[i]);
     }
 
     void reset()
@@ -126,6 +136,8 @@ private:
 public:
     explicit FunctionFactSet(View<Index<formalism::Function<T>>, formalism::datalog::Repository> function);
 
+    void insert(const FunctionFactSet& other) { insert(other.get_fterms(), other.get_values()); }
+
     void reset();
 
     void insert(View<Index<formalism::datalog::GroundFunctionTerm<T>>, formalism::datalog::Repository> function_term, float_t value);
@@ -168,6 +180,14 @@ public:
     {
         for (auto& set : m_sets)
             set.reset();
+    }
+
+    void insert(const FunctionFactSets& other)
+    {
+        assert(m_sets.size() == other.m_sets.size());
+
+        for (uint_t i = 0; i < m_sets.size(); ++i)
+            m_sets[i].insert(other.m_sets[i]);
     }
 
     void insert(View<Index<formalism::datalog::GroundFunctionTerm<T>>, formalism::datalog::Repository> function_term, float_t value)
@@ -227,6 +247,12 @@ struct TaggedFactSets
     {
         predicate.insert(atoms);
         function.insert(fterm_values);
+    }
+
+    void insert(const TaggedFactSets<T>& other)
+    {
+        predicate.insert(other.predicate);
+        function.insert(other.function);
     }
 
     void reset() noexcept

@@ -116,214 +116,6 @@ private:
     std::vector<uint64_t> m_data;
 };
 
-/// @brief A compact adjacency matrix representation for k partite graphs.
-///
-/// Row-major adjacency lists with targets grouped by partition.
-struct PartitionedAdjacencyLists
-{
-    PartitionedAdjacencyLists() : m_vertex_partitions(), m_data(), m_row_offsets(), m_num_edges(0), m_k(0) {}
-    PartitionedAdjacencyLists(std::vector<std::vector<uint_t>> vertex_partitions) :
-        m_vertex_partitions(std::move(vertex_partitions)),
-        m_data(),
-        m_row_offsets(),
-        m_num_edges(),
-        m_k(m_vertex_partitions.size())
-    {
-        clear();
-    }
-
-    /**
-     * Construction
-     */
-
-    void clear() noexcept
-    {
-        m_data.clear();
-        m_row_offsets.push_back(m_data.size());
-        m_num_edges = 0;
-    }
-
-    void start_row(uint_t v, uint_t p) noexcept
-    {
-        m_row_len_pos = m_data.size();
-        m_row_len = 0;
-        m_data.push_back(0);
-        m_data.push_back(v);
-        m_data.push_back(p);
-    }
-
-    void start_partition() noexcept
-    {
-        m_partition_len_pos = m_data.size();
-        m_data.push_back(0);
-        m_partition_data_start_pos = m_data.size();
-    }
-
-    void add_target(uint_t target) noexcept
-    {
-        m_data.push_back(target);
-        ++m_num_edges;
-    }
-
-    void finish_partition_without_edge(uint_t p)
-    {
-        m_data[m_partition_len_pos] = kpkc::PartitionedAdjacencyLists::RowView::FULL;
-        const auto num_targets = m_vertex_partitions[p].size();
-        m_row_len += num_targets;
-        m_num_edges += num_targets;
-    }
-
-    void finish_partition_with_edge(uint_t p)
-    {
-        uint_t partition_data_end_pos = m_data.size();
-        const auto num_targets = partition_data_end_pos - m_partition_data_start_pos;
-        if (num_targets == m_vertex_partitions[p].size())
-        {
-            // Use partition reference mechanism for dense regions
-            m_data[m_partition_len_pos] = kpkc::PartitionedAdjacencyLists::RowView::FULL;
-            m_data.resize(m_partition_len_pos + 1);
-        }
-        else
-        {
-            m_data[m_partition_len_pos] = num_targets;
-        }
-        m_row_len += num_targets;
-    }
-
-    void finish_row()
-    {
-        m_data[m_row_len_pos] = m_row_len;
-        m_row_offsets.push_back(m_data.size());
-    }
-
-    class PartitionView
-    {
-    public:
-        PartitionView(uint_t p, std::span<const uint_t> data) noexcept : m_p(p), m_data(data) {}
-
-        template<typename Callback>
-        void for_each_target(Callback&& callback) const
-        {
-            for (const auto target : m_data)
-                callback(target);
-        }
-
-        uint_t p() const noexcept { return m_p; }
-
-    private:
-        uint_t m_p;
-        std::span<const uint_t> m_data;
-    };
-
-    class RowView
-    {
-    public:
-        RowView(const PartitionedAdjacencyLists& matrix, uint_t row, uint_t len, uint_t v, uint_t p, std::span<const uint_t> data) noexcept :
-            m_matrix(matrix),
-            m_row(row),
-            m_len(len),
-            m_v(v),
-            m_p(p),
-            m_data(data)
-        {
-        }
-
-        static constexpr uint_t FULL = std::numeric_limits<uint_t>::max();
-
-        template<typename Callback>
-        void for_each_partition(Callback&& callback) const
-        {
-            uint_t i = 0;
-            uint_t p = m_p;
-
-            while (i < m_data.size())
-            {
-                const uint_t len = m_data[i++];
-                if (len == FULL)
-                {
-                    const auto& vertices = m_matrix.vertex_partitions()[p];
-                    callback(PartitionView(p, std::span<const uint_t>(vertices.data(), vertices.size())));
-                }
-                else
-                {
-                    const uint_t start = i;
-                    const uint_t end = i + len;
-
-                    assert(end <= m_data.size());
-
-                    callback(PartitionView(p, std::span<const uint_t>(m_data.data() + start, len)));
-
-                    i = end;
-                }
-                ++p;
-            }
-
-            assert(p == m_matrix.k());
-        }
-
-        uint_t row() const noexcept { return m_row; }
-        uint_t len() const noexcept { return m_len; }
-        uint_t v() const noexcept { return m_v; }
-        uint_t p() const noexcept { return m_p; }
-
-    private:
-        const PartitionedAdjacencyLists& m_matrix;
-        uint_t m_row;
-        uint_t m_len;
-        uint_t m_v;
-        uint_t m_p;
-        std::span<const uint_t> m_data;
-    };
-
-    template<typename Callback>
-    void for_each_row(Callback&& callback) const
-    {
-        assert(!m_row_offsets.empty());
-        assert(m_row_offsets.back() == m_data.size());
-
-        const uint_t nv = static_cast<uint_t>(m_row_offsets.size() - 1);
-
-        for (uint_t row = 0; row < nv; ++row)
-        {
-            const uint_t start = m_row_offsets[row];
-            const uint_t end = m_row_offsets[row + 1];
-
-            assert(start <= end);
-            assert(end <= m_data.size());
-
-            if (start == end)
-                continue;
-
-            const uint_t len = m_data[start];
-            const uint_t v = m_data[start + 1];
-            const uint_t p = m_data[start + 2];
-            const uint_t data_start = start + 3;
-
-            assert(data_start <= end);  ///< start must be equal to end if there is no target
-
-            callback(RowView(*this, row, len, v, p, std::span<const uint_t>(m_data.data() + data_start, end - data_start)));
-        }
-    }
-
-    const auto& vertex_partitions() const noexcept { return m_vertex_partitions; }
-    const auto& data() const noexcept { return m_data; }
-    const auto& row_offsets() const noexcept { return m_row_offsets; }
-    auto num_edges() const noexcept { return m_num_edges; }
-    auto k() const noexcept { return m_k; }
-
-private:
-    std::vector<std::vector<uint_t>> m_vertex_partitions;
-    std::vector<uint_t> m_data;
-    std::vector<uint_t> m_row_offsets;
-    uint_t m_num_edges;
-    uint_t m_k;
-
-    uint_t m_row_len_pos;
-    uint_t m_row_len;
-    uint_t m_partition_len_pos;
-    uint_t m_partition_data_start_pos;
-};
-
 class AdjacencyMatrix
 {
 public:
@@ -331,31 +123,31 @@ public:
 
     auto get_row(uint_t v) const noexcept
     {
-        const auto& info = m_layout.get().info;
+        const auto& info = m_layout.info;
         const auto row_offset = info.num_blocks * v;
         return std::span<const uint64_t>(m_bitset_data.data() + row_offset, info.num_blocks);
     }
 
     auto get_bitset(uint_t v, uint_t p) noexcept
     {
-        const auto row_offset = m_layout.get().info.num_blocks * v;
-        const auto& info = m_layout.get().info.infos[p];
+        const auto row_offset = m_layout.info.num_blocks * v;
+        const auto& info = m_layout.info.infos[p];
         return BitsetSpan<uint64_t>(m_bitset_data.data() + row_offset + info.block_offset, info.num_bits);
     }
 
     auto get_bitset(uint_t v, uint_t p) const noexcept
     {
-        const auto row_offset = m_layout.get().info.num_blocks * v;
-        const auto& info = m_layout.get().info.infos[p];
+        const auto row_offset = m_layout.info.num_blocks * v;
+        const auto& info = m_layout.info.infos[p];
         return BitsetSpan<const uint64_t>(m_bitset_data.data() + row_offset + info.block_offset, info.num_bits);
     }
 
-    const auto& layout() const noexcept { return m_layout.get(); }
+    const auto& layout() const noexcept { return m_layout; }
 
     const auto& bitset_data() const noexcept { return m_bitset_data; }
 
 private:
-    std::reference_wrapper<const GraphLayout> m_layout;
+    GraphLayout m_layout;
 
     std::vector<uint64_t> m_bitset_data;
 };
@@ -391,6 +183,7 @@ public:
                     m_row_data.push_back(it2->second);
                     continue;  ///< succeeded partition deduplication
                 }
+
                 m_row_data.push_back(it2->second);  /// Build new bitset
 
                 /// New bitset encountered
@@ -401,18 +194,22 @@ public:
 
     auto get_bitset(uint_t v, uint_t p) const noexcept
     {
-        const auto& info = m_layout.get().info.infos[p];
+        const auto& info = m_layout.info.infos[p];
+
+        assert(v < m_row_offset.size());
+        assert(m_row_offset[v] + p < m_row_data.size());
         const auto start = m_row_data[m_row_offset[v] + p];
 
         return BitsetSpan<const uint64_t>(m_bitset_data.data() + start, info.num_bits);
     }
 
+    const auto& layout() const noexcept { return m_layout; }
     const auto& row_offset() const noexcept { return m_row_offset; }
     const auto& row_data() const noexcept { return m_row_data; }
     const auto& bitset_data() const noexcept { return m_bitset_data; }
 
 private:
-    std::reference_wrapper<const GraphLayout> m_layout;
+    GraphLayout m_layout;
 
     std::vector<uint_t> m_row_offset;  // m_row_offset[v] is the offset into m_row_data
     std::vector<uint_t> m_row_data;
@@ -466,46 +263,6 @@ public:
                 }
             }
         }
-    }
-
-    PartitionedAdjacencyMatrix(const PartitionedAdjacencyLists& adj_lists,
-                               const GraphLayout& layout,
-                               const VertexPartitions& affected_partitions,
-                               const VertexPartitions& delta_partitions,
-                               const std::vector<std::vector<uint_t>>& static_partitions,
-                               const formalism::datalog::VariableDependencyGraph& dependency_graph) :
-        PartitionedAdjacencyMatrix(layout, affected_partitions, delta_partitions, static_partitions, dependency_graph)
-    {
-        adj_lists.for_each_row(
-            [&](auto&& row)
-            {
-                const auto vi = row.v();
-                const auto bi = layout.vertex_to_bit[vi];
-                const auto pi = layout.vertex_to_partition[vi];
-
-                row.for_each_partition(
-                    [&](auto&& partition)
-                    {
-                        const auto pj = partition.p();
-
-                        assert(pi < pj);
-
-                        if (dependency_graph.get_adj_matrix().get_cell(formalism::ParameterIndex(pi), formalism::ParameterIndex(pj)).empty())
-                            return;
-
-                        partition.for_each_target(
-                            [&](auto&& vj)
-                            {
-                                const auto bj = layout.vertex_to_bit[vj];
-
-                                auto ci = get_bitset(vi, pj);
-                                auto cj = get_bitset(vj, pi);
-
-                                ci.set(bj);
-                                cj.set(bi);
-                            });
-                    });
-            });
     }
 
     auto get_bitset(uint_t v, uint_t p) noexcept

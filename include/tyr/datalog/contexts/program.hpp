@@ -70,6 +70,9 @@ struct ProgramExecutionContext
         // Initialize assignment sets
         ws.facts.assignment_sets.insert(ws.facts.fact_sets);
 
+        // Initialize delta facts
+        ws.facts.delta_fact_sets.insert(ws.facts.fact_sets);
+
         // Reset cost buckets.
         ws.cost_buckets.clear();
     }

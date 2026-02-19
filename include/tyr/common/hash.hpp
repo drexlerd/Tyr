@@ -280,7 +280,15 @@ struct Hash<std::optional<T>>
 template<typename T, std::size_t Extent>
 struct Hash<std::span<T, Extent>>
 {
-    size_t operator()(const std::span<T, Extent>& span) const { return hash_combine(span.data(), span.size()); }
+    size_t operator()(const std::span<T, Extent>& span) const
+    {
+        size_t aggregated_hash = span.size();
+
+        for (const auto& x : span)
+            hash_combine(aggregated_hash, x);
+
+        return aggregated_hash;
+    }
 };
 
 /// @brief std::hash specialization for types T that satisfy `Identifiable`.

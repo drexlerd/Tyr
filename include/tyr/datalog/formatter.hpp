@@ -52,6 +52,8 @@ extern std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGra
 
 extern std::ostream& print(std::ostream& os, const datalog::kpkc::Vertex& el);
 
+extern std::ostream& print(std::ostream& os, const datalog::kpkc::DeduplicatedAdjacencyMatrix& el);
+
 extern std::ostream& print(std::ostream& os, const datalog::kpkc::PartitionedAdjacencyMatrix& el);
 
 extern std::ostream& print(std::ostream& os, const datalog::ProgramStatistics& el);
@@ -92,6 +94,8 @@ extern std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph& 
 namespace kpkc
 {
 extern std::ostream& operator<<(std::ostream& os, const Vertex& el);
+
+extern std::ostream& operator<<(std::ostream& os, const DeduplicatedAdjacencyMatrix& el);
 
 extern std::ostream& operator<<(std::ostream& os, const PartitionedAdjacencyMatrix& el);
 }

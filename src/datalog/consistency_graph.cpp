@@ -711,15 +711,12 @@ ConjunctiveCondition(
 In the example above, there exist many pairs of variables are unrestricted by static literals, resulting in dense reguiosn
 
  */
-std::tuple<kpkc::PartitionedAdjacencyLists, kpkc::DeduplicatedAdjacencyMatrix>
-StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
-                                      const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets,
-                                      const details::Vertices& vertices,
-                                      const std::vector<std::vector<uint_t>>& vertex_partitions)
+kpkc::DeduplicatedAdjacencyMatrix StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::StaticTag>& indexed_literals,
+                                                                        const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets,
+                                                                        const details::Vertices& vertices,
+                                                                        const std::vector<std::vector<uint_t>>& vertex_partitions)
 {
     const auto k = vertex_partitions.size();
-
-    auto adj_lists = kpkc::PartitionedAdjacencyLists(vertex_partitions);
 
     auto matrix = kpkc::AdjacencyMatrix(m_layout);
 
@@ -766,69 +763,9 @@ StaticConsistencyGraph::compute_edges(const details::TaggedIndexedLiterals<f::St
 
             offset_i += pi_size;
         }
-
-        for (uint_t pi = 0; pi < k; ++pi)
-        {
-            for (const auto first_index : vertex_partitions[pi])
-            {
-                const auto& first_vertex = vertices.at(first_index);
-
-                const uint_t start_p = pi + 1;
-
-                adj_lists.start_row(first_index, start_p);
-
-                for (uint_t pj = start_p; pj < k; ++pj)
-                {
-                    adj_lists.start_partition();
-
-                    if (m_binary_overapproximation_vdg.get_adj_matrix().get_cell(f::ParameterIndex(pi), f::ParameterIndex(pj)).statically_empty())
-                    {
-                        adj_lists.finish_partition_without_edge(pj);
-
-                        // Ensure soundness of skipping the computation
-                        assert(std::all_of(vertex_partitions[pj].begin(),
-                                           vertex_partitions[pj].end(),
-                                           [&](auto&& second_index)
-                                           {
-                                               const auto& second_vertex = vertices.at(second_index);
-
-                                               assert(first_vertex.get_index() == first_index);
-                                               assert(second_vertex.get_index() == second_index);
-
-                                               auto edge = details::Edge(std::numeric_limits<uint_t>::max(), first_vertex, second_vertex);
-
-                                               return edge.consistent_literals(indexed_literals, static_assignment_sets.predicate);
-                                           }));
-                    }
-                    else
-                    {
-                        for (const auto second_index : vertex_partitions[pj])
-                        {
-                            const auto& second_vertex = vertices.at(second_index);
-
-                            assert(first_vertex.get_index() == first_index);
-                            assert(second_vertex.get_index() == second_index);
-
-                            auto edge = details::Edge(std::numeric_limits<uint_t>::max(), first_vertex, second_vertex);
-
-                            if (edge.consistent_literals(indexed_literals, static_assignment_sets.predicate))
-                            {
-                                adj_lists.add_target(second_index);
-                            }
-                        }
-
-                        adj_lists.finish_partition_with_edge(pj);
-                    }
-                }
-
-                adj_lists.finish_row();
-            }
-        }
     }
 
-    auto deduplicated_matrix = kpkc::DeduplicatedAdjacencyMatrix(matrix);
-
-    return { std::move(adj_lists), std::move(deduplicated_matrix) };
+    return kpkc::DeduplicatedAdjacencyMatrix(matrix);
 }
 
 template<formalism::FactKind T>
@@ -1188,21 +1125,16 @@ StaticConsistencyGraph::StaticConsistencyGraph(
 
     m_layout = kpkc::GraphLayout(m_vertices.size(), m_vertex_partitions);
 
-    auto [adj_lists, matrix] =
-        compute_edges(m_binary_overapproximation_indexed_literals.static_indexed, static_assignment_sets, m_vertices, m_vertex_partitions);
-    m_adj_lists = std::move(adj_lists);
-    m_matrix = std::move(matrix);
+    m_matrix = compute_edges(m_binary_overapproximation_indexed_literals.static_indexed, static_assignment_sets, m_vertices, m_vertex_partitions);
 
-    std::cout << "adj list row_offset bytes: " << m_adj_lists.row_offsets().size() * sizeof(uint_t) << "\n";
-    std::cout << "adj list data bytes: " << m_adj_lists.data().size() * sizeof(uint_t) << "\n";
-    std::cout << "adj list total bytes: " << m_adj_lists.row_offsets().size() * sizeof(uint_t) + m_adj_lists.data().size() * sizeof(uint_t) << "\n";
-    std::cout << "adj matrix bitset bytes: " << m_matrix.bitset_data().size() * sizeof(uint64_t) << "\n";
-    std::cout << "adj matrix row_offset bytes: " << m_matrix.row_offset().size() * sizeof(uint_t) << "\n";
-    std::cout << "adj matrix row_data bytes: " << m_matrix.row_data().size() * sizeof(uint_t) << "\n";
-    std::cout << "adj matrix total bytes: "
-              << m_matrix.bitset_data().size() * sizeof(uint64_t) + m_matrix.row_offset().size() * sizeof(uint_t) + m_matrix.row_data().size() * sizeof(uint_t)
-              << "\n";
-    std::cout << std::endl;
+    // std::cout << "adj matrix bitset bytes: " << m_matrix.bitset_data().size() * sizeof(uint64_t) << "\n";
+    // std::cout << "adj matrix row_offset bytes: " << m_matrix.row_offset().size() * sizeof(uint_t) << "\n";
+    // std::cout << "adj matrix row_data bytes: " << m_matrix.row_data().size() * sizeof(uint_t) << "\n";
+    // std::cout << "adj matrix total bytes: "
+    //           << m_matrix.bitset_data().size() * sizeof(uint64_t) + m_matrix.row_offset().size() * sizeof(uint_t) + m_matrix.row_data().size() *
+    //           sizeof(uint_t)
+    //           << "\n";
+    // std::cout << std::endl;
 
     // std::cout << "Num vertices: " << m_vertices.size() << " num edges: " << m_targets.size() << std::endl;
 
@@ -1237,8 +1169,6 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
         uint64_t full_touched_partitions = 0;
         uint64_t delta_consistent_vertices = 0;
         uint64_t delta_consistent_edges = 0;
-        uint64_t static_vertices = 0;
-        uint64_t static_edges = 0;
         uint64_t matrix_bitset_data_bytes = 0;
         uint64_t matrix_cell_data_bytes = 0;
     };
@@ -1310,87 +1240,119 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     if (constant_pair_consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate))
     {
-        // TODO: The upper triangle CSR in the static graph is annoying here.
-        // We cannot easily anchor at the delta consistent vertices.
-        // On the other hand, this avoids symmetric consistency checks.
-        // But i guess those can easily be avoid by always testing again full_graph.matrix.
-        m_adj_lists.for_each_row(
-            [&](auto&& row)
+        auto offset_i = 0;
+
+        // std::cout << "initialize: " << std::endl;
+
+        // std::cout << m_binary_overapproximation_condition << std::endl;
+
+        // std::cout << m_matrix << std::endl;
+
+        for (uint_t pi = 0; pi < layout.k; ++pi)
+        {
+            IndentScope scope1(std::cout);
+
+            const auto& info_i = layout.info.infos[pi];
+
+            const auto full_affected_partition_i = full_graph.affected_partitions.get_bitset(info_i);
+            auto delta_affected_partition_i = delta_graph.affected_partitions.get_bitset(info_i);
+
+            // std::cout << print_indent << "pi: " << pi << std::endl;
+
+            for (auto bi = full_affected_partition_i.find_first(); bi != BitsetSpan<const uint64_t>::npos; bi = full_affected_partition_i.find_next(bi))
             {
-                const auto vi = row.v();
-                const auto pi = layout.vertex_to_partition[vi];
-                const auto bi = layout.vertex_to_bit[vi];
-                const auto info_i = layout.info.infos[pi];
-                auto full_affected_partition_i = full_graph.affected_partitions.get_bitset(info_i);
+                IndentScope scope2(std::cout);
 
-                if (!full_affected_partition_i.test(bi))
-                    return;  ///< vi vertex inconsistent
-
+                const auto vi = offset_i + bi;  ///< vi is consistent + delta
                 const auto& vertex_i = get_vertex(vi);
-                auto full_delta_partition_i = full_graph.delta_partitions.get_bitset(info_i);
-                auto delta_affected_partition_i = delta_graph.affected_partitions.get_bitset(info_i);
 
-                row.for_each_partition(
-                    [&](auto&& partition)
+                // std::cout << print_indent << "vi: " << vi << std::endl;
+
+                auto offset_j = offset_i + info_i.num_bits;
+
+                for (uint_t pj = pi + 1; pj < layout.k; ++pj)
+                {
+                    IndentScope scope3(std::cout);
+
+                    // std::cout << print_indent << "pj: " << pj << std::endl;
+
+                    const auto info_j = layout.info.infos[pj];
+
+                    if (pi == pj)
                     {
-                        const auto pj = partition.p();
-                        const auto info_j = layout.info.infos[pj];
-                        auto delta_affected_partition_j = delta_graph.affected_partitions.get_bitset(info_j);
+                        offset_j += info_j.num_bits;
+                        continue;  // No edges between vertices in the same partition
+                    }
 
-                        if (full_graph.matrix.get_cell(vi, pj).is_implicit())
-                            return;  // Already checked via vertex consistency
+                    if (full_graph.matrix.get_cell(vi, pj).is_implicit())
+                    {
+                        offset_j += info_j.num_bits;
+                        continue;  // Already checked via vertex consistency
+                    }
 
-                        auto full_affected_partition_j = full_graph.affected_partitions.get_bitset(info_j);
-                        auto full_delta_partition_j = full_graph.delta_partitions.get_bitset(info_j);
+                    const auto full_affected_partition_j = full_graph.affected_partitions.get_bitset(info_j);
+                    auto delta_affected_partition_j = delta_graph.affected_partitions.get_bitset(info_j);
 
-                        partition.for_each_target(
-                            [&](auto&& vj)
-                            {
-                                const auto bj = layout.vertex_to_bit[vj];
+                    const auto static_edges = m_matrix.get_bitset(vi, pj);
 
-                                if (!full_affected_partition_j.test(bj))
-                                    return;  ///< vj vertex inconsistent
+                    // TODO: intersect with full_affected_partition_j and ~full_graph.matrix.get_bitset(vi, pj)
+                    for (auto bj = static_edges.find_first(); bj != BitsetSpan<const uint64_t>::npos; bj = static_edges.find_next(bj))
+                    {
+                        IndentScope scope4(std::cout);
 
-                                if (full_graph.matrix.get_bitset(vi, pj).test(bj))
-                                {
-                                    assert(full_graph.matrix.get_bitset(vj, pi).test(bi));
-                                    return;  ///< already edge consistent
-                                }
+                        if (!full_affected_partition_j.test(bj))
+                            continue;  // vj is inconsistent
 
-                                const auto& vertex_j = get_vertex(vj);
-                                const auto edge = details::Edge(uint_t(0), vertex_i, vertex_j);
+                        if (full_graph.matrix.get_bitset(vi, pj).test(bj))
+                            continue;  // Already edge consistent
 
-                                if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                                    && edge.consistent_numeric_constraints(m_binary_overapproximation_condition.get_numeric_constraints(),
-                                                                           m_binary_overapproximation_indexed_constraints,
-                                                                           assignment_sets))
-                                {
-                                    /// Process delta consistent edge.
+                        const auto vj = offset_j + bj;
 
-                                    full_graph.matrix.get_bitset(vi, pj).set(bj);
-                                    full_graph.matrix.get_bitset(vj, pi).set(bi);
+                        // std::cout << print_indent << "vj: " << vj << std::endl;
 
-                                    delta_graph.matrix.get_bitset(vi, pj).set(bj);
-                                    delta_graph.matrix.get_bitset(vj, pi).set(bi);
+                        const auto& vertex_j = get_vertex(vj);
+                        const auto edge = details::Edge(uint_t(0), vertex_i, vertex_j);
 
-                                    full_affected_partition_i.set(bi);
-                                    full_affected_partition_j.set(bj);
-                                    delta_affected_partition_i.set(bi);
-                                    delta_affected_partition_j.set(bj);
+                        if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
+                            && edge.consistent_numeric_constraints(m_binary_overapproximation_condition.get_numeric_constraints(),
+                                                                   m_binary_overapproximation_indexed_constraints,
+                                                                   assignment_sets))
+                        {
+                            /// Process delta consistent edge.
 
-                                    full_delta_partition_i.set(bi);
-                                    full_delta_partition_j.set(bj);
+                            // Set edges
+                            full_graph.matrix.get_bitset(vi, pj).set(bj);
+                            full_graph.matrix.get_bitset(vj, pi).set(bi);
 
-                                    delta_graph.matrix.touched_partitions(vi, pj) = true;
-                                    full_graph.matrix.touched_partitions(vi, pj) = true;
-                                    delta_graph.matrix.touched_partitions(vj, pi) = true;
-                                    full_graph.matrix.touched_partitions(vj, pi) = true;
+                            delta_graph.matrix.get_bitset(vi, pj).set(bj);
+                            delta_graph.matrix.get_bitset(vj, pi).set(bi);
 
-                                    ++T.delta_consistent_edges;
-                                }
-                            });
-                    });
-            });
+                            // Set/test affected partitions
+                            assert(full_affected_partition_i.test(bi));
+                            assert(full_affected_partition_j.test(bj));
+                            delta_affected_partition_i.set(bi);
+                            delta_affected_partition_j.set(bj);
+
+                            // Set/test delta partitions
+                            assert(full_graph.delta_partitions.get_bitset(info_i).test(bi));
+                            assert(full_graph.delta_partitions.get_bitset(info_j).test(bj));
+
+                            // Set touched partitions
+                            delta_graph.matrix.touched_partitions(vi, pj) = true;
+                            full_graph.matrix.touched_partitions(vi, pj) = true;
+                            delta_graph.matrix.touched_partitions(vj, pi) = true;
+                            full_graph.matrix.touched_partitions(vj, pi) = true;
+
+                            ++T.delta_consistent_edges;
+                        }
+                    }
+
+                    offset_j += info_j.num_bits;
+                }
+            }
+
+            offset_i += info_i.num_bits;
+        }
     }
 
     std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
@@ -1426,33 +1388,29 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     // std::cout << "Full graph:" << std::endl;
     // std::cout << full_graph.matrix << std::endl;
 
-    T.calls++;
-    T.reset_ns += to_ns(t1 - t0);
-    T.vertex_ns += to_ns(t2 - t1);
-    T.edge_ns += to_ns(t3 - t2);
-    T.implicit_ns += to_ns(t4 - t3);
-    T.delta_touched_partitions += delta_graph.matrix.touched_partitions().count();
-    T.full_touched_partitions += full_graph.matrix.touched_partitions().count();
-    T.static_vertices += get_num_vertices();
-    T.static_edges += get_num_edges();
-    T.matrix_bitset_data_bytes += delta_graph.matrix.bitset_data().size() * sizeof(uint64_t);
-    T.matrix_cell_data_bytes += delta_graph.matrix.adj_data().size() * sizeof(kpkc::PartitionedAdjacencyMatrix::Cell);
+    // T.calls++;
+    // T.reset_ns += to_ns(t1 - t0);
+    // T.vertex_ns += to_ns(t2 - t1);
+    // T.edge_ns += to_ns(t3 - t2);
+    // T.implicit_ns += to_ns(t4 - t3);
+    // T.delta_touched_partitions += delta_graph.matrix.touched_partitions().count();
+    // T.full_touched_partitions += full_graph.matrix.touched_partitions().count();
+    // T.matrix_bitset_data_bytes += delta_graph.matrix.bitset_data().size() * sizeof(uint64_t);
+    // T.matrix_cell_data_bytes += delta_graph.matrix.adj_data().size() * sizeof(kpkc::PartitionedAdjacencyMatrix::Cell);
 
-    if ((T.calls % 100) == 0)
-    {
-        std::cout << "avg reset " << (T.reset_ns / T.calls) << " ns\n"
-                  << "avg vertex " << (T.vertex_ns / T.calls) << " ns\n"
-                  << "avg edge " << (T.edge_ns / T.calls) << " ns\n"
-                  << "avg implicit " << (T.implicit_ns / T.calls) << " ns\n"
-                  << "delta touched partitions " << static_cast<double>(T.delta_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
-                  << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
-                  << "delta consistent vertices " << T.delta_consistent_vertices / T.calls << "\n"
-                  << "delta consistent edges " << T.delta_consistent_edges / T.calls << "\n"
-                  << "static vertices " << T.static_vertices / T.calls << "\n"
-                  << "static edges " << T.static_edges / T.calls << "\n"
-                  << "matrix bitset data bytes " << T.matrix_bitset_data_bytes / T.calls << "\n"
-                  << "matrix cell data bytes " << T.matrix_cell_data_bytes / T.calls << "\n";
-    }
+    // if ((T.calls % 1000) == 0)
+    //{
+    //     std::cout << "avg reset " << (T.reset_ns / T.calls) << " ns\n"
+    //               << "avg vertex " << (T.vertex_ns / T.calls) << " ns\n"
+    //               << "avg edge " << (T.edge_ns / T.calls) << " ns\n"
+    //               << "avg implicit " << (T.implicit_ns / T.calls) << " ns\n"
+    //               << "delta touched partitions " << static_cast<double>(T.delta_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
+    //               << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
+    //               << "delta consistent vertices " << T.delta_consistent_vertices / T.calls << "\n"
+    //               << "delta consistent edges " << T.delta_consistent_edges / T.calls << "\n"
+    //               << "matrix bitset data bytes " << T.matrix_bitset_data_bytes / T.calls << "\n"
+    //               << "matrix cell data bytes " << T.matrix_cell_data_bytes / T.calls << "\n";
+    // }
 }
 
 const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const { return m_vertices.at(index); }
@@ -1463,8 +1421,6 @@ const details::Vertex& StaticConsistencyGraph::get_vertex(formalism::ParameterIn
 }
 
 size_t StaticConsistencyGraph::get_num_vertices() const noexcept { return m_vertices.size(); }
-
-size_t StaticConsistencyGraph::get_num_edges() const noexcept { return m_adj_lists.num_edges(); }
 
 View<Index<fd::Rule>, fd::Repository> StaticConsistencyGraph::get_rule() const noexcept { return m_rule; }
 
@@ -1481,7 +1437,7 @@ const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_object_to_ve
 
 const details::IndexedAnchors& StaticConsistencyGraph::get_predicate_to_anchors() const noexcept { return m_predicate_to_anchors; }
 
-const kpkc::PartitionedAdjacencyLists& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_adj_lists; }
+const kpkc::DeduplicatedAdjacencyMatrix& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_matrix; }
 
 std::pair<Index<fd::GroundConjunctiveCondition>, bool> create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
                                                                                        fd::Repository& context)

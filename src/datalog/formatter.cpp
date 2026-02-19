@@ -192,6 +192,31 @@ std::ostream& print(std::ostream& os, const datalog::kpkc::Vertex& el)
     return os;
 }
 
+std::ostream& print(std::ostream& os, const datalog::kpkc::DeduplicatedAdjacencyMatrix& el)
+{
+    os << "DeduplicatedAdjacencyMatrix(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << "adjacency lists = [\n";
+        for (uint_t v = 0; v < el.layout().nv; ++v)
+        {
+            IndentScope scope2(os);
+            os << print_indent << v << ": [";
+
+            for (uint_t p = 0; p < el.layout().k; ++p)
+                os << el.get_bitset(v, p) << ", ";
+            os << "]\n";
+        }
+        os << "]\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
 std::ostream& print(std::ostream& os, const datalog::kpkc::PartitionedAdjacencyMatrix& el)
 {
     os << "PartitionedAdjacencyMatrix(\n";
@@ -393,6 +418,8 @@ std::ostream& operator<<(std::ostream& os, const StaticConsistencyGraph& el) { r
 namespace kpkc
 {
 std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
+
+std::ostream& operator<<(std::ostream& os, const DeduplicatedAdjacencyMatrix& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const PartitionedAdjacencyMatrix& el) { return print(os, el); }
 }
