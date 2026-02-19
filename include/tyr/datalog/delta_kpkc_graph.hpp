@@ -63,10 +63,9 @@ struct GraphLayout
     /// Meta
     size_t nv;
     size_t k;
+
     /// Vertex partitioning
     std::vector<std::vector<uint_t>> vertex_partitions;
-    /// Vertex partitioning with continuous vertex indices [[0,1,2],[3,4],[5,6]]
-    std::vector<Vertex> partitions;
     std::vector<uint_t> vertex_to_partition;
     std::vector<uint_t> vertex_to_bit;
 

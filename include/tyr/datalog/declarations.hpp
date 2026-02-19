@@ -80,6 +80,8 @@ struct LiteralInfo;
 template<formalism::FactKind T>
 struct TaggedIndexedLiterals;
 struct IndexedLiterals;
+struct LiteralAnchorInfo;
+struct IndexedAnchors;
 }
 
 struct VertexAssignment;

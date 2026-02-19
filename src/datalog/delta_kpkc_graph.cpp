@@ -47,17 +47,16 @@ GraphLayout::GraphLayout(size_t nv, const std::vector<std::vector<uint_t>>& vert
     nv(nv),
     k(vertex_partitions_.size()),
     vertex_partitions(vertex_partitions_),
-    partitions(),
     vertex_to_partition(),
     vertex_to_bit(),
     info()
 {
-    partitions.reserve(nv);
     vertex_to_partition.resize(nv);
     vertex_to_bit.resize(nv);
     info.infos.reserve(k);
 
     uint_t block_offset = uint_t(0);
+    uint_t bit_offset = uint_t(0);
 
     for (size_t p = 0; p < k; ++p)
     {
@@ -65,7 +64,6 @@ GraphLayout::GraphLayout(size_t nv, const std::vector<std::vector<uint_t>>& vert
 
         const auto partition_size = static_cast<uint_t>(partition.size());
         const auto partition_blocks = static_cast<uint_t>(BitsetSpan<uint64_t>::num_blocks(partition_size));
-        const auto bit_offset = static_cast<uint_t>(partitions.size());
         info.infos.push_back(GraphLayout::BitsetInfo { bit_offset, partition_size, block_offset, partition_blocks });
         block_offset += partition_blocks;
 
@@ -73,8 +71,9 @@ GraphLayout::GraphLayout(size_t nv, const std::vector<std::vector<uint_t>>& vert
         for (const auto& v : partition)
         {
             vertex_to_bit[v] = bit++;
-            partitions.push_back(Vertex(v));
             vertex_to_partition[v] = p;
+
+            ++bit_offset;
         }
     }
 

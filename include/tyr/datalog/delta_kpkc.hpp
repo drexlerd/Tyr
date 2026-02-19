@@ -380,7 +380,7 @@ void DeltaKPKC::complete_from_seed(Callback&& callback, size_t depth, Workspace&
     // Iterate through compatible vertices in the best partition
     for (auto bit = cv_d_p.find_first(); bit != BitsetSpan<const uint64_t>::npos; bit = cv_d_p.find_next(bit))
     {
-        const auto vertex = m_layout.partitions[info.bit_offset + bit];
+        const auto vertex = Vertex(info.bit_offset + bit);
 
         partial_solution.push_back(vertex);
 

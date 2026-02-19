@@ -117,6 +117,38 @@ std::ostream& print(std::ostream& os, const datalog::details::ParameterMappings&
     return os;
 }
 
+std::ostream& print(std::ostream& os, const datalog::details::LiteralAnchorInfo& el)
+{
+    os << "LiteralAnchorInfo(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << " parameter_mappings = " << el.parameter_mappings << "\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
+std::ostream& print(std::ostream& os, const datalog::details::IndexedAnchors& el)
+{
+    os << "IndexedAnchors(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << " predicate_to_infos = " << el.predicate_to_infos << "\n";
+
+        os << print_indent << " unbound_parameters = " << el.unbound_parameters << "\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
 template<formalism::FactKind T>
 std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el)
 {
@@ -409,6 +441,10 @@ std::ostream& operator<<(std::ostream& os, const InfoMappings& el) { return prin
 std::ostream& operator<<(std::ostream& os, const PositionMappings& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const ParameterMappings& el) { return print(os, el); }
+
+std::ostream& operator<<(std::ostream& os, const LiteralAnchorInfo& el) { return print(os, el); }
+
+std::ostream& operator<<(std::ostream& os, const IndexedAnchors& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
 

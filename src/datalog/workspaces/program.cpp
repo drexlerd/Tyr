@@ -33,6 +33,7 @@ ConstProgramWorkspace::ConstProgramWorkspace(ProgramContext& context) :
           context.get_program().get_fterm_values<formalism::StaticTag>()),
     rules()
 {
+    rules.reserve(context.get_program().get_rules().size());  // Ensure enough space to avoid move on reallocation
     for (uint_t i = 0; i < context.get_program().get_rules().size(); ++i)
         rules.emplace_back(context.get_program().get_rules()[i].get_index(),
                            context.get_repository(),
