@@ -47,17 +47,53 @@ else()
 
     message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -DNDEBUG -flto=auto")
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG -fno-omit-frame-pointer -fno-lto -Wall")
-        set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g3 -ggdb -fconcepts-diagnostics-depth=3")
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -DNDEBUG -flto")
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g -DNDEBUG -fno-omit-frame-pointer -fno-lto -Wall")
-        set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -g3 -ggdb -fconcepts-diagnostics-depth=3")
+    add_compile_options(-Wall)
+
+    # Use lld if present (won't error if missing)
+    find_program(LLD_LINKER NAMES ld.lld lld)
+    if(LLD_LINKER)
+        add_link_options(-fuse-ld=lld)
+    endif()
+
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+        # Release: enable LTO but cap parallelism to reduce RAM spikes
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -flto=4")
+        set(CMAKE_EXE_LINKER_FLAGS_RELEASE
+            "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto=4")
+        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE
+            "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -flto=4")
+
+        # RelWithDebInfo: make debug info cheap (big compile-time/RAM win)
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+            "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g1 -gsplit-dwarf -fno-omit-frame-pointer -fno-lto -fno-var-tracking-assignments")
+
+        # Debug: keep your choices (CMake will supply -O0 or -Og depending on toolchain,
+        # but if you want -Og specifically, keep it here; otherwise omit -Og)
+        set(CMAKE_CXX_FLAGS_DEBUG
+            "${CMAKE_CXX_FLAGS_DEBUG} -Og -g2 -ggdb")
+
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+        # Release: prefer ThinLTO for much lower compile/link cost than full LTO
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -flto=thin")
+        set(CMAKE_EXE_LINKER_FLAGS_RELEASE
+            "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -Wl,--thinlto-jobs=4")
+        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE
+            "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -Wl,--thinlto-jobs=4")
+
+        # RelWithDebInfo: cheap debug info
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+            "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g1 -gsplit-dwarf -fno-omit-frame-pointer -fno-lto")
+
+        # Debug (same note as above)
+        set(CMAKE_CXX_FLAGS_DEBUG
+            "${CMAKE_CXX_FLAGS_DEBUG} -Og -g2 -ggdb")
+
     endif()
 endif()
 
