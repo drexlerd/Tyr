@@ -136,7 +136,7 @@ bool is_ground(View<Index<Literal<T>>, Repository> element);
  * ground
  */
 
-std::pair<Index<Binding>, bool> ground(View<DataList<Term>, Repository> element, GrounderContext& context)
+inline std::pair<Index<Binding>, bool> ground(View<DataList<Term>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto binding_ptr = context.builder.template get_builder<Binding>();
@@ -166,7 +166,7 @@ std::pair<Index<Binding>, bool> ground(View<DataList<Term>, Repository> element,
     return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
-std::pair<Index<Binding>, bool> ground(const IndexList<Object>& element, GrounderContext& context)
+inline std::pair<Index<Binding>, bool> ground(const IndexList<Object>& element, GrounderContext& context)
 {
     // Fetch and clear
     auto binding_ptr = context.builder.template get_builder<Binding>();
@@ -182,7 +182,7 @@ std::pair<Index<Binding>, bool> ground(const IndexList<Object>& element, Grounde
 }
 
 template<FactKind T>
-std::pair<Index<GroundFunctionTerm<T>>, bool> ground(View<Index<FunctionTerm<T>>, Repository> element, GrounderContext& context)
+inline std::pair<Index<GroundFunctionTerm<T>>, bool> ground(View<Index<FunctionTerm<T>>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
@@ -213,7 +213,7 @@ std::pair<Index<GroundFunctionTerm<T>>, bool> ground(View<Index<FunctionTerm<T>>
     return context.destination.get_or_create(fterm, context.builder.get_buffer());
 }
 
-Data<GroundFunctionExpression> ground(View<Data<FunctionExpression>, Repository> element, GrounderContext& context)
+inline Data<GroundFunctionExpression> ground(View<Data<FunctionExpression>, Repository> element, GrounderContext& context)
 {
     return visit(
         [&](auto&& arg)
@@ -231,8 +231,8 @@ Data<GroundFunctionExpression> ground(View<Data<FunctionExpression>, Repository>
 }
 
 template<OpKind O>
-std::pair<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, bool> ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, Repository> element,
-                                                                                GrounderContext& context)
+inline std::pair<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, bool>
+ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, Data<GroundFunctionExpression>>>();
@@ -248,8 +248,8 @@ std::pair<Index<UnaryOperator<O, Data<GroundFunctionExpression>>>, bool> ground(
 }
 
 template<OpKind O>
-std::pair<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, bool> ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, Repository> element,
-                                                                                 GrounderContext& context)
+inline std::pair<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, bool>
+ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, Data<GroundFunctionExpression>>>();
@@ -266,8 +266,8 @@ std::pair<Index<BinaryOperator<O, Data<GroundFunctionExpression>>>, bool> ground
 }
 
 template<OpKind O>
-std::pair<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, bool> ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, Repository> element,
-                                                                                GrounderContext& context)
+inline std::pair<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, bool>
+ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto multi_ptr = context.builder.template get_builder<MultiOperator<O, Data<GroundFunctionExpression>>>();
@@ -283,20 +283,20 @@ std::pair<Index<MultiOperator<O, Data<GroundFunctionExpression>>>, bool> ground(
     return context.destination.get_or_create(multi, context.builder.get_buffer());
 }
 
-Data<BooleanOperator<Data<GroundFunctionExpression>>> ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> element,
-                                                             GrounderContext& context)
+inline Data<BooleanOperator<Data<GroundFunctionExpression>>> ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> element,
+                                                                    GrounderContext& context)
 {
     return visit([&](auto&& arg) { return Data<BooleanOperator<Data<GroundFunctionExpression>>>(ground(arg, context).first); }, element.get_variant());
 }
 
-Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository> element,
-                                                                GrounderContext& context)
+inline Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository> element,
+                                                                       GrounderContext& context)
 {
     return visit([&](auto&& arg) { return Data<ArithmeticOperator<Data<GroundFunctionExpression>>>(ground(arg, context).first); }, element.get_variant());
 }
 
 template<FactKind T>
-std::pair<Index<GroundAtom<T>>, bool> ground(View<Index<Atom<T>>, Repository> element, GrounderContext& context)
+inline std::pair<Index<GroundAtom<T>>, bool> ground(View<Index<Atom<T>>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T>>();
@@ -328,7 +328,7 @@ std::pair<Index<GroundAtom<T>>, bool> ground(View<Index<Atom<T>>, Repository> el
 }
 
 template<FactKind T>
-std::pair<Index<GroundLiteral<T>>, bool> ground(View<Index<Literal<T>>, Repository> element, GrounderContext& context)
+inline std::pair<Index<GroundLiteral<T>>, bool> ground(View<Index<Literal<T>>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto ground_literal_ptr = context.builder.template get_builder<GroundLiteral<T>>();
@@ -344,7 +344,7 @@ std::pair<Index<GroundLiteral<T>>, bool> ground(View<Index<Literal<T>>, Reposito
     return context.destination.get_or_create(ground_literal, context.builder.get_buffer());
 }
 
-std::pair<Index<GroundConjunctiveCondition>, bool> ground(View<Index<ConjunctiveCondition>, Repository> element, GrounderContext& context)
+inline std::pair<Index<GroundConjunctiveCondition>, bool> ground(View<Index<ConjunctiveCondition>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto conj_cond_ptr = context.builder.template get_builder<GroundConjunctiveCondition>();
@@ -364,7 +364,7 @@ std::pair<Index<GroundConjunctiveCondition>, bool> ground(View<Index<Conjunctive
     return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
 }
 
-std::pair<Index<GroundRule>, bool> ground(View<Index<Rule>, Repository> element, GrounderContext& context)
+inline std::pair<Index<GroundRule>, bool> ground(View<Index<Rule>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
     auto rule_ptr = context.builder.template get_builder<GroundRule>();
@@ -387,7 +387,7 @@ std::pair<Index<GroundRule>, bool> ground(View<Index<Rule>, Repository> element,
  */
 
 template<FactKind T>
-void ground_into_buffer(View<Index<Atom<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundAtom<T>>& out_atom)
+inline void ground_into_buffer(View<Index<Atom<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundAtom<T>>& out_atom)
 {
     // Fetch and clear
     out_atom.clear();
@@ -416,7 +416,7 @@ void ground_into_buffer(View<Index<Atom<T>>, Repository> element, const IndexLis
 }
 
 template<FactKind T>
-void ground_into_buffer(View<Index<FunctionTerm<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundFunctionTerm<T>>& out_fterm)
+inline void ground_into_buffer(View<Index<FunctionTerm<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundFunctionTerm<T>>& out_fterm)
 {
     // Fetch and clear
     out_fterm.clear();
@@ -448,7 +448,7 @@ void ground_into_buffer(View<Index<FunctionTerm<T>>, Repository> element, const 
  * is_ground
  */
 
-bool is_ground(View<Data<Term>, Repository> element)
+inline bool is_ground(View<Data<Term>, Repository> element)
 {
     return visit(
         [&](auto&& arg) -> bool
@@ -466,13 +466,13 @@ bool is_ground(View<Data<Term>, Repository> element)
 }
 
 template<FactKind T>
-bool is_ground(View<Index<FunctionTerm<T>>, Repository> element)
+inline bool is_ground(View<Index<FunctionTerm<T>>, Repository> element)
 {
     const auto terms = element.get_terms();
     return std::all_of(terms.begin(), terms.end(), [](auto&& arg) { return is_ground(arg); });
 }
 
-bool is_ground(View<Data<FunctionExpression>, Repository> element)
+inline bool is_ground(View<Data<FunctionExpression>, Repository> element)
 {
     return visit(
         [&](auto&& arg) -> bool
@@ -488,43 +488,43 @@ bool is_ground(View<Data<FunctionExpression>, Repository> element)
 }
 
 template<OpKind O>
-bool is_ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, Repository> element)
+inline bool is_ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, Repository> element)
 {
     return is_ground(element.get_arg());
 }
 
 template<OpKind O>
-bool is_ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, Repository> element)
+inline bool is_ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, Repository> element)
 {
     return is_ground(element.get_lhs()) && is_ground(element.get_rhs());
 }
 
 template<OpKind O>
-bool is_ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, Repository> element)
+inline bool is_ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, Repository> element)
 {
     const auto args = element.get_args();
     return std::all_of(args.begin(), args.end(), [](auto&& arg) { return is_ground(arg); });
 }
 
-bool is_ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> element)
+inline bool is_ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> element)
 {
     return visit([&](auto&& arg) { return is_ground(arg); }, element.get_variant());
 }
 
-bool is_ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository> element)
+inline bool is_ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository> element)
 {
     return visit([&](auto&& arg) { return is_ground(arg); }, element.get_variant());
 }
 
 template<FactKind T>
-bool is_ground(View<Index<Atom<T>>, Repository> element)
+inline bool is_ground(View<Index<Atom<T>>, Repository> element)
 {
     const auto terms = element.get_terms();
     return std::all_of(terms.begin(), terms.end(), [](auto&& arg) { return is_ground(arg); });
 }
 
 template<FactKind T>
-bool is_ground(View<Index<Literal<T>>, Repository> element)
+inline bool is_ground(View<Index<Literal<T>>, Repository> element)
 {
     return is_ground(element.get_atom());
 }
