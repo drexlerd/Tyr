@@ -151,20 +151,21 @@ public:
     template<typename T>
     std::optional<Index<T>> find(const Data<T>& builder) const noexcept
     {
-        if (m_parent)
-            if (auto ptr = m_parent->template find<T>(builder))
-                return ptr;
+        if (!m_parent)
+            return find_impl<T>(builder);
 
-        return find_impl<T>(builder);
+        if (auto ptr = find_impl<T>(builder))
+            return ptr;
+
+        return m_parent ? m_parent->template find<T>(builder) : std::nullopt;
     }
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
-        if (m_parent)
-            if (auto ptr = m_parent->template find<T>(builder))
-                return { *ptr, false };
+        if (auto ptr = find<T>(builder))
+            return { *ptr, false };
 
         auto& repo = get_container<T>(m_repository);
 
@@ -179,9 +180,8 @@ public:
         requires(GroupIndexConcept<Index<T>>)
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
-        if (m_parent)
-            if (auto ptr = m_parent->template find<T>(builder))
-                return { *ptr, false };
+        if (auto ptr = find<T>(builder))
+            return { *ptr, false };
 
         auto& repos = get_container<T>(m_repository);
         const auto g = builder.index.group.value;
