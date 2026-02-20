@@ -428,6 +428,7 @@ struct Graph
 
     void reset() noexcept
     {
+        std::cout << "Graph reset" << std::endl;
         affected_partitions.reset();
         delta_partitions.reset();
         matrix.reset();

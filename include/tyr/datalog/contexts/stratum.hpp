@@ -33,7 +33,11 @@ template<OrAnnotationPolicyConcept OrAP = NoOrAnnotationPolicy,
          TerminationPolicyConcept TP = NoTerminationPolicy>
 struct StratumExecutionContext
 {
-    StratumExecutionContext(RuleSchedulerStratum& scheduler, const ProgramExecutionContext<OrAP, AndAP, TP>& ctx) : scheduler(scheduler), ctx(ctx) {}
+    StratumExecutionContext(RuleSchedulerStratum& scheduler, const ProgramExecutionContext<OrAP, AndAP, TP>& ctx) : scheduler(scheduler), ctx(ctx)
+    {
+        // Initialize delta facts
+        ctx.ws.facts.delta_fact_sets.insert(ctx.ws.facts.fact_sets);
+    }
 
     /**
      * Initialization

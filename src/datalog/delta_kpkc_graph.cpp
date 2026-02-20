@@ -21,13 +21,13 @@
 namespace tyr::datalog::kpkc
 {
 
-[[maybe_unused]] static bool verify_partitions(const std::vector<Vertex>& partitions)
+[[maybe_unused]] static bool verify_vertex_partitions(const std::vector<std::vector<uint_t>>& vertex_partitions)
 {
-    for (size_t i = 0; i < partitions.size(); ++i)
-    {
-        if (i != partitions[i].index)
-            return false;
-    }
+    uint_t i = 0;
+    for (const auto& partition : vertex_partitions)
+        for (const auto& v : partition)
+            if (v != i++)
+                return false;
     return true;
 }
 
@@ -51,6 +51,8 @@ GraphLayout::GraphLayout(size_t nv, const std::vector<std::vector<uint_t>>& vert
     vertex_to_bit(),
     info()
 {
+    assert(verify_vertex_partitions(vertex_partitions_));
+
     vertex_to_partition.resize(nv);
     vertex_to_bit.resize(nv);
     info.infos.reserve(k);
@@ -79,7 +81,6 @@ GraphLayout::GraphLayout(size_t nv, const std::vector<std::vector<uint_t>>& vert
 
     info.num_blocks = block_offset;
 
-    assert(verify_partitions(partitions));
     assert(verify_vertex_to_partition(nv, k, vertex_to_partition));
 }
 

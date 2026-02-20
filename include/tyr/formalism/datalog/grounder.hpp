@@ -39,6 +39,10 @@ struct ConstGrounderContext
     IndexList<Object>& binding;
 };
 
+/**
+ * ground
+ */
+
 extern std::pair<Index<Binding>, bool> ground(View<DataList<Term>, Repository> element, GrounderContext& context);
 
 extern std::pair<Index<Binding>, bool> ground(const IndexList<Object>& element, GrounderContext& context);
@@ -76,11 +80,46 @@ extern std::pair<Index<GroundConjunctiveCondition>, bool> ground(View<Index<Conj
 
 extern std::pair<Index<GroundRule>, bool> ground(View<Index<Rule>, Repository> element, GrounderContext& context);
 
+/**
+ * ground_into_buffer
+ */
+
 template<FactKind T>
 extern void ground_into_buffer(View<Index<Atom<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundAtom<T>>& out_atom);
 
 template<FactKind T>
 extern void ground_into_buffer(View<Index<FunctionTerm<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundFunctionTerm<T>>& out_fterm);
+
+/**
+ * is_ground
+ */
+
+extern bool is_ground(View<Data<Term>, Repository> element);
+
+template<FactKind T>
+extern bool is_ground(View<Index<FunctionTerm<T>>, Repository> element);
+
+extern bool is_ground(View<Data<FunctionExpression>, Repository> element);
+
+template<OpKind O>
+extern bool is_ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, Repository> element);
+
+template<OpKind O>
+extern bool is_ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, Repository> element);
+
+template<OpKind O>
+extern bool is_ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, Repository> element);
+
+extern bool is_ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> element);
+
+extern bool is_ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository> element);
+
+template<FactKind T>
+extern bool is_ground(View<Index<Atom<T>>, Repository> element);
+
+template<FactKind T>
+extern bool is_ground(View<Index<Literal<T>>, Repository> element);
+
 }
 
 #endif

@@ -323,7 +323,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
     while (true)
     {
-        // std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
+        std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
 
         // Check whether min cost for goal was proven.
         if (tp.check())
@@ -331,17 +331,19 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
             return;
         }
 
+        std::cout << std::endl;
+        std::cout << "=======================================================================" << std::endl;
         // std::cout << "Facts: " << std::endl;
         // for (const auto& set : facts.fact_sets.predicate.get_sets())
         // {
         //     std::cout << set.get_facts() << std::endl;
         // }
-        // std::cout << "Delta facts: " << std::endl;
-        // for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
-        // {
-        //     std::cout << set.get_facts() << std::endl;
-        // }
-        // std::cout << std::endl;
+        std::cout << "Delta facts: " << std::endl;
+        for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
+        {
+            std::cout << set.get_facts() << std::endl;
+        }
+        std::cout << std::endl;
 
         scheduler.on_start_iteration();
 
@@ -460,8 +462,12 @@ void solve_bottom_up(ProgramExecutionContext<OrAP, AndAP, TP>& ctx)
     const auto program_stopwatch = StopwatchScope(ctx.ws.statistics.total_time);
     ++ctx.ws.statistics.num_executions;
 
+    auto strata = uint_t { 0 };
     for (auto stratum_ctx : ctx.get_stratum_execution_contexts())
+    {
+        std::cout << "Strata: " << strata++ << std::endl;
         solve_bottom_up_for_stratum(stratum_ctx);
+    }
 }
 
 template void solve_bottom_up(ProgramExecutionContext<NoOrAnnotationPolicy, NoAndAnnotationPolicy, NoTerminationPolicy>& ctx);

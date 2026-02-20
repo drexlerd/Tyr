@@ -32,6 +32,10 @@
 namespace tyr::formalism::datalog
 {
 
+/**
+ * ground
+ */
+
 std::pair<Index<Binding>, bool> ground(View<DataList<Term>, Repository> element, GrounderContext& context)
 {
     // Fetch and clear
@@ -316,6 +320,10 @@ std::pair<Index<GroundRule>, bool> ground(View<Index<Rule>, Repository> element,
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
+/**
+ * ground_into_buffer
+ */
+
 template<FactKind T>
 void ground_into_buffer(View<Index<Atom<T>>, Repository> element, const IndexList<Object>& binding, Data<GroundAtom<T>>& out_atom)
 {
@@ -381,4 +389,115 @@ template void
 ground_into_buffer(View<Index<FunctionTerm<StaticTag>>, Repository> element, const IndexList<Object>& binding, Data<GroundFunctionTerm<StaticTag>>& out_fterm);
 template void
 ground_into_buffer(View<Index<FunctionTerm<FluentTag>>, Repository> element, const IndexList<Object>& binding, Data<GroundFunctionTerm<FluentTag>>& out_fterm);
+
+/**
+ * is_ground
+ */
+
+bool is_ground(View<Data<Term>, Repository> element)
+{
+    return visit(
+        [&](auto&& arg) -> bool
+        {
+            using Alternative = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                return false;
+            else if constexpr (std::is_same_v<Alternative, View<Index<Object>, Repository>>)
+                return true;
+            else
+                static_assert(dependent_false<Alternative>::value, "Missing case");
+        },
+        element.get_variant());
+}
+
+template<FactKind T>
+bool is_ground(View<Index<FunctionTerm<T>>, Repository> element)
+{
+    const auto terms = element.get_terms();
+    return std::all_of(terms.begin(), terms.end(), [](auto&& arg) { return is_ground(arg); });
+}
+
+template bool is_ground(View<Index<FunctionTerm<StaticTag>>, Repository> element);
+template bool is_ground(View<Index<FunctionTerm<FluentTag>>, Repository> element);
+
+bool is_ground(View<Data<FunctionExpression>, Repository> element)
+{
+    return visit(
+        [&](auto&& arg) -> bool
+        {
+            using Alternative = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<Alternative, float_t>)
+                return true;
+            else
+                return is_ground(arg);
+        },
+        element.get_variant());
+}
+
+template<OpKind O>
+bool is_ground(View<Index<UnaryOperator<O, Data<FunctionExpression>>>, Repository> element)
+{
+    return is_ground(element.get_arg());
+}
+
+template bool is_ground(View<Index<UnaryOperator<OpSub, Data<FunctionExpression>>>, Repository> element);
+
+template<OpKind O>
+bool is_ground(View<Index<BinaryOperator<O, Data<FunctionExpression>>>, Repository> element)
+{
+    return is_ground(element.get_lhs()) && is_ground(element.get_rhs());
+}
+
+template bool is_ground(View<Index<BinaryOperator<OpAdd, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpSub, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpMul, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpDiv, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpEq, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpNe, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpGe, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpGt, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpLe, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<BinaryOperator<OpLt, Data<FunctionExpression>>>, Repository> element);
+
+template<OpKind O>
+bool is_ground(View<Index<MultiOperator<O, Data<FunctionExpression>>>, Repository> element)
+{
+    const auto args = element.get_args();
+    return std::all_of(args.begin(), args.end(), [](auto&& arg) { return is_ground(arg); });
+}
+
+template bool is_ground(View<Index<MultiOperator<OpAdd, Data<FunctionExpression>>>, Repository> element);
+template bool is_ground(View<Index<MultiOperator<OpMul, Data<FunctionExpression>>>, Repository> element);
+
+bool is_ground(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> element)
+{
+    return visit([&](auto&& arg) { return is_ground(arg); }, element.get_variant());
+}
+
+bool is_ground(View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository> element)
+{
+    return visit([&](auto&& arg) { return is_ground(arg); }, element.get_variant());
+}
+
+template<FactKind T>
+bool is_ground(View<Index<Atom<T>>, Repository> element)
+{
+    const auto terms = element.get_terms();
+    return std::all_of(terms.begin(), terms.end(), [](auto&& arg) { return is_ground(arg); });
+}
+
+template bool is_ground(View<Index<Atom<StaticTag>>, Repository> element);
+template bool is_ground(View<Index<Atom<FluentTag>>, Repository> element);
+
+template<FactKind T>
+bool is_ground(View<Index<Literal<T>>, Repository> element)
+{
+    return is_ground(element.get_atom());
+}
+
+template bool is_ground(View<Index<Literal<StaticTag>>, Repository> element);
+template bool is_ground(View<Index<Literal<FluentTag>>, Repository> element);
+
 }

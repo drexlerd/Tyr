@@ -72,31 +72,32 @@ public:
 public:
     BitsetSpan(Block* data, size_t num_bits) noexcept : m_data(data), m_num_bits(num_bits) {}
 
-    template<std::unsigned_integral OtherBlock>
-        requires(std::same_as<std::remove_const_t<OtherBlock>, U>)
-    BitsetSpan& copy_from(const BitsetSpan<OtherBlock>& other) noexcept
+    /**
+     * Helpers
+     */
+
+    void clear_trailing_bits() noexcept
+        requires(!std::is_const_v<Block>)
     {
-        assert(m_num_bits == other.m_num_bits);
-
         const size_t n = num_blocks(m_num_bits);
-        for (size_t i = 0; i < n; ++i)
-            m_data[i] = other.m_data[i];
-
-        return *this;
+        if (n == 0)
+            return;
+        m_data[n - 1] &= last_mask(m_num_bits);
     }
 
-    template<std::unsigned_integral OtherBlock>
-        requires(std::same_as<std::remove_const_t<OtherBlock>, U>)
-    BitsetSpan& diff_from(const BitsetSpan<OtherBlock>& other) noexcept
+    bool trailing_bits_zero() const noexcept
     {
-        assert(m_num_bits == other.m_num_bits);
-
         const size_t n = num_blocks(m_num_bits);
-        for (size_t i = 0; i < n; ++i)
-            m_data[i] = other.m_data[i] & ~m_data[i];
+        if (n == 0)
+            return true;
 
-        return *this;
+        const U mask = last_mask(m_num_bits);
+        return (m_data[n - 1] & ~mask) == U { 0 };
     }
+
+    /**
+     * Accessors
+     */
 
     bool test(size_t pos) const noexcept
     {
@@ -105,14 +106,60 @@ public:
         return (m_data[block_index(pos)] & (U { 1 } << block_pos(pos))) != U { 0 };
     }
 
+    size_t count() const noexcept
+    {
+        assert(trailing_bits_zero());
+
+        const size_t n = num_blocks(m_num_bits);
+        size_t cnt = 0;
+
+        for (size_t i = 0; i < n; ++i)
+            cnt += std::popcount(m_data[i]);
+
+        return cnt;
+    }
+
+    size_t count_zeros() const noexcept
+    {
+        assert(trailing_bits_zero());
+
+        return m_num_bits - count();
+    }
+
+    bool any() const noexcept
+    {
+        assert(trailing_bits_zero());
+
+        const size_t n = num_blocks(m_num_bits);
+        for (size_t i = 0; i < n; ++i)
+            if (m_data[i] != U { 0 })
+                return true;
+        return false;
+    }
+
+    /**
+     * Modifiers
+     */
+
     void set(size_t pos) noexcept
+        requires(!std::is_const_v<Block>)
     {
         assert(pos < m_num_bits);
 
         m_data[block_index(pos)] |= (U { 1 } << block_pos(pos));
     }
 
+    void set() noexcept
+        requires(!std::is_const_v<Block>)
+    {
+        const size_t n = num_blocks(m_num_bits);
+        std::fill(m_data, m_data + n, full_mask());
+
+        clear_trailing_bits();
+    }
+
     void reset(size_t pos) noexcept
+        requires(!std::is_const_v<Block>)
     {
         assert(pos < m_num_bits);
 
@@ -126,28 +173,14 @@ public:
         std::fill(m_data, m_data + n, U { 0 });
     }
 
-    size_t count() const noexcept
-    {
-        const size_t n = num_blocks(m_num_bits);
-        size_t cnt = 0;
-
-        for (size_t i = 0; i < n; ++i)
-            cnt += std::popcount(m_data[i]);
-
-        return cnt;
-    }
-
-    bool any() const noexcept
-    {
-        const size_t n = num_blocks(m_num_bits);
-        for (size_t i = 0; i < n; ++i)
-            if (m_data[i] != U { 0 })
-                return true;
-        return false;
-    }
+    /**
+     * Iterators
+     */
 
     size_t find_first() const noexcept
     {
+        assert(trailing_bits_zero());
+
         const size_t n = num_blocks(m_num_bits);
         for (size_t i = 0; i < n; ++i)
         {
@@ -164,6 +197,8 @@ public:
 
     size_t find_next(size_t pos) const noexcept
     {
+        assert(trailing_bits_zero());
+
         ++pos;
         if (pos >= m_num_bits)
             return npos;
@@ -235,11 +270,47 @@ public:
         }
     }
 
+    /**
+     * Operators
+     */
+
+    template<std::unsigned_integral OtherBlock>
+        requires(std::same_as<std::remove_const_t<OtherBlock>, U>)
+    BitsetSpan& copy_from(const BitsetSpan<OtherBlock>& other) noexcept
+    {
+        assert(m_num_bits == other.m_num_bits);
+        assert(trailing_bits_zero());
+        assert(other.trailing_bits_zero());
+
+        const size_t n = num_blocks(m_num_bits);
+        for (size_t i = 0; i < n; ++i)
+            m_data[i] = other.m_data[i];
+
+        return *this;
+    }
+
+    template<std::unsigned_integral OtherBlock>
+        requires(std::same_as<std::remove_const_t<OtherBlock>, U>)
+    BitsetSpan& diff_from(const BitsetSpan<OtherBlock>& other) noexcept
+    {
+        assert(m_num_bits == other.m_num_bits);
+        assert(trailing_bits_zero());
+        assert(other.trailing_bits_zero());
+
+        const size_t n = num_blocks(m_num_bits);
+        for (size_t i = 0; i < n; ++i)
+            m_data[i] = other.m_data[i] & ~m_data[i];
+
+        return *this;
+    }
+
     template<std::unsigned_integral OtherBlock>
         requires(std::same_as<std::remove_const_t<OtherBlock>, U>)
     BitsetSpan& operator&=(const BitsetSpan<OtherBlock>& other) noexcept
     {
         assert(m_num_bits == other.m_num_bits);
+        assert(trailing_bits_zero());
+        assert(other.trailing_bits_zero());
 
         const size_t n = num_blocks(m_num_bits);
         for (size_t i = 0; i < n; ++i)
@@ -253,6 +324,8 @@ public:
     BitsetSpan& operator|=(const BitsetSpan<OtherBlock>& other) noexcept
     {
         assert(m_num_bits == other.m_num_bits);
+        assert(trailing_bits_zero());
+        assert(other.trailing_bits_zero());
 
         const size_t n = num_blocks(m_num_bits);
         for (size_t i = 0; i < n; ++i)
@@ -266,6 +339,8 @@ public:
     BitsetSpan& operator-=(const BitsetSpan<OtherBlock>& other) noexcept
     {
         assert(m_num_bits == other.m_num_bits);
+        assert(trailing_bits_zero());
+        assert(other.trailing_bits_zero());
 
         const size_t n = num_blocks(m_num_bits);
         for (size_t i = 0; i < n; ++i)
@@ -273,6 +348,10 @@ public:
 
         return *this;
     }
+
+    /**
+     * Getters
+     */
 
     std::span<const U> blocks() const noexcept { return { m_data, num_blocks(m_num_bits) }; }
     size_t num_bits() const noexcept { return m_num_bits; }
@@ -286,6 +365,9 @@ template<std::unsigned_integral B1, std::unsigned_integral B2>
     requires(std::same_as<std::remove_const_t<B1>, std::remove_const_t<B2>>)
 constexpr bool operator==(const BitsetSpan<B1>& lhs, const BitsetSpan<B2>& rhs) noexcept
 {
+    assert(lhs.trailing_bits_zero());
+    assert(rhs.trailing_bits_zero());
+
     if (lhs.num_bits() != rhs.num_bits())
         return false;
 
