@@ -952,6 +952,7 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
         auto info = details::LiteralAnchorInfo {};
         info.parameter_mappings.position_to_parameter =
             std::vector<uint_t>(literal.get_atom().get_predicate().get_arity(), details::ParameterMappings::NoParam);
+        info.parameter_mappings.position_parameter_pairs = std::vector<std::pair<uint_t, uint_t>> {};
 
         const auto terms = literal.get_atom().get_terms();
 
@@ -967,6 +968,7 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
                     if constexpr (std::is_same_v<Alternative, f::ParameterIndex>)
                     {
                         info.parameter_mappings.position_to_parameter[position] = uint_t(arg);
+                        info.parameter_mappings.position_parameter_pairs.emplace_back(position, uint_t(arg));
                         result.bound_parameters.set(uint_t(arg));
                         if (!literal.get_polarity())
                             result.negated_bound_parameters.set(uint_t(arg));
@@ -1056,6 +1058,8 @@ template<std::unsigned_integral Block1, std::unsigned_integral Block2, class F>
     requires std::same_as<std::remove_const_t<Block1>, std::remove_const_t<Block2>>
 inline void for_each_bit_andnot(const BitsetSpan<Block1>& A, const BitsetSpan<Block2>& B, F&& fn) noexcept
 {
+    using U = std::remove_const_t<Block1>;
+
     assert(A.num_bits() == B.num_bits());
     assert(A.trailing_bits_zero());
     assert(B.trailing_bits_zero());
@@ -1064,21 +1068,25 @@ inline void for_each_bit_andnot(const BitsetSpan<Block1>& A, const BitsetSpan<Bl
     const auto bb = B.blocks();
     const size_t n = ab.size();
 
-    const uint64_t last = BitsetSpan<const uint64_t>::last_mask(A.num_bits());
+    const U last = BitsetSpan<const U>::last_mask(A.num_bits());
+
+    size_t offset = 0;
 
     for (size_t block = 0; block < n; ++block)
     {
-        uint64_t w = ab[block] & ~bb[block];
+        U w = ab[block] & ~bb[block];
         if (block + 1 == n)
             w &= last;
 
         while (w)
         {
             const unsigned tz = std::countr_zero(w);
-            const size_t bit = block * BitsetSpan<const uint64_t>::Digits + tz;
+            const size_t bit = offset + tz;
             fn(bit);
             w &= (w - 1);
         }
+
+        offset += BitsetSpan<const U>::Digits;
     }
 }
 
@@ -1089,6 +1097,8 @@ inline void for_each_bit_static_and_affected_andnot_full(const BitsetSpan<Block1
                                                          const BitsetSpan<Block3>& full_edges_ij,
                                                          F&& fn) noexcept
 {
+    using U = std::remove_const_t<Block1>;
+
     // Preconditions: same length
     assert(static_edges.num_bits() == full_affected_j.num_bits());
     assert(static_edges.num_bits() == full_edges_ij.num_bits());
@@ -1105,21 +1115,25 @@ inline void for_each_bit_static_and_affected_andnot_full(const BitsetSpan<Block1
     const size_t n = sb.size();
     assert(ab.size() == n && fb.size() == n);
 
-    const uint64_t last = BitsetSpan<const uint64_t>::last_mask(static_edges.num_bits());
+    const U last = BitsetSpan<const U>::last_mask(static_edges.num_bits());
+
+    size_t offset = 0;
 
     for (size_t block = 0; block < n; ++block)
     {
-        uint64_t w = sb[block] & ab[block] & ~fb[block];
+        U w = sb[block] & ab[block] & ~fb[block];
         if (block + 1 == n)
             w &= last;
 
         while (w)
         {
             const unsigned tz = std::countr_zero(w);
-            const size_t bj = block * BitsetSpan<const uint64_t>::Digits + tz;
+            const size_t bj = offset + tz;
             fn(bj);
             w &= (w - 1);  // clear lowest set bit
         }
+
+        offset += BitsetSpan<const U>::Digits;
     }
 }
 
@@ -1175,18 +1189,14 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     const auto& predicate_sets = delta_fact_sets.predicate.get_sets();
 
-    for (uint_t i = 0; i < delta_fact_sets.predicate.get_sets().size(); ++i)
+    for (uint_t i = 0; i < predicate_sets.size(); ++i)
     {
         const auto& infos = m_unary_overapproximation_predicate_to_anchors.predicate_to_infos[i];
 
         if (infos.empty())
             continue;
 
-        const auto& predicate_set = predicate_sets[i];
-        const auto predicate = predicate_set.get_predicate();
-        const auto arity = predicate.get_arity();
-
-        for (const auto fact : predicate_set.get_facts())
+        for (const auto fact : predicate_sets[i].get_facts())  ///< Outter loop because |facts| > |infos|
         {
             const auto objects = fact.get_objects().get_data();
 
@@ -1196,15 +1206,8 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
             {
                 // std::cout << fact << " " << predicate_to_anchors.size() << std::endl;
 
-                const auto& pos2param = info.parameter_mappings.position_to_parameter;
-
-                for (uint_t pos = 0; pos < arity; ++pos)
+                for (const auto& [pos, param] : info.parameter_mappings.position_parameter_pairs)
                 {
-                    const auto param = pos2param[pos];
-
-                    if (param == details::ParameterMappings::NoParam)
-                        continue;
-
                     const auto object = objects[pos];
 
                     const auto vertex_index = m_object_to_vertex_partitions[param][uint_t(object)];
@@ -1218,12 +1221,11 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
         }
     }
 
+    // Overapproximate negated part or those where we dont have anchors
     for (uint_t p = 0; p < layout.k; ++p)
         if (!m_unary_overapproximation_predicate_to_anchors.bound_parameters.test(p)
             || m_unary_overapproximation_predicate_to_anchors.negated_bound_parameters.test(p))
             fact_induced_candidates.get_bitset(p).set();
-
-    // std::cout << fact_induced_candidates << std::endl;
 
     // std::cout << "Delta graph:" << std::endl;
     // std::cout << delta_graph.matrix << std::endl;
@@ -1288,6 +1290,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                         //     std::cout << "Inconsistent - p: " << p << " bit: " << bit << " v: " << v << std::endl;
                         // }
 
+                        // Doesnt work yet because of numeric features
                         // assert(m_unary_overapproximation_predicate_to_anchors.bound_parameters.test(p));
                     }
                 });

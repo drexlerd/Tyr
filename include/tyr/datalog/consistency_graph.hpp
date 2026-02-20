@@ -145,6 +145,7 @@ struct ParameterMappings
     static constexpr uint_t NoParam = std::numeric_limits<uint_t>::max();
 
     std::vector<uint_t> position_to_parameter;
+    std::vector<std::pair<uint_t, uint_t>> position_parameter_pairs;
 };
 
 struct LiteralAnchorInfo

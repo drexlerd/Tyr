@@ -110,6 +110,8 @@ std::ostream& print(std::ostream& os, const datalog::details::ParameterMappings&
         IndentScope scope(os);
 
         os << print_indent << "position to parameter = " << el.position_to_parameter << "\n";
+
+        os << print_indent << "position parameter pairs = " << el.position_parameter_pairs << "\n";
     }
 
     os << ")";
