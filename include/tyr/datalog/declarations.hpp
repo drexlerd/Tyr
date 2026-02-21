@@ -87,12 +87,12 @@ struct EdgeAssignment;
 
 namespace kpkc
 {
-struct DenseKPartiteGraph;
 struct Workspace;
 struct Vertex;
 struct VertexPartitions;
-struct DeduplicatedAdjacencyMatrix;
-struct PartitionedAdjacencyMatrix;
+class DeduplicatedAdjacencyMatrix;
+class PartitionedAdjacencyMatrix;
+class DirtyPartitions;
 }
 
 }

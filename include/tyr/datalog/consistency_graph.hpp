@@ -276,7 +276,8 @@ public:
                                                const kpkc::GraphLayout& layout,
                                                kpkc::Graph& delta_graph,
                                                kpkc::Graph& full_graph,
-                                               kpkc::VertexPartitions& fact_induced_candidates) const;
+                                               kpkc::VertexPartitions& fact_induced_candidates,
+                                               kpkc::DirtyPartitions& dirty_partitions) const;
 
     auto get_vertices() const noexcept { return std::ranges::subrange(m_vertices.cbegin(), m_vertices.cend()); }
 

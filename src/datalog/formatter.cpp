@@ -313,6 +313,27 @@ std::ostream& print(std::ostream& os, const datalog::kpkc::PartitionedAdjacencyM
     return os;
 }
 
+std::ostream& print(std::ostream& os, const datalog::kpkc::DirtyPartitions& el)
+{
+    os << "DirtyPartitions(\n";
+
+    {
+        IndentScope scope(os);
+
+        os << print_indent << "dirty matrix = " << el.dirty_matrix() << "\n";
+
+        os << print_indent << "dirty rows = " << el.dirty_rows() << "\n";
+
+        os << print_indent << "static dirty matrix = " << el.static_dirty_matrix() << "\n";
+
+        os << print_indent << "static dirty rows = " << el.static_dirty_rows() << "\n";
+    }
+
+    os << ")";
+
+    return os;
+}
+
 std::ostream& print(std::ostream& os, const datalog::ProgramStatistics& el)
 {
     const double parallel_ns = static_cast<double>(to_ns(el.parallel_time));
@@ -476,6 +497,8 @@ std::ostream& operator<<(std::ostream& os, const VertexPartitions& el) { return 
 std::ostream& operator<<(std::ostream& os, const DeduplicatedAdjacencyMatrix& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const PartitionedAdjacencyMatrix& el) { return print(os, el); }
+
+std::ostream& operator<<(std::ostream& os, const DirtyPartitions& el) { return print(os, el); }
 }
 
 std::ostream& operator<<(std::ostream& os, const ProgramStatistics& el) { return print(os, el); }

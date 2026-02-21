@@ -113,6 +113,63 @@ private:
     std::vector<uint64_t> m_data;
 };
 
+class DirtyPartitions
+{
+public:
+    explicit DirtyPartitions(const formalism::datalog::VariableDependencyGraph& dependency_graph) :
+        m_k(dependency_graph.get_adj_matrix().k()),
+        m_dirty_matrix(m_k * m_k, false),
+        m_dirty_rows(m_k, false),
+        m_static_dirty_matrix(m_k * m_k, false),
+        m_static_dirty_rows(m_k, false)
+    {
+        for (uint_t pi = 0; pi < m_k; ++pi)
+        {
+            for (uint_t pj = pi + 1; pj < m_k; ++pj)
+            {
+                if (!dependency_graph.get_adj_matrix().get_cell(formalism::ParameterIndex { pi }, formalism::ParameterIndex { pj }).statically_empty())
+                {
+                    m_static_dirty_matrix.set(pi * m_k + pj);
+                    m_static_dirty_matrix.set(pj * m_k + pi);
+                    m_static_dirty_rows.set(pi);
+                    m_static_dirty_rows.set(pj);
+                }
+            }
+        }
+    }
+
+    void set_dirty(uint_t pi, uint_t pj) noexcept
+    {
+        m_dirty_matrix.set(pi * m_k + pj);
+        m_dirty_matrix.set(pj * m_k + pi);
+        m_dirty_rows.set(pi);
+        m_dirty_rows.set(pj);
+    }
+
+    bool is_dirty(uint_t pi, uint_t pj) const noexcept { return m_dirty_matrix.test(pi * m_k + pj); }
+
+    bool is_dirty_row(uint_t pi) const noexcept { return m_dirty_rows.test(pi); }
+
+    void reset() noexcept
+    {
+        m_dirty_matrix = m_static_dirty_matrix;
+        m_dirty_rows = m_static_dirty_rows;
+    }
+
+    const auto& dirty_matrix() const noexcept { return m_dirty_matrix; }
+    const auto& dirty_rows() const noexcept { return m_dirty_rows; }
+    const auto& static_dirty_matrix() const noexcept { return m_static_dirty_matrix; }
+    const auto& static_dirty_rows() const noexcept { return m_static_dirty_rows; }
+
+private:
+    uint_t m_k;
+    boost::dynamic_bitset<> m_dirty_matrix;
+    boost::dynamic_bitset<> m_dirty_rows;
+
+    boost::dynamic_bitset<> m_static_dirty_matrix;
+    boost::dynamic_bitset<> m_static_dirty_rows;
+};
+
 class AdjacencyMatrix
 {
 public:
@@ -292,34 +349,6 @@ public:
         }
     }
 
-    auto get_explicit_bitset(uint_t v, uint_t p, const GraphLayout::BitsetInfo& info) const noexcept
-    {
-        const auto& cell = m_adj_span(v, p);
-        assert(cell.is_explicit());
-        return BitsetSpan<const uint64_t>(m_bitset_data.data() + cell.offset, info.num_bits);
-    }
-    auto get_explicit_bitset(uint_t v, uint_t p) const noexcept
-    {
-        const auto& info = m_layout.get().info.infos[p];
-        return get_explicit_bitset(v, p, info);
-    }
-
-    auto get_implicit_bitset(const GraphLayout::BitsetInfo& info_v, uint_t bit_v, uint_t v, uint_t p) const noexcept
-    {
-        const auto& info = m_layout.get().info.infos[p];
-        assert(m_adj_span(v, p).is_implicit());
-        const auto consistent_v = m_delta_partitions.get().get_bitset(info_v);
-
-        return consistent_v.test(bit_v) ? m_affected_partitions.get().get_bitset(info) : m_delta_partitions.get().get_bitset(info);
-    }
-    auto get_implicit_bitset(uint_t v, uint_t p) const noexcept
-    {
-        const auto pv = m_layout.get().vertex_to_partition[v];
-        const auto bit_v = m_layout.get().vertex_to_bit[v];
-        const auto& info_v = m_layout.get().info.infos[pv];
-        return get_implicit_bitset(info_v, bit_v, v, p);
-    }
-
     struct Cell
     {
         enum class Mode
@@ -421,7 +450,6 @@ public:
     auto touched_partitions(uint_t v, uint_t p) noexcept { return m_touched_partitions[v * m_layout.get().k + p]; }
     const auto& adj_data() const noexcept { return m_adj_data; }
     auto adj_span() const noexcept { return m_adj_span; }
-
     const auto& bitset_data() const noexcept { return m_bitset_data; }
 
 private:

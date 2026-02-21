@@ -90,9 +90,6 @@ public:
     /// @param static_graph is the static precondition consistency graph.
     explicit DeltaKPKC(const StaticConsistencyGraph& static_graph);
 
-    /// @brief Complete member initialization (for testing purposes)
-    DeltaKPKC(GraphLayout layout, Graph delta_graph2, Graph full_graph2);
-
     /// @brief Set new fact set to compute deltas.
     /// @param assignment_sets
     void set_next_assignment_sets(const StaticConsistencyGraph& static_graph,
@@ -183,6 +180,8 @@ private:
     Graph m_full_graph;
 
     VertexPartitions m_fact_induced_candidates;
+
+    DirtyPartitions m_dirty_partitions;
 };
 
 /**
