@@ -221,9 +221,6 @@ struct RuleWorkspace
         /// Pool applicability checks since we dont know how many are needed.
         UniqueObjectPool<ApplicabilityCheck> applicability_check_pool;
         UnorderedMap<Index<formalism::Binding>, UniqueObjectPoolPtr<ApplicabilityCheck>> pending_rules;
-
-        /// Statistics
-        RuleWorkerStatistics statistics;
     };
 
     struct Worker
@@ -329,13 +326,7 @@ void RuleWorkspace<AndAP>::Iteration::clear() noexcept
 }
 
 template<typename AndAP>
-RuleWorkspace<AndAP>::Solve::Solve(const AndAP& and_ap) :
-    and_ap(and_ap),
-    stage_repository(),
-    seen_bindings_dbg(),
-    applicability_check_pool(),
-    pending_rules(),
-    statistics()
+RuleWorkspace<AndAP>::Solve::Solve(const AndAP& and_ap) : and_ap(and_ap), stage_repository(), seen_bindings_dbg(), applicability_check_pool(), pending_rules()
 {
 }
 

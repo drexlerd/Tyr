@@ -82,11 +82,12 @@ public:
 
     size_t hash(const Data<Tag>& element) const noexcept { return m_set.hash(make_observer(element)); }
 
-    const Data<Tag>* find_with_hash(const Data<Tag>& element, size_t hash) const noexcept
+    const Data<Tag>* find_with_hash(const Data<Tag>& element, size_t h) const noexcept
     {
-        assert(is_canonical(element));
+        assert(is_canonical(element) && "The given element is not canonical. Did you forget to call canonicalize?");
+        assert(h == hash(element) && "The given hash does not match container internal's hash.");
 
-        const auto it = m_set.find(make_observer(element), hash);
+        const auto it = m_set.find(make_observer(element), h);
         if (it != m_set.end())
             return it->get();
 
@@ -101,13 +102,14 @@ public:
     }
 
     template<::cista::mode Mode = CISTA_MODE>
-    std::pair<const Data<Tag>*, bool> insert_with_hash(size_t hash, const Data<Tag>& element, ::cista::buf<std::vector<uint8_t>>& buf)
+    std::pair<const Data<Tag>*, bool> insert_with_hash(size_t h, const Data<Tag>& element, ::cista::buf<std::vector<uint8_t>>& buf)
     {
-        assert(is_canonical(element));
+        assert(is_canonical(element) && "The given element is not canonical. Did you forget to call canonicalize?");
+        assert(h == hash(element) && "The given hash does not match container internal's hash.");
 
         // 1. Check if element already exists
 
-        auto it = m_set.find(make_observer(element), hash);
+        auto it = m_set.find(make_observer(element), h);
         if (it != m_set.end())
             return std::make_pair(it->get(), false);
 
@@ -120,7 +122,7 @@ public:
 
         // 4. Insert into set
         const auto serialized_element = ::cista::deserialize<const Data<Tag>, Mode>(begin, begin + buf.size());
-        auto [it2, inserted] = m_set.emplace_with_hash(hash, serialized_element);
+        auto [it2, inserted] = m_set.emplace_with_hash(h, serialized_element);
         assert(inserted);
 
         // 5. Insert to vec

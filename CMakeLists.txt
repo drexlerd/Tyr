@@ -69,7 +69,7 @@ else()
 
         # RelWithDebInfo: make debug info cheap (big compile-time/RAM win)
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
-            "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g1 -gsplit-dwarf -fno-omit-frame-pointer -fno-lto -fno-var-tracking-assignments")
+            "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g2 -fno-omit-frame-pointer -fno-lto")
 
         # Debug: keep your choices (CMake will supply -O0 or -Og depending on toolchain,
         # but if you want -Og specifically, keep it here; otherwise omit -Og)
@@ -88,7 +88,7 @@ else()
 
         # RelWithDebInfo: cheap debug info
         set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
-            "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g1 -gsplit-dwarf -fno-omit-frame-pointer -fno-lto")
+            "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g2 -fno-omit-frame-pointer -fno-lto")
 
         # Debug (same note as above)
         set(CMAKE_CXX_FLAGS_DEBUG

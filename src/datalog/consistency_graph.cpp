@@ -1087,7 +1087,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     // std::cout << m_unary_overapproximation_condition << std::endl;
     // std::cout << m_binary_overapproximation_condition << std::endl;
 
-    std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t0 = std::chrono::steady_clock::now();
 
     fact_induced_candidates.reset();
     delta_graph.reset();
@@ -1098,7 +1098,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     // std::cout << m_unary_overapproximation_predicate_to_anchors << std::endl;
 
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     /**
      * Compute delta fact induced vertices.
@@ -1151,7 +1151,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
     /// 2. Monotonically update full consistent vertices partition
 
-    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
     {
         const auto unary_overapproximation_constraints = m_unary_overapproximation_condition.get_numeric_constraints();
@@ -1219,7 +1219,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
         }
     }
 
-    std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
 
     /// 3. Monotonically update full explicitly consistent edges
 
@@ -1330,7 +1330,7 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
         }
     }
 
-    std::chrono::steady_clock::time_point t4 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t4 = std::chrono::steady_clock::now();
 
     /// If vi is new, then mark all implicit vj's in pj as affected, and vice versa.
     for (uint_t pi = 0; pi < layout.k; ++pi)
@@ -1356,40 +1356,41 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
         }
     }
 
-    std::chrono::steady_clock::time_point t5 = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point t5 = std::chrono::steady_clock::now();
 
     // std::cout << "Delta graph:" << std::endl;
     // std::cout << delta_graph.matrix << std::endl;
     // std::cout << "Full graph:" << std::endl;
     // std::cout << full_graph.matrix << std::endl;
+    /*
+        T.calls++;
+        T.reset_ns += to_ns(t1 - t0);
+        T.induced_ns += to_ns(t2 - t1);
+        T.vertex_ns += to_ns(t3 - t2);
+        T.edge_ns += to_ns(t4 - t3);
+        T.implicit_ns += to_ns(t5 - t4);
+        T.delta_touched_partitions += delta_graph.matrix.touched_partitions().count();
+        T.full_touched_partitions += full_graph.matrix.touched_partitions().count();
+        T.matrix_bitset_data_bytes += delta_graph.matrix.bitset_data().size() * sizeof(uint64_t);
+        T.matrix_cell_data_bytes += delta_graph.matrix.adj_data().size() * sizeof(kpkc::PartitionedAdjacencyMatrix::Cell);
 
-    T.calls++;
-    T.reset_ns += to_ns(t1 - t0);
-    T.induced_ns += to_ns(t2 - t1);
-    T.vertex_ns += to_ns(t3 - t2);
-    T.edge_ns += to_ns(t4 - t3);
-    T.implicit_ns += to_ns(t5 - t4);
-    T.delta_touched_partitions += delta_graph.matrix.touched_partitions().count();
-    T.full_touched_partitions += full_graph.matrix.touched_partitions().count();
-    T.matrix_bitset_data_bytes += delta_graph.matrix.bitset_data().size() * sizeof(uint64_t);
-    T.matrix_cell_data_bytes += delta_graph.matrix.adj_data().size() * sizeof(kpkc::PartitionedAdjacencyMatrix::Cell);
-
-    if ((T.calls % 1000) == 0)
-    {
-        std::cout << "avg reset " << (T.reset_ns / T.calls) << " ns\n"
-                  << "avg induced " << (T.induced_ns / T.calls) << " ns\n"
-                  << "avg vertex " << (T.vertex_ns / T.calls) << " ns\n"
-                  << "avg edge " << (T.edge_ns / T.calls) << " ns\n"
-                  << "avg implicit " << (T.implicit_ns / T.calls) << " ns\n"
-                  << "delta touched partitions " << static_cast<double>(T.delta_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
-                  << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
-                  << "delta consistent vertices " << T.delta_consistent_vertices / T.calls << "\n"
-                  << "delta consistent edges " << T.delta_consistent_edges / T.calls << "\n"
-                  << "matrix bitset data bytes " << T.matrix_bitset_data_bytes / T.calls << "\n"
-                  << "matrix cell data bytes " << T.matrix_cell_data_bytes / T.calls << "\n"
-                  << "induced bits " << T.induced_bits / T.calls << "\n"
-                  << "affected bits " << T.affected_bits / T.calls << "\n";
-    }
+        if ((T.calls % 1000) == 0)
+        {
+            std::cout << "avg reset " << (T.reset_ns / T.calls) << " ns\n"
+                      << "avg induced " << (T.induced_ns / T.calls) << " ns\n"
+                      << "avg vertex " << (T.vertex_ns / T.calls) << " ns\n"
+                      << "avg edge " << (T.edge_ns / T.calls) << " ns\n"
+                      << "avg implicit " << (T.implicit_ns / T.calls) << " ns\n"
+                      << "delta touched partitions " << static_cast<double>(T.delta_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
+                      << "full touched partitions " << static_cast<double>(T.full_touched_partitions / T.calls) / (layout.nv * layout.k) << "\n"
+                      << "delta consistent vertices " << T.delta_consistent_vertices / T.calls << "\n"
+                      << "delta consistent edges " << T.delta_consistent_edges / T.calls << "\n"
+                      << "matrix bitset data bytes " << T.matrix_bitset_data_bytes / T.calls << "\n"
+                      << "matrix cell data bytes " << T.matrix_cell_data_bytes / T.calls << "\n"
+                      << "induced bits " << T.induced_bits / T.calls << "\n"
+                      << "affected bits " << T.affected_bits / T.calls << "\n";
+        }
+                      */
 }
 
 const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const { return m_vertices[index]; }

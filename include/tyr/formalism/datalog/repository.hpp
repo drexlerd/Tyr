@@ -136,7 +136,7 @@ private:
         const auto& repos = get_container<T>(m_repository);
         const auto g = builder.index.group.value;
 
-        if (g >= repos.size())
+        if (g >= repos.size()) [[unlikely]]
             return std::nullopt;
 
         if (auto ptr = repos[g].find(builder))
@@ -186,7 +186,7 @@ public:
         auto& repos = get_container<T>(m_repository);
         const auto g = builder.index.group.value;
 
-        if (g >= repos.size())
+        if (g >= repos.size()) [[unlikely]]
             repos.resize(g + 1);
 
         const size_t parent_size = m_parent ? m_parent->template size<T>(builder.index) : 0;

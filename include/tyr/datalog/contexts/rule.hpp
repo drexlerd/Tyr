@@ -97,7 +97,6 @@ public:
         auto& head_to_witness() noexcept { return m_ws_worker.iteration.head_to_witness; }
         auto& heads() noexcept { return m_ws_worker.iteration.heads; }
 
-        auto& statistics() noexcept { return m_ws_worker.solve.statistics; }
         auto& applicability_check_pool() noexcept { return m_ws_worker.solve.applicability_check_pool; }
         auto& seen_bindings_dbg() noexcept { return m_ws_worker.solve.seen_bindings_dbg; }
         auto& pending_rules() noexcept { return m_ws_worker.solve.pending_rules; }

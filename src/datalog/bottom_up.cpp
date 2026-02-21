@@ -80,9 +80,6 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     const auto& in = wrctx.in();
     auto& out = wrctx.out();
 
-    const auto rule_stopwatch = StopwatchScope(out.statistics().total_time);
-    ++out.statistics().num_executions;
-
     create_nullary_binding(out.ground_context_solve().binding);
 
     // Note: we never go through the consistency graph, and hence, have to check validity on the entire rule body.
@@ -141,8 +138,6 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
     const auto& in = wrctx.in();
     auto& out = wrctx.out();
 
-    const auto stopwatch = StopwatchScope(out.statistics().process_clique_time);
-
     create_general_binding(clique, in.cws_rule().static_consistency_graph, out.ground_context_solve().binding);
 
     assert(ensure_novel_binding(out.ground_context_solve().binding, out.seen_bindings_dbg()));
@@ -199,13 +194,8 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     auto& kpkc_cliques = rctx.ws_rule.common.kpkc_cliques;
     auto& kpkc_workspace = rctx.ws_rule.common.kpkc_workspace;
 
-    {
-        const auto stopwatch = StopwatchScope(rctx.ws_rule.common.statistics.generate_clique_time);
-
-        kpkc_algorithm.for_each_new_k_clique(kpkc_cliques, kpkc_workspace);
-
-        rctx.ws_rule.common.statistics.num_bindings += kpkc_cliques.size();
-    }
+    kpkc_algorithm.for_each_new_k_clique(kpkc_cliques, kpkc_workspace);
+    rctx.ws_rule.common.statistics.num_bindings += kpkc_cliques.size();
 
     constexpr size_t PAR_THRESHOLD = 1024;
     constexpr size_t GRAIN = 256;
@@ -215,17 +205,12 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     const bool do_parallel_inner = (kpkc_cliques.size() >= PAR_THRESHOLD) && (arena_conc >= 2);
 
     {
-        const auto rule_stopwatch = StopwatchScope(rctx.ws_rule.common.statistics.process_clique_time);
-
         if (do_parallel_inner)
         {
             oneapi::tbb::parallel_for(oneapi::tbb::blocked_range<size_t>(0, kpkc_cliques.size(), GRAIN),
                                       [&](const oneapi::tbb::blocked_range<size_t>& r)
                                       {
                                           auto wrctx = rctx.get_rule_worker_execution_context();
-                                          auto& out = wrctx.out();
-                                          const auto rule_stopwatch = StopwatchScope(out.statistics().total_time);
-                                          ++out.statistics().num_executions;
 
                                           for (size_t i = r.begin(); i != r.end(); ++i)
                                               process_clique(wrctx, kpkc_cliques[i]);
@@ -234,9 +219,6 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
         else
         {
             auto wrctx = rctx.get_rule_worker_execution_context();
-            auto& out = wrctx.out();
-            const auto rule_stopwatch = StopwatchScope(out.statistics().total_time);
-            ++out.statistics().num_executions;
 
             for (size_t i = 0; i < kpkc_cliques.size(); ++i)
                 process_clique(wrctx, kpkc_cliques[i]);
@@ -264,9 +246,6 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 
         const auto& in = wrctx.in();
         auto& out = wrctx.out();
-
-        const auto process_pending_time = StopwatchScope(out.statistics().process_pending_time);
-        const auto total_time = StopwatchScope(out.statistics().total_time);
 
         for (auto it = out.pending_rules().begin(); it != out.pending_rules().end();)
         {

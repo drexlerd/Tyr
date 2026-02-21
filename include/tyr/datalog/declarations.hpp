@@ -64,8 +64,6 @@ class RuleSchedulerStratum;
 struct ProgramStatistics;
 struct RuleStatistics;
 struct AggregatedRuleStatistics;
-struct RuleWorkerStatistics;
-struct AggregatedRuleWorkerStatistics;
 
 namespace details
 {
