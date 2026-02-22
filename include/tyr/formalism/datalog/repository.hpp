@@ -40,6 +40,13 @@ class Repository
 {
 private:
     template<typename T>
+    struct Slot
+    {
+        buffer::IndexedHashSet<T> container {};
+        size_t parent_size {};
+    };
+
+    template<typename T>
     struct RepositoryEntry;
 
     template<typename T>
@@ -47,9 +54,9 @@ private:
     struct RepositoryEntry<T>
     {
         using value_type = T;
-        using container_type = buffer::IndexedHashSet<T>;
+        using slot_type = Slot<T>;
 
-        container_type container;
+        slot_type slot;
     };
 
     template<typename T>
@@ -57,9 +64,9 @@ private:
     struct RepositoryEntry<T>
     {
         using value_type = T;
-        using container_type = std::vector<buffer::IndexedHashSet<T>>;
+        using slot_type = std::vector<Slot<T>>;
 
-        container_type container;
+        slot_type slot;
     };
 
     using RepositoryStorage = std::tuple<RepositoryEntry<Variable>,
@@ -119,62 +126,151 @@ private:
 
     const Repository* m_parent;
 
+    /**
+     * initialize_entry
+     */
+
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
-    std::optional<Index<T>> find_impl(const Data<T>& builder) const noexcept
+    void initialize_entry(RepositoryEntry<T>& entry)
     {
-        const auto& repo = std::get<RepositoryEntry<T>>(m_repository).container;
-
-        if (auto ptr = repo.find(builder))
-            return ptr->index;
-
-        return std::nullopt;
+        entry.slot.parent_size = m_parent ? m_parent->template size<T>() : 0;
     }
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
-    std::optional<Index<T>> find_impl(const Data<T>& builder) const noexcept
+    void initialize_entry(RepositoryEntry<T>& entry)
     {
-        const auto& repos = std::get<RepositoryEntry<T>>(m_repository).container;
-        const auto g = builder.index.group.value;
+        if (m_parent)
+        {
+            const auto& parent_entry = std::get<RepositoryEntry<T>>(m_parent->m_repository);
+            if (entry.slot.size() < parent_entry.slot.size())
+                entry.slot.resize(parent_entry.slot.size());
+        }
 
-        if (g >= repos.size()) [[unlikely]]
-            return std::nullopt;
+        for (uint_t g = 0; g < entry.slot.size(); ++g)
+        {
+            auto idx = Index<T> {};
+            idx.group.value = g;
+            entry.slot[g].parent_size = m_parent ? m_parent->template size<T>(idx) : 0;
+        }
+    }
 
-        if (auto ptr = repos[g].find(builder))
-            return ptr->index;
+    void initialize_entries()
+    {
+        std::apply([&]<typename... E>(E&... e) { ((initialize_entry(e)), ...); }, m_repository);
+    }
 
-        return std::nullopt;
+    /**
+     * Clear
+     */
+
+    template<typename T>
+        requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
+    void clear(RepositoryEntry<T>& entry) noexcept
+    {
+        entry.slot.container.clear();
+        entry.slot.parent_size = 0;
+    }
+
+    template<typename T>
+        requires(GroupIndexConcept<Index<T>>)
+    void clear(RepositoryEntry<T>& entry) noexcept
+    {
+        for (auto& [indexed_hash_set, parent_size] : entry.slot)
+        {
+            indexed_hash_set.clear();
+            parent_size = 0;
+        }
+    }
+
+    void clear_entries() noexcept
+    {
+        std::apply([&](auto&... entry) { (clear(entry), ...); }, m_repository);
     }
 
 public:
-    Repository(const Repository* parent = nullptr) : m_parent(parent) {}
+    Repository(const Repository* parent = nullptr) : m_parent(parent) { initialize_entries(); }
 
     template<typename T>
+        requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
+    std::optional<Index<T>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
+    {
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto& indexed_hash_set = entry.slot.container;
+        assert(h == indexed_hash_set.hash(builder) && "The given hash does not match container internal's hash.");
+
+        if (auto ptr = indexed_hash_set.find_with_hash(builder, h))
+        {
+            return ptr->index;
+        }
+
+        return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
+    }
+
+    template<typename T>
+        requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
     std::optional<Index<T>> find(const Data<T>& builder) const noexcept
     {
-        if (!m_parent)
-            return find_impl<T>(builder);
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto& indexed_hash_set = entry.slot.container;
+        const auto h = indexed_hash_set.hash(builder);
 
-        if (auto ptr = find_impl<T>(builder))
-            return ptr;
+        return find_with_hash<T>(builder, h);
+    }
 
-        return m_parent ? m_parent->template find<T>(builder) : std::nullopt;
+    template<typename T>
+        requires(GroupIndexConcept<Index<T>>)
+    std::optional<Index<T>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
+    {
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto g = builder.index.group.value;
+
+        if (g >= entry.slot.size())
+            return std::nullopt;
+
+        const auto& indexed_hash_set = entry.slot[g].container;
+
+        if (auto ptr = indexed_hash_set.find_with_hash(builder, h))
+            return ptr->index;
+
+        return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
+    }
+
+    template<typename T>
+        requires(GroupIndexConcept<Index<T>>)
+    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
+    {
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto g = builder.index.group.value;
+
+        if (g >= entry.slot.size())
+            return std::nullopt;
+
+        const auto& indexed_hash_set = entry.slot[g].container;
+        const auto h = indexed_hash_set.hash(builder);
+
+        return find_with_hash<T>(builder, h);
     }
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
-        if (auto ptr = find<T>(builder))
-            return { *ptr, false };
+        auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        auto& slot = entry.slot;
+        auto& indexed_hash_set = slot.container;
+        const auto h = indexed_hash_set.hash(builder);
 
-        auto& repo = std::get<RepositoryEntry<T>>(m_repository).container;
+        if (m_parent)
+            if (auto ptr = m_parent->template find_with_hash<T>(builder, h))
+                return { *ptr, false };
 
-        const size_t parent_size = m_parent ? m_parent->template size<T>() : 0;
-        builder.index.value = parent_size + repo.size();
+        // Manually assign index to continue indexing.
+        builder.index.value = slot.parent_size + indexed_hash_set.size();
 
-        const auto [ptr, success] = repo.insert(builder, buf);
+        const auto [ptr, success] = indexed_hash_set.insert_with_hash(h, builder, buf);
+
         return { ptr->index, success };
     }
 
@@ -182,19 +278,24 @@ public:
         requires(GroupIndexConcept<Index<T>>)
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
-        if (auto ptr = find<T>(builder))
-            return { *ptr, false };
-
-        auto& repos = std::get<RepositoryEntry<T>>(m_repository).container;
+        auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        auto& slot = entry.slot;
         const auto g = builder.index.group.value;
 
-        if (g >= repos.size()) [[unlikely]]
-            repos.resize(g + 1);
+        if (g >= slot.size())
+            slot.resize(g + 1);
 
-        const size_t parent_size = m_parent ? m_parent->template size<T>(builder.index) : 0;
-        builder.index.value = parent_size + repos[g].size();
+        auto& indexed_hash_set = slot[g].container;
+        const auto h = indexed_hash_set.hash(builder);
 
-        const auto [ptr, success] = repos[g].insert(builder, buf);
+        if (m_parent)
+            if (auto ptr = m_parent->template find_with_hash<T>(builder, h))
+                return { *ptr, false };
+
+        // Manually assign index to continue indexing.
+        builder.index.value = slot[g].parent_size + slot[g].container.size();
+
+        const auto [ptr, success] = slot[g].container.insert_with_hash(h, builder, buf);
         return { ptr->index, success };
     }
 
@@ -205,15 +306,20 @@ public:
     {
         assert(index != Index<T>::max() && "Unassigned index.");
 
-        const size_t parent_size = m_parent ? m_parent->template size<T>() : 0;
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto parent_size = entry.slot.parent_size;
 
-        if (m_parent && index.value < parent_size)
+        // In parent range -> delegate
+        if (index.value < parent_size)
+        {
+            assert(m_parent);
             return (*m_parent)[index];
+        }
 
+        // Local range -> shift down
         index.value -= parent_size;
 
-        const auto& repo = std::get<RepositoryEntry<T>>(m_repository).container;
-        return repo[index];
+        return entry.slot.container[index];
     }
 
     template<typename T>
@@ -222,40 +328,54 @@ public:
     {
         assert(index != Index<T>::max() && "Unassigned index.");
 
-        const size_t parent_size = m_parent ? m_parent->template size<T>(index) : 0;
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto g = index.group.value;
+        const auto parent_size = entry.slot[g].parent_size;
 
-        if (m_parent && index.value < parent_size)
+        // In parent range -> delegate
+        if (index.value < parent_size)
+        {
+            assert(m_parent);
             return (*m_parent)[index];
+        }
 
+        // Local range -> shift down
         index.value -= parent_size;
 
-        const auto& repos = std::get<RepositoryEntry<T>>(m_repository).container;
-        // Assuming index.group.value is valid for local access when present.
-        return repos[index.group.value][index];
+        return entry.slot[g].container[index];
     }
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
     const Data<T>& front() const
     {
-        if (m_parent && m_parent->template size<T>() > 0)
-            return m_parent->template front<T>();
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
 
-        const auto& repo = std::get<T>(m_repository).container;
-        return repo.front();
+        if (entry.slot.parent_size > 0)
+        {
+            assert(m_parent);
+            return m_parent->template front<T>();  // recurse to root-most non-empty
+        }
+
+        return entry.slot.container.front();
     }
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
     const Data<T>& front(Index<T> index) const
     {
-        if (m_parent && m_parent->template size<T>(index) > 0)
-            return m_parent->template front<T>(index);
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
 
-        const auto& repos = std::get<T>(m_repository).container;
-        assert(index.group.value < repos.size());
-        assert(repos[index.group.value].size() > 0);
-        return repos[index.group.value].front();
+        if (entry.slot.parent_size > 0)
+        {
+            assert(m_parent);
+            return m_parent->template front<T>();  // recurse to root-most non-empty
+        }
+
+        assert(index.group.value < entry.slot.size());
+        assert(entry.slot[index.group.value].container.size() > 0);
+
+        return entry.slot[index.group.value].container[index.group.value].front();
     }
 
     /// @brief Get the number of stored elements.
@@ -263,19 +383,23 @@ public:
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
     size_t size() const noexcept
     {
-        const auto& repo = std::get<RepositoryEntry<T>>(m_repository).container;
-        return (m_parent ? m_parent->template size<T>() : 0) + repo.size();
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+
+        return entry.slot.parent_size + entry.slot.container.size();
     }
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
     size_t size(Index<T> index) const noexcept
     {
-        const auto& repos = std::get<RepositoryEntry<T>>(m_repository).container;
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto g = index.group.value;
 
-        const size_t parent_size = m_parent ? m_parent->template size<T>(index) : 0;
-        const size_t local_size = (g < repos.size()) ? repos[g].size() : 0;
+        if (g >= entry.slot.size())
+            return 0;
+
+        const size_t parent_size = entry.slot[g].parent_size;
+        const size_t local_size = entry.slot[g].container.size();
 
         return parent_size + local_size;
     }
@@ -283,7 +407,8 @@ public:
     /// @brief Clear the repository but keep memory allocated.
     void clear() noexcept
     {
-        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_repository);
+        clear_entries();
+        initialize_entries();
     }
 };
 

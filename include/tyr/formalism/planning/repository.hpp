@@ -40,13 +40,19 @@ class Repository
 {
 private:
     template<typename T>
+    struct Slot
+    {
+        buffer::IndexedHashSet<T> container {};
+        size_t parent_size {};
+    };
+
+    template<typename T>
     struct RepositoryEntry
     {
         using value_type = T;
-        using container_type = buffer::IndexedHashSet<T>;
+        using slot_type = Slot<T>;
 
-        container_type container = container_type {};
-        size_t parent_size = 0;
+        slot_type slot = slot_type {};
     };
 
     using RepositoryStorage = std::tuple<RepositoryEntry<Variable>,
@@ -143,12 +149,17 @@ private:
     template<typename T>
     void initialize_entry(RepositoryEntry<T>& entry)
     {
-        entry.parent_size = m_parent ? m_parent->template size<T>() : 0;
+        entry.slot.parent_size = m_parent ? m_parent->template size<T>() : 0;
     }
 
     void initialize_entries()
     {
         std::apply([&](auto&... e) { (initialize_entry(e), ...); }, m_repository);
+    }
+
+    void clear_entries() noexcept
+    {
+        std::apply([](auto&... entry) { (entry.slot.container.clear(), ...); }, m_repository);
     }
 
 public:
@@ -157,7 +168,8 @@ public:
     template<typename T>
     std::optional<Index<T>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
     {
-        const auto& indexed_hash_set = std::get<RepositoryEntry<T>>(m_repository).container;
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto& indexed_hash_set = entry.slot.container;
         assert(h == indexed_hash_set.hash(builder) && "The given hash does not match container internal's hash.");
 
         if (auto ptr = indexed_hash_set.find_with_hash(builder, h))
@@ -171,7 +183,8 @@ public:
     template<typename T>
     std::optional<Index<T>> find(const Data<T>& builder) const noexcept
     {
-        const auto& indexed_hash_set = std::get<RepositoryEntry<T>>(m_repository).container;
+        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto& indexed_hash_set = entry.slot.container;
         const auto h = indexed_hash_set.hash(builder);
 
         return find_with_hash<T>(builder, h);
@@ -181,7 +194,7 @@ public:
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        auto& indexed_hash_set = entry.container;
+        auto& indexed_hash_set = entry.slot.container;
         const auto h = indexed_hash_set.hash(builder);
 
         if (m_parent)
@@ -193,7 +206,7 @@ public:
         }
 
         // Manually assign index to continue indexing.
-        builder.index.value = entry.parent_size + indexed_hash_set.size();
+        builder.index.value = entry.slot.parent_size + indexed_hash_set.size();
 
         const auto [ptr, success] = indexed_hash_set.insert_with_hash(h, builder, buf);
 
@@ -207,18 +220,19 @@ public:
         assert(index != Index<T>::max() && "Unassigned index.");
 
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto parent_size = entry.slot.parent_size;
 
         // In parent range -> delegate
-        if (index.value < entry.parent_size)
+        if (index.value < parent_size)
         {
             assert(m_parent);
             return (*m_parent)[index];
         }
 
         // Local range -> shift down
-        index.value -= entry.parent_size;
+        index.value -= parent_size;
 
-        return entry.container[index];
+        return entry.slot.container[index];
     }
 
     template<typename T>
@@ -226,13 +240,13 @@ public:
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
 
-        if (entry.parent_size > 0)
+        if (entry.slot.parent_size > 0)
         {
             assert(m_parent);
             return m_parent->template front<T>();  // recurse to root-most non-empty
         }
 
-        return entry.container.front();
+        return entry.slot.container.front();
     }
 
     /// @brief Get the number of stored elements.
@@ -241,13 +255,13 @@ public:
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
 
-        return entry.parent_size + entry.container.size();
+        return entry.slot.parent_size + entry.slot.container.size();
     }
 
     /// @brief Clear the repository but keep memory allocated.
     void clear() noexcept
     {
-        std::apply([](auto&... slots) { (slots.container.clear(), ...); }, m_repository);
+        clear_entries();
         initialize_entries();
     }
 };
