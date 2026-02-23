@@ -98,7 +98,6 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                       in.cws_rule().get_rule(),
                                       in.cws_rule().get_witness_condition(),
                                       in.or_annot(),
-                                      out.witness_to_cost(),
                                       out.head_to_witness(),
                                       out.ground_context_solve());
     }
@@ -177,7 +176,6 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
                                       in.cws_rule().get_rule(),
                                       in.cws_rule().get_witness_condition(),
                                       in.or_annot(),
-                                      out.witness_to_cost(),
                                       out.head_to_witness(),
                                       out.ground_context_solve());
     }
@@ -273,7 +271,6 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
                                               in.cws_rule().get_rule(),
                                               in.cws_rule().get_witness_condition(),
                                               in.or_annot(),
-                                              out.witness_to_cost(),
                                               out.head_to_witness(),
                                               out.ground_context_solve());
 
@@ -398,7 +395,6 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                         const auto cost_update = ctx.ctx.ws.or_ap.update_annotation(program_head,
                                                                                     worker_head,
                                                                                     ctx.ctx.ws.or_annot,
-                                                                                    worker.iteration.witness_to_cost,
                                                                                     worker.iteration.head_to_witness,
                                                                                     ctx.ctx.ws.head_to_witness);
 

@@ -92,21 +92,21 @@ private:
             return;
         tyr::set(atom.value, true, m_markings[uint_t(atom.group)]);
 
-        // Base case 2: atom has not witness, i.e., was true initially => do not recurse again
+        // Base case 2: atom has no witness, i.e., was true initially => do not recurse again
         const auto it = m_workspace.head_to_witness.find(atom);
         if (it == m_workspace.head_to_witness.end())
             return;
 
         const auto& witness = it->second;
 
-        const auto predicate_index = witness.rule.get_head().get_predicate().get_index();
+        const auto predicate_index = make_view(witness.get_rule(), this->m_workspace.repository).get_head().get_predicate().get_index();
         const auto& mapping = this->m_task->get_rpg_program().get_predicate_to_actions_mapping();
 
         if (const auto it = mapping.find(predicate_index); it != mapping.end())
         {
             const auto action = it->second;
 
-            grounder_context.binding = witness.binding.get_data().objects;
+            grounder_context.binding = witness.get_binding().get_data().objects;
 
             const auto ground_action_index = formalism::planning::ground(make_view(action, grounder_context.destination),
                                                                          grounder_context,
@@ -124,7 +124,7 @@ private:
         }
 
         // Divide case: recursively call for preconditions.
-        for (const auto literal : witness.witness_condition.get_literals<formalism::FluentTag>())
+        for (const auto literal : witness.get_witness_condition().get_literals<formalism::FluentTag>())
         {
             extract_relaxed_plan_and_preferred_actions(literal.get_atom().get_index(), state_context, grounder_context);
         }

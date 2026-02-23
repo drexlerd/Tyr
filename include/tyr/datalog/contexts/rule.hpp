@@ -93,7 +93,6 @@ public:
         }
 
         auto& kpkc_workspace() noexcept { return m_ws_worker.iteration.kpkc_workspace; }
-        auto& witness_to_cost() noexcept { return m_ws_worker.iteration.witness_to_cost; }
         auto& head_to_witness() noexcept { return m_ws_worker.iteration.head_to_witness; }
         auto& heads() noexcept { return m_ws_worker.iteration.heads; }
 
