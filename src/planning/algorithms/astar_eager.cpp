@@ -23,6 +23,8 @@
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/algorithms/astar_eager/event_handler.hpp"
 #include "tyr/planning/algorithms/openlists/alternating.hpp"
+#include "tyr/planning/algorithms/strategies/goal.hpp"
+#include "tyr/planning/algorithms/strategies/pruning.hpp"
 #include "tyr/planning/algorithms/utils.hpp"
 #include "tyr/planning/applicability.hpp"
 #include "tyr/planning/ground_task.hpp"
@@ -97,12 +99,14 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
     const auto& start_state = start_node.get_state();
     const auto start_state_index = start_state.get_index();
     const auto event_handler = (options.event_handler) ? options.event_handler : DefaultEventHandler<Task>::create(0);
+    const auto pruning_strategy = (options.pruning_strategy) ? options.pruning_strategy : PruningStrategy<Task>::create();
+    const auto goal_strategy = (options.goal_strategy) ? options.goal_strategy : TaskGoalStrategy<Task>::create(task);
 
     auto result = SearchResult<Task>();
 
     /* Test static goal. */
 
-    if (!is_statically_applicable(task.get_task().get_goal(), task.get_static_atoms_bitset()))
+    if (!goal_strategy->is_static_goal_satisfied())
     {
         event_handler->on_unsolvable();
 
@@ -114,9 +118,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
 
     /* Test whether initial state is goal. */
 
-    const auto start_state_context = StateContext { task, start_state.get_unpacked_state(), start_node.get_metric() };
-
-    if (options.stop_if_goal && is_dynamically_applicable(task.get_task().get_goal(), start_state_context))
+    if (options.stop_if_goal && goal_strategy->is_dynamic_goal_satisfied(start_node))
     {
         event_handler->on_end_search();
 
@@ -240,6 +242,14 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
             if (!is_new_successor_state)
                 continue;
 
+            /* Apply pruning strategy */
+
+            if (pruning_strategy->should_prune(succ_node))
+            {
+                event_handler->on_prune_node(succ_node);
+                continue;
+            }
+
             event_handler->on_generate_node(labeled_succ_node);
 
             /* Check whether state must be reopened or not. */
@@ -250,8 +260,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
                 successor_search_node.parent_state = state_index;
                 successor_search_node.g_value = succ_node.get_metric();
 
-                auto succ_state_context = StateContext { task, succ_state.get_unpacked_state(), succ_node.get_metric() };
-                const auto successor_is_goal_state = is_applicable(task.get_task().get_goal(), succ_state_context);
+                const auto successor_is_goal_state = goal_strategy->is_dynamic_goal_satisfied(succ_node);
 
                 if (is_new_successor_state && successor_is_goal_state)
                 {

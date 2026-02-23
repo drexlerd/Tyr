@@ -57,6 +57,16 @@ template<typename Task>
 using HeuristicPtr = std::shared_ptr<Heuristic<Task>>;
 
 template<typename Task>
+class PruningStrategy;
+template<typename Task>
+using PruningStrategyPtr = std::shared_ptr<PruningStrategy<Task>>;
+
+template<typename Task>
+class GoalStrategy;
+template<typename Task>
+using GoalStrategyPtr = std::shared_ptr<GoalStrategy<Task>>;
+
+template<typename Task>
 class Plan;
 
 class Statistics;

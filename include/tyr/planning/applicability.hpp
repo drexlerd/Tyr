@@ -45,7 +45,7 @@ namespace tyr::planning
 template<typename Task>
 struct StateContext
 {
-    Task& task;
+    const Task& task;
     const UnpackedState<Task>& unpacked_state;
     float_t auxiliary_value;
 };
