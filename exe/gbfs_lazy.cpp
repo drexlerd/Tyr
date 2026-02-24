@@ -101,6 +101,11 @@ int main(int argc, char** argv)
         for (const auto& ws_rule : successor_generator.get_workspace().rules)
             successor_generator_rule_statistics.push_back(ws_rule->common.statistics);
         std::cout << datalog::compute_aggregated_rule_statistics(successor_generator_rule_statistics) << std::endl;
+        auto successor_generator_rule_worker_statistics = std::vector<datalog::RuleWorkerStatistics> {};
+        for (const auto& ws_rule : successor_generator.get_workspace().rules)
+            for (const auto& worker : ws_rule->worker)
+                successor_generator_rule_worker_statistics.push_back(worker.solve.statistics);
+        std::cout << datalog::compute_aggregated_rule_worker_statistics(successor_generator_rule_worker_statistics) << std::endl;
 
         std::cout << "[Axiom evaluator] Summary" << std::endl;
         std::cout << successor_generator.get_state_repository()->get_axiom_evaluator()->get_workspace().statistics << std::endl;
@@ -108,6 +113,11 @@ int main(int argc, char** argv)
         for (const auto& ws_rule : successor_generator.get_state_repository()->get_axiom_evaluator()->get_workspace().rules)
             axiom_evaluator_rule_statistics.push_back(ws_rule->common.statistics);
         std::cout << datalog::compute_aggregated_rule_statistics(axiom_evaluator_rule_statistics) << std::endl;
+        auto axiom_evaluator_rule_worker_statistics = std::vector<datalog::RuleWorkerStatistics> {};
+        for (const auto& ws_rule : successor_generator.get_state_repository()->get_axiom_evaluator()->get_workspace().rules)
+            for (const auto& worker : ws_rule->worker)
+                axiom_evaluator_rule_worker_statistics.push_back(worker.solve.statistics);
+        std::cout << datalog::compute_aggregated_rule_worker_statistics(axiom_evaluator_rule_worker_statistics) << std::endl;
 
         std::cout << "[FFHeuristic] Summary" << std::endl;
         std::cout << ff_heuristic->get_workspace().statistics << std::endl;

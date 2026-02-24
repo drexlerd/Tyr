@@ -18,7 +18,8 @@ REPO = DIR.parent
 
 sys.path.append(str(DIR.parent))
 
-from experiments.parser_gbfs_lazy import GBFSLazyParser
+from experiments.parser_datalog import DatalogParser
+from experiments.parser_search import SearchParser
 
 from suite import SUITE_CNOT_SYNTHESIS, SUITE_IPC_OPTIMAL_STRIPS, SUITE_IPC_OPTIMAL_ADL, SUITE_IPC_SATISFICING_STRIPS, SUITE_IPC_LEARNING, SUITE_AUTOSCALE_OPTIMAL_STRIPS, SUITE_HTG, SUITE_IPC2023_NUMERIC, SUITE_PUSHWORLD, SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC, SUITE_MINEPDDL, SUITE_IPC_SATISFICING_ADL
 from suite_test import SUITE_CNOT_SYNTHESIS_TEST, SUITE_IPC_OPTIMAL_STRIPS_TEST, SUITE_IPC_OPTIMAL_ADL_TEST, SUITE_IPC_SATISFICING_STRIPS_TEST, SUITE_IPC_LEARNING_TEST, SUITE_AUTOSCALE_OPTIMAL_STRIPS_TEST, SUITE_HTG_TEST, SUITE_IPC2023_NUMERIC_TEST, SUITE_PUSHWORLD_TEST, SUITE_BELUGA2025_SCALABILITY_DETERMINISTIC_TEST, SUITE_MINEPDDL_TEST, SUITE_IPC_SATISFICING_ADL_TEST
@@ -110,48 +111,71 @@ ATTRIBUTES = [
     Attribute("total_time", function=geometric_mean),
     "memory",
 
-    # Datalog
-    Attribute("axiom_prog_par_frac", function=geometric_mean, min_wins=False),
-    "axiom_prog_num_exec",
-    "axiom_prog_par_ms",
-    "axiom_prog_T_total_ms",
-    "axiom_prog_T_avg_us",
-    "axiom_rule_samples",
-    "axiom_rule_T_init_ms",
-    "axiom_rule_T_generate_ms",
-    "axiom_rule_T_pending_ms",
-    "axiom_rule_T_total_ms",
-    Attribute("axiom_rule_par_frac", function=geometric_mean, min_wins=False),
-    Attribute("axiom_rule_total_skew", function=geometric_mean, min_wins=False),
-    Attribute("axiom_rule_avg_skew", function=geometric_mean, min_wins=False),
+    "succgen_prog_n_exec",
+    "succgen_prog_t_seq",
+    "succgen_prog_t_par",
+    "succgen_prog_t_tot",
+    "succgen_prog_t_avg",
+    Attribute("succgen_prog_pf", function=geometric_mean, min_wins=False),
 
-    Attribute("ff_prog_par_frac", function=geometric_mean, min_wins=False),
-    "ff_prog_num_exec",
-    "ff_prog_par_ms",
-    "ff_prog_T_total_ms",
-    "ff_prog_T_avg_us",
-    "ff_rule_samples",
-    "ff_rule_T_init_ms",
-    "ff_rule_T_generate_ms",
-    "ff_rule_T_pending_ms",
-    "ff_rule_T_total_ms",
-    Attribute("ff_rule_par_frac", function=geometric_mean, min_wins=False),
-    Attribute("ff_rule_total_skew", function=geometric_mean, min_wins=False),
-    Attribute("ff_rule_avg_skew", function=geometric_mean, min_wins=False),
+    "succgen_rule_n_exec",
+    "succgen_rule_n_samples",
+    "succgen_rule_t_seq",
+    "succgen_rule_t_par",
+    "succgen_rule_t_tot",
+    "succgen_rule_t_avg",
+    Attribute("succgen_rule_pf", function=geometric_mean, min_wins=False),
+    "succgen_rule_skew_tot",
+    "succgen_rule_skew_avg",
 
-    Attribute("succgen_prog_par_frac", function=geometric_mean, min_wins=False),
-    "succgen_prog_num_exec",
-    "succgen_prog_par_ms",
-    "succgen_prog_T_total_ms",
-    "succgen_prog_T_avg_us",
-    "succgen_rule_samples",
-    "succgen_rule_T_init_ms",
-    "succgen_rule_T_generate_ms",
-    "succgen_rule_T_pending_ms",
-    "succgen_rule_T_total_ms",
-    Attribute("succgen_rule_par_frac", function=geometric_mean, min_wins=False),
-    Attribute("succgen_rule_total_skew", function=geometric_mean, min_wins=False),
-    Attribute("succgen_rule_avg_skew", function=geometric_mean, min_wins=False),
+    "succgen_rule_worker_n_exec",
+    "succgen_rule_worker_n_gen",
+    "succgen_rule_worker_n_pen",
+    Attribute("succgen_rule_worker_oa", function=geometric_mean, min_wins=False),
+
+    "axiom_prog_n_exec",
+    "axiom_prog_t_seq",
+    "axiom_prog_t_par",
+    "axiom_prog_t_tot",
+    "axiom_prog_t_avg",
+    Attribute("axiom_prog_pf", function=geometric_mean, min_wins=False),
+
+    "axiom_rule_n_exec",
+    "axiom_rule_n_samples",
+    "axiom_rule_t_seq",
+    "axiom_rule_t_par",
+    "axiom_rule_t_tot",
+    "axiom_rule_t_avg",
+    Attribute("axiom_rule_pf", function=geometric_mean, min_wins=False),
+    "axiom_rule_skew_tot",
+    "axiom_rule_skew_avg",
+
+    "axiom_rule_worker_n_exec",
+    "axiom_rule_worker_n_gen",
+    "axiom_rule_worker_n_pen",
+    Attribute("axiom_rule_worker_oa", function=geometric_mean, min_wins=False),
+
+    "ff_prog_n_exec",
+    "ff_prog_t_seq",
+    "ff_prog_t_par",
+    "ff_prog_t_tot",
+    "ff_prog_t_avg",
+    Attribute("ff_prog_pf", function=geometric_mean, min_wins=False),
+
+    "ff_rule_n_exec",
+    "ff_rule_n_samples",
+    "ff_rule_t_seq",
+    "ff_rule_t_par",
+    "ff_rule_t_tot",
+    "ff_rule_t_avg",
+    Attribute("ff_rule_pf", function=geometric_mean, min_wins=False),
+    "ff_rule_skew_tot",
+    "ff_rule_skew_avg",
+    
+    "ff_rule_worker_n_exec",
+    "ff_rule_worker_n_gen",
+    "ff_rule_worker_n_pen",
+    Attribute("ff_rule_worker_oa", function=geometric_mean, min_wins=False),
 
 ]
 
@@ -159,7 +183,8 @@ MEMORY_LIMIT = 5000
 
 # Create a new experiment.
 exp = Experiment(environment=ENV)
-exp.add_parser(GBFSLazyParser())
+exp.add_parser(SearchParser())
+exp.add_parser(DatalogParser())
 
 PLANNER_DIR = REPO / "build" / "exe" / "gbfs_lazy"
 
