@@ -1,9 +1,18 @@
 #! /usr/bin/env python
 
+import sys 
+
+from pathlib import Path
+
 from lab.experiment import Experiment
 from downward.reports.absolute import AbsoluteReport
 
 from lab.reports import Attribute, geometric_mean
+
+DIR = Path(__file__).resolve().parent
+REPO = DIR.parent.parent
+
+sys.path.append(str(DIR.parent.parent))
 
 from experiments.parser_datalog import DatalogParser
 from experiments.parser_search import SearchParser
