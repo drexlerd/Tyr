@@ -26,6 +26,7 @@
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/state.hpp"
+#include "tyr/planning/state_iterators.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -56,6 +57,8 @@ public:
     const LiftedTask& get_task() const noexcept;
 
     const UnpackedState<LiftedTask>& get_unpacked_state() const noexcept;
+
+    auto get_fluent_fterm_values() const noexcept { return NumericRange<formalism::FluentTag>(get_numeric_variables<formalism::FluentTag>()); }
 
     /**
      * For LiftedTask

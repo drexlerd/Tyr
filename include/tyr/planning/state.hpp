@@ -25,6 +25,7 @@
 #include "tyr/planning/unpacked_state.hpp"
 
 #include <concepts>
+#include <ranges>
 
 namespace tyr::planning
 {
@@ -34,6 +35,19 @@ class State
 {
     static_assert(dependent_false<Task>::value, "State is not defined for type T.");
 };
+
+template<class R, class Tag>
+concept StateAtomRange =
+    std::ranges::input_range<R> && std::same_as<std::remove_cvref_t<std::ranges::range_value_t<R>>, Index<formalism::planning::GroundAtom<Tag>>>;
+
+template<class R, class Tag>
+concept StateFactRange =
+    std::ranges::input_range<R> && std::same_as<std::remove_cvref_t<std::ranges::range_value_t<R>>, Data<formalism::planning::FDRFact<Tag>>>;
+
+template<class R, class Tag>
+concept StateFunctionTermValueRange =
+    std::ranges::input_range<R>
+    && std::same_as<std::remove_cvref_t<std::ranges::range_value_t<R>>, std::pair<Index<formalism::planning::GroundFunctionTerm<Tag>>, float_t>>;
 
 template<typename T, typename Task>
 concept StateConcept = requires(const T& cs,
@@ -50,6 +64,12 @@ concept StateConcept = requires(const T& cs,
     { cs.test(static_atom) } -> std::same_as<bool>;
     { cs.test(derived_atom) } -> std::same_as<bool>;
     { cs.get_task() } -> std::same_as<const Task&>;
+
+    // requires StateAtomRange<decltype(cs.get_static_atoms()), formalism::StaticTag>;
+    // requires StateFactRange<decltype(cs.get_fluent_facts()), formalism::FluentTag>;
+    // requires StateAtomRange<decltype(cs.get_derived_atoms()), formalism::DerivedTag>;
+    // requires StateFunctionTermValueRange<decltype(cs.get_static_fterm_values()), formalism::StaticTag>;
+    requires StateFunctionTermValueRange<decltype(cs.get_fluent_fterm_values()), formalism::FluentTag>;
 };
 
 template<typename Task>
