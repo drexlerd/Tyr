@@ -52,9 +52,6 @@ ATTRIBUTES = [
     "memory",
 ]
 
-# exp = Experiment("2026-1-8-gbfs_lazy-profiling-tyr-pl-combined")
-exp = Experiment("2026-1-8-gbfs_lazy-tyr-pl-combined")
-
 
 EXCLUDED_DOMAINS = [
     # Powerlifted: Actions with negated preconditions not supported yet
@@ -99,8 +96,8 @@ EXCLUDED_DOMAINS = [
     "cavediving-14-adl",
 ]
 
-EXCLUDED_DOMAINS += SUITE_IPC_SATISFICING_ADL
-EXCLUDED_DOMAINS += SUITE_IPC_SATISFICING_STRIPS
+# EXCLUDED_DOMAINS += SUITE_IPC_SATISFICING_ADL
+# EXCLUDED_DOMAINS += SUITE_IPC_SATISFICING_STRIPS
 
 def exclude_domains(run) -> bool:
     domain = run.get("domain")
@@ -131,9 +128,15 @@ def normalize(run):
 
     return True
 
+exp = Experiment("2026-1-8-gbfs_lazy-profiling-tyr-pl-combined")
+# exp = Experiment("2026-1-8-gbfs_lazy-tyr-pl-combined")
 
-exp.add_fetcher("results/pl-2026-1-9-lazy-gbfs-ff-pref-ff-eval", filter=normalize)
-exp.add_fetcher("results/1-2026-1-8-gbfs_lazy-combined-eval", filter=normalize)
+exp.add_fetcher("tmp/2026-1-9-lazy-gbfs-ff-pref-ff-profiling-eval", filter=normalize)
+exp.add_fetcher("tmp/4-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=normalize)
+
+# exp.add_fetcher("results/pl-2026-1-9-lazy-gbfs-ff-pref-ff-eval", filter=normalize)
+# exp.add_fetcher("results/1-2026-1-8-gbfs_lazy-combined-eval", filter=normalize)
+
 
 
 exp.add_report(BaseReport(attributes=ATTRIBUTES))

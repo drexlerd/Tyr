@@ -112,7 +112,7 @@ private:
 
         const auto& witness = it->second;
         const auto& mapping = this->m_task->get_rpg_program().get_rule_to_action_mapping();
-        auto merge_context = formalism::planning::MergeDatalogContext { m_workspace.datalog_builder, m_workspace.repository };
+        // auto merge_context = formalism::planning::MergeDatalogContext { m_workspace.datalog_builder, m_workspace.repository };
 
         if (const auto it = mapping.find(witness.get_rule()); it != mapping.end())
         {
@@ -134,21 +134,23 @@ private:
             if (is_applicable(ground_action, state_context, m_effect_families))
                 m_preferred_actions.insert(ground_action_index);
 
-            for (const auto cond_effect : ground_action.get_effects())
+            /*
+        for (const auto cond_effect : ground_action.get_effects())
+        {
+            if (!cond_effect.get_condition().get_facts<formalism::FluentTag>().empty())
+                continue;
+
+            for (const auto fact : cond_effect.get_effect().get_facts())
             {
-                if (!cond_effect.get_condition().get_facts<formalism::FluentTag>().empty())
+                if (!fact.has_value())
                     continue;
 
-                for (const auto fact : cond_effect.get_effect().get_facts())
-                {
-                    if (!fact.has_value())
-                        continue;
+                const auto merged_atom = formalism::planning::merge_p2d(fact.get_atom(), merge_context).first;
 
-                    const auto merged_atom = formalism::planning::merge_p2d(fact.get_atom(), merge_context).first;
-
-                    mark_atom(merged_atom);
-                }
+                mark_atom(merged_atom);
             }
+        }
+            */
         }
 
         // Divide case: recursively call for preconditions.
