@@ -185,13 +185,11 @@ public:
     std::optional<Index<T>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        const auto& indexed_hash_set = entry.slot.container;
-        assert(h == indexed_hash_set.hash(builder) && "The given hash does not match container internal's hash.");
+        const auto& container = entry.slot.container;
+        assert(h == container.hash(builder) && "The given hash does not match container internal's hash.");
 
-        if (auto ptr = indexed_hash_set.find_with_hash(builder, h))
-        {
+        if (auto ptr = container.find_with_hash(builder, h))
             return ptr->index;
-        }
 
         return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
     }
@@ -201,8 +199,8 @@ public:
     std::optional<Index<T>> find(const Data<T>& builder) const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        const auto& indexed_hash_set = entry.slot.container;
-        const auto h = indexed_hash_set.hash(builder);
+        const auto& container = entry.slot.container;
+        const auto h = container.hash(builder);
 
         return find_with_hash<T>(builder, h);
     }
@@ -213,15 +211,14 @@ public:
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto g = builder.index.group;
+        const auto& slot = entry.slot;
 
-        const auto it = entry.slot.find(g);
-
-        if (it == entry.slot.end())
+        const auto it = slot.find(g);
+        if (it == slot.end())
             return std::nullopt;
 
-        const auto& indexed_hash_set = it->second.container;
-
-        if (auto ptr = indexed_hash_set.find_with_hash(builder, h))
+        const auto& container = it->second.container;
+        if (auto ptr = container.find_with_hash(builder, h))
             return ptr->index;
 
         return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
@@ -233,14 +230,14 @@ public:
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto g = builder.index.group;
+        const auto& slot = entry.slot;
 
-        const auto it = entry.slot.find(g);
-
-        if (it == entry.slot.end())
+        const auto it = slot.find(g);
+        if (it == slot.end())
             return std::nullopt;
 
-        const auto& indexed_hash_set = it->second.container;
-        const auto h = indexed_hash_set.hash(builder);
+        const auto& container = it->second.container;
+        const auto h = container.hash(builder);
 
         return find_with_hash<T>(builder, h);
     }
@@ -251,17 +248,17 @@ public:
     {
         auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         auto& slot = entry.slot;
-        auto& indexed_hash_set = slot.container;
-        const auto h = indexed_hash_set.hash(builder);
+        auto& container = slot.container;
+        const auto h = container.hash(builder);
 
         if (m_parent)
             if (auto ptr = m_parent->template find_with_hash<T>(builder, h))
                 return { *ptr, false };
 
         // Manually assign index to continue indexing.
-        builder.index.value = slot.parent_size + indexed_hash_set.size();
+        builder.index.value = slot.parent_size + container.size();
 
-        const auto [ptr, success] = indexed_hash_set.insert_with_hash(h, builder, buf, m_arena);
+        const auto [ptr, success] = container.insert_with_hash(h, builder, buf, m_arena);
 
         return { ptr->index, success };
     }
@@ -271,17 +268,17 @@ public:
     std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& slot = get_or_create_slot(builder.index);
-        auto& indexed_hash_set = slot.container;
-        const auto h = indexed_hash_set.hash(builder);
+        auto& container = slot.container;
+        const auto h = container.hash(builder);
 
         if (m_parent)
             if (auto ptr = m_parent->template find_with_hash<T>(builder, h))
                 return { *ptr, false };
 
         // Manually assign index to continue indexing.
-        builder.index.value = slot.parent_size + slot.container.size();
+        builder.index.value = slot.parent_size + container.size();
 
-        const auto [ptr, success] = slot.container.insert_with_hash(h, builder, buf, m_arena);
+        const auto [ptr, success] = container.insert_with_hash(h, builder, buf, m_arena);
         return { ptr->index, success };
     }
 
@@ -293,7 +290,8 @@ public:
         assert(index != Index<T>::max() && "Unassigned index.");
 
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        const auto parent_size = entry.slot.parent_size;
+        const auto& slot = entry.slot;
+        const auto parent_size = slot.parent_size;
 
         // In parent range -> delegate
         if (index.value < parent_size)
@@ -305,7 +303,7 @@ public:
         // Local range -> shift down
         index.value -= parent_size;
 
-        return entry.slot.container[index];
+        return slot.container[index];
     }
 
     template<typename T>
@@ -337,14 +335,15 @@ public:
     const Data<T>& front() const
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto& slot = entry.slot;
 
-        if (entry.slot.parent_size > 0)
+        if (slot.parent_size > 0)
         {
             assert(m_parent);
             return m_parent->template front<T>();  // recurse to root-most non-empty
         }
 
-        return entry.slot.container.front();
+        return slot.container.front();
     }
 
     template<typename T>
@@ -371,8 +370,9 @@ public:
     size_t size() const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
+        const auto& slot = entry.slot;
 
-        return entry.slot.parent_size + entry.slot.container.size();
+        return slot.parent_size + slot.container.size();
     }
 
     template<typename T>
@@ -381,9 +381,10 @@ public:
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto g = index.group;
+        const auto& slot = entry.slot;
 
-        const auto it = entry.slot.find(g);
-        if (it == entry.slot.end())
+        const auto it = slot.find(g);
+        if (it == slot.end())
             return 0;
 
         const size_t parent_size = it->second.parent_size;
