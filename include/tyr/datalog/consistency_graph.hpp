@@ -38,6 +38,10 @@ class StaticConsistencyGraph;
 
 namespace details
 {
+/**
+ * For mapping rule bindings to literal bindings
+ */
+
 struct InfoMappings
 {
     // For building vertex assignments (p/o)
@@ -138,6 +142,10 @@ struct IndexedConstraints
 {
     std::vector<ConstraintInfo> infos;
 };
+
+/**
+ * For mapping literal bindings to rule bindings
+ */
 
 struct ParameterMappings
 {

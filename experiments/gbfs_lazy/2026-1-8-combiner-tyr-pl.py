@@ -119,12 +119,12 @@ def normalize(run):
     if not exclude_domains(run):
         return False
     
-    merge_domain(run, "childsnack")
-    merge_domain(run, "visitall")
-    merge_domain(run, "genome-edit-distance")
-    merge_domain(run, "organic-synthesis")
-    merge_domain(run, "blocksworld")
-    merge_domain(run, "logistics")
+    # merge_domain(run, "childsnack")
+    # merge_domain(run, "visitall")
+    # merge_domain(run, "genome-edit-distance")
+    # merge_domain(run, "organic-synthesis")
+    # merge_domain(run, "blocksworld")
+    # merge_domain(run, "logistics")
 
     return True
 
@@ -132,7 +132,7 @@ exp = Experiment("2026-1-8-gbfs_lazy-profiling-tyr-pl-combined")
 # exp = Experiment("2026-1-8-gbfs_lazy-tyr-pl-combined")
 
 exp.add_fetcher("tmp/2026-1-9-lazy-gbfs-ff-pref-ff-profiling-eval", filter=normalize)
-exp.add_fetcher("tmp/7-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=normalize)
+exp.add_fetcher("tmp/8-2026-1-8-gbfs_lazy-profiling-classical-combined-eval", filter=normalize)
 
 # exp.add_fetcher("results/pl-2026-1-9-lazy-gbfs-ff-pref-ff-eval", filter=normalize)
 # exp.add_fetcher("results/1-2026-1-8-gbfs_lazy-combined-eval", filter=normalize)
