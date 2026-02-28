@@ -62,9 +62,9 @@ std::ostream& print(std::ostream& os, const datalog::details::Edge& el)
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::details::InfoMappings& el)
+std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralInfoMappings& el)
 {
-    os << "InfoMappings(\n";
+    os << "RuleToLiteralInfoMappings(\n";
 
     {
         IndentScope scope(os);
@@ -85,9 +85,9 @@ std::ostream& print(std::ostream& os, const datalog::details::InfoMappings& el)
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::details::PositionMappings& el)
+std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralPositionMappings& el)
 {
-    os << "PositionMappings(\n";
+    os << "RuleToLiteralPositionMappings(\n";
 
     {
         IndentScope scope(os);
@@ -102,9 +102,9 @@ std::ostream& print(std::ostream& os, const datalog::details::PositionMappings& 
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::details::ParameterMappings& el)
+std::ostream& print(std::ostream& os, const datalog::details::LiteralToRuleParameterMapping& el)
 {
-    os << "ParameterMappings(\n";
+    os << "LiteralToRuleParameterMapping(\n";
 
     {
         IndentScope scope(os);
@@ -119,9 +119,9 @@ std::ostream& print(std::ostream& os, const datalog::details::ParameterMappings&
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::details::LiteralAnchorInfo& el)
+std::ostream& print(std::ostream& os, const datalog::details::LiteralToRuleInfo& el)
 {
-    os << "LiteralAnchorInfo(\n";
+    os << "LiteralToRuleInfo(\n";
 
     {
         IndentScope scope(os);
@@ -134,9 +134,9 @@ std::ostream& print(std::ostream& os, const datalog::details::LiteralAnchorInfo&
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::details::IndexedAnchors& el)
+std::ostream& print(std::ostream& os, const datalog::details::LiteralToRuleInfos& el)
 {
-    os << "IndexedAnchors(\n";
+    os << "LiteralToRuleInfos(\n";
 
     {
         IndentScope scope(os);
@@ -152,9 +152,9 @@ std::ostream& print(std::ostream& os, const datalog::details::IndexedAnchors& el
 }
 
 template<formalism::FactKind T>
-std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el)
+std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralInfo<T>& el)
 {
-    os << "LiteralInfo(\n";
+    os << "RuleToLiteralInfo(\n";
 
     {
         IndentScope scope(os);
@@ -172,9 +172,9 @@ std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el
 }
 
 template<formalism::FactKind T>
-std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiterals<T>& el)
+std::ostream& print(std::ostream& os, const datalog::details::TaggedRuleToLiteralInfos<T>& el)
 {
-    os << "TaggedIndexedLiterals(\n";
+    os << "TaggedRuleToLiteralInfos(\n";
 
     {
         IndentScope scope(os);
@@ -189,9 +189,9 @@ std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiter
     return os;
 }
 
-std::ostream& print(std::ostream& os, const datalog::details::IndexedLiterals& el)
+std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralInfos& el)
 {
-    os << "IndexedLiterals(\n";
+    os << "RuleToLiteralInfos(\n";
 
     {
         IndentScope scope(os);
@@ -450,33 +450,33 @@ namespace datalog
 {
 namespace details
 {
-std::ostream& operator<<(std::ostream& os, const InfoMappings& el) { return print(os, el); }
+std::ostream& operator<<(std::ostream& os, const RuleToLiteralInfoMappings& el) { return print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const PositionMappings& el) { return print(os, el); }
+std::ostream& operator<<(std::ostream& os, const RuleToLiteralPositionMappings& el) { return print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const ParameterMappings& el) { return print(os, el); }
+std::ostream& operator<<(std::ostream& os, const LiteralToRuleParameterMapping& el) { return print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const LiteralAnchorInfo& el) { return print(os, el); }
+std::ostream& operator<<(std::ostream& os, const LiteralToRuleInfo& el) { return print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const IndexedAnchors& el) { return print(os, el); }
+std::ostream& operator<<(std::ostream& os, const LiteralToRuleInfos& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const Vertex& el) { return print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const Edge& el) { return print(os, el); }
 
 template<formalism::FactKind T>
-std::ostream& operator<<(std::ostream& os, const LiteralInfo<T>& el)
+std::ostream& operator<<(std::ostream& os, const RuleToLiteralInfo<T>& el)
 {
     return print(os, el);
 }
 
 template<formalism::FactKind T>
-std::ostream& operator<<(std::ostream& os, const TaggedIndexedLiterals<T>& el)
+std::ostream& operator<<(std::ostream& os, const TaggedRuleToLiteralInfos<T>& el)
 {
     return print(os, el);
 }
 
-std::ostream& operator<<(std::ostream& os, const IndexedLiterals& el) { return print(os, el); }
+std::ostream& operator<<(std::ostream& os, const RuleToLiteralInfos& el) { return print(os, el); }
 
 }  // end namespace details
 

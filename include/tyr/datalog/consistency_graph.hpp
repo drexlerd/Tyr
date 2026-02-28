@@ -42,7 +42,7 @@ namespace details
  * For mapping rule bindings to literal bindings
  */
 
-struct InfoMappings
+struct RuleToLiteralInfoMappings
 {
     // For building vertex assignments (p/o)
     std::vector<std::vector<uint_t>> parameter_to_infos;
@@ -57,14 +57,14 @@ struct InfoMappings
     std::vector<uint_t> infos_with_constant_pairs;
 };
 
-struct PositionMappings
+struct RuleToLiteralPositionMappings
 {
     std::vector<std::pair<uint_t, Index<formalism::Object>>> constant_positions;
     std::vector<std::vector<uint_t>> parameter_to_positions;
 };
 
 template<formalism::FactKind T>
-struct LiteralInfo
+struct RuleToLiteralInfo
 {
     Index<formalism::Predicate<T>> predicate;
     bool polarity;
@@ -72,21 +72,21 @@ struct LiteralInfo
     size_t num_parameters;
     size_t num_constants;
 
-    PositionMappings position_mappings;
+    RuleToLiteralPositionMappings position_mappings;
 };
 
 template<formalism::FactKind T>
-struct TaggedIndexedLiterals
+struct TaggedRuleToLiteralInfos
 {
-    std::vector<LiteralInfo<T>> infos;
+    std::vector<RuleToLiteralInfo<T>> infos;
 
-    InfoMappings info_mappings;
+    RuleToLiteralInfoMappings info_mappings;
 };
 
-struct IndexedLiterals
+struct RuleToLiteralInfos
 {
-    details::TaggedIndexedLiterals<formalism::StaticTag> static_indexed;
-    details::TaggedIndexedLiterals<formalism::FluentTag> fluent_indexed;
+    details::TaggedRuleToLiteralInfos<formalism::StaticTag> static_indexed;
+    details::TaggedRuleToLiteralInfos<formalism::FluentTag> fluent_indexed;
 
     template<formalism::FactKind T>
     const auto& get() const noexcept
@@ -101,28 +101,28 @@ struct IndexedLiterals
 };
 
 template<formalism::FactKind T>
-struct FunctionTermInfo
+struct RuleToFunctionTermInfo
 {
     Index<formalism::Function<T>> function;
     size_t kpkc_arity;
     size_t num_parameters;
     size_t num_constants;
 
-    PositionMappings position_mappings;
+    RuleToLiteralPositionMappings position_mappings;
 };
 
 template<formalism::FactKind T>
-struct TaggedIndexedFunctionTerms
+struct TaggedRuleToFunctionTermInfos
 {
-    UnorderedMap<Index<formalism::datalog::FunctionTerm<T>>, FunctionTermInfo<T>> infos;
+    UnorderedMap<Index<formalism::datalog::FunctionTerm<T>>, RuleToFunctionTermInfo<T>> infos;
 
-    InfoMappings info_mappings;
+    RuleToLiteralInfoMappings info_mappings;
 };
 
-struct ConstraintInfo
+struct RuleToConstraintInfo
 {
-    TaggedIndexedFunctionTerms<formalism::StaticTag> static_infos;
-    TaggedIndexedFunctionTerms<formalism::FluentTag> fluent_infos;
+    TaggedRuleToFunctionTermInfos<formalism::StaticTag> static_infos;
+    TaggedRuleToFunctionTermInfos<formalism::FluentTag> fluent_infos;
 
     size_t kpkc_arity;
 
@@ -138,16 +138,16 @@ struct ConstraintInfo
     }
 };
 
-struct IndexedConstraints
+struct RuleToRuleToConstraintInfos
 {
-    std::vector<ConstraintInfo> infos;
+    std::vector<RuleToConstraintInfo> infos;
 };
 
 /**
  * For mapping literal bindings to rule bindings
  */
 
-struct ParameterMappings
+struct LiteralToRuleParameterMapping
 {
     static constexpr uint_t NoParam = std::numeric_limits<uint_t>::max();
 
@@ -155,28 +155,28 @@ struct ParameterMappings
     std::vector<std::pair<uint_t, uint_t>> position_parameter_pairs;
 };
 
-struct LiteralAnchorInfo
+struct LiteralToRuleInfo
 {
-    ParameterMappings parameter_mappings;
+    LiteralToRuleParameterMapping parameter_mappings;
 };
 
-struct IndexedAnchors
+struct LiteralToRuleInfos
 {
-    struct OffsetInfo
+    struct GroupInfo
     {
         Index<formalism::Predicate<formalism::FluentTag>> predicate;
         uint_t start;
         uint_t end;
     };
 
-    std::vector<OffsetInfo> offsets;
+    std::vector<GroupInfo> groups;
 
-    std::vector<LiteralAnchorInfo> infos;
+    std::vector<LiteralToRuleInfo> infos;
 
-    std::span<const LiteralAnchorInfo> operator[](const OffsetInfo& pos) const noexcept
+    std::span<const LiteralToRuleInfo> operator[](const GroupInfo& pos) const noexcept
     {
         assert(pos.end > pos.start && pos.end <= infos.size());
-        return std::span<const LiteralAnchorInfo>(infos.data() + pos.start, pos.end - pos.start);
+        return std::span<const LiteralToRuleInfo>(infos.data() + pos.start, pos.end - pos.start);
     }
 
     boost::dynamic_bitset<> bound_parameters;
@@ -206,7 +206,7 @@ public:
      */
 
     template<formalism::FactKind T>
-    bool consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+    bool consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
     /**
      * Numeric
@@ -214,7 +214,7 @@ public:
 
     bool consistent_numeric_constraints(
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
-        const IndexedConstraints& indexed_constraints,
+        const RuleToRuleToConstraintInfos& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
     formalism::ParameterIndex get_parameter_index() const noexcept { return m_parameter_index; }
@@ -240,7 +240,7 @@ public:
      */
 
     template<formalism::FactKind T>
-    bool consistent_literals(const TaggedIndexedLiterals<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
+    bool consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
 
     /**
      * Numeric
@@ -248,7 +248,7 @@ public:
 
     bool consistent_numeric_constraints(
         View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
-        const IndexedConstraints& indexed_constraints,
+        const RuleToRuleToConstraintInfos& indexed_constraints,
         const AssignmentSets& assignment_sets) const noexcept;
 
     const Vertex& get_src() const noexcept { return m_src; }
@@ -264,7 +264,7 @@ class StaticConsistencyGraph
 private:
     /// @brief Helper to initialize vertices.
     std::tuple<details::Vertices, std::vector<std::vector<uint_t>>, std::vector<std::vector<uint_t>>>
-    compute_vertices(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
+    compute_vertices(const details::TaggedRuleToLiteralInfos<formalism::StaticTag>& indexed_literals,
                      const analysis::DomainListList& parameter_domains,
                      size_t num_objects,
                      uint_t begin_parameter_index,
@@ -272,7 +272,7 @@ private:
                      const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets);
 
     /// @brief Helper to initialize edges.
-    kpkc::DeduplicatedAdjacencyMatrix compute_edges(const details::TaggedIndexedLiterals<formalism::StaticTag>& indexed_literals,
+    kpkc::DeduplicatedAdjacencyMatrix compute_edges(const details::TaggedRuleToLiteralInfos<formalism::StaticTag>& indexed_literals,
                                                     const TaggedAssignmentSets<formalism::StaticTag>& static_assignment_sets,
                                                     const details::Vertices& vertices,
                                                     const std::vector<std::vector<uint_t>>& vertex_partitions);
@@ -309,7 +309,7 @@ public:
     const formalism::datalog::VariableDependencyGraph& get_variable_dependeny_graph() const noexcept;
     const std::vector<std::vector<uint_t>>& get_vertex_partitions() const noexcept;
     const std::vector<std::vector<uint_t>>& get_object_to_vertex_per_partition() const noexcept;
-    const details::IndexedAnchors& get_predicate_to_anchors() const noexcept;
+    const details::LiteralToRuleInfos& get_predicate_to_anchors() const noexcept;
     const kpkc::DeduplicatedAdjacencyMatrix& get_adjacency_matrix() const noexcept;
 
 private:
@@ -330,15 +330,15 @@ private:
     kpkc::GraphLayout m_layout;
     kpkc::DeduplicatedAdjacencyMatrix m_matrix;
 
-    details::IndexedLiterals m_unary_overapproximation_indexed_literals;
-    details::IndexedLiterals m_binary_overapproximation_indexed_literals;
+    details::RuleToLiteralInfos m_unary_overapproximation_indexed_literals;
+    details::RuleToLiteralInfos m_binary_overapproximation_indexed_literals;
 
-    details::IndexedConstraints m_unary_overapproximation_indexed_constraints;
-    details::IndexedConstraints m_binary_overapproximation_indexed_constraints;
+    details::RuleToRuleToConstraintInfos m_unary_overapproximation_indexed_constraints;
+    details::RuleToRuleToConstraintInfos m_binary_overapproximation_indexed_constraints;
 
-    details::IndexedAnchors m_predicate_to_anchors;
-    details::IndexedAnchors m_unary_overapproximation_predicate_to_anchors;
-    details::IndexedAnchors m_binary_overapproximation_predicate_to_anchors;
+    details::LiteralToRuleInfos m_predicate_to_anchors;
+    details::LiteralToRuleInfos m_unary_overapproximation_predicate_to_anchors;
+    details::LiteralToRuleInfos m_binary_overapproximation_predicate_to_anchors;
 };
 
 extern std::pair<Index<formalism::datalog::GroundConjunctiveCondition>, bool>

@@ -72,16 +72,16 @@ namespace details
 class Vertex;
 class Edge;
 
-struct InfoMappings;
-struct PositionMappings;
-struct ParameterMappings;
+struct RuleToLiteralInfoMappings;
+struct RuleToLiteralPositionMappings;
+struct LiteralToRuleParameterMapping;
 template<formalism::FactKind T>
-struct LiteralInfo;
+struct RuleToLiteralInfo;
 template<formalism::FactKind T>
-struct TaggedIndexedLiterals;
-struct IndexedLiterals;
-struct LiteralAnchorInfo;
-struct IndexedAnchors;
+struct TaggedRuleToLiteralInfos;
+struct RuleToLiteralInfos;
+struct LiteralToRuleInfo;
+struct LiteralToRuleInfos;
 }
 
 struct VertexAssignment;

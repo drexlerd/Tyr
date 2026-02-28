@@ -34,23 +34,23 @@ extern std::ostream& print(std::ostream& os, const datalog::details::Vertex& el)
 
 extern std::ostream& print(std::ostream& os, const datalog::details::Edge& el);
 
-extern std::ostream& print(std::ostream& os, const datalog::details::InfoMappings& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralInfoMappings& el);
 
-extern std::ostream& print(std::ostream& os, const datalog::details::PositionMappings& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralPositionMappings& el);
 
-extern std::ostream& print(std::ostream& os, const datalog::details::ParameterMappings& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::LiteralToRuleParameterMapping& el);
 
-extern std::ostream& print(std::ostream& os, const datalog::details::LiteralAnchorInfo& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::LiteralToRuleInfo& el);
 
-extern std::ostream& print(std::ostream& os, const datalog::details::IndexedAnchors& el);
-
-template<formalism::FactKind T>
-std::ostream& print(std::ostream& os, const datalog::details::LiteralInfo<T>& el);
+extern std::ostream& print(std::ostream& os, const datalog::details::LiteralToRuleInfos& el);
 
 template<formalism::FactKind T>
-std::ostream& print(std::ostream& os, const datalog::details::TaggedIndexedLiterals<T>& el);
+std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralInfo<T>& el);
 
-extern std::ostream& print(std::ostream& os, const datalog::details::IndexedLiterals& el);
+template<formalism::FactKind T>
+std::ostream& print(std::ostream& os, const datalog::details::TaggedRuleToLiteralInfos<T>& el);
+
+extern std::ostream& print(std::ostream& os, const datalog::details::RuleToLiteralInfos& el);
 
 extern std::ostream& print(std::ostream& os, const datalog::StaticConsistencyGraph& el);
 
@@ -80,23 +80,23 @@ extern std::ostream& operator<<(std::ostream& os, const Vertex& el);
 
 extern std::ostream& operator<<(std::ostream& os, const Edge& el);
 
-extern std::ostream& operator<<(std::ostream& os, const InfoMappings& el);
+extern std::ostream& operator<<(std::ostream& os, const RuleToLiteralInfoMappings& el);
 
-extern std::ostream& operator<<(std::ostream& os, const PositionMappings& el);
+extern std::ostream& operator<<(std::ostream& os, const RuleToLiteralPositionMappings& el);
 
-extern std::ostream& operator<<(std::ostream& os, const ParameterMappings& el);
+extern std::ostream& operator<<(std::ostream& os, const LiteralToRuleParameterMapping& el);
 
-extern std::ostream& operator<<(std::ostream& os, const LiteralAnchorInfo& el);
+extern std::ostream& operator<<(std::ostream& os, const LiteralToRuleInfo& el);
 
-extern std::ostream& operator<<(std::ostream& os, const IndexedAnchors& el);
-
-template<formalism::FactKind T>
-std::ostream& operator<<(std::ostream& os, const LiteralInfo<T>& el);
+extern std::ostream& operator<<(std::ostream& os, const LiteralToRuleInfos& el);
 
 template<formalism::FactKind T>
-std::ostream& operator<<(std::ostream& os, const TaggedIndexedLiterals<T>& el);
+std::ostream& operator<<(std::ostream& os, const RuleToLiteralInfo<T>& el);
 
-extern std::ostream& operator<<(std::ostream& os, const IndexedLiterals& el);
+template<formalism::FactKind T>
+std::ostream& operator<<(std::ostream& os, const TaggedRuleToLiteralInfos<T>& el);
+
+extern std::ostream& operator<<(std::ostream& os, const RuleToLiteralInfos& el);
 }  // end namespace details
 
 extern std::ostream& operator<<(std::ostream& os, const VertexAssignment& el);
