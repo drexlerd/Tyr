@@ -201,61 +201,28 @@ public:
     {
     }
 
-    /**
-     * Classical
-     */
-
-    template<formalism::FactKind T>
-    bool consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
-
-    /**
-     * Numeric
-     */
-
-    bool consistent_numeric_constraints(
-        View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
-        const RuleToRuleToConstraintInfos& indexed_constraints,
-        const AssignmentSets& assignment_sets) const noexcept;
-
-    formalism::ParameterIndex get_parameter_index() const noexcept { return m_parameter_index; }
-    Index<formalism::Object> get_object_index() const noexcept { return m_object_index; }
+    auto get_parameter_index() const noexcept { return m_parameter_index; }
+    auto get_object_index() const noexcept { return m_object_index; }
 };
+
+using Vertices = std::vector<Vertex>;
 
 /**
  * Edge
  */
 
-/// @brief An undirected edge {src,dst} in the consistency graph.
 class Edge
 {
 private:
-    Vertex m_src;
-    Vertex m_dst;
+    Vertex m_vi;
+    Vertex m_vj;
 
 public:
-    Edge(Vertex src, Vertex dst) noexcept : m_src(std::move(src)), m_dst(std::move(dst)) {}
+    Edge(Vertex vi, Vertex vj) noexcept : m_vi(std::move(vi)), m_vj(std::move(vj)) {}
 
-    /**
-     * Classical
-     */
-
-    template<formalism::FactKind T>
-    bool consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept;
-
-    /**
-     * Numeric
-     */
-
-    bool consistent_numeric_constraints(
-        View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
-        const RuleToRuleToConstraintInfos& indexed_constraints,
-        const AssignmentSets& assignment_sets) const noexcept;
-
-    const Vertex& get_src() const noexcept { return m_src; }
-    const Vertex& get_dst() const noexcept { return m_dst; }
+    const auto& vi() const noexcept { return m_vi; }
+    const auto& vj() const noexcept { return m_vj; }
 };
-
-using Vertices = std::vector<Vertex>;
 
 }
 

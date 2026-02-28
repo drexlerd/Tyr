@@ -58,7 +58,7 @@ std::ostream& print(std::ostream& os, const datalog::details::Vertex& el)
 
 std::ostream& print(std::ostream& os, const datalog::details::Edge& el)
 {
-    fmt::print(os, "[{}, {}]", to_string(el.get_src()), to_string(el.get_dst()));
+    fmt::print(os, "[{}, {}]", to_string(el.vi()), to_string(el.vj()));
     return os;
 }
 

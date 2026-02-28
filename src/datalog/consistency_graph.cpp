@@ -53,12 +53,16 @@ namespace details
  */
 
 template<formalism::FactKind T>
-bool Vertex::consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_literals,
-                                 const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+inline bool consistent_literals(const Vertex& vertex,
+                                const TaggedRuleToLiteralInfos<T>& indexed_literals,
+                                const PredicateAssignmentSets<T>& predicate_assignment_sets) noexcept
 {
+    const auto object_index = vertex.get_object_index();
+    const auto parameter_index = vertex.get_parameter_index();
+
     // std::cout << "Vertex: " << *this << std::endl;
 
-    for (const auto lit_id : indexed_literals.info_mappings.parameter_to_infos[uint_t(m_parameter_index)])
+    for (const auto lit_id : indexed_literals.info_mappings.parameter_to_infos[uint_t(parameter_index)])
     {
         const auto& info = indexed_literals.infos[lit_id];
         const auto predicate = info.predicate;
@@ -68,10 +72,10 @@ bool Vertex::consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_lite
 
         const auto& pred_set = predicate_assignment_sets.get_set(predicate);
 
-        for (const auto position : info.position_mappings.parameter_to_positions[uint_t(m_parameter_index)])
+        for (const auto position : info.position_mappings.parameter_to_positions[uint_t(parameter_index)])
         {
             {
-                auto assignment = VertexAssignment(f::ParameterIndex(position), m_object_index);
+                auto assignment = VertexAssignment(f::ParameterIndex(position), object_index);
                 assert(assignment.is_valid());
 
                 // std::cout << assignment << std::endl;
@@ -91,7 +95,7 @@ bool Vertex::consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_lite
 
                     auto first_pos = position;
                     auto second_pos = pos_c;
-                    auto first_obj = m_object_index;
+                    auto first_obj = object_index;
                     auto second_obj = obj_c;
 
                     if (first_pos > second_pos)
@@ -115,18 +119,13 @@ bool Vertex::consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_lite
     return true;
 }
 
-template bool Vertex::consistent_literals(const TaggedRuleToLiteralInfos<f::StaticTag>& indexed_literals,
-                                          const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
-template bool Vertex::consistent_literals(const TaggedRuleToLiteralInfos<f::FluentTag>& indexed_literals,
-                                          const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
-
 template<formalism::FactKind T>
 ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
 
 template<formalism::FactKind T>
 ClosedInterval<float_t>
-consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
+consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
 ClosedInterval<float_t>
@@ -170,7 +169,7 @@ bool consistent_numeric_constraint(
     const AssignmentSets& assignment_sets) noexcept;
 
 template<formalism::FactKind T>
-ClosedInterval<float_t>
+inline ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
     const auto function = info.function;
@@ -214,13 +213,13 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex,
 }
 
 template<formalism::FactKind T>
-ClosedInterval<float_t>
+inline ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
-    auto p = uint_t(edge.get_src().get_parameter_index());
-    auto q = uint_t(edge.get_dst().get_parameter_index());
-    auto obj_p = edge.get_src().get_object_index();
-    auto obj_q = edge.get_dst().get_object_index();
+    auto p = uint_t(edge.vi().get_parameter_index());
+    auto q = uint_t(edge.vj().get_parameter_index());
+    auto obj_p = edge.vi().get_object_index();
+    auto obj_q = edge.vj().get_object_index();
 
     if (p > q)
     {
@@ -236,11 +235,11 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, con
     if (empty(bounds))
         return bounds;  // early exit
 
-    bounds = intersect(bounds, consistent_interval(info, edge.get_src(), function_assignment_sets));
+    bounds = intersect(bounds, consistent_interval(info, edge.vi(), function_assignment_sets));
     if (empty(bounds))
         return bounds;  // early exit
 
-    bounds = intersect(bounds, consistent_interval(info, edge.get_dst(), function_assignment_sets));
+    bounds = intersect(bounds, consistent_interval(info, edge.vj(), function_assignment_sets));
     if (empty(bounds))
         return bounds;  // early exit
 
@@ -368,7 +367,7 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, con
 }
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-ClosedInterval<float_t>
+inline ClosedInterval<float_t>
 consistent_interval(View<Index<formalism::datalog::UnaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
                     const GraphStructure& structure,
                     const RuleToConstraintInfo& constraint_info,
@@ -378,7 +377,7 @@ consistent_interval(View<Index<formalism::datalog::UnaryOperator<O, Data<formali
 }
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-ClosedInterval<float_t>
+inline ClosedInterval<float_t>
 consistent_interval(View<Index<formalism::datalog::BinaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
                     const GraphStructure& structure,
                     const RuleToConstraintInfo& constraint_info,
@@ -390,7 +389,7 @@ consistent_interval(View<Index<formalism::datalog::BinaryOperator<O, Data<formal
 }
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-ClosedInterval<float_t>
+inline ClosedInterval<float_t>
 consistent_interval(View<Index<formalism::datalog::MultiOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
                     const GraphStructure& structure,
                     const RuleToConstraintInfo& constraint_info,
@@ -406,10 +405,10 @@ consistent_interval(View<Index<formalism::datalog::MultiOperator<O, Data<formali
 }
 
 template<typename GraphStructure>
-ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog::FunctionExpression>, formalism::datalog::Repository> element,
-                                            const GraphStructure& structure,
-                                            const RuleToConstraintInfo& constraint_info,
-                                            const AssignmentSets& assignment_sets) noexcept
+inline ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog::FunctionExpression>, formalism::datalog::Repository> element,
+                                                   const GraphStructure& structure,
+                                                   const RuleToConstraintInfo& constraint_info,
+                                                   const AssignmentSets& assignment_sets) noexcept
 {
     return visit(
         [&](auto&& arg)
@@ -431,7 +430,7 @@ ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog::Functi
 }
 
 template<typename GraphStructure>
-ClosedInterval<float_t>
+inline ClosedInterval<float_t>
 consistent_interval(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
                     const GraphStructure& structure,
                     const RuleToConstraintInfo& constraint_info,
@@ -441,7 +440,7 @@ consistent_interval(View<Data<formalism::datalog::ArithmeticOperator<Data<formal
 }
 
 template<typename GraphStructure>
-bool consistent_numeric_constraint(
+inline bool consistent_numeric_constraint(
     View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
     const GraphStructure& structure,
     const RuleToConstraintInfo& constraint_info,
@@ -459,10 +458,11 @@ bool consistent_numeric_constraint(
         element.get_variant());
 }
 
-bool Vertex::consistent_numeric_constraints(
+inline bool consistent_numeric_constraints(
+    const Vertex& vertex,
     View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
     const RuleToRuleToConstraintInfos& indexed_constraints,
-    const AssignmentSets& assignment_sets) const noexcept
+    const AssignmentSets& assignment_sets) noexcept
 {
     assert(numeric_constraints.size() == indexed_constraints.infos.size());
 
@@ -473,7 +473,7 @@ bool Vertex::consistent_numeric_constraints(
 
         assert(kpkc_arity(numeric_constraint) > 0);  ///< We test nullary constraints separately.
 
-        if (!consistent_numeric_constraint(numeric_constraint, *this, info, assignment_sets))
+        if (!consistent_numeric_constraint(numeric_constraint, vertex, info, assignment_sets))
             return false;
     }
 
@@ -485,12 +485,13 @@ bool Vertex::consistent_numeric_constraints(
  */
 
 template<formalism::FactKind T>
-bool Edge::consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) const noexcept
+inline bool
+consistent_literals(const Edge& edge, const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) noexcept
 {
-    auto p = uint_t(m_src.get_parameter_index());
-    auto q = uint_t(m_dst.get_parameter_index());
-    auto obj_p = m_src.get_object_index();
-    auto obj_q = m_dst.get_object_index();
+    auto p = uint_t(edge.vi().get_parameter_index());
+    auto q = uint_t(edge.vj().get_parameter_index());
+    auto obj_p = edge.vi().get_object_index();
+    auto obj_q = edge.vj().get_object_index();
 
     if (p > q)
     {
@@ -615,14 +616,10 @@ bool Edge::consistent_literals(const TaggedRuleToLiteralInfos<T>& indexed_litera
     return true;
 }
 
-template bool Edge::consistent_literals(const TaggedRuleToLiteralInfos<f::StaticTag>& indexed_literals,
-                                        const PredicateAssignmentSets<f::StaticTag>& predicate_assignment_sets) const noexcept;
-template bool Edge::consistent_literals(const TaggedRuleToLiteralInfos<f::FluentTag>& indexed_literals,
-                                        const PredicateAssignmentSets<f::FluentTag>& predicate_assignment_sets) const noexcept;
-
-bool Edge::consistent_numeric_constraints(View<DataList<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> numeric_constraints,
-                                          const RuleToRuleToConstraintInfos& indexed_constraints,
-                                          const AssignmentSets& assignment_sets) const noexcept
+inline bool consistent_numeric_constraints(const Edge& edge,
+                                           View<DataList<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> numeric_constraints,
+                                           const RuleToRuleToConstraintInfos& indexed_constraints,
+                                           const AssignmentSets& assignment_sets) noexcept
 {
     assert(numeric_constraints.size() == indexed_constraints.infos.size());
 
@@ -633,7 +630,7 @@ bool Edge::consistent_numeric_constraints(View<DataList<fd::BooleanOperator<Data
 
         assert(kpkc_arity(numeric_constraint) > 1);  ///< We test nullary constraints separately.
 
-        if (!consistent_numeric_constraint(numeric_constraint, *this, info, assignment_sets))
+        if (!consistent_numeric_constraint(numeric_constraint, edge, info, assignment_sets))
             return false;
     }
 
@@ -672,7 +669,7 @@ StaticConsistencyGraph::compute_vertices(const details::TaggedRuleToLiteralInfos
 
             auto vertex = details::Vertex(f::ParameterIndex(parameter_index), Index<f::Object>(object_index));
 
-            if (vertex.consistent_literals(indexed_literals, static_assignment_sets.predicate))
+            if (consistent_literals(vertex, indexed_literals, static_assignment_sets.predicate))
             {
                 vertices.push_back(std::move(vertex));
                 vertex_partition.push_back(vertex_index);
@@ -719,7 +716,7 @@ kpkc::DeduplicatedAdjacencyMatrix StaticConsistencyGraph::compute_edges(const de
 
                     const auto edge = details::Edge(vertex_i, vertex_j);
 
-                    if (edge.consistent_literals(indexed_literals, static_assignment_sets.predicate))
+                    if (consistent_literals(edge, indexed_literals, static_assignment_sets.predicate))
                     {
                         matrix.get_bitset(vi, pj).set(bj);
                         matrix.get_bitset(vj, pi).set(bi);
@@ -1192,10 +1189,11 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
                     const auto v = vertex_index_offset + bit;
                     const auto& vertex = get_vertex(v);
 
-                    if (vertex.consistent_literals(m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                        && vertex.consistent_numeric_constraints(unary_overapproximation_constraints,
-                                                                 m_unary_overapproximation_indexed_constraints,
-                                                                 assignment_sets))
+                    if (consistent_literals(vertex, m_unary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
+                        && consistent_numeric_constraints(vertex,
+                                                          unary_overapproximation_constraints,
+                                                          m_unary_overapproximation_indexed_constraints,
+                                                          assignment_sets))
                     {
                         /// Process delta consistent vertex.
                         full_affected_partition.set(bit);
@@ -1299,10 +1297,11 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
 
                             const auto edge = details::Edge(vertex_i, vertex_j);
 
-                            if (edge.consistent_literals(m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
-                                && edge.consistent_numeric_constraints(binary_overapproximation_constraints,
-                                                                       m_binary_overapproximation_indexed_constraints,
-                                                                       assignment_sets))
+                            if (consistent_literals(edge, m_binary_overapproximation_indexed_literals.fluent_indexed, assignment_sets.fluent_sets.predicate)
+                                && consistent_numeric_constraints(edge,
+                                                                  binary_overapproximation_constraints,
+                                                                  m_binary_overapproximation_indexed_constraints,
+                                                                  assignment_sets))
                             {
                                 /// Process delta consistent edge.
 
