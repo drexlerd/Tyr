@@ -23,6 +23,8 @@ def main():
     print(lifted_init_node)
     lifted_labeled_succ_nodes = lifted_succ_gen.get_labeled_successor_nodes(lifted_init_node)
 
+    lifted_task.get_task()
+
     lifted_ff = p.lifted.FFHeuristic(lifted_task)
     lifted_astar_eager_options = p.lifted.astar_eager.Options()
     p.lifted.astar_eager.find_solution(lifted_task, lifted_succ_gen, lifted_ff, lifted_astar_eager_options)

@@ -94,7 +94,7 @@ void bind_module_definitions(nb::module_& m)
     bind_binary_operator<OpGt, Data<FunctionExpression>>(m, "BinaryOperatorGt");
 
     bind_arithmethic_operator<Data<FunctionExpression>>(m, "ArithmeticOperator");
-    bind_boolean_operator<Data<GroundFunctionExpression>>(m, "BooleanOperator");
+    bind_boolean_operator<Data<FunctionExpression>>(m, "BooleanOperator");
 
     nb::class_<View<Data<FunctionExpression>, Repository>>(m, "FunctionExpression");
 
