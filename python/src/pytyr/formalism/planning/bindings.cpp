@@ -15,11 +15,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "../../init_declarations.hpp"
+#include "bindings.hpp"
 
 namespace tyr::formalism::planning
 {
 
-void bind_module_definitions(nb::module_& m) {}
+void bind_module_definitions(nb::module_& m)
+{
+    nb::class_<View<Index<Object>, Repository>>(m, "Object")  //
+        .def("__str__", [](View<Index<Object>, Repository> self) { return to_string(self); })
+        .def("get_name", &View<Index<Object>, Repository>::get_name);
+
+    bind_predicate<StaticTag>(m, "StaticPredicate");
+    bind_predicate<FluentTag>(m, "FluentPredicate");
+    bind_predicate<DerivedTag>(m, "DerivedPredicate");
+
+    bind_function<StaticTag>(m, "StaticFunction");
+    bind_function<FluentTag>(m, "FluentFunction");
+    bind_function<AuxiliaryTag>(m, "AuxiliaryFunction");
+
+    nb::class_<View<Index<Action>, Repository>>(m, "Action")  //
+        .def("__str__", [](View<Index<Action>, Repository> self) { return to_string(self); })
+        .def("get_name", &View<Index<Action>, Repository>::get_name)
+        .def("get_original_arity", &View<Index<Action>, Repository>::get_original_arity)
+        .def("get_arity", &View<Index<Action>, Repository>::get_arity)
+        .def("get_variables", &View<Index<Action>, Repository>::get_variables)
+        .def("get_condition", &View<Index<Action>, Repository>::get_condition)
+        .def("get_effects", &View<Index<Action>, Repository>::get_effects);
+}
 
 }

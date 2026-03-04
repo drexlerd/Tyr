@@ -20,6 +20,6 @@
 namespace tyr::formalism
 {
 
-void bind_module_definitions(nb::module_& m) { nb::class_<Data<Object>>(m, "ObjectData"); }
+void bind_module_definitions(nb::module_& m) {}
 
 }

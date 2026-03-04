@@ -18,13 +18,16 @@
 #ifndef TYR_PYTHON_INIT_DECLARATIONS_HPP
 #define TYR_PYTHON_INIT_DECLARATIONS_HPP
 
+#include "utils/string.hpp"
+#include "utils/vector.hpp"
+
 #include <iostream>
 #include <iterator>
 #include <nanobind/intrusive/ref.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/array.h>
-#include <nanobind/stl/bind_map.h>     ///< TODO: implement our own with PyImmutable
-#include <nanobind/stl/bind_vector.h>  ///< TODO: implement our own with PyImmutable
+#include <nanobind/stl/bind_map.h>
+#include <nanobind/stl/bind_vector.h>
 #include <nanobind/stl/chrono.h>
 #include <nanobind/stl/filesystem.h>
 #include <nanobind/stl/map.h>
@@ -38,7 +41,7 @@
 #include <nanobind/stl/unordered_set.h>
 #include <nanobind/stl/variant.h>
 #include <nanobind/stl/vector.h>
-// Ensure mimir is included last to ensure that specializations are available
+// Ensure tyr is included last to ensure that specializations are available
 #include <tyr/tyr.hpp>
 
 namespace nb = nanobind;
