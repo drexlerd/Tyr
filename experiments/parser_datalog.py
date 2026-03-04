@@ -23,6 +23,9 @@ RE_RULE_N_SAMPLES     = re.compile(r'^\[AggregatedRuleStatistics\]\s+N_samples\s
 RE_RULE_T_SEQ =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_seq\s*=\s*(?P<ms>\d+)\s*ms\s*.*$')
 RE_RULE_T_PAR =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_par\s*=\s*(?P<ms>\d+)\s*ms\s*.*$')
 RE_RULE_T_TOT =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_tot\s*=\s*(?P<ms>\d+)\s*ms\s*.*$')
+RE_RULE_T_TOT_MIN =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_tot_min\s*=\s*(?P<ms>\d+)\s*ms\s*.*$')
+RE_RULE_T_TOT_MAX =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_tot_max\s*=\s*(?P<ms>\d+)\s*ms\s*.*$')
+RE_RULE_T_TOT_MED =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_tot_med\s*=\s*(?P<ms>\d+)\s*ms\s*.*$')
 RE_RULE_T_AVG =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_avg\s*=\s*(?P<us>\d+)\s*us\s*.*$')
 RE_RULE_PF =  re.compile(r'^\[AggregatedRuleStatistics\]\s+PF\s*=\s*(?P<v>[0-9]*\.?[0-9]+)\s*.*$')
 RE_RULE_SKEW_TOT =  re.compile(r'^\[AggregatedRuleStatistics\]\s+T_tot_skew\s*=\s*(?P<v>[0-9]*\.?[0-9]+)\s*.*$')
@@ -96,6 +99,15 @@ def parse_datalog_summaries(content: str, props: dict):
 
         m = RE_RULE_T_TOT.match(line)
         if m: put("rule_t_tot_ms", int(m.group("ms"))); continue
+
+        m = RE_RULE_T_TOT_MIN.match(line)
+        if m: put("rule_t_tot_min_ms", int(m.group("ms"))); continue
+
+        m = RE_RULE_T_TOT_MAX.match(line)
+        if m: put("rule_t_tot_max_ms", int(m.group("ms"))); continue
+
+        m = RE_RULE_T_TOT_MED.match(line)
+        if m: put("rule_t_tot_med_ms", int(m.group("ms"))); continue
 
         m = RE_RULE_T_AVG.match(line)
         if m: put("rule_t_avg_us", int(m.group("us"))); continue
@@ -226,6 +238,9 @@ class DatalogParser(Parser):
             "succgen_rule_t_tot_ms",
             "succgen_rule_t_avg_us",
             Attribute("succgen_rule_pf", function=geometric_mean, min_wins=False),
+            "succgen_rule_t_tot_min_ms",
+            "succgen_rule_t_tot_max_ms",
+            "succgen_rule_t_tot_med_ms",
             "succgen_rule_skew_tot",
             "succgen_rule_skew_avg",
 
@@ -248,6 +263,9 @@ class DatalogParser(Parser):
             "axiom_rule_t_tot_ms",
             "axiom_rule_t_avg_us",
             Attribute("axiom_rule_pf", function=geometric_mean, min_wins=False),
+            "axiom_rule_t_tot_min_ms",
+            "axiom_rule_t_tot_max_ms",
+            "axiom_rule_t_tot_med_ms",
             "axiom_rule_skew_tot",
             "axiom_rule_skew_avg",
 
@@ -270,6 +288,9 @@ class DatalogParser(Parser):
             "ff_rule_t_tot_ms",
             "ff_rule_t_avg_us",
             Attribute("ff_rule_pf", function=geometric_mean, min_wins=False),
+            "ff_rule_t_tot_min_ms",
+            "ff_rule_t_tot_max_ms",
+            "ff_rule_t_tot_med_ms",
             "ff_rule_skew_tot",
             "ff_rule_skew_avg",
             
