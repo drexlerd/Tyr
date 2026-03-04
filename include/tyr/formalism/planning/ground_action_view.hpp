@@ -49,7 +49,6 @@ public:
     auto get_binding() const noexcept { return make_view(get_data().binding, *m_context); }
     auto get_condition() const noexcept { return make_view(get_data().condition, *m_context); }
     auto get_effects() const noexcept { return make_view(get_data().effects, *m_context); }
-    auto get_arity() const noexcept { return get_condition().get_arity(); }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };

@@ -37,6 +37,34 @@ void bind_function(nb::module_& m, const std::string& name)
         .def("__str__", [](View<Index<Function<T>>, Repository> self) { return to_string(self); })
         .def("get_name", &View<Index<Function<T>>, Repository>::get_name);
 }
+
+template<FactKind T>
+void bind_atom(nb::module_& m, const std::string& name)
+{
+    nb::class_<View<Index<Atom<T>>, Repository>>(m, name.c_str())  //
+        .def("__str__", [](View<Index<Atom<T>>, Repository> self) { return to_string(self); });
+}
+
+template<FactKind T>
+void bind_ground_atom(nb::module_& m, const std::string& name)
+{
+    nb::class_<View<Index<GroundAtom<T>>, Repository>>(m, name.c_str())  //
+        .def("__str__", [](View<Index<GroundAtom<T>>, Repository> self) { return to_string(self); });
+}
+
+template<FactKind T>
+void bind_literal(nb::module_& m, const std::string& name)
+{
+    nb::class_<View<Index<Literal<T>>, Repository>>(m, name.c_str())  //
+        .def("__str__", [](View<Index<Literal<T>>, Repository> self) { return to_string(self); });
+}
+
+template<FactKind T>
+void bind_ground_literal(nb::module_& m, const std::string& name)
+{
+    nb::class_<View<Index<GroundLiteral<T>>, Repository>>(m, name.c_str())  //
+        .def("__str__", [](View<Index<GroundLiteral<T>>, Repository> self) { return to_string(self); });
+}
 }
 
 #endif

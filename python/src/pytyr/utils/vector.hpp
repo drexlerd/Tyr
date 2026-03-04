@@ -10,6 +10,7 @@
 #pragma once
 
 #include <nanobind/nanobind.h>
+#include <type_traits>
 #include <tyr/common/vector.hpp>
 
 NAMESPACE_BEGIN(NB_NAMESPACE)

@@ -18,7 +18,9 @@
 #ifndef TYR_PYTHON_INIT_DECLARATIONS_HPP
 #define TYR_PYTHON_INIT_DECLARATIONS_HPP
 
+#include "utils/optional.hpp"
 #include "utils/string.hpp"
+#include "utils/variant.hpp"
 #include "utils/vector.hpp"
 
 #include <iostream>
