@@ -25,16 +25,29 @@ namespace tyr::formalism::planning
 template<FactKind T>
 void bind_predicate(nb::module_& m, const std::string& name)
 {
-    nb::class_<View<Index<Predicate<T>>, Repository>>(m, name.c_str())
-        .def("__str__", [](View<Index<Predicate<T>>, Repository> self) { return to_string(self); })
-        .def("get_name", &View<Index<Predicate<T>>, Repository>::get_name);
+    using V = View<Index<Predicate<T>>, Repository>;
+
+    nb::class_<V>(m, name.c_str())
+        .def("__str__", [](const V& self) { return to_string(self); })
+        .def("__repr__", [](const V& self) { return to_string(self); })
+        .def("__eq__", [](const V& self, const V& other) { return EqualTo<V> {}(self, other); })
+        .def("__hash__", [](const V& self) { return Hash<V> {}(self); })
+        .def("get_name", &V::get_name)
+        .def("get_arity", &V::get_arity);
 }
 
 template<FactKind T>
 void bind_atom(nb::module_& m, const std::string& name)
 {
-    nb::class_<View<Index<Atom<T>>, Repository>>(m, name.c_str())  //
-        .def("__str__", [](View<Index<Atom<T>>, Repository> self) { return to_string(self); });
+    using V = View<Index<Atom<T>>, Repository>;
+
+    nb::class_<V>(m, name.c_str())  //
+        .def("__str__", [](const V& self) { return to_string(self); })
+        .def("__repr__", [](const V& self) { return to_string(self); })
+        .def("__eq__", [](const V& self, const V& other) { return EqualTo<V> {}(self, other); })
+        .def("__hash__", [](const V& self) { return Hash<V> {}(self); })
+        .def("get_predicate", &V::get_predicate)
+        .def("get_terms", &V::get_terms);
 }
 
 template<FactKind T>
