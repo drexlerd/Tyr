@@ -122,6 +122,9 @@ void bind_module_definitions(nb::module_& m)
     bind_binary_operator<OpGe, Data<FunctionExpression>>(m, "BinaryOperatorGe");
     bind_binary_operator<OpGt, Data<FunctionExpression>>(m, "BinaryOperatorGt");
 
+    bind_multi_operator<OpAdd, Data<FunctionExpression>>(m, "MultiOperatorAdd");
+    bind_multi_operator<OpMul, Data<FunctionExpression>>(m, "MultiOperatorMul");
+
     bind_arithmethic_operator<Data<FunctionExpression>>(m, "ArithmeticOperator");
     bind_boolean_operator<Data<FunctionExpression>>(m, "BooleanOperator");
 
@@ -230,6 +233,9 @@ void bind_module_definitions(nb::module_& m)
     bind_binary_operator<OpLt, Data<GroundFunctionExpression>>(m, "GroundBinaryOperatorLt");
     bind_binary_operator<OpGe, Data<GroundFunctionExpression>>(m, "GroundBinaryOperatorGe");
     bind_binary_operator<OpGt, Data<GroundFunctionExpression>>(m, "GroundBinaryOperatorGt");
+
+    bind_multi_operator<OpAdd, Data<GroundFunctionExpression>>(m, "GroundMultiOperatorAdd");
+    bind_multi_operator<OpMul, Data<GroundFunctionExpression>>(m, "GroundMultiOperatorMul");
 
     bind_arithmethic_operator<Data<GroundFunctionExpression>>(m, "GroundArithmeticOperator");
     bind_boolean_operator<Data<GroundFunctionExpression>>(m, "GroundBooleanOperator");

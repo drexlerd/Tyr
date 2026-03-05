@@ -28,6 +28,21 @@ namespace tyr::planning
 void bind_module_definitions(nb::module_& m)
 {
     /**
+     * SearchStatus
+     */
+
+    nb::enum_<SearchStatus>(m, "SearchStatus")
+        .value("IN_PROGRESS", SearchStatus::IN_PROGRESS)
+        .value("OUT_OF_TIME", SearchStatus::OUT_OF_TIME)
+        .value("OUT_OF_MEMORY", SearchStatus::OUT_OF_MEMORY)
+        .value("OUT_OF_STATES", SearchStatus::OUT_OF_STATES)
+        .value("FAILED", SearchStatus::FAILED)
+        .value("EXHAUSTED", SearchStatus::EXHAUSTED)
+        .value("SOLVED", SearchStatus::SOLVED)
+        .value("UNSOLVABLE", SearchStatus::UNSOLVABLE)
+        .export_values();
+
+    /**
      * Domain
      */
 
@@ -77,6 +92,8 @@ void bind_ground_module_definitions(nb::module_& m)
     bind_state<GroundTask>(m, "State");
     bind_node<GroundTask>(m, "Node");
     bind_labeled_node<GroundTask>(m, "LabeledNode");
+    bind_plan<GroundTask>(m, "Plan");
+    bind_axiom_evaluator<GroundTask>(m, "AxiomEvaluator");
     bind_state_repository<GroundTask>(m, "StateRepository");
     bind_successor_generator<GroundTask>(m, "SuccessorGenerator");
     bind_search_result<GroundTask>(m, "SearchResult");
@@ -94,6 +111,8 @@ void bind_lifted_module_definitions(nb::module_& m)
     bind_state<LiftedTask>(m, "State");
     bind_node<LiftedTask>(m, "Node");
     bind_labeled_node<LiftedTask>(m, "LabeledNode");
+    bind_plan<LiftedTask>(m, "Plan");
+    bind_axiom_evaluator<LiftedTask>(m, "AxiomEvaluator");
     bind_state_repository<LiftedTask>(m, "StateRepository");
     bind_successor_generator<LiftedTask>(m, "SuccessorGenerator");
     bind_search_result<LiftedTask>(m, "SearchResult");

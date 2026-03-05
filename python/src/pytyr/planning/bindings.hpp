@@ -102,88 +102,123 @@ void bind_state(nb::module_& m, const std::string& name)
 template<typename Task>
 void bind_node(nb::module_& m, const std::string& name)
 {
-    nb::class_<Node<Task>>(m, name.c_str())
-        .def("__str__", [](const Node<Task>& self) { return to_string(self); })
-        .def("get_state", &Node<Task>::get_state, nb::rv_policy::reference_internal)
-        .def("get_metric", &Node<Task>::get_metric, nb::rv_policy::copy);
+    using T = Node<Task>;
+
+    nb::class_<T>(m, name.c_str())
+        .def("__str__", [](const T& self) { return to_string(self); })
+        .def("get_state", &T::get_state, nb::rv_policy::reference_internal)
+        .def("get_metric", &T::get_metric, nb::rv_policy::copy);
 }
 
 template<typename Task>
 void bind_labeled_node(nb::module_& m, const std::string& name)
 {
-    nb::class_<LabeledNode<Task>>(m, name.c_str())  //
-        .def_ro("label", &LabeledNode<Task>::label, nb::rv_policy::copy)
-        .def_ro("node", &LabeledNode<Task>::node, nb::rv_policy::copy);
+    using T = LabeledNode<Task>;
+
+    nb::class_<T>(m, name.c_str())  //
+        .def_ro("label", &T::label, nb::rv_policy::copy)
+        .def_ro("node", &T::node, nb::rv_policy::copy);
+}
+
+template<typename Task>
+void bind_plan(nb::module_& m, const std::string& name)
+{
+    using T = Plan<Task>;
+
+    nb::class_<T>(m, name.c_str())  //
+        .def(nb::init<Node<Task>, LabeledNodeList<Task>>(), "start_node", "labeled_succ_nodes")
+        .def("get_start_node", &T::get_start_node, nb::rv_policy::copy)
+        .def("get_labeled_succ_nodes", &T::get_labeled_succ_nodes, nb::rv_policy::copy)
+        .def("get_cost", &T::get_cost)
+        .def("get_length", &T::get_length);
+}
+
+template<typename Task>
+void bind_axiom_evaluator(nb::module_& m, const std::string& name)
+{
+    using T = AxiomEvaluator<Task>;
+
+    nb::class_<T>(m, name.c_str())  //
+        .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a);
 }
 
 template<typename Task>
 void bind_state_repository(nb::module_& m, const std::string& name)
 {
-    nb::class_<StateRepository<Task>>(m, name.c_str())  //
-        .def(nb::new_([](std::shared_ptr<Task> task) { return StateRepository<Task>::create(std::move(task)); }), "task"_a)
-        .def("get_initial_state", &StateRepository<Task>::get_initial_state, nb::rv_policy::move)
-        .def("get_registered_state", &StateRepository<Task>::get_registered_state, nb::rv_policy::move, "state_index"_a)
-        .def("get_axiom_evaluator", &StateRepository<Task>::get_axiom_evaluator, nb::rv_policy::copy);
+    using T = StateRepository<Task>;
+
+    nb::class_<T>(m, name.c_str())  //
+        .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a)
+        .def("get_initial_state", &T::get_initial_state, nb::rv_policy::move)
+        .def("get_registered_state", &T::get_registered_state, nb::rv_policy::move, "state_index"_a)
+        .def("get_axiom_evaluator", &T::get_axiom_evaluator, nb::rv_policy::copy);
 }
 
 template<typename Task>
 void bind_successor_generator(nb::module_& m, const std::string& name)
 {
-    nb::class_<SuccessorGenerator<Task>>(m, name.c_str())
-        .def(nb::new_([](std::shared_ptr<Task> task) { return SuccessorGenerator<Task>::create(std::move(task)); }), "task"_a)
-        .def("get_initial_node", &SuccessorGenerator<Task>::get_initial_node, nb::rv_policy::move)
-        .def("get_labeled_successor_nodes",
-             nb::overload_cast<const Node<Task>&>(&SuccessorGenerator<Task>::get_labeled_successor_nodes),
-             nb::rv_policy::move,
-             "node"_a)
-        .def("get_state", &SuccessorGenerator<Task>::get_state, nb::rv_policy::move)
-        .def("get_state_repository", &SuccessorGenerator<Task>::get_state_repository, nb::rv_policy::copy);
+    using T = SuccessorGenerator<Task>;
+
+    nb::class_<T>(m, name.c_str())
+        .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a)
+        .def("get_initial_node", &T::get_initial_node, nb::rv_policy::move)
+        .def("get_labeled_successor_nodes", nb::overload_cast<const Node<Task>&>(&T::get_labeled_successor_nodes), nb::rv_policy::move, "node"_a)
+        .def("get_state", &T::get_state, nb::rv_policy::move)
+        .def("get_state_repository", &T::get_state_repository, nb::rv_policy::copy);
 }
 
 template<typename Task>
 void bind_search_result(nb::module_& m, const std::string& name)
 {
-    nb::class_<SearchResult<Task>>(m, name.c_str())
-        .def(nb::init<>())
-        .def_rw("status", &SearchResult<Task>::status)
-        .def_rw("plan", &SearchResult<Task>::plan)
-        .def_rw("goal_node", &SearchResult<Task>::goal_node);
+    using T = SearchResult<Task>;
+
+    nb::class_<T>(m, name.c_str()).def(nb::init<>()).def_rw("status", &T::status).def_rw("plan", &T::plan).def_rw("goal_node", &T::goal_node);
 }
 
 template<typename Task>
 void bind_heuristic(nb::module_& m, const std::string& name)
 {
-    nb::class_<Heuristic<Task>>(m, name.c_str())  //
-        .def("set_goal", &Heuristic<Task>::set_goal, "goal"_a)
-        .def("evaluate", &Heuristic<Task>::evaluate, "state"_a);
+    using T = Heuristic<Task>;
+
+    nb::class_<T>(m, name.c_str())  //
+        .def("set_goal", &T::set_goal, "goal"_a)
+        .def("evaluate", &T::evaluate, "state"_a);
 }
 
 template<typename Task>
 void bind_blind_heuristic(nb::module_& m, const std::string& name)
 {
-    nb::class_<BlindHeuristic<Task>, Heuristic<Task>>(m, name.c_str())  //
-        .def(nb::new_([]() { return BlindHeuristic<Task>::create(); }));
+    using T = BlindHeuristic<Task>;
+
+    nb::class_<T, Heuristic<Task>>(m, name.c_str())  //
+        .def(nb::new_([]() { return T::create(); }));
 }
 
 template<typename Task>
 void bind_max_heuristic(nb::module_& m, const std::string& name)
 {
-    nb::class_<MaxHeuristic<Task>, Heuristic<Task>>(m, name.c_str())  //
-        .def(nb::new_([](std::shared_ptr<Task> task) { return MaxHeuristic<Task>::create(std::move(task)); }), "task"_a);
+    using T = MaxHeuristic<Task>;
+
+    nb::class_<T, Heuristic<Task>>(m, name.c_str())  //
+        .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a);
 }
 
 template<typename Task>
 void bind_add_heuristic(nb::module_& m, const std::string& name)
 {
-    nb::class_<AddHeuristic<Task>, Heuristic<Task>>(m, name.c_str())  //
-        .def(nb::new_([](std::shared_ptr<Task> task) { return AddHeuristic<Task>::create(std::move(task)); }), "task"_a);
+    using T = AddHeuristic<Task>;
+
+    nb::class_<T, Heuristic<Task>>(m, name.c_str())  //
+        .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a);
 }
 
 template<typename Task>
 void bind_ff_heuristic(nb::module_& m, const std::string& name)
 {
-    nb::class_<FFHeuristic<Task>, Heuristic<Task>>(m, name.c_str())  //
-        .def(nb::new_([](std::shared_ptr<Task> task) { return FFHeuristic<Task>::create(std::move(task)); }), "task"_a);
+    using T = FFHeuristic<Task>;
+
+    nb::class_<T, Heuristic<Task>>(m, name.c_str())  //
+        .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a);
 }
 
 namespace astar_eager
@@ -191,17 +226,19 @@ namespace astar_eager
 template<typename Task>
 void bind_options(nb::module_& m, const std::string& name)
 {
-    nb::class_<Options<Task>>(m, name.c_str())
+    using T = Options<Task>;
+
+    nb::class_<T>(m, name.c_str())
         .def(nb::init<>())
-        .def_rw("start_node", &Options<Task>::start_node)
-        .def_rw("event_handler", &Options<Task>::event_handler)
-        .def_rw("pruning_strategy", &Options<Task>::pruning_strategy)
-        .def_rw("goal_strategy", &Options<Task>::goal_strategy)
-        .def_rw("max_num_states", &Options<Task>::max_num_states)
-        .def_rw("max_time", &Options<Task>::max_time)
-        .def_rw("stop_if_goal", &Options<Task>::stop_if_goal)
-        .def_rw("random_seed", &Options<Task>::random_seed)
-        .def_rw("shuffle_labeled_succ_nodes", &Options<Task>::shuffle_labeled_succ_nodes);
+        .def_rw("start_node", &T::start_node)
+        .def_rw("event_handler", &T::event_handler)
+        .def_rw("pruning_strategy", &T::pruning_strategy)
+        .def_rw("goal_strategy", &T::goal_strategy)
+        .def_rw("max_num_states", &T::max_num_states)
+        .def_rw("max_time", &T::max_time)
+        .def_rw("stop_if_goal", &T::stop_if_goal)
+        .def_rw("random_seed", &T::random_seed)
+        .def_rw("shuffle_labeled_succ_nodes", &T::shuffle_labeled_succ_nodes);
 }
 
 template<typename Task>
