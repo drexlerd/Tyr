@@ -10,12 +10,14 @@
 #pragma once
 
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/optional.h>
 #include <type_traits>
 #include <tyr/common/optional.hpp>
 
 NAMESPACE_BEGIN(NB_NAMESPACE)
 NAMESPACE_BEGIN(detail)
 
+// Adapted from nanobind/stl/detail/nb_optional.h
 template<typename C, typename T>
 struct type_caster<::tyr::View<::cista::optional<T>, C>>
 {
@@ -36,6 +38,12 @@ struct type_caster<::tyr::View<::cista::optional<T>, C>>
 
         return Caster::from_cpp(value.value(), policy, cleanup);
     }
+};
+
+// Taken from nanobind/stl/optional.h
+template<typename T>
+struct type_caster<::cista::optional<T>> : optional_caster<::cista::optional<T>>
+{
 };
 
 NAMESPACE_END(detail)

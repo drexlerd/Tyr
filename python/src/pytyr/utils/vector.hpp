@@ -16,7 +16,7 @@
 NAMESPACE_BEGIN(NB_NAMESPACE)
 NAMESPACE_BEGIN(detail)
 
-// Taken From nanobind/stl/vector.h
+// Adapted from nanobind/stl/detail/nb_list.h
 template<typename Type, template<typename> typename Ptr, bool IndexPointers, typename TemplateSizeType, class Allocator, typename C>
 struct type_caster<::tyr::View<::cista::basic_vector<Type, Ptr, IndexPointers, TemplateSizeType, Allocator>, C>>
 {
