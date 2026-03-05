@@ -201,65 +201,53 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     const auto& kpkc_algorithm = rctx.ws_rule.common.kpkc;
 
 #ifdef TYR_ENABLE_INNER_PARALLELISM
+
+    constexpr size_t PAR_THRESHOLD = 1024;
+    constexpr size_t GRAIN = 256;
+
+    const auto arena_conc = static_cast<size_t>(oneapi::tbb::this_task_arena::max_concurrency());
+
+    const auto& delta_edges = kpkc_algorithm.get_delta_edges();
+
+    // Decide whether we want to trigger the parallel loop.
+    const bool do_parallel_inner =
+        kpkc_algorithm.get_iteration() > 1 && (rctx.cws_rule.get_rule().get_arity() > 2) && (delta_edges.size() >= PAR_THRESHOLD) && (arena_conc >= 2);
+
     if (do_parallel_inner)
     {
-        constexpr size_t PAR_THRESHOLD = 1024;
-        constexpr size_t GRAIN = 256;
+        // This parallelization sometimes work, e.g., logistics-large-simple/goal-2/p-a1-c1-s1000-p10-t1-g2.pddl
+        // but not on logistics-large-simple/goal-2/p-a1-c1-s2000-p10-t1-g2.pddl
+        // It seems that the parameters need to be tuned better in this case
 
-        const auto arena_conc = static_cast<size_t>(oneapi::tbb::this_task_arena::max_concurrency());
+        // Moreover seeding from edges in first iteration is wasteful.
+        // We could seed from all vertices in a partition instead.
 
-        const auto& delta_edges = kpkc_algorithm.get_delta_edges();
+        oneapi::tbb::this_task_arena::isolate(
+            [&]
+            {
+                oneapi::tbb::parallel_for(
+                    oneapi::tbb::blocked_range<size_t>(0, delta_edges.size(), GRAIN),
+                    [&](const oneapi::tbb::blocked_range<size_t>& r)
+                    {
+                        auto wrctx = rctx.get_rule_worker_execution_context();
+                        auto& out = wrctx.out();
+                        auto& ws = out.kpkc_workspace();
+                        ++out.statistics().num_executions;
 
-        // Decide whether we want to trigger the parallel loop.
-        const bool do_parallel_inner =
-            kpkc_algorithm.get_iteration() > 1 && (rctx.cws_rule.get_rule().get_arity() > 2) && (delta_edges.size() >= PAR_THRESHOLD) && (arena_conc >= 2);
-
-        if (do_parallel_inner)
-        {
-            // This parallelization sometimes work, e.g., logistics-large-simple/goal-2/p-a1-c1-s1000-p10-t1-g2.pddl
-            // but not on logistics-large-simple/goal-2/p-a1-c1-s2000-p10-t1-g2.pddl
-            // It seems that the parameters need to be tuned better in this case
-
-            // Moreover seeding from edges in first iteration is wasteful.
-            // We could seed from all vertices in a partition instead.
-
-            oneapi::tbb::this_task_arena::isolate(
-                [&]
-                {
-                    oneapi::tbb::parallel_for(
-                        oneapi::tbb::blocked_range<size_t>(0, delta_edges.size(), GRAIN),
-                        [&](const oneapi::tbb::blocked_range<size_t>& r)
+                        for (size_t e = r.begin(); e != r.end(); ++e)
                         {
-                            auto wrctx = rctx.get_rule_worker_execution_context();
-                            auto& out = wrctx.out();
-                            auto& ws = out.kpkc_workspace();
-                            ++out.statistics().num_executions;
+                            const auto& edge = delta_edges[e];
+                            if (!kpkc_algorithm.seed_from_anchor(edge, ws))
+                                continue;
 
-                            for (size_t e = r.begin(); e != r.end(); ++e)
-                            {
-                                const auto& edge = delta_edges[e];
-                                if (!kpkc_algorithm.seed_from_anchor(edge, ws))
-                                    continue;
-
-                                kpkc_algorithm.template complete_from_seed<kpkc::Edge>([&](auto&& clique) { process_clique(wrctx, clique); }, 0, ws);
-                            }
-                        },
-                        oneapi::tbb::auto_partitioner {}  // allow splitting/stealing
-                    );
-                });
-        }
-        else
-        {
-            auto wrctx = rctx.get_rule_worker_execution_context();
-            auto& out = wrctx.out();
-            auto& kpkc_workspace = out.kpkc_workspace();
-            ++out.statistics().num_executions;
-
-            kpkc_algorithm.for_each_new_k_clique([&](auto&& clique) { process_clique(wrctx, clique); }, kpkc_workspace);
-        }
+                            kpkc_algorithm.template complete_from_seed<kpkc::Edge>([&](auto&& clique) { process_clique(wrctx, clique); }, 0, ws);
+                        }
+                    },
+                    oneapi::tbb::auto_partitioner {}  // allow splitting/stealing
+                );
+            });
     }
     else
-#endif
     {
         auto wrctx = rctx.get_rule_worker_execution_context();
         auto& out = wrctx.out();
@@ -268,6 +256,17 @@ void generate_general_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 
         kpkc_algorithm.for_each_new_k_clique([&](auto&& clique) { process_clique(wrctx, clique); }, kpkc_workspace);
     }
+
+#else
+
+    auto wrctx = rctx.get_rule_worker_execution_context();
+    auto& out = wrctx.out();
+    auto& kpkc_workspace = out.kpkc_workspace();
+    ++out.statistics().num_executions;
+
+    kpkc_algorithm.for_each_new_k_clique([&](auto&& clique) { process_clique(wrctx, clique); }, kpkc_workspace);
+
+#endif
 }
 
 template<OrAnnotationPolicyConcept OrAP, AndAnnotationPolicyConcept AndAP, TerminationPolicyConcept TP>

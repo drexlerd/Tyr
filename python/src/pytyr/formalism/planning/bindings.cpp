@@ -421,6 +421,14 @@ void bind_module_definitions(nb::module_& m)
     }
 
     nb::class_<Repository>(m, "Repository");
+
+    nb::class_<BinaryFDRContext>(m, "BinaryFDRContext")  //
+        .def("get_fact", nb::overload_cast<View<Index<GroundAtom<FluentTag>>, Repository>>(&BinaryFDRContext::get_fact_view), "atom"_a)
+        .def("get_fact", nb::overload_cast<View<Index<GroundLiteral<FluentTag>>, Repository>>(&BinaryFDRContext::get_fact_view), "literal"_a);
+
+    nb::class_<GeneralFDRContext>(m, "GeneralFDRContext")  //
+        .def("get_fact", nb::overload_cast<View<Index<GroundAtom<FluentTag>>, Repository>>(&GeneralFDRContext::get_fact_view), "atom"_a)
+        .def("get_fact", nb::overload_cast<View<Index<GroundLiteral<FluentTag>>, Repository>>(&GeneralFDRContext::get_fact_view), "literal"_a);
 }
 
 }
