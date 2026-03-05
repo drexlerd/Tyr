@@ -87,7 +87,8 @@ void bind_ground_module_definitions(nb::module_& m)
 {
     nb::class_<GroundTask>(m, "Task")  //
         .def("get_repository", &GroundTask::get_repository)
-        .def("get_task", &GroundTask::get_task);
+        .def("get_task", &GroundTask::get_task)
+        .def("get_fdr_context", &GroundTask::get_fdr_context);
 
     bind_state<GroundTask>(m, "State");
     bind_node<GroundTask>(m, "Node");
@@ -106,6 +107,7 @@ void bind_lifted_module_definitions(nb::module_& m)
     nb::class_<LiftedTask>(m, "Task")  //
         .def("get_repository", &LiftedTask::get_repository)
         .def("get_task", &LiftedTask::get_task)
+        .def("get_fdr_context", &LiftedTask::get_fdr_context)
         .def("instantiate_ground_task", &LiftedTask::instantiate_ground_task);
 
     bind_state<LiftedTask>(m, "State");

@@ -119,6 +119,35 @@ State<GroundTask> StateRepository<GroundTask>::get_registered_state(StateIndex s
     return State<GroundTask>(shared_from_this(), std::move(unpacked_state));
 }
 
+State<GroundTask> StateRepository<GroundTask>::create_state(
+    const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
+    const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values)
+{
+    auto unpacked_state = get_unregistered_state();
+
+    for (const auto& fact : fluent_facts)
+        unpacked_state->set(fact);
+    for (const auto& [fterm, value] : fterm_values)
+        unpacked_state->set(fterm, value);
+
+    return register_state(std::move(unpacked_state));
+}
+
+State<GroundTask> StateRepository<GroundTask>::create_state(
+    const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, formalism::planning::Repository>>& fluent_facts,
+    const std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>>&
+        fterm_values)
+{
+    auto unpacked_state = get_unregistered_state();
+
+    for (const auto& fact : fluent_facts)
+        unpacked_state->set(fact.get_data());
+    for (const auto& [fterm, value] : fterm_values)
+        unpacked_state->set(fterm.get_index(), value);
+
+    return register_state(std::move(unpacked_state));
+}
+
 SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_unregistered_state()
 {
     auto state = m_unpacked_state_pool.get_or_allocate();

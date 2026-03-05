@@ -51,6 +51,14 @@ public:
 
     State<GroundTask> get_registered_state(StateIndex state_index);
 
+    State<GroundTask> create_state(const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
+                                   const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values);
+
+    State<GroundTask> create_state(
+        const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, formalism::planning::Repository>>& fluent_facts,
+        const std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>>&
+            fterm_values);
+
     SharedObjectPoolPtr<UnpackedState<GroundTask>> get_unregistered_state();
 
     State<GroundTask> register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state);

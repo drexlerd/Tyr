@@ -62,15 +62,28 @@ public:
         return fact;
     }
 
-    Data<FDRFact<FluentTag>> get_fact(Index<GroundLiteral<FluentTag>> literal)
-    {
-        auto literal_view = make_view(literal, m_context);
-        auto pos_fact = this->get_fact(literal_view.get_atom().get_index());
+    Data<FDRFact<FluentTag>> get_fact(View<Index<GroundAtom<FluentTag>>, Repository> atom) { return get_fact(atom.get_index()); }
 
-        if (literal_view.get_polarity())
+    View<Data<FDRFact<FluentTag>>, Repository> get_fact_view(View<Index<GroundAtom<FluentTag>>, Repository> atom)
+    {
+        return make_view(get_fact(atom), m_context);
+    }
+
+    Data<FDRFact<FluentTag>> get_fact(Index<GroundLiteral<FluentTag>> literal) { return get_fact(make_view(literal, m_context)); }
+
+    Data<FDRFact<FluentTag>> get_fact(View<Index<GroundLiteral<FluentTag>>, Repository> literal)
+    {
+        auto pos_fact = this->get_fact(literal.get_atom().get_index());
+
+        if (literal.get_polarity())
             return pos_fact;
 
         return Data<FDRFact<FluentTag>>(make_view(pos_fact, m_context).get_variable().get_index(), FDRValue { 0 });
+    }
+
+    View<Data<FDRFact<FluentTag>>, Repository> get_fact_view(View<Index<GroundLiteral<FluentTag>>, Repository> literal)
+    {
+        return make_view(get_fact(literal), m_context);
     }
 
     View<IndexList<FDRVariable<FluentTag>>, Repository> get_variables() const { return make_view(m_variables, m_context); }
@@ -111,16 +124,29 @@ public:
 
     Data<FDRFact<FluentTag>> get_fact(Index<GroundAtom<FluentTag>> atom) const { return m_mapping.at(atom); }
 
-    Data<FDRFact<FluentTag>> get_fact(Index<GroundLiteral<FluentTag>> literal) const
-    {
-        auto literal_view = make_view(literal, m_context);
-        auto fact = this->get_fact(literal_view.get_atom().get_index());
+    Data<FDRFact<FluentTag>> get_fact(View<Index<GroundAtom<FluentTag>>, Repository> atom) const { return get_fact(atom.get_index()); }
 
-        if (literal_view.get_polarity())
+    View<Data<FDRFact<FluentTag>>, Repository> get_fact_view(View<Index<GroundAtom<FluentTag>>, Repository> atom)
+    {
+        return make_view(get_fact(atom), m_context);
+    }
+
+    Data<FDRFact<FluentTag>> get_fact(Index<GroundLiteral<FluentTag>> literal) const { return get_fact(make_view(literal, m_context)); }
+
+    Data<FDRFact<FluentTag>> get_fact(View<Index<GroundLiteral<FluentTag>>, Repository> literal) const
+    {
+        auto fact = this->get_fact(literal.get_atom().get_index());
+
+        if (literal.get_polarity())
             return fact;
 
         fact.value = FDRValue { 0 };
         return fact;
+    }
+
+    View<Data<FDRFact<FluentTag>>, Repository> get_fact_view(View<Index<GroundLiteral<FluentTag>>, Repository> literal)
+    {
+        return make_view(get_fact(literal), m_context);
     }
 
     View<IndexList<FDRVariable<FluentTag>>, Repository> get_variables() const { return make_view(m_variables, m_context); }

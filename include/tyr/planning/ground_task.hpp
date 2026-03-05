@@ -59,6 +59,7 @@ public:
     const auto& get_domain() const noexcept { return m_domain; }
 
     auto get_task() const noexcept { return m_fdr_task; }
+    const auto& get_fdr_context() const noexcept { return m_fdr_context; }
 
     const auto& get_repository() const noexcept { return m_overlay_repository; }
 
@@ -70,6 +71,7 @@ private:
 
     formalism::planning::RepositoryPtr m_overlay_repository;
     View<Index<formalism::planning::FDRTask>, formalism::planning::Repository> m_fdr_task;
+    formalism::planning::GeneralFDRContext m_fdr_context;
     boost::dynamic_bitset<> m_static_atoms_bitset;
     std::vector<float_t> m_static_numeric_variables;
 

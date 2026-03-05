@@ -151,6 +151,15 @@ void bind_state_repository(nb::module_& m, const std::string& name)
         .def(nb::new_([](std::shared_ptr<Task> task) { return T::create(std::move(task)); }), "task"_a)
         .def("get_initial_state", &T::get_initial_state, nb::rv_policy::move)
         .def("get_registered_state", &T::get_registered_state, nb::rv_policy::move, "state_index"_a)
+        .def("create_state",
+             nb::overload_cast<
+                 const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, formalism::planning::Repository>>&,
+                 const std::vector<
+                     std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>>&>(
+                 &T::create_state),
+             nb::rv_policy::move,
+             "fluent_fact"_a,
+             "fterm_values"_a)
         .def("get_axiom_evaluator", &T::get_axiom_evaluator, nb::rv_policy::copy);
 }
 
