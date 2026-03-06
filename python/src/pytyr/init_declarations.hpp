@@ -89,6 +89,13 @@ extern void bind_ground_module_definitions(nb::module_& m);
 
 extern void bind_lifted_module_definitions(nb::module_& m);
 }
+
+namespace gbfs_lazy
+{
+extern void bind_ground_module_definitions(nb::module_& m);
+
+extern void bind_lifted_module_definitions(nb::module_& m);
+}
 }
 }
 

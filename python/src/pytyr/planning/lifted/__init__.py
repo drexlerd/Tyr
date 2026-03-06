@@ -23,3 +23,8 @@ from pytyr.pytyr.planning.lifted import (
 from . import (
     astar_eager as astar_eager,
 )
+
+from . import (
+    gbfs_lazy as gbfs_lazy,
+)
+

@@ -28,29 +28,26 @@ NB_MODULE(pytyr, m)
     // Create submodules before binding to avoid missing bindings
 
     auto formalism = m.def_submodule("formalism");
-    m.attr("formalism") = formalism;
     auto formalism_planning = formalism.def_submodule("planning");
-    formalism.attr("planning") = formalism_planning;
-
-    auto planning = m.def_submodule("planning");
-    m.attr("planning") = planning;
-    auto planning_ground = planning.def_submodule("ground");
-    m.attr("ground") = planning_ground;
-    auto planning_ground_astar_eager = planning_ground.def_submodule("astar_eager");
-    m.attr("astar_eager") = planning_ground_astar_eager;
-    auto planning_lifted = planning.def_submodule("lifted");
-    m.attr("lifted") = planning_lifted;
-    auto planning_lifted_astar_eager = planning_lifted.def_submodule("astar_eager");
-    m.attr("astar_eager") = planning_lifted_astar_eager;
 
     formalism::bind_module_definitions(formalism);
     formalism::planning::bind_module_definitions(formalism_planning);
+
+    auto planning = m.def_submodule("planning");
+    auto planning_ground = planning.def_submodule("ground");
+    auto planning_ground_astar_eager = planning_ground.def_submodule("astar_eager");
+    auto planning_ground_gbfs_lazy = planning_ground.def_submodule("gbfs_lazy");
+    auto planning_lifted = planning.def_submodule("lifted");
+    auto planning_lifted_astar_eager = planning_lifted.def_submodule("astar_eager");
+    auto planning_lifted_gbfs_lazy = planning_lifted.def_submodule("gbfs_lazy");
 
     planning::bind_module_definitions(planning);
     planning::bind_ground_module_definitions(planning_ground);
     planning::bind_lifted_module_definitions(planning_lifted);
     planning::astar_eager::bind_ground_module_definitions(planning_ground_astar_eager);
     planning::astar_eager::bind_lifted_module_definitions(planning_lifted_astar_eager);
+    planning::gbfs_lazy::bind_ground_module_definitions(planning_ground_gbfs_lazy);
+    planning::gbfs_lazy::bind_lifted_module_definitions(planning_lifted_gbfs_lazy);
 }
 
 }

@@ -158,7 +158,7 @@ void bind_plan(nb::module_& m, const std::string& name)
     using T = Plan<Task>;
 
     nb::class_<T>(m, name.c_str())  //
-        .def(nb::init<Node<Task>, LabeledNodeList<Task>>(), "start_node", "labeled_succ_nodes")
+        .def(nb::init<Node<Task>, LabeledNodeList<Task>>(), "start_node"_a, "labeled_succ_nodes"_a)
         .def("__str__", [](const T& self) { return to_string(self); })
         .def("get_start_node", &T::get_start_node, nb::rv_policy::copy)
         .def("get_labeled_succ_nodes", &T::get_labeled_succ_nodes, nb::rv_policy::copy)
@@ -242,7 +242,7 @@ void bind_pruning_strategy(nb::module_& m, const std::string& name)
     using T = PruningStrategy<Task>;
 
     nb::class_<T, PyPruningStrategy<Task>>(m, name.c_str())  //
-        .def("should_prune", nb::overload_cast<const State<Task>&>(&T::should_prune), "state_a")
+        .def("should_prune", nb::overload_cast<const State<Task>&>(&T::should_prune), "state"_a)
         .def("should_prune",
              nb::overload_cast<const State<Task>&, const State<Task>&, bool>(&T::should_prune),
              "state"_a,
@@ -373,7 +373,20 @@ void bind_event_handler(nb::module_& m, const std::string& name)
 {
     using T = EventHandler<Task>;
 
-    nb::class_<T, IPyEventHandler<Task>>(m, name.c_str());
+    nb::class_<T, IPyEventHandler<Task>>(m, name.c_str())
+        .def("on_expand_goal_node", &T::on_expand_goal_node, "node"_a)
+        .def("on_expand_goal_node", &T::on_expand_goal_node, "node"_a)
+        .def("on_generate_node", &T::on_generate_node, "labeled_succ_node"_a)
+        .def("on_generate_node_relaxed", &T::on_generate_node_relaxed, "labeled_succ_node"_a)
+        .def("on_generate_node_not_relaxed", &T::on_generate_node_not_relaxed, "labeled_succ_node"_a)
+        .def("on_close_node", &T::on_close_node, "node"_a)
+        .def("on_prune_node", &T::on_prune_node, "node"_a)
+        .def("on_start_search", &T::on_start_search, "node"_a, "f_value"_a)
+        .def("on_finish_f_layer", &T::on_finish_f_layer, "f_value"_a)
+        .def("on_end_search", &T::on_end_search)
+        .def("on_solved", &T::on_solved, "plan"_a)
+        .def("on_unsolvable", &T::on_unsolvable)
+        .def("on_exhausted", &T::on_exhausted);
 }
 
 template<typename Task>
@@ -456,7 +469,17 @@ void bind_event_handler(nb::module_& m, const std::string& name)
 {
     using T = EventHandler<Task>;
 
-    nb::class_<T, IPyEventHandler<Task>>(m, name.c_str());
+    nb::class_<T, IPyEventHandler<Task>>(m, name.c_str())
+        .def("on_expand_node", &T::on_expand_node, "node"_a)
+        .def("on_expand_goal_node", &T::on_expand_goal_node, "node"_a)
+        .def("on_generate_node", &T::on_generate_node, "labeled_suc_node"_a)
+        .def("on_prune_node", &T::on_prune_node, "node"_a)
+        .def("on_start_search", &T::on_start_search, "node"_a, "h_value"_a)
+        .def("on_new_best_h_value", &T::on_new_best_h_value, "h_value"_a)
+        .def("on_end_search", &T::on_end_search)
+        .def("on_solved", &T::on_solved, "plan"_a)
+        .def("on_unsolvable", &T::on_unsolvable)
+        .def("on_exhausted", &T::on_exhausted);
 }
 
 template<typename Task>

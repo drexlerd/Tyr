@@ -24,14 +24,15 @@ install(TARGETS pytyr DESTINATION "pytyr")
 ## Stubgen
 set(MODULES
     # pytyr  # Handled by __init__.py
-    pytyr
     pytyr.formalism
     pytyr.formalism.planning
     pytyr.planning
     pytyr.planning.ground
     pytyr.planning.ground.astar_eager
+    pytyr.planning.ground.gbfs_lazy
     pytyr.planning.lifted
     pytyr.planning.lifted.astar_eager
+    pytyr.planning.lifted.gbfs_lazy
 )
 
 foreach(mod IN LISTS MODULES)

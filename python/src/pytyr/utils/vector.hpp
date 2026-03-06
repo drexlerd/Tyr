@@ -25,7 +25,7 @@ struct type_caster<::tyr::View<::cista::basic_vector<Type, Ptr, IndexPointers, T
     using Entry = std::conditional_t<::tyr::ViewConcept<Type, C>, ::tyr::View<Type, C>, Type>;
     using Caster = make_caster<Entry>;
 
-    NB_TYPE_CASTER(ViewT, io_name(NB_TYPING_SEQUENCE, NB_TYPING_LIST) + const_name("[") + Caster::Name + const_name("]"))
+    NB_TYPE_CASTER(ViewT, io_name("collections.abc.Sequence", "list") + const_name("[") + Caster::Name + const_name("]"))
 
     // No Python -> C++ conversion (cannot build a View without backing storage + context)
     bool from_python(handle, uint8_t, cleanup_list*) noexcept { return false; }
