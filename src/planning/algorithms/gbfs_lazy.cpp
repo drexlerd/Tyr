@@ -108,10 +108,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
         throw std::invalid_argument("Requested " + std::to_string(options.num_threads) + " threads, but only " + std::to_string(available_threads)
                                     + " are available by default.");
 
-    auto control = std::optional<oneapi::tbb::global_control> { std::nullopt };
-
-    if (options.num_threads > 1)
-        control.emplace(oneapi::tbb::global_control::max_allowed_parallelism, options.num_threads);
+    auto control = oneapi::tbb::global_control(oneapi::tbb::global_control::max_allowed_parallelism, options.num_threads);
 
     const auto start_node = (options.start_node) ? options.start_node.value() : successor_generator.get_initial_node();
     const auto& start_state = start_node.get_state();
