@@ -104,7 +104,7 @@ setup(
     url="https://github.com/drexlerd/Tyr",
     description="Tyr datalog/planning library",
     long_description="",
-    install_requires=["cmake>=3.21"],
+    install_requires=[],
     packages=find_packages(where="python/src"),
     package_dir={"": "python/src"},
     ext_modules=[CMakeExtension("pytyr")],
