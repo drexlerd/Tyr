@@ -14,7 +14,7 @@ import argparse
 
 from pathlib import Path
 
-from pytyr.formalism.planning import GroundConjunctiveCondition
+from pytyr.formalism.planning import GroundConjunctiveCondition, GroundAction
 from pytyr.planning import ParserOptions, Parser
 # Note: we can easily switch between lifted and ground planning by swapping the submodule, 
 # e.g., from pytyr.planning.ground import ..., and from pytyr.planning.ground.astar_eager import ...
@@ -37,6 +37,9 @@ class CustomHeuristic(Heuristic):
         pass
 
     def evaluate(self, state : State) -> float:
+        pass
+
+    def get_preferred_actions(self) -> set[GroundAction]:
         pass
 
 
@@ -144,7 +147,7 @@ def main():
     search_result = find_solution(lifted_task, successor_generator, heuristic, options)
  
     print("Search status:", search_result.status)
-    
+
     plan = search_result.plan
 
     if plan is not None:
