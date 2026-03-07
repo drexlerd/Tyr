@@ -35,7 +35,7 @@ class CMakeBuild(build_ext):
         print("temp_directory", temp_directory)
 
         build_type = "Debug" if os.environ.get('TYR_DEBUG_BUILD') else "Release"
-        print("Tyr build type:", build_type)
+        print("tyr build type:", build_type)
 
         # Create the temporary build directory, if it does not already exist
         os.makedirs(temp_directory, exist_ok=True)
@@ -108,7 +108,7 @@ setup(
     version=__version__,
     author="Dominik Drexler",
     author_email="dominik.drexler@liu.se",
-    url="https://github.com/drexlerd/Tyr",
+    url="https://github.com/drexlerd/tyr",
     description="Tyr datalog/planning library",
     long_description="",
     install_requires=[],

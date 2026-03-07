@@ -3,7 +3,7 @@ Off-the-shelf A* eager with customization points explained.
 
 Example usage (run from the repository root):
 
-    python3 python/examples/astar_eager.py \
+    python3 python/examples/planning/astar_eager.py \
         -d data/gripper/domain.pddl \
         -p data/gripper/test_problem.pddl
 

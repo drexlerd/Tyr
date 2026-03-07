@@ -1,0 +1,88 @@
+"""
+Parse and traverse planning formalism structures. 
+
+This example demonstrates how to inspect the planning formalism and highlights
+some high-level design concepts. The provided type hints make it easy to
+navigate and explore all structures.
+
+Example usage (run from the repository root):
+
+    python3 python/examples/formalism/planning/structures.py \
+        -d data/gripper/domain.pddl \
+        -p data/gripper/test_problem.pddl
+
+Author: Dominik Drexler (dominik.drexler@liu.se)
+"""
+
+import argparse
+
+from pathlib import Path
+from functools import singledispatchmethod
+
+from pytyr.formalism.planning import GroundConjunctiveCondition, GroundAction
+from pytyr.planning import ParserOptions, Parser
+
+
+def main():
+    arg_parser = argparse.ArgumentParser(description="A* Eager Search.")
+    arg_parser.add_argument("-d", "--domain-filepath", type=Path, required=True, help="Path to a PDDL domain file.")
+    arg_parser.add_argument("-p", "--task-filepath", type=Path, required=True, help="Path to PDDL task file.")
+    args = arg_parser.parse_args()
+
+    domain_filepath : Path = args.domain_filepath
+    task_filepath : Path = args.task_filepath
+
+    parser_options = ParserOptions()
+    parser = Parser(domain_filepath, parser_options)
+    
+    ### 1. Domain: a domain an be shared among arbitrarily many downstream tasks.
+
+    planning_domain = parser.get_domain()
+    formalism_domain = planning_domain.get_domain()
+
+    # Tyr separates static/fluent/derived predicates to encode semantic meaning directly within the type.
+    print("\nStatic predicates:")
+    for predicate in formalism_domain.get_static_predicates():
+        print(predicate.get_name(), predicate.get_arity())
+    print("\nFluent predicates:")
+    for predicate in formalism_domain.get_fluent_predicates():
+        print(predicate.get_name(), predicate.get_arity())
+    print("\nDerived predicates:")
+    for predicate in formalism_domain.get_derived_predicates():
+        print(predicate.get_name(), predicate.get_arity())
+
+    # A similar separation exists for functions
+    print("\nStatic functions:")
+    for function in formalism_domain.get_static_functions():
+        print(function.get_name(), function.get_arity())
+    print("\nFluent functions:")
+    for function in formalism_domain.get_fluent_functions():
+        print(function.get_name(), function.get_arity())
+    # There is at most one auxiliary function, i.e., "total-cost" whose value is not stored in a state because it does not affect transitions.
+    print("\nAuxiliary function:")
+    print(formalism_domain.get_auxiliary_function())
+
+    print("Constants:")
+    for object in formalism_domain.get_constants():
+        print(object.get_name())
+
+    ### 2. Task: a task is expected to be defined over the previously parsed domain.
+
+    planning_task = parser.parse_task(task_filepath, parser_options)
+    formalism_task = planning_task.get_task()
+
+    # TODO: Thiscurrently fails because repository returns index and not views with the repo attached where it was found...
+    assert(formalism_task.get_domain() == formalism_domain)
+
+    # The separation from above induces a parallel separation for atom, literal, ground atom, and ground literal.
+    print("\nStatic initial ground atoms:")
+    for ground_atom in formalism_task.get_static_atoms():
+        print(ground_atom.get_predicate(), ground_atom.get_objects())
+    print("\nFluent initial ground atoms:")
+    for ground_atom in formalism_task.get_fluent_atoms():
+        print(ground_atom.get_predicate(), ground_atom.get_objects())
+
+
+
+if __name__ == "__main__":
+    main()

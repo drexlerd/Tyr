@@ -7,7 +7,7 @@ before exploring this example.
 
 Example usage (run from the repository root):
 
-    python3 python/examples/gbfs_lazy.py \
+    python3 python/examples/planning/gbfs_lazy.py \
         -d data/gripper/domain.pddl \
         -p data/gripper/test_problem.pddl
 
