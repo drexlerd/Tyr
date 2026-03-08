@@ -165,7 +165,7 @@ static auto create_mutex_groups(View<IndexList<fp::GroundAtom<f::FluentTag>>, fp
     for (const auto atom : atoms)
     {
         auto group = std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, fp::Repository>> {};
-        group.push_back(make_view(merge_p2p(atom, context).first.get_index(), context.destination));
+        group.push_back(merge_p2p(atom, context).first);
         mutex_groups.push_back(group);
     }
 
@@ -237,7 +237,7 @@ static auto create_task(View<Index<fp::Task>, fp::Repository> task,
 
     canonicalize(fdr_task);
 
-    return std::make_pair(make_view(repository.get_or_create(fdr_task, builder.get_buffer()).first.get_index(), repository), std::move(fdr_context));
+    return std::make_pair(repository.get_or_create(fdr_task, builder.get_buffer()).first, std::move(fdr_context));
 }
 
 static auto create_fdr_task(DomainPtr domain,
@@ -331,15 +331,13 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
 
                 const auto action = make_view(action_index, grounder_context.destination);
 
-                const auto ground_action_index = fp::ground(action,
-                                                            grounder_context,
-                                                            lifted_task.get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
-                                                            fluent_assign,
-                                                            iter_workspace,
-                                                            lifted_task.get_fdr_context())
-                                                     .first.get_index();
-
-                const auto ground_action = make_view(ground_action_index, grounder_context.destination);
+                const auto ground_action = fp::ground(action,
+                                                      grounder_context,
+                                                      lifted_task.get_parameter_domains_per_cond_effect_per_action()[action_index.get_value()],
+                                                      fluent_assign,
+                                                      iter_workspace,
+                                                      lifted_task.get_fdr_context())
+                                               .first;
 
                 assert(is_statically_applicable(ground_action, static_atoms_bitset));
 
@@ -392,9 +390,7 @@ GroundTaskPtr ground_task(LiftedTask& lifted_task)
 
                 const auto axiom = make_view(axiom_index, grounder_context.destination);
 
-                const auto ground_axiom_index = fp::ground(axiom, grounder_context, lifted_task.get_fdr_context()).first.get_index();
-
-                const auto ground_axiom = make_view(ground_axiom_index, grounder_context.destination);
+                const auto ground_axiom = fp::ground(axiom, grounder_context, lifted_task.get_fdr_context()).first;
 
                 assert(is_statically_applicable(ground_axiom, static_atoms_bitset));
 

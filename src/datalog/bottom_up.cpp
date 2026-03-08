@@ -92,8 +92,8 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     if (is_applicable(in.cws_rule().get_nullary_condition(), in.fact_sets())
         && is_valid_binding(in.cws_rule().get_rule().get_body(), in.fact_sets(), out.const_ground_context_program()))
     {
-        const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
-        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
+        const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first.get_index();
+        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first.get_index();
 
         out.heads().insert(worker_head_index);
 
@@ -111,7 +111,7 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
 
 [[maybe_unused]] static bool ensure_applicability(View<Index<fd::Rule>, fd::Repository> rule, fd::GrounderContext& context, const FactSets& fact_sets)
 {
-    const auto ground_rule = make_view(ground(rule, context).first, context.destination);
+    const auto ground_rule = ground(rule, context).first;
 
     const auto applicable = is_applicable(ground_rule, fact_sets);
 
@@ -149,7 +149,7 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
 
     ++out.statistics().num_generated_rules;
 
-    const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
+    const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first.get_index();
     if (in.fact_sets().fluent_sets.predicate.contains(program_head_index))
         return;  ///< optimal cost proven
 
@@ -170,7 +170,7 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
 
         // std::cout << rctx.cws_rule.rule << " " << rctx.out.ground_context_solve().binding << std::endl;
 
-        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
+        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first.get_index();
 
         // std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iter).first, rctx.ground_context_iter.destination)
         //           << std::endl;
@@ -191,7 +191,8 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
     {
         ++out.statistics().num_pending_rules;
 
-        out.pending_rules().emplace(fd::ground(out.ground_context_solve().binding, out.ground_context_solve()).first, std::move(applicability_check));
+        out.pending_rules().emplace(fd::ground(out.ground_context_solve().binding, out.ground_context_solve()).first.get_index(),
+                                    std::move(applicability_check));
     }
 }
 
@@ -295,7 +296,7 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             out.ground_context_solve().binding = make_view(it->first, out.ground_context_solve().destination).get_objects().get_data();
 
             assert(out.ground_context_solve().binding == out.ground_context_iteration().binding);
-            const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
+            const auto program_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first.get_index();
 
             if (in.fact_sets().fluent_sets.predicate.contains(program_head_index))  ///< optimal cost proven
             {
@@ -305,7 +306,7 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             {
                 assert(ensure_applicability(in.cws_rule().get_rule(), out.ground_context_iteration(), in.fact_sets()));
 
-                const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
+                const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first.get_index();
 
                 out.heads().insert(worker_head_index);
 
@@ -432,7 +433,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     for (const auto worker_head : worker.iteration.heads)
                     {
                         // Merge head from delta into the program
-                        const auto program_head = fd::merge_d2d(make_view(worker_head, worker.solve.stage_repository), merge_context).first;
+                        const auto program_head = fd::merge_d2d(make_view(worker_head, worker.solve.stage_repository), merge_context).first.get_index();
 
                         // std::cout << make_view(program_head, ws.repository) << std::endl;
 

@@ -57,7 +57,7 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     auto& atom = *atom_ptr;
     atom.clear();
 
-    const auto applicability_predicate = make_view(create_applicability_predicate(action, context).first, context.destination);
+    const auto applicability_predicate = create_applicability_predicate(action, context).first;
 
     atom.predicate = applicability_predicate.get_index();
     for (uint_t i = 0; i < applicability_predicate.get_arity(); ++i)
@@ -67,9 +67,9 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> task,
-                                         ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions,
-                                         fd::Repository& repository)
+static auto create_program(View<Index<fp::Task>, fp::Repository> task,
+                           ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions,
+                           fd::Repository& repository)
 {
     auto builder = fd::Builder();
     auto context = fp::MergeDatalogContext(builder, repository);
@@ -78,42 +78,42 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
     program.clear();
 
     for (const auto predicate : task.get_domain().get_predicates<f::StaticTag>())
-        program.static_predicates.push_back(fp::merge_p2d(predicate, context).first);
+        program.static_predicates.push_back(fp::merge_p2d(predicate, context).first.get_index());
 
     for (const auto predicate : task.get_domain().get_predicates<f::FluentTag>())
-        program.fluent_predicates.push_back(fp::merge_p2d(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d(predicate, context).first.get_index());
 
     for (const auto predicate : task.get_domain().get_predicates<f::DerivedTag>())
-        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first.get_index());
 
     for (const auto predicate : task.get_derived_predicates())
-        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(predicate, context).first.get_index());
 
     for (const auto function : task.get_domain().get_functions<f::StaticTag>())
-        program.static_functions.push_back(fp::merge_p2d(function, context).first);
+        program.static_functions.push_back(fp::merge_p2d(function, context).first.get_index());
 
     for (const auto function : task.get_domain().get_functions<f::FluentTag>())
-        program.fluent_functions.push_back(fp::merge_p2d(function, context).first);
+        program.fluent_functions.push_back(fp::merge_p2d(function, context).first.get_index());
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_domain().get_constants())
-        program.objects.push_back(fp::merge_p2d(object, context).first);
+        program.objects.push_back(fp::merge_p2d(object, context).first.get_index());
     for (const auto object : task.get_objects())
-        program.objects.push_back(fp::merge_p2d(object, context).first);
+        program.objects.push_back(fp::merge_p2d(object, context).first.get_index());
 
     for (const auto atom : task.get_atoms<f::StaticTag>())
-        program.static_atoms.push_back(fp::merge_p2d(atom, context).first);
+        program.static_atoms.push_back(fp::merge_p2d(atom, context).first.get_index());
 
     for (const auto atom : task.get_atoms<f::FluentTag>())
-        program.fluent_atoms.push_back(fp::merge_p2d(atom, context).first);
+        program.fluent_atoms.push_back(fp::merge_p2d(atom, context).first.get_index());
 
     for (const auto fterm_value : task.get_fterm_values<f::StaticTag>())
-        program.static_fterm_values.push_back(fp::merge_p2d(fterm_value, context).first);
+        program.static_fterm_values.push_back(fp::merge_p2d(fterm_value, context).first.get_index());
 
     for (const auto action : task.get_domain().get_actions())
     {
-        const auto applicability_predicate = create_applicability_predicate(action, context).first;
+        const auto applicability_predicate = create_applicability_predicate(action, context).first.get_index();
 
         [[maybe_unused]] const auto [it, inserted] = predicate_to_actions.emplace(applicability_predicate, action.get_index());
         assert(inserted);
@@ -129,34 +129,34 @@ static Index<fd::Program> create_program(View<Index<fp::Task>, fp::Repository> t
         conj_cond.clear();
 
         for (const auto variable : action.get_variables())
-            rule.variables.push_back(fp::merge_p2d(variable, context).first);
+            rule.variables.push_back(fp::merge_p2d(variable, context).first.get_index());
 
         for (const auto variable : action.get_condition().get_variables())
-            conj_cond.variables.push_back(fp::merge_p2d(variable, context).first);
+            conj_cond.variables.push_back(fp::merge_p2d(variable, context).first.get_index());
 
         for (const auto literal : action.get_condition().get_literals<f::StaticTag>())
-            conj_cond.static_literals.push_back(fp::merge_p2d(literal, context).first);
+            conj_cond.static_literals.push_back(fp::merge_p2d(literal, context).first.get_index());
 
         for (const auto literal : action.get_condition().get_literals<f::FluentTag>())
-            conj_cond.fluent_literals.push_back(fp::merge_p2d(literal, context).first);
+            conj_cond.fluent_literals.push_back(fp::merge_p2d(literal, context).first.get_index());
 
         for (const auto literal : action.get_condition().get_literals<f::DerivedTag>())
-            conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(literal, context).first);
+            conj_cond.fluent_literals.push_back(fp::merge_p2d<f::DerivedTag, f::FluentTag>(literal, context).first.get_index());
 
         for (const auto numeric_constraint : action.get_condition().get_numeric_constraints())
             conj_cond.numeric_constraints.push_back(fp::merge_p2d(numeric_constraint, context));
 
         canonicalize(conj_cond);
-        const auto new_conj_cond = repository.get_or_create(conj_cond, builder.get_buffer()).first;
+        const auto new_conj_cond = repository.get_or_create(conj_cond, builder.get_buffer()).first.get_index();
 
         rule.body = new_conj_cond;
 
-        const auto applicability_atom = create_applicability_atom(action, context).first;
+        const auto applicability_atom = create_applicability_atom(action, context).first.get_index();
 
         rule.head = applicability_atom;
 
         canonicalize(rule);
-        const auto new_rule = repository.get_or_create(rule, builder.get_buffer()).first;
+        const auto new_rule = repository.get_or_create(rule, builder.get_buffer()).first.get_index();
 
         program.rules.push_back(new_rule);
     }
@@ -169,8 +169,8 @@ static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, A
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, mapping, *repository);
-    auto domains = analysis::compute_variable_domains(make_view(program, *repository));
-    auto strata = analysis::compute_rule_stratification(make_view(program, *repository));
+    auto domains = analysis::compute_variable_domains(program);
+    auto strata = analysis::compute_rule_stratification(program);
     auto listeners = analysis::compute_listeners(strata, *repository);
 
     return datalog::ProgramContext(program, std::move(repository), std::move(domains), std::move(strata), std::move(listeners));

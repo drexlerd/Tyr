@@ -249,10 +249,10 @@ inline float_t evaluate_into_buffer(View<Index<formalism::datalog::FunctionTerm<
     if (!program_ground_fterm)
         return std::numeric_limits<float_t>::quiet_NaN();
 
-    if (!fact_sets.template get<T>().function.contains(program_ground_fterm.value()))
+    if (!fact_sets.template get<T>().function.contains(program_ground_fterm->get_index()))
         return std::numeric_limits<float_t>::quiet_NaN();
 
-    return fact_sets.template get<T>().function[program_ground_fterm.value()];
+    return fact_sets.template get<T>().function[program_ground_fterm->get_index()];
 }
 
 inline float_t evaluate_into_buffer(View<Index<formalism::datalog::FunctionTerm<formalism::AuxiliaryTag>>, formalism::datalog::Repository> element,

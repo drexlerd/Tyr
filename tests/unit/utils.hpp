@@ -122,7 +122,7 @@ inline IndexList<formalism::Predicate<formalism::StaticTag>> add_static_predicat
         predicate_builder.name = name;
         predicate_builder.arity = arity;
         canonicalize(predicate_builder);
-        result.push_back(repository.get_or_create(predicate_builder, buffer).first);
+        result.push_back(repository.get_or_create(predicate_builder, buffer).first.get_index());
     }
 
     return result;
@@ -169,7 +169,7 @@ inline IndexList<formalism::Predicate<formalism::FluentTag>> add_fluent_predicat
         predicate_builder.name = name;
         predicate_builder.arity = arity;
         canonicalize(predicate_builder);
-        result.push_back(repository.get_or_create(predicate_builder, buffer).first);
+        result.push_back(repository.get_or_create(predicate_builder, buffer).first.get_index());
     }
 
     return result;
@@ -210,7 +210,7 @@ inline IndexList<formalism::Object> add_objects(formalism::datalog::Repository& 
     {
         object_builder.name = name;
         canonicalize(object_builder);
-        result.push_back(repository.get_or_create(object_builder, buffer).first);
+        result.push_back(repository.get_or_create(object_builder, buffer).first.get_index());
     }
 
     return result;
@@ -270,7 +270,7 @@ inline IndexList<formalism::datalog::GroundAtom<formalism::StaticTag>> add_stati
                 ground_atom_builder.objects.push_back(convert(term));
 
             canonicalize(ground_atom_builder);
-            result.push_back(repository.get_or_create(ground_atom_builder, buffer).first);
+            result.push_back(repository.get_or_create(ground_atom_builder, buffer).first.get_index());
         }
     }
 
@@ -304,7 +304,7 @@ inline IndexList<formalism::datalog::GroundAtom<formalism::FluentTag>> add_fluen
                 ground_atom_builder.objects.push_back(convert(term));
 
             canonicalize(ground_atom_builder);
-            result.push_back(repository.get_or_create(ground_atom_builder, buffer).first);
+            result.push_back(repository.get_or_create(ground_atom_builder, buffer).first.get_index());
         }
     }
     return result;
@@ -335,7 +335,7 @@ inline Index<formalism::datalog::Rule> add_rule_move(formalism::datalog::Reposit
     {
         variable_builder.name = name;
         canonicalize(variable_builder);
-        const auto variable = repository.get_or_create(variable_builder, buffer).first;
+        const auto variable = repository.get_or_create(variable_builder, buffer).first.get_index();
         conjunctive_condition_builder.variables.push_back(variable);
     }
 
@@ -354,11 +354,11 @@ inline Index<formalism::datalog::Rule> add_rule_move(formalism::datalog::Reposit
                 static_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             canonicalize(static_atom_builder);
-            const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first;
+            const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first.get_index();
             static_literal_builder.atom = atom_i;
             static_literal_builder.polarity = polarity;
             canonicalize(static_literal_builder);
-            const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first;
+            const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first.get_index();
             conjunctive_condition_builder.static_literals.push_back(literal_i);
         }
     }
@@ -377,17 +377,17 @@ inline Index<formalism::datalog::Rule> add_rule_move(formalism::datalog::Reposit
                 fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             canonicalize(fluent_atom_builder);
-            const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first;
+            const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first.get_index();
             fluent_literal_builder.atom = atom_i;
             fluent_literal_builder.polarity = polarity;
             canonicalize(fluent_literal_builder);
-            const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first;
+            const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first.get_index();
             conjunctive_condition_builder.fluent_literals.push_back(literal_i);
         }
     }
 
     canonicalize(conjunctive_condition_builder);
-    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
+    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first.get_index();
     rule_builder.body = conjunctive_condition;
 
     fluent_atom_builder.predicate = convert(GripperFluentPredicate::Move);
@@ -395,11 +395,11 @@ inline Index<formalism::datalog::Rule> add_rule_move(formalism::datalog::Reposit
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(0)));
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
     canonicalize(fluent_atom_builder);
-    const auto head = repository.get_or_create(fluent_atom_builder, buffer).first;
+    const auto head = repository.get_or_create(fluent_atom_builder, buffer).first.get_index();
     rule_builder.head = head;
 
     canonicalize(rule_builder);
-    return repository.get_or_create(rule_builder, buffer).first;
+    return repository.get_or_create(rule_builder, buffer).first.get_index();
 }
 
 /*
@@ -428,7 +428,7 @@ inline Index<formalism::datalog::Rule> add_rule_pick(formalism::datalog::Reposit
     {
         variable_builder.name = name;
         canonicalize(variable_builder);
-        const auto variable = repository.get_or_create(variable_builder, buffer).first;
+        const auto variable = repository.get_or_create(variable_builder, buffer).first.get_index();
         conjunctive_condition_builder.variables.push_back(variable);
     }
 
@@ -449,11 +449,11 @@ inline Index<formalism::datalog::Rule> add_rule_pick(formalism::datalog::Reposit
                 static_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             canonicalize(static_atom_builder);
-            const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first;
+            const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first.get_index();
             static_literal_builder.atom = atom_i;
             static_literal_builder.polarity = polarity;
             canonicalize(static_literal_builder);
-            const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first;
+            const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first.get_index();
             conjunctive_condition_builder.static_literals.push_back(literal_i);
         }
     }
@@ -474,17 +474,17 @@ inline Index<formalism::datalog::Rule> add_rule_pick(formalism::datalog::Reposit
                 fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             canonicalize(fluent_atom_builder);
-            const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first;
+            const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first.get_index();
             fluent_literal_builder.atom = atom_i;
             fluent_literal_builder.polarity = polarity;
             canonicalize(fluent_literal_builder);
-            const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first;
+            const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first.get_index();
             conjunctive_condition_builder.fluent_literals.push_back(literal_i);
         }
     }
 
     canonicalize(conjunctive_condition_builder);
-    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
+    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first.get_index();
     rule_builder.body = conjunctive_condition;
 
     fluent_atom_builder.predicate = convert(GripperFluentPredicate::Pick);
@@ -493,11 +493,11 @@ inline Index<formalism::datalog::Rule> add_rule_pick(formalism::datalog::Reposit
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(2)));
     canonicalize(fluent_atom_builder);
-    const auto head = repository.get_or_create(fluent_atom_builder, buffer).first;
+    const auto head = repository.get_or_create(fluent_atom_builder, buffer).first.get_index();
     rule_builder.head = head;
 
     canonicalize(rule_builder);
-    return repository.get_or_create(rule_builder, buffer).first;
+    return repository.get_or_create(rule_builder, buffer).first.get_index();
 }
 
 /*
@@ -526,7 +526,7 @@ inline Index<formalism::datalog::Rule> add_rule_drop(formalism::datalog::Reposit
     {
         variable_builder.name = name;
         canonicalize(variable_builder);
-        const auto variable = repository.get_or_create(variable_builder, buffer).first;
+        const auto variable = repository.get_or_create(variable_builder, buffer).first.get_index();
         conjunctive_condition_builder.variables.push_back(variable);
     }
 
@@ -547,11 +547,11 @@ inline Index<formalism::datalog::Rule> add_rule_drop(formalism::datalog::Reposit
                 static_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             canonicalize(static_atom_builder);
-            const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first;
+            const auto atom_i = repository.get_or_create(static_atom_builder, buffer).first.get_index();
             static_literal_builder.atom = atom_i;
             static_literal_builder.polarity = polarity;
             canonicalize(static_literal_builder);
-            const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first;
+            const auto literal_i = repository.get_or_create(static_literal_builder, buffer).first.get_index();
             conjunctive_condition_builder.static_literals.push_back(literal_i);
         }
     }
@@ -571,17 +571,17 @@ inline Index<formalism::datalog::Rule> add_rule_drop(formalism::datalog::Reposit
                 fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(param)));
             }
             canonicalize(fluent_atom_builder);
-            const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first;
+            const auto atom_i = repository.get_or_create(fluent_atom_builder, buffer).first.get_index();
             fluent_literal_builder.atom = atom_i;
             fluent_literal_builder.polarity = polarity;
             canonicalize(fluent_literal_builder);
-            const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first;
+            const auto literal_i = repository.get_or_create(fluent_literal_builder, buffer).first.get_index();
             conjunctive_condition_builder.fluent_literals.push_back(literal_i);
         }
     }
 
     canonicalize(conjunctive_condition_builder);
-    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first;
+    const auto conjunctive_condition = repository.get_or_create(conjunctive_condition_builder, buffer).first.get_index();
     rule_builder.body = conjunctive_condition;
 
     fluent_atom_builder.predicate = convert(GripperFluentPredicate::Drop);
@@ -590,11 +590,11 @@ inline Index<formalism::datalog::Rule> add_rule_drop(formalism::datalog::Reposit
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(1)));
     fluent_atom_builder.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(2)));
     canonicalize(fluent_atom_builder);
-    const auto head = repository.get_or_create(fluent_atom_builder, buffer).first;
+    const auto head = repository.get_or_create(fluent_atom_builder, buffer).first.get_index();
     rule_builder.head = head;
 
     canonicalize(rule_builder);
-    return repository.get_or_create(rule_builder, buffer).first;
+    return repository.get_or_create(rule_builder, buffer).first.get_index();
 }
 
 enum class GripperRule : uint_t
@@ -628,7 +628,7 @@ inline std::pair<View<Index<formalism::datalog::Program>, formalism::datalog::Re
     auto program = repository.get_or_create(program_builder, buffer).first;
 
     // We cannot return view because repository hasnt find a stable location yet.
-    return { make_view(program, *repository_ptr), repository_ptr };
+    return { program, repository_ptr };
 }
 }
 

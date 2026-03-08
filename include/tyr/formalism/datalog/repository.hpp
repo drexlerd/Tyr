@@ -182,21 +182,21 @@ public:
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
-    std::optional<Index<T>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
+    std::optional<View<Index<T>, Repository>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto& container = entry.slot.container;
         assert(h == container.hash(builder) && "The given hash does not match container internal's hash.");
 
         if (auto ptr = container.find_with_hash(builder, h))
-            return ptr->index;
+            return View<Index<T>, Repository>(ptr->index, *this);
 
         return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
     }
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
-    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
+    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto& container = entry.slot.container;
@@ -207,7 +207,7 @@ public:
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
-    std::optional<Index<T>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
+    std::optional<View<Index<T>, Repository>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto g = builder.index.group;
@@ -222,14 +222,14 @@ public:
 
         const auto& container = it->second.container;
         if (auto ptr = container.find_with_hash(builder, h))
-            return ptr->index;
+            return View<Index<T>, Repository>(ptr->index, *this);
 
         return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
     }
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
-    std::optional<Index<T>> find(const Data<T>& builder) const noexcept
+    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const noexcept
     {
         const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         const auto g = builder.index.group;
@@ -250,7 +250,7 @@ public:
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)
-    std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
+    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& entry = std::get<RepositoryEntry<T>>(m_repository);
         auto& slot = entry.slot;
@@ -266,12 +266,12 @@ public:
 
         const auto [ptr, success] = container.insert_with_hash(h, builder, buf, m_arena);
 
-        return { ptr->index, success };
+        return { View<Index<T>, Repository>(ptr->index, *this), success };
     }
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
-    std::pair<Index<T>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
+    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
     {
         auto& slot = get_or_create_slot(builder.index);
         auto& container = slot.container;
@@ -285,7 +285,7 @@ public:
         builder.index.value = slot.parent_size + container.size();
 
         const auto [ptr, success] = container.insert_with_hash(h, builder, buf, m_arena);
-        return { ptr->index, success };
+        return { View<Index<T>, Repository>(ptr->index, *this), success };
     }
 
     /// @brief Access the element with the given index.

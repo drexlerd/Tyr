@@ -329,7 +329,7 @@ private:
             const auto program_ground_atom = program_repository.find(ground_atom);
             assert(program_ground_atom);  // must exist
 
-            const auto program_ground_atom_cost = fetch_atom_cost(*program_ground_atom, or_annot);
+            const auto program_ground_atom_cost = fetch_atom_cost(program_ground_atom->get_index(), or_annot);
             assert(program_ground_atom_cost != std::numeric_limits<uint_t>::max());
 
             body_cost = agg(body_cost, program_ground_atom_cost);
@@ -339,18 +339,19 @@ private:
 
             // TODO: we could get rid of grounding literals by having strictly positive rules
             ground_literal.clear();
-            ground_literal.atom = *program_ground_atom;
+            ground_literal.atom = program_ground_atom->get_index();
             ground_literal.polarity = literal.get_polarity();
 
             formalism::datalog::canonicalize(ground_literal);
-            ground_conj_cond.fluent_literals.push_back(delta_context.destination.get_or_create(ground_literal, delta_context.builder.get_buffer()).first);
+            ground_conj_cond.fluent_literals.push_back(
+                delta_context.destination.get_or_create(ground_literal, delta_context.builder.get_buffer()).first.get_index());
         }
         const auto witness_cost = body_cost + rule_cost;
 
         formalism::datalog::canonicalize(ground_conj_cond);
-        const auto new_ground_conj_cond = delta_context.destination.get_or_create(ground_conj_cond, delta_context.builder.get_buffer()).first;
+        const auto new_ground_conj_cond = delta_context.destination.get_or_create(ground_conj_cond, delta_context.builder.get_buffer()).first.get_index();
 
-        const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first;
+        const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first.get_index();
 
         return Witness(delta_context.destination, rule.get_index(), delta_binding, new_ground_conj_cond, witness_cost);
     }

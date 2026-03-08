@@ -41,71 +41,71 @@ struct MergeContext
 
 // Common
 
-std::pair<Index<Variable>, bool> merge_d2d(View<Index<Variable>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Variable>, Repository> element, MergeContext& context);
 
-std::pair<Index<Object>, bool> merge_d2d(View<Index<Object>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Object>, Repository> element, MergeContext& context);
 
-std::pair<Index<Binding>, bool> merge_d2d(View<Index<Binding>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Binding>, Repository> element, MergeContext& context);
 
-Data<Term> merge_d2d(View<Data<Term>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Data<Term>, Repository> element, MergeContext& context);
 
 // Propositional
 
 template<FactKind T>
-std::pair<Index<Predicate<T>>, bool> merge_d2d(View<Index<Predicate<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Predicate<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<Atom<T>>, bool> merge_d2d(View<Index<Atom<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Atom<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<GroundAtom<T>>, bool> merge_d2d(View<Index<GroundAtom<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<GroundAtom<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<Literal<T>>, bool> merge_d2d(View<Index<Literal<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Literal<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<GroundLiteral<T>>, bool> merge_d2d(View<Index<GroundLiteral<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<GroundLiteral<T>>, Repository> element, MergeContext& context);
 
 // Numeric
 
 template<FactKind T>
-std::pair<Index<Function<T>>, bool> merge_d2d(View<Index<Function<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Function<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<FunctionTerm<T>>, bool> merge_d2d(View<Index<FunctionTerm<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<FunctionTerm<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<GroundFunctionTerm<T>>, bool> merge_d2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<Index<GroundFunctionTermValue<T>>, bool> merge_d2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeContext& context);
 
-Data<FunctionExpression> merge_d2d(View<Data<FunctionExpression>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Data<FunctionExpression>, Repository> element, MergeContext& context);
 
-Data<GroundFunctionExpression> merge_d2d(View<Data<GroundFunctionExpression>, Repository> element, MergeContext& context);
-
-template<OpKind O, typename T>
-std::pair<Index<UnaryOperator<O, T>>, bool> merge_d2d(View<Index<UnaryOperator<O, T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Data<GroundFunctionExpression>, Repository> element, MergeContext& context);
 
 template<OpKind O, typename T>
-std::pair<Index<BinaryOperator<O, T>>, bool> merge_d2d(View<Index<BinaryOperator<O, T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<UnaryOperator<O, T>>, Repository> element, MergeContext& context);
 
 template<OpKind O, typename T>
-std::pair<Index<MultiOperator<O, T>>, bool> merge_d2d(View<Index<MultiOperator<O, T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<BinaryOperator<O, T>>, Repository> element, MergeContext& context);
+
+template<OpKind O, typename T>
+auto merge_d2d(View<Index<MultiOperator<O, T>>, Repository> element, MergeContext& context);
 
 template<typename T>
-Data<ArithmeticOperator<T>> merge_d2d(View<Data<ArithmeticOperator<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Data<ArithmeticOperator<T>>, Repository> element, MergeContext& context);
 
 template<typename T>
-Data<BooleanOperator<T>> merge_d2d(View<Data<BooleanOperator<T>>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Data<BooleanOperator<T>>, Repository> element, MergeContext& context);
 
-std::pair<Index<ConjunctiveCondition>, bool> merge_d2d(View<Index<ConjunctiveCondition>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<ConjunctiveCondition>, Repository> element, MergeContext& context);
 
-std::pair<Index<GroundConjunctiveCondition>, bool> merge_d2d(View<Index<GroundConjunctiveCondition>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<GroundConjunctiveCondition>, Repository> element, MergeContext& context);
 
-std::pair<Index<Rule>, bool> merge_d2d(View<Index<Rule>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<Rule>, Repository> element, MergeContext& context);
 
-std::pair<Index<GroundRule>, bool> merge_d2d(View<Index<GroundRule>, Repository> element, MergeContext& context);
+auto merge_d2d(View<Index<GroundRule>, Repository> element, MergeContext& context);
 
 /**
  * Implementations
@@ -113,7 +113,7 @@ std::pair<Index<GroundRule>, bool> merge_d2d(View<Index<GroundRule>, Repository>
 
 // Common
 
-inline std::pair<Index<Variable>, bool> merge_d2d(View<Index<Variable>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Variable>, Repository> element, MergeContext& context)
 {
     auto variable_ptr = context.builder.template get_builder<Variable>();
     auto& variable = *variable_ptr;
@@ -125,7 +125,7 @@ inline std::pair<Index<Variable>, bool> merge_d2d(View<Index<Variable>, Reposito
     return context.destination.get_or_create(variable, context.builder.get_buffer());
 }
 
-inline std::pair<Index<Object>, bool> merge_d2d(View<Index<Object>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Object>, Repository> element, MergeContext& context)
 {
     auto object_ptr = context.builder.template get_builder<Object>();
     auto& object = *object_ptr;
@@ -137,7 +137,7 @@ inline std::pair<Index<Object>, bool> merge_d2d(View<Index<Object>, Repository> 
     return context.destination.get_or_create(object, context.builder.get_buffer());
 }
 
-inline std::pair<Index<Binding>, bool> merge_d2d(View<Index<Binding>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Binding>, Repository> element, MergeContext& context)
 {
     auto binding_ptr = context.builder.template get_builder<Binding>();
     auto& binding = *binding_ptr;
@@ -149,7 +149,7 @@ inline std::pair<Index<Binding>, bool> merge_d2d(View<Index<Binding>, Repository
     return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
-inline Data<Term> merge_d2d(View<Data<Term>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Data<Term>, Repository> element, MergeContext& context)
 {
     return visit(
         [&](auto&& arg)
@@ -159,7 +159,7 @@ inline Data<Term> merge_d2d(View<Data<Term>, Repository> element, MergeContext& 
             if constexpr (std::is_same_v<Alternative, ParameterIndex>)
                 return Data<Term>(arg);
             else if constexpr (std::is_same_v<Alternative, View<Index<Object>, Repository>>)
-                return Data<Term>(merge_d2d(arg, context).first);
+                return Data<Term>(merge_d2d(arg, context).first.get_index());
             else
                 static_assert(dependent_false<Alternative>::value, "Missing case");
         },
@@ -169,7 +169,7 @@ inline Data<Term> merge_d2d(View<Data<Term>, Repository> element, MergeContext& 
 // Propositional
 
 template<FactKind T>
-inline std::pair<Index<Predicate<T>>, bool> merge_d2d(View<Index<Predicate<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Predicate<T>>, Repository> element, MergeContext& context)
 {
     auto predicate_ptr = context.builder.template get_builder<Predicate<T>>();
     auto& predicate = *predicate_ptr;
@@ -183,7 +183,7 @@ inline std::pair<Index<Predicate<T>>, bool> merge_d2d(View<Index<Predicate<T>>, 
 }
 
 template<FactKind T>
-inline std::pair<Index<Atom<T>>, bool> merge_d2d(View<Index<Atom<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Atom<T>>, Repository> element, MergeContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<Atom<T>>();
     auto& atom = *atom_ptr;
@@ -198,7 +198,7 @@ inline std::pair<Index<Atom<T>>, bool> merge_d2d(View<Index<Atom<T>>, Repository
 }
 
 template<FactKind T>
-inline std::pair<Index<GroundAtom<T>>, bool> merge_d2d(View<Index<GroundAtom<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<GroundAtom<T>>, Repository> element, MergeContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T>>();
     auto& atom = *atom_ptr;
@@ -212,28 +212,28 @@ inline std::pair<Index<GroundAtom<T>>, bool> merge_d2d(View<Index<GroundAtom<T>>
 }
 
 template<FactKind T>
-inline std::pair<Index<Literal<T>>, bool> merge_d2d(View<Index<Literal<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Literal<T>>, Repository> element, MergeContext& context)
 {
     auto literal_ptr = context.builder.template get_builder<Literal<T>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge_d2d(element.get_atom(), context).first;
+    literal.atom = merge_d2d(element.get_atom(), context).first.get_index();
 
     canonicalize(literal);
     return context.destination.get_or_create(literal, context.builder.get_buffer());
 }
 
 template<FactKind T>
-inline std::pair<Index<GroundLiteral<T>>, bool> merge_d2d(View<Index<GroundLiteral<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<GroundLiteral<T>>, Repository> element, MergeContext& context)
 {
     auto literal_ptr = context.builder.template get_builder<GroundLiteral<T>>();
     auto& literal = *literal_ptr;
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge_d2d(element.get_atom(), context).first;
+    literal.atom = merge_d2d(element.get_atom(), context).first.get_index();
 
     canonicalize(literal);
     return context.destination.get_or_create(literal, context.builder.get_buffer());
@@ -242,7 +242,7 @@ inline std::pair<Index<GroundLiteral<T>>, bool> merge_d2d(View<Index<GroundLiter
 // Numeric
 
 template<FactKind T>
-inline std::pair<Index<Function<T>>, bool> merge_d2d(View<Index<Function<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Function<T>>, Repository> element, MergeContext& context)
 {
     auto function_ptr = context.builder.template get_builder<Function<T>>();
     auto& function = *function_ptr;
@@ -256,7 +256,7 @@ inline std::pair<Index<Function<T>>, bool> merge_d2d(View<Index<Function<T>>, Re
 }
 
 template<FactKind T>
-inline std::pair<Index<FunctionTerm<T>>, bool> merge_d2d(View<Index<FunctionTerm<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<FunctionTerm<T>>, Repository> element, MergeContext& context)
 {
     auto fterm_ptr = context.builder.template get_builder<FunctionTerm<T>>();
     auto& fterm = *fterm_ptr;
@@ -271,7 +271,7 @@ inline std::pair<Index<FunctionTerm<T>>, bool> merge_d2d(View<Index<FunctionTerm
 }
 
 template<FactKind T>
-inline std::pair<Index<GroundFunctionTerm<T>>, bool> merge_d2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<GroundFunctionTerm<T>>, Repository> element, MergeContext& context)
 {
     auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
     auto& fterm = *fterm_ptr;
@@ -285,20 +285,20 @@ inline std::pair<Index<GroundFunctionTerm<T>>, bool> merge_d2d(View<Index<Ground
 }
 
 template<FactKind T>
-inline std::pair<Index<GroundFunctionTermValue<T>>, bool> merge_d2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<GroundFunctionTermValue<T>>, Repository> element, MergeContext& context)
 {
     auto fterm_value_ptr = context.builder.template get_builder<GroundFunctionTermValue<T>>();
     auto& fterm_value = *fterm_value_ptr;
     fterm_value.clear();
 
-    fterm_value.fterm = merge_d2d(element.get_fterm(), context).first;
+    fterm_value.fterm = merge_d2d(element.get_fterm(), context).first.get_index();
     fterm_value.value = element.get_value();
 
     canonicalize(fterm_value);
     return context.destination.get_or_create(fterm_value, context.builder.get_buffer());
 }
 
-inline Data<FunctionExpression> merge_d2d(View<Data<FunctionExpression>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Data<FunctionExpression>, Repository> element, MergeContext& context)
 {
     return visit(
         [&](auto&& arg)
@@ -310,12 +310,12 @@ inline Data<FunctionExpression> merge_d2d(View<Data<FunctionExpression>, Reposit
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository>>)
                 return Data<FunctionExpression>(merge_d2d(arg, context));
             else
-                return Data<FunctionExpression>(merge_d2d(arg, context).first);
+                return Data<FunctionExpression>(merge_d2d(arg, context).first.get_index());
         },
         element.get_variant());
 }
 
-inline Data<GroundFunctionExpression> merge_d2d(View<Data<GroundFunctionExpression>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Data<GroundFunctionExpression>, Repository> element, MergeContext& context)
 {
     return visit(
         [&](auto&& arg)
@@ -327,13 +327,13 @@ inline Data<GroundFunctionExpression> merge_d2d(View<Data<GroundFunctionExpressi
             else if constexpr (std::is_same_v<Alternative, View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>>)
                 return Data<GroundFunctionExpression>(merge_d2d(arg, context));
             else
-                return Data<GroundFunctionExpression>(merge_d2d(arg, context).first);
+                return Data<GroundFunctionExpression>(merge_d2d(arg, context).first.get_index());
         },
         element.get_variant());
 }
 
 template<OpKind O, typename T>
-inline std::pair<Index<UnaryOperator<O, T>>, bool> merge_d2d(View<Index<UnaryOperator<O, T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<UnaryOperator<O, T>>, Repository> element, MergeContext& context)
 {
     auto unary_ptr = context.builder.template get_builder<UnaryOperator<O, T>>();
     auto& unary = *unary_ptr;
@@ -346,7 +346,7 @@ inline std::pair<Index<UnaryOperator<O, T>>, bool> merge_d2d(View<Index<UnaryOpe
 }
 
 template<OpKind O, typename T>
-inline std::pair<Index<BinaryOperator<O, T>>, bool> merge_d2d(View<Index<BinaryOperator<O, T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<BinaryOperator<O, T>>, Repository> element, MergeContext& context)
 {
     auto binary_ptr = context.builder.template get_builder<BinaryOperator<O, T>>();
     auto& binary = *binary_ptr;
@@ -360,7 +360,7 @@ inline std::pair<Index<BinaryOperator<O, T>>, bool> merge_d2d(View<Index<BinaryO
 }
 
 template<OpKind O, typename T>
-inline std::pair<Index<MultiOperator<O, T>>, bool> merge_d2d(View<Index<MultiOperator<O, T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<MultiOperator<O, T>>, Repository> element, MergeContext& context)
 {
     auto multi_ptr = context.builder.template get_builder<MultiOperator<O, T>>();
     auto& multi = *multi_ptr;
@@ -374,27 +374,27 @@ inline std::pair<Index<MultiOperator<O, T>>, bool> merge_d2d(View<Index<MultiOpe
 }
 
 template<typename T>
-inline Data<ArithmeticOperator<T>> merge_d2d(View<Data<ArithmeticOperator<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Data<ArithmeticOperator<T>>, Repository> element, MergeContext& context)
 {
-    return visit([&](auto&& arg) { return Data<ArithmeticOperator<T>>(merge_d2d(arg, context).first); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<ArithmeticOperator<T>>(merge_d2d(arg, context).first.get_index()); }, element.get_variant());
 }
 
 template<typename T>
-inline Data<BooleanOperator<T>> merge_d2d(View<Data<BooleanOperator<T>>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Data<BooleanOperator<T>>, Repository> element, MergeContext& context)
 {
-    return visit([&](auto&& arg) { return Data<BooleanOperator<T>>(merge_d2d(arg, context).first); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<BooleanOperator<T>>(merge_d2d(arg, context).first.get_index()); }, element.get_variant());
 }
 
-inline std::pair<Index<ConjunctiveCondition>, bool> merge_d2d(View<Index<ConjunctiveCondition>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<ConjunctiveCondition>, Repository> element, MergeContext& context)
 {
     auto conj_cond_ptr = context.builder.template get_builder<ConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto literal : element.template get_literals<StaticTag>())
-        conj_cond.static_literals.push_back(merge_d2d(literal, context).first);
+        conj_cond.static_literals.push_back(merge_d2d(literal, context).first.get_index());
     for (const auto literal : element.template get_literals<FluentTag>())
-        conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first);
+        conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first.get_index());
     for (const auto numeric_constraint : element.get_numeric_constraints())
         conj_cond.numeric_constraints.push_back(merge_d2d(numeric_constraint, context));
 
@@ -402,16 +402,16 @@ inline std::pair<Index<ConjunctiveCondition>, bool> merge_d2d(View<Index<Conjunc
     return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
 }
 
-inline std::pair<Index<GroundConjunctiveCondition>, bool> merge_d2d(View<Index<GroundConjunctiveCondition>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<GroundConjunctiveCondition>, Repository> element, MergeContext& context)
 {
     auto conj_cond_ptr = context.builder.template get_builder<GroundConjunctiveCondition>();
     auto& conj_cond = *conj_cond_ptr;
     conj_cond.clear();
 
     for (const auto literal : element.template get_literals<StaticTag>())
-        conj_cond.static_literals.push_back(merge_d2d(literal, context).first);
+        conj_cond.static_literals.push_back(merge_d2d(literal, context).first.get_index());
     for (const auto literal : element.template get_literals<FluentTag>())
-        conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first);
+        conj_cond.fluent_literals.push_back(merge_d2d(literal, context).first.get_index());
     for (const auto numeric_constraint : element.get_numeric_constraints())
         conj_cond.numeric_constraints.push_back(merge_d2d(numeric_constraint, context));
 
@@ -419,30 +419,30 @@ inline std::pair<Index<GroundConjunctiveCondition>, bool> merge_d2d(View<Index<G
     return context.destination.get_or_create(conj_cond, context.builder.get_buffer());
 }
 
-inline std::pair<Index<Rule>, bool> merge_d2d(View<Index<Rule>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<Rule>, Repository> element, MergeContext& context)
 {
     auto rule_ptr = context.builder.template get_builder<Rule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
     for (const auto variable : element.get_variables())
-        rule.variables.push_back(merge_d2d(variable, context).first);
-    rule.body = merge_d2d(element.get_body(), context).first;
-    rule.head = merge_d2d(element.get_head(), context).first;
+        rule.variables.push_back(merge_d2d(variable, context).first.get_index());
+    rule.body = merge_d2d(element.get_body(), context).first.get_index();
+    rule.head = merge_d2d(element.get_head(), context).first.get_index();
 
     canonicalize(rule);
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-inline std::pair<Index<GroundRule>, bool> merge_d2d(View<Index<GroundRule>, Repository> element, MergeContext& context)
+inline auto merge_d2d(View<Index<GroundRule>, Repository> element, MergeContext& context)
 {
     auto rule_ptr = context.builder.template get_builder<GroundRule>();
     auto& rule = *rule_ptr;
     rule.clear();
 
     rule.rule = element.get_rule().get_index();
-    rule.body = merge_d2d(element.get_body(), context).first;
-    rule.head = merge_d2d(element.get_head(), context).first;
+    rule.body = merge_d2d(element.get_body(), context).first.get_index();
+    rule.head = merge_d2d(element.get_head(), context).first.get_index();
 
     canonicalize(rule);
     return context.destination.get_or_create(rule, context.builder.get_buffer());

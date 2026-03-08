@@ -179,7 +179,7 @@ inline auto merge_p2d(View<Data<Term>, Repository> element, MergeDatalogContext&
             if constexpr (std::is_same_v<Alternative, ParameterIndex>)
                 return Data<Term>(arg);
             else if constexpr (std::is_same_v<Alternative, View<Index<Object>, Repository>>)
-                return Data<Term>(merge_p2d(arg, context).first);
+                return Data<Term>(merge_p2d(arg, context).first.get_index());
             else
                 static_assert(dependent_false<Alternative>::value, "Missing case");
         },
@@ -209,7 +209,7 @@ inline auto merge_p2d(View<Index<Atom<T_SRC>>, Repository> element, MergeDatalog
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.predicate = merge_p2d<T_SRC, T_DST>(element.get_predicate(), context).first;
+    atom.predicate = merge_p2d<T_SRC, T_DST>(element.get_predicate(), context).first.get_index();
     for (const auto term : element.get_terms())
         atom.terms.push_back(merge_p2d(term, context));
 
@@ -224,7 +224,7 @@ inline auto merge_p2d(View<Index<GroundAtom<T_SRC>>, Repository> element, MergeD
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.index.group = merge_p2d<T_SRC, T_DST>(element.get_predicate(), context).first;
+    atom.index.group = merge_p2d<T_SRC, T_DST>(element.get_predicate(), context).first.get_index();
     atom.objects = element.get_data().objects;
 
     canonicalize(atom);
@@ -239,7 +239,7 @@ inline auto merge_p2d(View<Index<Literal<T_SRC>>, Repository> element, MergeData
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge_p2d<T_SRC, T_DST>(element.get_atom(), context).first;
+    literal.atom = merge_p2d<T_SRC, T_DST>(element.get_atom(), context).first.get_index();
 
     canonicalize(literal);
     return context.destination.get_or_create(literal, context.builder.get_buffer());
@@ -253,7 +253,7 @@ inline auto merge_p2d(View<Index<GroundLiteral<T_SRC>>, Repository> element, Mer
     literal.clear();
 
     literal.polarity = element.get_polarity();
-    literal.atom = merge_p2d<T_SRC, T_DST>(element.get_atom(), context).first;
+    literal.atom = merge_p2d<T_SRC, T_DST>(element.get_atom(), context).first.get_index();
 
     canonicalize(literal);
     return context.destination.get_or_create(literal, context.builder.get_buffer());
@@ -336,7 +336,7 @@ inline auto merge_p2d(View<Index<GroundFunctionTermValue<T>>, Repository> elemen
     auto& fterm_value = *fterm_value_ptr;
     fterm_value.clear();
 
-    fterm_value.fterm = merge_p2d(element.get_fterm(), context).first;
+    fterm_value.fterm = merge_p2d(element.get_fterm(), context).first.get_index();
     fterm_value.value = element.get_value();
 
     canonicalize(fterm_value);
@@ -364,7 +364,7 @@ inline auto merge_p2d(View<Data<FunctionExpression>, Repository> element, MergeD
             else if constexpr (std::is_same_v<Alternative, View<Index<FunctionTerm<AuxiliaryTag>>, Repository>>)
                 throw std::logic_error("AuxiliaryTag FunctionTerm must not be merged.");
             else
-                return Data<formalism::datalog::FunctionExpression>(merge_p2d(arg, context).first);
+                return Data<formalism::datalog::FunctionExpression>(merge_p2d(arg, context).first.get_index());
         },
         element.get_variant());
 }
@@ -383,7 +383,7 @@ inline auto merge_p2d(View<Data<GroundFunctionExpression>, Repository> element, 
             else if constexpr (std::is_same_v<Alternative, View<Index<GroundFunctionTerm<AuxiliaryTag>>, Repository>>)
                 throw std::logic_error("AuxiliaryTag GroundFunctionTerm must not be merged.");
             else
-                return Data<formalism::datalog::GroundFunctionExpression>(merge_p2d(arg, context).first);
+                return Data<formalism::datalog::GroundFunctionExpression>(merge_p2d(arg, context).first.get_index());
         },
         element.get_variant());
 }
@@ -440,7 +440,8 @@ inline auto merge_p2d(View<Data<ArithmeticOperator<T>>, Repository> element, Mer
 {
     using T_DST = to_datalog_payload_t<T>;
 
-    return visit([&](auto&& arg) { return Data<formalism::datalog::ArithmeticOperator<T_DST>>(merge_p2d(arg, context).first); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<formalism::datalog::ArithmeticOperator<T_DST>>(merge_p2d(arg, context).first.get_index()); },
+                 element.get_variant());
 }
 
 template<typename T>
@@ -448,7 +449,8 @@ inline auto merge_p2d(View<Data<BooleanOperator<T>>, Repository> element, MergeD
 {
     using T_DST = to_datalog_payload_t<T>;
 
-    return visit([&](auto&& arg) { return Data<formalism::datalog::BooleanOperator<T_DST>>(merge_p2d(arg, context).first); }, element.get_variant());
+    return visit([&](auto&& arg) { return Data<formalism::datalog::BooleanOperator<T_DST>>(merge_p2d(arg, context).first.get_index()); },
+                 element.get_variant());
 }
 
 }

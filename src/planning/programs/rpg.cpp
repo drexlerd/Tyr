@@ -52,27 +52,27 @@ static auto create_cond_effect_rule(View<Index<formalism::planning::Action>, for
 
     // Action parameter may get deleted.
     for (const auto& variable : action.get_variables())
-        conj_cond.variables.push_back(merge_p2d(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first.get_index());
     for (const auto literal : action.get_condition().get_literals<formalism::StaticTag>())
-        conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
+        conj_cond.static_literals.push_back(merge_p2d(literal, context).first.get_index());
     for (const auto literal : action.get_condition().get_literals<formalism::FluentTag>())
         if (literal.get_polarity())
-            conj_cond.fluent_literals.push_back(merge_p2d(literal, context).first);
+            conj_cond.fluent_literals.push_back(merge_p2d(literal, context).first.get_index());
 
     for (const auto variable : cond_eff.get_variables())
-        conj_cond.variables.push_back(merge_p2d(variable, context).first);
+        conj_cond.variables.push_back(merge_p2d(variable, context).first.get_index());
     for (const auto literal : cond_eff.get_condition().template get_literals<formalism::StaticTag>())
-        conj_cond.static_literals.push_back(merge_p2d(literal, context).first);
+        conj_cond.static_literals.push_back(merge_p2d(literal, context).first.get_index());
     for (const auto literal : cond_eff.get_condition().template get_literals<formalism::FluentTag>())
         if (literal.get_polarity())
-            conj_cond.fluent_literals.push_back(merge_p2d(literal, context).first);
+            conj_cond.fluent_literals.push_back(merge_p2d(literal, context).first.get_index());
 
     canonicalize(conj_cond);
-    const auto new_conj_cond = make_view(context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first, context.destination);
+    const auto new_conj_cond = context.destination.get_or_create(conj_cond, context.builder.get_buffer()).first;
 
     rule.variables = new_conj_cond.get_variables().get_data();
     rule.body = new_conj_cond.get_index();
-    rule.head = merge_p2d(effect, context).first;
+    rule.head = merge_p2d(effect, context).first.get_index();
     rule.cost = 1;
 
     canonicalize(rule);
@@ -91,7 +91,7 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, fp::Re
             if (!literal.get_polarity())
                 continue;  /// ignore delete effects
 
-            const auto rule = create_cond_effect_rule(action, cond_eff, literal.get_atom(), context).first;
+            const auto rule = create_cond_effect_rule(action, cond_eff, literal.get_atom(), context).first.get_index();
 
             program.rules.push_back(rule);
             rule_to_action.emplace(rule, action.get_index());
@@ -99,8 +99,7 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, fp::Re
     }
 }
 
-static Index<fd::Program>
-create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repository& destination, RPGProgram::RuleToActionMapping& rule_to_action)
+static auto create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repository& destination, RPGProgram::RuleToActionMapping& rule_to_action)
 {
     auto builder = fd::Builder();
     auto context = fp::MergeDatalogContext(builder, destination);
@@ -109,23 +108,23 @@ create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repository& desti
     program.clear();
 
     for (const auto predicate : task.get_domain().get_predicates<f::StaticTag>())
-        program.static_predicates.push_back(fp::merge_p2d(predicate, context).first);
+        program.static_predicates.push_back(fp::merge_p2d(predicate, context).first.get_index());
 
     for (const auto predicate : task.get_domain().get_predicates<f::FluentTag>())
-        program.fluent_predicates.push_back(fp::merge_p2d(predicate, context).first);
+        program.fluent_predicates.push_back(fp::merge_p2d(predicate, context).first.get_index());
 
     // We can ignore auxiliary function total-cost because it never occurs in a condition
 
     for (const auto object : task.get_domain().get_constants())
-        program.objects.push_back(fp::merge_p2d(object, context).first);
+        program.objects.push_back(fp::merge_p2d(object, context).first.get_index());
     for (const auto object : task.get_objects())
-        program.objects.push_back(fp::merge_p2d(object, context).first);
+        program.objects.push_back(fp::merge_p2d(object, context).first.get_index());
 
     for (const auto atom : task.get_atoms<f::StaticTag>())
-        program.static_atoms.push_back(fp::merge_p2d(atom, context).first);
+        program.static_atoms.push_back(fp::merge_p2d(atom, context).first.get_index());
 
     for (const auto atom : task.get_atoms<f::FluentTag>())
-        program.fluent_atoms.push_back(fp::merge_p2d(atom, context).first);
+        program.fluent_atoms.push_back(fp::merge_p2d(atom, context).first.get_index());
 
     for (const auto action : task.get_domain().get_actions())
         translate_action_to_delete_free_rules(action, program, context, rule_to_action);
@@ -138,8 +137,8 @@ static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, R
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, *repository, rule_to_action);
-    auto domains = analysis::compute_variable_domains(make_view(program, *repository));
-    auto strata = analysis::compute_rule_stratification(make_view(program, *repository));
+    auto domains = analysis::compute_variable_domains(program);
+    auto strata = analysis::compute_rule_stratification(program);
     auto listeners = analysis::compute_listeners(strata, *repository);
 
     return datalog::ProgramContext(program, std::move(repository), std::move(domains), std::move(strata), std::move(listeners));

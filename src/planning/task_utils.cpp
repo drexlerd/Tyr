@@ -99,11 +99,10 @@ void insert_fluent_atoms_to_fact_set(const boost::dynamic_bitset<>& fluent_atoms
                                      datalog::TaggedFactSets<formalism::FluentTag>& fact_sets)
 {
     for (auto i = fluent_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = fluent_atoms.find_next(i))
-        fact_sets.predicate.insert(make_view(formalism::planning::merge_p2d<formalism::FluentTag, formalism::FluentTag>(
-                                                 make_view(Index<formalism::planning::GroundAtom<formalism::FluentTag>>(i), atoms_context),
-                                                 merge_context)
-                                                 .first,
-                                             merge_context.destination));
+        fact_sets.predicate.insert(formalism::planning::merge_p2d<formalism::FluentTag, formalism::FluentTag>(
+                                       make_view(Index<formalism::planning::GroundAtom<formalism::FluentTag>>(i), atoms_context),
+                                       merge_context)
+                                       .first);
 }
 
 void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_atoms,
@@ -112,11 +111,10 @@ void insert_derived_atoms_to_fact_set(const boost::dynamic_bitset<>& derived_ato
                                       datalog::TaggedFactSets<formalism::FluentTag>& fact_sets)
 {
     for (auto i = derived_atoms.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms.find_next(i))
-        fact_sets.predicate.insert(make_view(formalism::planning::merge_p2d<formalism::DerivedTag, formalism::FluentTag>(
-                                                 make_view(Index<formalism::planning::GroundAtom<formalism::DerivedTag>>(i), atoms_context),
-                                                 merge_context)
-                                                 .first,
-                                             merge_context.destination));
+        fact_sets.predicate.insert(formalism::planning::merge_p2d<formalism::DerivedTag, formalism::FluentTag>(
+                                       make_view(Index<formalism::planning::GroundAtom<formalism::DerivedTag>>(i), atoms_context),
+                                       merge_context)
+                                       .first);
 }
 
 void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_variables,
@@ -129,11 +127,9 @@ void insert_numeric_variables_to_fact_set(const std::vector<float_t>& numeric_va
         if (!std::isnan(numeric_variables[i]))
         {
             fact_sets.function.insert(
-                make_view(formalism::planning::merge_p2d(
-                              make_view(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>(i), numeric_variables_context),
-                              merge_context)
-                              .first,
-                          merge_context.destination),
+                formalism::planning::merge_p2d(make_view(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>(i), numeric_variables_context),
+                                               merge_context)
+                    .first,
                 numeric_variables[i]);
         }
     }

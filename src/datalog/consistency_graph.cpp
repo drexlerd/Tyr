@@ -1430,8 +1430,8 @@ const details::LiteralToRuleInfos& StaticConsistencyGraph::get_predicate_to_anch
 
 const kpkc::DeduplicatedAdjacencyMatrix& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_matrix; }
 
-std::pair<Index<fd::GroundConjunctiveCondition>, bool> create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
-                                                                                       fd::Repository& context)
+std::pair<View<Index<fd::GroundConjunctiveCondition>, fd::Repository>, bool>
+create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::GroundConjunctiveCondition>();
@@ -1443,11 +1443,11 @@ std::pair<Index<fd::GroundConjunctiveCondition>, bool> create_ground_nullary_con
 
     for (const auto literal : condition.get_literals<f::StaticTag>())
         if (parameter_arity(literal) == 0)
-            conj_cond.static_literals.push_back(ground(literal, grounder_context).first);
+            conj_cond.static_literals.push_back(ground(literal, grounder_context).first.get_index());
 
     for (const auto literal : condition.get_literals<f::FluentTag>())
         if (parameter_arity(literal) == 0)
-            conj_cond.fluent_literals.push_back(ground(literal, grounder_context).first);
+            conj_cond.fluent_literals.push_back(ground(literal, grounder_context).first.get_index());
 
     for (const auto numeric_constraint : condition.get_numeric_constraints())
         if (parameter_arity(numeric_constraint) == 0)
@@ -1457,7 +1457,7 @@ std::pair<Index<fd::GroundConjunctiveCondition>, bool> create_ground_nullary_con
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-std::pair<Index<fd::ConjunctiveCondition>, bool>
+std::pair<View<Index<fd::ConjunctiveCondition>, fd::Repository>, bool>
 create_overapproximation_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
@@ -1484,7 +1484,7 @@ create_overapproximation_conjunctive_condition(size_t k, View<Index<fd::Conjunct
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-std::pair<Index<fd::ConjunctiveCondition>, bool>
+std::pair<View<Index<fd::ConjunctiveCondition>, fd::Repository>, bool>
 create_static_overapproximation_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
@@ -1503,7 +1503,7 @@ create_static_overapproximation_conjunctive_condition(size_t k, View<Index<fd::C
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-std::pair<Index<fd::ConjunctiveCondition>, bool>
+std::pair<View<Index<fd::ConjunctiveCondition>, fd::Repository>, bool>
 create_overapproximation_conflicting_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};

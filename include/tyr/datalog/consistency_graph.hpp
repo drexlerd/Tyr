@@ -308,21 +308,21 @@ private:
     details::LiteralToRuleInfos m_binary_overapproximation_predicate_to_anchors;
 };
 
-extern std::pair<Index<formalism::datalog::GroundConjunctiveCondition>, bool>
+extern std::pair<View<Index<formalism::datalog::GroundConjunctiveCondition>, formalism::datalog::Repository>, bool>
 create_ground_nullary_condition(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                                 formalism::datalog::Repository& context);
 
-extern std::pair<Index<formalism::datalog::ConjunctiveCondition>, bool>
+extern std::pair<View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository>, bool>
 create_overapproximation_conjunctive_condition(size_t k,
                                                View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                                                formalism::datalog::Repository& context);
 
-extern std::pair<Index<formalism::datalog::ConjunctiveCondition>, bool>
+extern std::pair<View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository>, bool>
 create_static_overapproximation_conjunctive_condition(size_t k,
                                                       View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                                                       formalism::datalog::Repository& context);
 
-extern std::pair<Index<formalism::datalog::ConjunctiveCondition>, bool>
+extern std::pair<View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository>, bool>
 create_overapproximation_conflicting_conjunctive_condition(size_t k,
                                                            View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition,
                                                            formalism::datalog::Repository& context);
