@@ -1,8 +1,6 @@
-# tyr:
+# Tyr: A C++20-based generalized planning library with Python bindings.
 
-tyr is a C++20-based generalized planning library with Python bindings.
-
-It is designed to address several challenges in modern planning systems:
+Tyr is designed to address several challenges in modern planning systems:
 
 1. **Unified grounded and lifted planning** within a type-safe API.
 
