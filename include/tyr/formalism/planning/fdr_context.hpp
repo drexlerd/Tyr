@@ -22,6 +22,7 @@
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/types.hpp"
+#include "tyr/formalism/planning/builder.hpp"
 #include "tyr/formalism/planning/canonicalization.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_fact_view.hpp"
@@ -31,6 +32,7 @@
 #include "tyr/formalism/planning/fdr_variable_view.hpp"
 #include "tyr/formalism/planning/ground_atom_view.hpp"
 #include "tyr/formalism/planning/ground_literal_view.hpp"
+#include "tyr/formalism/planning/merge.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 
 #include <concepts>
@@ -42,7 +44,24 @@ namespace tyr::formalism::planning
 class BinaryFDRContext
 {
 public:
-    explicit BinaryFDRContext(Repository& context) : m_context(context), m_variables(), m_mapping() {}
+    explicit BinaryFDRContext(Repository& context) : m_context(context), m_builder(), m_buffer(), m_variables(), m_mapping() {}
+
+    BinaryFDRContext(const BinaryFDRContext& other, Builder& builder, Repository& context) :
+        m_context(context),
+        m_builder(),
+        m_buffer(),
+        m_variables(),
+        m_mapping()
+    {
+        auto merge_context = MergeContext { builder, context };
+
+        for (const auto variable : make_view(other.m_variables, other.m_context))
+            m_variables.push_back(merge_p2p(variable, merge_context).first.get_index());
+
+        for (const auto [atom_index, fact_data] : other.m_mapping)
+            m_mapping.emplace(merge_p2p(make_view(atom_index, other.m_context), merge_context).first.get_index(),
+                              merge_p2p(make_view(fact_data, other.m_context), merge_context));
+    }
 
     Data<FDRFact<FluentTag>> get_fact(Index<GroundAtom<FluentTag>> atom)
     {
