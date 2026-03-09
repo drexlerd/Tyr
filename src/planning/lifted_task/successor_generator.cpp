@@ -130,8 +130,7 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
     }
 }
 
-Node<LiftedTask> SuccessorGenerator<LiftedTask>::get_successor_node(const Node<LiftedTask>& node,
-                                                                    View<Index<formalism::planning::GroundAction>, formalism::planning::Repository> action)
+Node<LiftedTask> SuccessorGenerator<LiftedTask>::get_successor_node(const Node<LiftedTask>& node, fp::GroundActionView action)
 {
     const auto& state = node.get_state();
     const auto state_context = StateContext<LiftedTask>(*m_task, state.get_unpacked_state(), node.get_metric());

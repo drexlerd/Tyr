@@ -25,10 +25,7 @@
 namespace tyr::formalism::datalog
 {
 template<FactKind T>
-static void insert_literal(View<Index<Literal<T>>, Repository> literal,
-                           uint_t k,
-                           boost::dynamic_bitset<>& positive_dependencies,
-                           boost::dynamic_bitset<>& negative_dependencies)
+static void insert_literal(LiteralView<T> literal, uint_t k, boost::dynamic_bitset<>& positive_dependencies, boost::dynamic_bitset<>& negative_dependencies)
 {
     const auto parameters_set = collect_parameters(literal);
     auto parameters = std::vector<ParameterIndex>(parameters_set.begin(), parameters_set.end());
@@ -59,9 +56,7 @@ static void insert_literal(View<Index<Literal<T>>, Repository> literal,
     }
 }
 
-static void insert_numeric_constraint(View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository> numeric_constraint,
-                                      uint_t k,
-                                      boost::dynamic_bitset<>& positive_dependencies)
+static void insert_numeric_constraint(BooleanOperatorView numeric_constraint, uint_t k, boost::dynamic_bitset<>& positive_dependencies)
 {
     const auto parameters_set = collect_parameters(numeric_constraint);
     auto parameters = std::vector<ParameterIndex>(parameters_set.begin(), parameters_set.end());
@@ -84,7 +79,7 @@ static void insert_numeric_constraint(View<Data<BooleanOperator<Data<FunctionExp
     }
 }
 
-VariableDependencyGraph::VariableDependencyGraph(View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> condition) :
+VariableDependencyGraph::VariableDependencyGraph(ConjunctiveConditionView condition) :
     m_k(condition.get_arity()),
     m_static_positive_dependencies(m_k * m_k),
     m_static_negative_dependencies(m_k * m_k),

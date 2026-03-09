@@ -93,9 +93,8 @@ State<LiftedTask> StateRepository<LiftedTask>::create_state(const std::vector<Da
     return register_state(std::move(unpacked_state));
 }
 
-State<LiftedTask> StateRepository<LiftedTask>::create_state(
-    const std::vector<View<Data<fp::FDRFact<f::FluentTag>>, fp::Repository>>& fluent_facts,
-    const std::vector<std::pair<View<Index<fp::GroundFunctionTerm<f::FluentTag>>, fp::Repository>, float_t>>& fterm_values)
+State<LiftedTask> StateRepository<LiftedTask>::create_state(const std::vector<fp::FDRFactView<f::FluentTag>>& fluent_facts,
+                                                            const std::vector<std::pair<fp::GroundFunctionTermView<f::FluentTag>, float_t>>& fterm_values)
 {
     auto unpacked_state = get_unregistered_state();
 

@@ -606,7 +606,7 @@ enum class GripperRule : uint_t
 
 inline Index<formalism::datalog::Rule> convert(GripperRule e) noexcept { return Index<formalism::datalog::Rule>(static_cast<uint_t>(e)); }
 
-inline std::pair<View<Index<formalism::datalog::Program>, formalism::datalog::Repository>, formalism::datalog::RepositoryPtr> create_example_problem()
+inline std::pair<formalism::datalog::ProgramView, formalism::datalog::RepositoryPtr> create_example_problem()
 {
     auto repository_ptr = std::make_shared<formalism::datalog::Repository>();
     auto& repository = *repository_ptr;

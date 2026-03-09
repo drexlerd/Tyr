@@ -51,6 +51,11 @@ public:
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
+
+namespace formalism::datalog
+{
+using RuleView = View<Index<Rule>, Repository>;
+}
 }
 
 #endif

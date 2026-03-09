@@ -30,12 +30,11 @@
 
 namespace tyr::planning
 {
-extern ::cista::offset::string create_applicability_name(View<Index<formalism::planning::Action>, formalism::planning::Repository> action);
+extern ::cista::offset::string create_applicability_name(formalism::planning::ActionView action);
 
-extern ::cista::offset::string create_triggered_name(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
-                                                     View<Index<formalism::planning::ConditionalEffect>, formalism::planning::Repository> cond_eff);
+extern ::cista::offset::string create_triggered_name(formalism::planning::ActionView action, formalism::planning::ConditionalEffectView cond_eff);
 
-extern ::cista::offset::string create_applicability_name(View<Index<formalism::planning::Axiom>, formalism::planning::Repository> axiom);
+extern ::cista::offset::string create_applicability_name(formalism::planning::AxiomView axiom);
 
 }
 

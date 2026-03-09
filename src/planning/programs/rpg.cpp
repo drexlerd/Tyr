@@ -37,9 +37,9 @@ namespace tyr::planning
 namespace rpg
 {
 
-static auto create_cond_effect_rule(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
-                                    View<Index<formalism::planning::ConditionalEffect>, formalism::planning::Repository> cond_eff,
-                                    View<Index<formalism::planning::Atom<formalism::FluentTag>>, formalism::planning::Repository> effect,
+static auto create_cond_effect_rule(fp::ActionView action,
+                                    fp::ConditionalEffectView cond_eff,
+                                    fp::AtomView<formalism::FluentTag> effect,
                                     formalism::planning::MergeDatalogContext& context)
 {
     auto rule_ptr = context.builder.get_builder<formalism::datalog::Rule>();
@@ -79,7 +79,7 @@ static auto create_cond_effect_rule(View<Index<formalism::planning::Action>, for
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-static void translate_action_to_delete_free_rules(View<Index<fp::Action>, fp::Repository> action,
+static void translate_action_to_delete_free_rules(fp::ActionView action,
                                                   Data<fd::Program>& program,
                                                   fp::MergeDatalogContext& context,
                                                   RPGProgram::RuleToActionMapping& rule_to_action)
@@ -99,7 +99,7 @@ static void translate_action_to_delete_free_rules(View<Index<fp::Action>, fp::Re
     }
 }
 
-static auto create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repository& destination, RPGProgram::RuleToActionMapping& rule_to_action)
+static auto create_program(fp::TaskView task, fd::Repository& destination, RPGProgram::RuleToActionMapping& rule_to_action)
 {
     auto builder = fd::Builder();
     auto context = fp::MergeDatalogContext(builder, destination);
@@ -133,7 +133,7 @@ static auto create_program(View<Index<fp::Task>, fp::Repository> task, fd::Repos
     return destination.get_or_create(program, builder.get_buffer()).first;
 }
 
-static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, RPGProgram::RuleToActionMapping& rule_to_action)
+static auto create_program_context(fp::TaskView task, RPGProgram::RuleToActionMapping& rule_to_action)
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, *repository, rule_to_action);
@@ -146,7 +146,7 @@ static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, R
 
 }
 
-RPGProgram::RPGProgram(View<Index<fp::Task>, fp::Repository> task) :
+RPGProgram::RPGProgram(fp::TaskView task) :
     m_rule_to_action(),
     m_program_context(rpg::create_program_context(task, m_rule_to_action)),
     m_program_workspace(m_program_context)

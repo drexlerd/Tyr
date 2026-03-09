@@ -40,7 +40,7 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-static auto create_fluent_layout(View<Index<fp::FDRTask>, fp::Repository> fdr_task)
+static auto create_fluent_layout(fp::FDRTaskView fdr_task)
 {
     auto ranges = std::vector<uint_t> {};
     for (const auto variable : fdr_task.get_fluent_variables())
@@ -53,7 +53,7 @@ static auto create_fluent_layout(View<Index<fp::FDRTask>, fp::Repository> fdr_ta
     return create_bit_packed_array_layout(ranges);
 }
 
-static auto create_derived_layout(View<Index<fp::FDRTask>, fp::Repository> fdr_task)
+static auto create_derived_layout(fp::FDRTaskView fdr_task)
 {
     // Ensure derived atom indices are dense, i.e., 0,1,2,...
     for (uint_t i = 0; i < fdr_task.get_atoms<f::DerivedTag>().size(); ++i)
@@ -119,9 +119,8 @@ State<GroundTask> StateRepository<GroundTask>::get_registered_state(StateIndex s
     return State<GroundTask>(shared_from_this(), std::move(unpacked_state));
 }
 
-State<GroundTask> StateRepository<GroundTask>::create_state(
-    const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
-    const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values)
+State<GroundTask> StateRepository<GroundTask>::create_state(const std::vector<Data<fp::FDRFact<f::FluentTag>>>& fluent_facts,
+                                                            const std::vector<std::pair<Index<fp::GroundFunctionTerm<f::FluentTag>>, float_t>>& fterm_values)
 {
     auto unpacked_state = get_unregistered_state();
 
@@ -133,10 +132,8 @@ State<GroundTask> StateRepository<GroundTask>::create_state(
     return register_state(std::move(unpacked_state));
 }
 
-State<GroundTask> StateRepository<GroundTask>::create_state(
-    const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, formalism::planning::Repository>>& fluent_facts,
-    const std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>>&
-        fterm_values)
+State<GroundTask> StateRepository<GroundTask>::create_state(const std::vector<fp::FDRFactView<f::FluentTag>>& fluent_facts,
+                                                            const std::vector<fp::GroundFunctionTermViewValuePair<f::FluentTag>>& fterm_values)
 {
     auto unpacked_state = get_unregistered_state();
 

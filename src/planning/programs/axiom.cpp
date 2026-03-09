@@ -35,9 +35,7 @@ namespace tyr::planning
 {
 namespace axiom
 {
-static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, fp::Repository> axiom_body,
-                               fp::MergeDatalogContext& context,
-                               Data<fd::ConjunctiveCondition>& conj_cond)
+static void process_axiom_body(fp::ConjunctiveConditionView axiom_body, fp::MergeDatalogContext& context, Data<fd::ConjunctiveCondition>& conj_cond)
 {
     for (const auto literal : axiom_body.get_literals<f::StaticTag>())
         conj_cond.static_literals.push_back(fp::merge_p2d(literal, context).first.get_index());
@@ -52,7 +50,7 @@ static void process_axiom_body(View<Index<fp::ConjunctiveCondition>, fp::Reposit
         conj_cond.numeric_constraints.push_back(fp::merge_p2d(numeric_constraint, context));
 }
 
-static auto create_axiom_rule(View<Index<fp::Axiom>, fp::Repository> axiom, fp::MergeDatalogContext& context)
+static auto create_axiom_rule(fp::AxiomView axiom, fp::MergeDatalogContext& context)
 {
     auto rule_ptr = context.builder.get_builder<fd::Rule>();
     auto& rule = *rule_ptr;
@@ -80,9 +78,7 @@ static auto create_axiom_rule(View<Index<fp::Axiom>, fp::Repository> axiom, fp::
     return context.destination.get_or_create(rule, context.builder.get_buffer());
 }
 
-static auto create_program(View<Index<fp::Task>, fp::Repository> task,
-                           AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate,
-                           fd::Repository& repository)
+static auto create_program(fp::TaskView task, AxiomEvaluatorProgram::PredicateToPredicateMapping& predicate_to_predicate, fd::Repository& repository)
 {
     auto builder = fd::Builder();
     auto context = fp::MergeDatalogContext(builder, repository);
@@ -148,7 +144,7 @@ static auto create_program(View<Index<fp::Task>, fp::Repository> task,
     return repository.get_or_create(program, builder.get_buffer()).first;
 }
 
-static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, AxiomEvaluatorProgram::PredicateToPredicateMapping& mapping)
+static auto create_program_context(fp::TaskView task, AxiomEvaluatorProgram::PredicateToPredicateMapping& mapping)
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, mapping, *repository);
@@ -160,7 +156,7 @@ static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, A
 }
 }
 
-AxiomEvaluatorProgram::AxiomEvaluatorProgram(View<Index<fp::Task>, fp::Repository> task) :
+AxiomEvaluatorProgram::AxiomEvaluatorProgram(fp::TaskView task) :
     m_predicate_to_predicate(),
     m_program_context(axiom::create_program_context(task, m_predicate_to_predicate)),
     m_program_workspace(m_program_context)

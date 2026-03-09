@@ -60,6 +60,13 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
+namespace formalism::datalog
+{
+template<formalism::OpKind Op>
+using BinaryOperatorView = View<Index<BinaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundBinaryOperatorView = View<Index<BinaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+}
 }
 
 #endif

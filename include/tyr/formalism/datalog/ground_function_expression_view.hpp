@@ -45,6 +45,11 @@ public:
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
+
+namespace formalism::datalog
+{
+using GroundFunctionExpressionView = View<Data<GroundFunctionExpression>, Repository>;
+}
 }
 
 #endif

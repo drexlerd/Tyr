@@ -65,7 +65,7 @@ TEST(TyrTests, TyrFormalismView)
         {
             using Alternative = std::decay_t<decltype(arg)>;
 
-            if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fp::Repository>>)
+            if constexpr (std::is_same_v<Alternative, fp::ObjectView>)
                 EXPECT_EQ(arg.get_index(), object.get_index());
             else
                 FAIL() << "Expected ObjectView for first term, got a different proxy type";

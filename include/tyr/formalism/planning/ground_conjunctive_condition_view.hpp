@@ -54,7 +54,7 @@ public:
 
 namespace formalism::planning
 {
-using GroundConditionalEffectView = View<Index<GroundConditionalEffect>, Repository>;
+using GroundConjunctiveConditionView = View<Index<GroundConjunctiveCondition>, Repository>;
 }
 }
 

@@ -54,6 +54,11 @@ public:
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
+
+namespace formalism::datalog
+{
+using ConjunctiveConditionView = View<Index<ConjunctiveCondition>, Repository>;
+}
 }
 
 #endif

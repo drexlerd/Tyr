@@ -15,33 +15,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_PLANNING_PLANNING_DOMAIN_HPP_
-#define TYR_FORMALISM_PLANNING_PLANNING_DOMAIN_HPP_
+#ifndef TYR_FORMALISM_PLANNING_FUNCTION_VIEW_HPP_
+#define TYR_FORMALISM_PLANNING_FUNCTION_VIEW_HPP_
 
+#include "tyr/formalism/function_view.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
-#include "tyr/formalism/planning/domain_view.hpp"
-#include "tyr/formalism/planning/repository.hpp"
 
 namespace tyr::formalism::planning
 {
-
-class PlanningDomain
-{
-public:
-    PlanningDomain(DomainView domain, std::shared_ptr<Repository> repository) : m_repository(std::move(repository)), m_domain(domain)
-    {
-        if (&m_domain.get_context() != m_repository.get())
-            throw std::invalid_argument("Domain context does not match the given Repository.");
-    }
-
-    auto get_domain() const noexcept { return m_domain; }
-    const auto& get_repository() const noexcept { return m_repository; }
-
-private:
-    std::shared_ptr<Repository> m_repository;
-    DomainView m_domain;
-};
-
+template<FactKind T>
+using FunctionView = View<Index<Function<T>>, Repository>;
 }
 
 #endif

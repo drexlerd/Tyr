@@ -45,7 +45,7 @@ namespace fp = tyr::formalism::planning;
 
 namespace tyr::planning
 {
-static auto remap_fdr_fact(View<Data<fp::FDRFact<f::FluentTag>>, fp::Repository> fact, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
+static auto remap_fdr_fact(fp::FDRFactView<f::FluentTag> fact, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
 {
     // Ensure that remapping is unambiguous
     assert(fact.get_variable().get_domain_size() == 2);
@@ -63,9 +63,7 @@ static auto remap_fdr_fact(View<Data<fp::FDRFact<f::FluentTag>>, fp::Repository>
     return new_fact;
 }
 
-static auto create_ground_fdr_conjunctive_condition(View<Index<fp::GroundConjunctiveCondition>, fp::Repository> element,
-                                                    fp::GeneralFDRContext& fdr_context,
-                                                    fp::MergeContext& context)
+static auto create_ground_fdr_conjunctive_condition(fp::GroundConjunctiveConditionView element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
 {
     auto fdr_conj_cond_ptr = context.builder.get_builder<fp::GroundConjunctiveCondition>();
     auto& fdr_conj_cond = *fdr_conj_cond_ptr;
@@ -87,9 +85,7 @@ static auto create_ground_fdr_conjunctive_condition(View<Index<fp::GroundConjunc
     return context.destination.get_or_create(fdr_conj_cond, context.builder.get_buffer());
 }
 
-static auto create_ground_conjunctive_effect(View<Index<fp::GroundConjunctiveEffect>, fp::Repository> element,
-                                             fp::GeneralFDRContext& fdr_context,
-                                             fp::MergeContext& context)
+static auto create_ground_conjunctive_effect(fp::GroundConjunctiveEffectView element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
 {
     auto fdr_conj_eff_ptr = context.builder.get_builder<fp::GroundConjunctiveEffect>();
     auto& fdr_conj_eff = *fdr_conj_eff_ptr;
@@ -110,9 +106,7 @@ static auto create_ground_conjunctive_effect(View<Index<fp::GroundConjunctiveEff
     return context.destination.get_or_create(fdr_conj_eff, context.builder.get_buffer());
 }
 
-static auto create_ground_conditional_effect(View<Index<fp::GroundConditionalEffect>, fp::Repository> element,
-                                             fp::GeneralFDRContext& fdr_context,
-                                             fp::MergeContext& context)
+static auto create_ground_conditional_effect(fp::GroundConditionalEffectView element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
 {
     auto fdr_cond_eff_ptr = context.builder.get_builder<fp::GroundConditionalEffect>();
     auto& fdr_cond_eff = *fdr_cond_eff_ptr;
@@ -125,7 +119,7 @@ static auto create_ground_conditional_effect(View<Index<fp::GroundConditionalEff
     return context.destination.get_or_create(fdr_cond_eff, context.builder.get_buffer());
 }
 
-static auto create_ground_action(View<Index<fp::GroundAction>, fp::Repository> element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
+static auto create_ground_action(fp::GroundActionView element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
 {
     auto fdr_action_ptr = context.builder.get_builder<fp::GroundAction>();
     auto& fdr_action = *fdr_action_ptr;
@@ -141,7 +135,7 @@ static auto create_ground_action(View<Index<fp::GroundAction>, fp::Repository> e
     return context.destination.get_or_create(fdr_action, context.builder.get_buffer());
 }
 
-static auto create_ground_axiom(View<Index<fp::GroundAxiom>, fp::Repository> element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
+static auto create_ground_axiom(fp::GroundAxiomView element, fp::GeneralFDRContext& fdr_context, fp::MergeContext& context)
 {
     auto fdr_axiom_ptr = context.builder.get_builder<fp::GroundAxiom>();
     auto& fdr_axiom = *fdr_axiom_ptr;
@@ -159,11 +153,11 @@ static auto create_ground_axiom(View<Index<fp::GroundAxiom>, fp::Repository> ele
 // TODO: create stronger mutex groups
 static auto create_mutex_groups(View<IndexList<fp::GroundAtom<f::FluentTag>>, fp::Repository> atoms, fp::MergeContext& context)
 {
-    auto mutex_groups = std::vector<std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, fp::Repository>>> {};
+    auto mutex_groups = std::vector<std::vector<fp::GroundAtomView<f::FluentTag>>> {};
 
     for (const auto atom : atoms)
     {
-        auto group = std::vector<View<Index<fp::GroundAtom<f::FluentTag>>, fp::Repository>> {};
+        auto group = std::vector<fp::GroundAtomView<f::FluentTag>> {};
         group.push_back(merge_p2p(atom, context).first);
         mutex_groups.push_back(group);
     }

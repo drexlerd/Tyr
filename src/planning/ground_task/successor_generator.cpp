@@ -28,6 +28,8 @@
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/task_utils.hpp"
 
+namespace fp = tyr::formalism::planning;
+
 namespace tyr::planning
 {
 
@@ -81,8 +83,7 @@ void SuccessorGenerator<GroundTask>::get_labeled_successor_nodes(const Node<Grou
     }
 }
 
-Node<GroundTask> SuccessorGenerator<GroundTask>::get_successor_node(const Node<GroundTask>& node,
-                                                                    View<Index<formalism::planning::GroundAction>, formalism::planning::Repository> action)
+Node<GroundTask> SuccessorGenerator<GroundTask>::get_successor_node(const Node<GroundTask>& node, fp::GroundActionView action)
 {
     const auto& state = node.get_state();
     const auto state_context = StateContext<GroundTask>(*m_task, state.get_unpacked_state(), node.get_metric());

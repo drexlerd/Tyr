@@ -38,7 +38,7 @@ namespace tyr::datalog
  * ConstRuleWorkspace
  */
 
-static auto create_witness_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> element, fd::Repository& context)
+static auto create_witness_condition(fd::ConjunctiveConditionView element, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
@@ -54,7 +54,7 @@ static auto create_witness_condition(View<Index<fd::ConjunctiveCondition>, fd::R
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-ConstRuleWorkspace::ConstRuleWorkspace(View<Index<fd::Rule>, fd::Repository> rule,
+ConstRuleWorkspace::ConstRuleWorkspace(fd::RuleView rule,
                                        fd::Repository& repository,
                                        const analysis::DomainListList& parameter_domains,
                                        size_t num_objects,

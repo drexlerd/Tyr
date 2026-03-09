@@ -32,7 +32,7 @@ namespace tyr::datalog
  */
 
 template<f::FactKind T>
-PredicateFactSet<T>::PredicateFactSet(View<Index<formalism::Predicate<T>>, formalism::datalog::Repository> predicate) :
+PredicateFactSet<T>::PredicateFactSet(fd::PredicateView<T> predicate) :
     m_predicate(predicate.get_index()),
     m_context(predicate.get_context()),
     m_indices(),
@@ -69,7 +69,7 @@ void PredicateFactSet<T>::insert(Index<formalism::datalog::GroundAtom<T>> ground
 }
 
 template<f::FactKind T>
-void PredicateFactSet<T>::insert(View<Index<fd::GroundAtom<T>>, fd::Repository> ground_atom)
+void PredicateFactSet<T>::insert(fd::GroundAtomView<T> ground_atom)
 {
     if (&m_context != &ground_atom.get_context())
         throw std::runtime_error("Incompatible contexts.");
@@ -107,7 +107,7 @@ bool PredicateFactSet<T>::contains(Index<fd::GroundAtom<T>> ground_atom) const n
 }
 
 template<f::FactKind T>
-bool PredicateFactSet<T>::contains(View<Index<fd::GroundAtom<T>>, fd::Repository> ground_atom) const noexcept
+bool PredicateFactSet<T>::contains(fd::GroundAtomView<T> ground_atom) const noexcept
 {
     return contains(ground_atom.get_index());
 }
@@ -139,11 +139,7 @@ template class PredicateFactSet<f::FluentTag>;
  */
 
 template<f::FactKind T>
-FunctionFactSet<T>::FunctionFactSet(View<Index<formalism::Function<T>>, formalism::datalog::Repository> function) :
-    m_function(function.get_index()),
-    m_context(function.get_context()),
-    m_indices(),
-    m_unique()
+FunctionFactSet<T>::FunctionFactSet(fd::FunctionView<T> function) : m_function(function.get_index()), m_context(function.get_context()), m_indices(), m_unique()
 {
 }
 
@@ -156,7 +152,7 @@ void FunctionFactSet<T>::reset()
 }
 
 template<f::FactKind T>
-void FunctionFactSet<T>::insert(View<Index<fd::GroundFunctionTerm<T>>, fd::Repository> function_term, float_t value)
+void FunctionFactSet<T>::insert(fd::GroundFunctionTermView<T> function_term, float_t value)
 {
     const auto fterm_index = function_term.get_index();
 
@@ -180,7 +176,7 @@ void FunctionFactSet<T>::insert(View<IndexList<fd::GroundFunctionTerm<T>>, fd::R
 }
 
 template<f::FactKind T>
-void FunctionFactSet<T>::insert(View<Index<fd::GroundFunctionTermValue<T>>, fd::Repository> fterm_value)
+void FunctionFactSet<T>::insert(fd::GroundFunctionTermValueView<T> fterm_value)
 {
     insert(fterm_value.get_fterm(), fterm_value.get_value());
 }
@@ -199,7 +195,7 @@ bool FunctionFactSet<T>::contains(Index<fd::GroundFunctionTerm<T>> fterm) const 
 }
 
 template<f::FactKind T>
-bool FunctionFactSet<T>::contains(View<Index<fd::GroundFunctionTerm<T>>, fd::Repository> fterm) const noexcept
+bool FunctionFactSet<T>::contains(fd::GroundFunctionTermView<T> fterm) const noexcept
 {
     return contains(fterm.get_index());
 }

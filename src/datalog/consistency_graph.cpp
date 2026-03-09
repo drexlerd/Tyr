@@ -52,7 +52,7 @@ namespace details
  * Vertex
  */
 
-template<formalism::FactKind T>
+template<f::FactKind T>
 inline bool consistent_literals(const Vertex& vertex,
                                 const TaggedRuleToLiteralInfos<T>& indexed_literals,
                                 const PredicateAssignmentSets<T>& predicate_assignment_sets) noexcept
@@ -119,56 +119,51 @@ inline bool consistent_literals(const Vertex& vertex,
     return true;
 }
 
-template<formalism::FactKind T>
+template<f::FactKind T>
 ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
 
-template<formalism::FactKind T>
+template<f::FactKind T>
 ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept;
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-ClosedInterval<float_t>
-consistent_interval(View<Index<formalism::datalog::UnaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept;
+ClosedInterval<float_t> consistent_interval(fd::UnaryOperatorView<O> element,
+                                            const GraphStructure& structure,
+                                            const RuleToConstraintInfo& constraint_info,
+                                            const AssignmentSets& assignment_sets) noexcept;
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-ClosedInterval<float_t>
-consistent_interval(View<Index<formalism::datalog::BinaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept;
+ClosedInterval<float_t> consistent_interval(fd::BinaryOperatorView<O> element,
+                                            const GraphStructure& structure,
+                                            const RuleToConstraintInfo& constraint_info,
+                                            const AssignmentSets& assignment_sets) noexcept;
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-ClosedInterval<float_t>
-consistent_interval(View<Index<formalism::datalog::MultiOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept;
-
-template<typename GraphStructure>
-ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog::FunctionExpression>, formalism::datalog::Repository> element,
+ClosedInterval<float_t> consistent_interval(fd::MultiOperatorView<O> element,
                                             const GraphStructure& structure,
                                             const RuleToConstraintInfo& constraint_info,
                                             const AssignmentSets& assignment_sets) noexcept;
 
 template<typename GraphStructure>
-ClosedInterval<float_t>
-consistent_interval(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept;
+ClosedInterval<float_t> consistent_interval(fd::FunctionExpressionView element,
+                                            const GraphStructure& structure,
+                                            const RuleToConstraintInfo& constraint_info,
+                                            const AssignmentSets& assignment_sets) noexcept;
 
 template<typename GraphStructure>
-bool consistent_numeric_constraint(
-    View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-    const GraphStructure& structure,
-    const RuleToConstraintInfo& constraint_info,
-    const AssignmentSets& assignment_sets) noexcept;
+ClosedInterval<float_t> consistent_interval(fd::ArithmeticOperatorView element,
+                                            const GraphStructure& structure,
+                                            const RuleToConstraintInfo& constraint_info,
+                                            const AssignmentSets& assignment_sets) noexcept;
 
-template<formalism::FactKind T>
+template<typename GraphStructure>
+bool consistent_numeric_constraint(fd::BooleanOperatorView element,
+                                   const GraphStructure& structure,
+                                   const RuleToConstraintInfo& constraint_info,
+                                   const AssignmentSets& assignment_sets) noexcept;
+
+template<f::FactKind T>
 inline ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
@@ -212,7 +207,7 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex,
     return bounds;
 }
 
-template<formalism::FactKind T>
+template<f::FactKind T>
 inline ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
@@ -367,21 +362,19 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, con
 }
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-inline ClosedInterval<float_t>
-consistent_interval(View<Index<formalism::datalog::UnaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept
+inline ClosedInterval<float_t> consistent_interval(fd::UnaryOperatorView<O> element,
+                                                   const GraphStructure& structure,
+                                                   const RuleToConstraintInfo& constraint_info,
+                                                   const AssignmentSets& assignment_sets) noexcept
 {
     return apply(O {}, consistent_interval(element.get_arg(), structure, constraint_info, assignment_sets));
 }
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-inline ClosedInterval<float_t>
-consistent_interval(View<Index<formalism::datalog::BinaryOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept
+inline ClosedInterval<float_t> consistent_interval(fd::BinaryOperatorView<O> element,
+                                                   const GraphStructure& structure,
+                                                   const RuleToConstraintInfo& constraint_info,
+                                                   const AssignmentSets& assignment_sets) noexcept
 {
     return apply(O {},
                  consistent_interval(element.get_lhs(), structure, constraint_info, assignment_sets),
@@ -389,11 +382,10 @@ consistent_interval(View<Index<formalism::datalog::BinaryOperator<O, Data<formal
 }
 
 template<f::ArithmeticOpKind O, typename GraphStructure>
-inline ClosedInterval<float_t>
-consistent_interval(View<Index<formalism::datalog::MultiOperator<O, Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept
+inline ClosedInterval<float_t> consistent_interval(fd::MultiOperatorView<O> element,
+                                                   const GraphStructure& structure,
+                                                   const RuleToConstraintInfo& constraint_info,
+                                                   const AssignmentSets& assignment_sets) noexcept
 {
     const auto child_fexprs = element.get_args();
 
@@ -405,7 +397,7 @@ consistent_interval(View<Index<formalism::datalog::MultiOperator<O, Data<formali
 }
 
 template<typename GraphStructure>
-inline ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog::FunctionExpression>, formalism::datalog::Repository> element,
+inline ClosedInterval<float_t> consistent_interval(fd::FunctionExpressionView element,
                                                    const GraphStructure& structure,
                                                    const RuleToConstraintInfo& constraint_info,
                                                    const AssignmentSets& assignment_sets) noexcept
@@ -417,11 +409,11 @@ inline ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog:
 
             if constexpr (std::is_same_v<Alternative, float_t>)
                 return ClosedInterval<float_t>(arg, arg);
-            else if constexpr (std::is_same_v<Alternative, View<Data<fd::ArithmeticOperator<Data<fd::FunctionExpression>>>, fd::Repository>>)
+            else if constexpr (std::is_same_v<Alternative, fd::ArithmeticOperatorView>)
                 return consistent_interval(arg, structure, constraint_info, assignment_sets);
-            else if constexpr (std::is_same_v<Alternative, View<Index<fd::FunctionTerm<f::StaticTag>>, fd::Repository>>)
+            else if constexpr (std::is_same_v<Alternative, fd::FunctionTermView<f::StaticTag>>)
                 return consistent_interval(constraint_info.static_infos.infos.at(arg.get_index()), structure, assignment_sets.static_sets.function);
-            else if constexpr (std::is_same_v<Alternative, View<Index<fd::FunctionTerm<f::FluentTag>>, fd::Repository>>)
+            else if constexpr (std::is_same_v<Alternative, fd::FunctionTermView<f::FluentTag>>)
                 return consistent_interval(constraint_info.fluent_infos.infos.at(arg.get_index()), structure, assignment_sets.fluent_sets.function);
             else
                 static_assert(dependent_false<Alternative>::value, "Missing case");
@@ -430,21 +422,19 @@ inline ClosedInterval<float_t> consistent_interval(View<Data<formalism::datalog:
 }
 
 template<typename GraphStructure>
-inline ClosedInterval<float_t>
-consistent_interval(View<Data<formalism::datalog::ArithmeticOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-                    const GraphStructure& structure,
-                    const RuleToConstraintInfo& constraint_info,
-                    const AssignmentSets& assignment_sets) noexcept
+inline ClosedInterval<float_t> consistent_interval(fd::ArithmeticOperatorView element,
+                                                   const GraphStructure& structure,
+                                                   const RuleToConstraintInfo& constraint_info,
+                                                   const AssignmentSets& assignment_sets) noexcept
 {
     return visit([&](auto&& arg) { return consistent_interval(arg, structure, constraint_info, assignment_sets); }, element.get_variant());
 }
 
 template<typename GraphStructure>
-inline bool consistent_numeric_constraint(
-    View<Data<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> element,
-    const GraphStructure& structure,
-    const RuleToConstraintInfo& constraint_info,
-    const AssignmentSets& assignment_sets) noexcept
+inline bool consistent_numeric_constraint(fd::BooleanOperatorView element,
+                                          const GraphStructure& structure,
+                                          const RuleToConstraintInfo& constraint_info,
+                                          const AssignmentSets& assignment_sets) noexcept
 {
     return visit(
         [&](auto&& arg) -> bool
@@ -458,11 +448,10 @@ inline bool consistent_numeric_constraint(
         element.get_variant());
 }
 
-inline bool consistent_numeric_constraints(
-    const Vertex& vertex,
-    View<DataList<formalism::datalog::BooleanOperator<Data<formalism::datalog::FunctionExpression>>>, formalism::datalog::Repository> numeric_constraints,
-    const RuleToRuleToConstraintInfos& indexed_constraints,
-    const AssignmentSets& assignment_sets) noexcept
+inline bool consistent_numeric_constraints(const Vertex& vertex,
+                                           View<DataList<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> numeric_constraints,
+                                           const RuleToRuleToConstraintInfos& indexed_constraints,
+                                           const AssignmentSets& assignment_sets) noexcept
 {
     assert(numeric_constraints.size() == indexed_constraints.infos.size());
 
@@ -484,7 +473,7 @@ inline bool consistent_numeric_constraints(
  * Edge
  */
 
-template<formalism::FactKind T>
+template<f::FactKind T>
 inline bool
 consistent_literals(const Edge& edge, const TaggedRuleToLiteralInfos<T>& indexed_literals, const PredicateAssignmentSets<T>& predicate_assignment_sets) noexcept
 {
@@ -752,7 +741,7 @@ static auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::
         info.kpkc_arity = kpkc_arity(literal);
         info.num_parameters = uint_t(0);
         info.num_constants = uint_t(0);
-        info.position_mappings.constant_positions = std::vector<std::pair<uint_t, Index<formalism::Object>>> {};
+        info.position_mappings.constant_positions = std::vector<std::pair<uint_t, Index<f::Object>>> {};
         info.position_mappings.parameter_to_positions = std::vector<std::vector<uint_t>>(arity);
 
         const auto terms = literal.get_atom().get_terms();
@@ -771,7 +760,7 @@ static auto compute_tagged_indexed_literals(View<IndexList<fd::Literal<T>>, fd::
                         info.position_mappings.parameter_to_positions[uint_t(arg)].push_back(position);
                         ++info.num_parameters;
                     }
-                    else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
+                    else if constexpr (std::is_same_v<Alternative, fd::ObjectView>)
                     {
                         info.position_mappings.constant_positions.emplace_back(position, arg.get_index());
                         ++info.num_constants;
@@ -838,7 +827,7 @@ static auto compute_tagged_indexed_fterms(View<IndexList<fd::FunctionTerm<T>>, f
         info.kpkc_arity = kpkc_arity(fterm);
         info.num_parameters = uint_t(0);
         info.num_constants = uint_t(0);
-        info.position_mappings.constant_positions = std::vector<std::pair<uint_t, Index<formalism::Object>>> {};
+        info.position_mappings.constant_positions = std::vector<std::pair<uint_t, Index<f::Object>>> {};
         info.position_mappings.parameter_to_positions = std::vector<std::vector<uint_t>>(arity);
 
         const auto terms = fterm.get_terms();
@@ -857,7 +846,7 @@ static auto compute_tagged_indexed_fterms(View<IndexList<fd::FunctionTerm<T>>, f
                         info.position_mappings.parameter_to_positions[uint_t(arg)].push_back(position);
                         ++info.num_parameters;
                     }
-                    else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>)
+                    else if constexpr (std::is_same_v<Alternative, fd::ObjectView>)
                     {
                         info.position_mappings.constant_positions.emplace_back(position, arg.get_index());
                         ++info.num_constants;
@@ -906,7 +895,7 @@ static auto compute_tagged_indexed_fterms(View<IndexList<fd::FunctionTerm<T>>, f
     return result;
 }
 
-static auto compute_constraint_info(View<Data<fd::BooleanOperator<Data<fd::FunctionExpression>>>, fd::Repository> element, size_t arity)
+static auto compute_constraint_info(fd::BooleanOperatorView element, size_t arity)
 {
     auto result = details::RuleToConstraintInfo {};
 
@@ -921,7 +910,7 @@ static auto compute_constraint_info(View<Data<fd::BooleanOperator<Data<fd::Funct
     return result;
 }
 
-static auto compute_indexed_constraints(View<Index<fd::ConjunctiveCondition>, fd::Repository> element)
+static auto compute_indexed_constraints(fd::ConjunctiveConditionView element)
 {
     auto result = details::RuleToRuleToConstraintInfos {};
     result.infos = std::vector<details::RuleToConstraintInfo> {};
@@ -930,13 +919,13 @@ static auto compute_indexed_constraints(View<Index<fd::ConjunctiveCondition>, fd
     return result;
 }
 
-auto compute_indexed_literals(View<Index<fd::ConjunctiveCondition>, fd::Repository> element)
+auto compute_indexed_literals(fd::ConjunctiveConditionView element)
 {
     return details::RuleToLiteralInfos { compute_tagged_indexed_literals(element.get_literals<f::StaticTag>(), element.get_arity()),
                                          compute_tagged_indexed_literals(element.get_literals<f::FluentTag>(), element.get_arity()) };
 }
 
-static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Repository> element, size_t num_fluent_predicates)
+static auto compute_indexed_anchors(fd::ConjunctiveConditionView element, size_t num_fluent_predicates)
 {
     auto result = details::LiteralToRuleInfos {};
     result.groups = std::vector<details::LiteralToRuleInfos::GroupInfo> {};
@@ -974,7 +963,7 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
                         if (!literal.get_polarity())
                             result.negated_bound_parameters.set(uint_t(arg));
                     }
-                    else if constexpr (std::is_same_v<Alternative, View<Index<f::Object>, fd::Repository>>) {}
+                    else if constexpr (std::is_same_v<Alternative, fd::ObjectView>) {}
                     else
                         static_assert(dependent_false<Alternative>::value, "Missing case");
                 },
@@ -993,18 +982,17 @@ static auto compute_indexed_anchors(View<Index<fd::ConjunctiveCondition>, fd::Re
     return result;
 }
 
-StaticConsistencyGraph::StaticConsistencyGraph(
-    View<Index<formalism::datalog::Rule>, formalism::datalog::Repository> rule,
-    View<Index<fd::ConjunctiveCondition>, fd::Repository> condition,
-    View<Index<fd::ConjunctiveCondition>, fd::Repository> unary_overapproximation_condition,
-    View<Index<fd::ConjunctiveCondition>, fd::Repository> binary_overapproximation_condition,
-    View<Index<formalism::datalog::ConjunctiveCondition>, formalism::datalog::Repository> static_binary_overapproximation_condition,
-    const analysis::DomainListList& parameter_domains,
-    size_t num_objects,
-    size_t num_fluent_predicates,
-    uint_t begin_parameter_index,
-    uint_t end_parameter_index,
-    const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets) :
+StaticConsistencyGraph::StaticConsistencyGraph(fd::RuleView rule,
+                                               fd::ConjunctiveConditionView condition,
+                                               fd::ConjunctiveConditionView unary_overapproximation_condition,
+                                               fd::ConjunctiveConditionView binary_overapproximation_condition,
+                                               fd::ConjunctiveConditionView static_binary_overapproximation_condition,
+                                               const analysis::DomainListList& parameter_domains,
+                                               size_t num_objects,
+                                               size_t num_fluent_predicates,
+                                               uint_t begin_parameter_index,
+                                               uint_t end_parameter_index,
+                                               const TaggedAssignmentSets<f::StaticTag>& static_assignment_sets) :
     m_rule(rule),
     m_condition(condition),
     m_unary_overapproximation_condition(unary_overapproximation_condition),
@@ -1035,7 +1023,7 @@ StaticConsistencyGraph::StaticConsistencyGraph(
     m_matrix = compute_edges(m_binary_overapproximation_indexed_literals.static_indexed, static_assignment_sets, m_vertices, m_vertex_partitions);
 
     // std::ofstream file("graph_" + std::to_string(uint_t(m_rule.get_index())) + ".dot");
-    // file << formalism::datalog::VariableDependencyGraph(m_condition) << std::endl;
+    // file << fd::VariableDependencyGraph(m_condition) << std::endl;
 
     // std::cout << "adj matrix bitset bytes: " << m_matrix.bitset_data().size() * sizeof(uint64_t) << "\n";
     // std::cout << "adj matrix row_offset bytes: " << m_matrix.row_offset().size() * sizeof(uint_t) << "\n";
@@ -1063,7 +1051,7 @@ StaticConsistencyGraph::StaticConsistencyGraph(
 }
 
 void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const AssignmentSets& assignment_sets,
-                                                                   const TaggedFactSets<formalism::FluentTag>& delta_fact_sets,
+                                                                   const TaggedFactSets<f::FluentTag>& delta_fact_sets,
                                                                    const kpkc::GraphLayout& layout,
                                                                    kpkc::Graph& delta_graph,
                                                                    kpkc::Graph& full_graph,
@@ -1413,14 +1401,11 @@ const details::Vertex& StaticConsistencyGraph::get_vertex(uint_t index) const { 
 
 size_t StaticConsistencyGraph::get_num_vertices() const noexcept { return m_vertices.size(); }
 
-View<Index<fd::Rule>, fd::Repository> StaticConsistencyGraph::get_rule() const noexcept { return m_rule; }
+fd::RuleView StaticConsistencyGraph::get_rule() const noexcept { return m_rule; }
 
-View<Index<fd::ConjunctiveCondition>, fd::Repository> StaticConsistencyGraph::get_condition() const noexcept { return m_condition; }
+fd::ConjunctiveConditionView StaticConsistencyGraph::get_condition() const noexcept { return m_condition; }
 
-const formalism::datalog::VariableDependencyGraph& StaticConsistencyGraph::get_variable_dependeny_graph() const noexcept
-{
-    return m_binary_overapproximation_vdg;
-}
+const fd::VariableDependencyGraph& StaticConsistencyGraph::get_variable_dependeny_graph() const noexcept { return m_binary_overapproximation_vdg; }
 
 const std::vector<std::vector<uint_t>>& StaticConsistencyGraph::get_vertex_partitions() const noexcept { return m_vertex_partitions; }
 
@@ -1430,8 +1415,7 @@ const details::LiteralToRuleInfos& StaticConsistencyGraph::get_predicate_to_anch
 
 const kpkc::DeduplicatedAdjacencyMatrix& StaticConsistencyGraph::get_adjacency_matrix() const noexcept { return m_matrix; }
 
-std::pair<View<Index<fd::GroundConjunctiveCondition>, fd::Repository>, bool>
-create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
+std::pair<fd::GroundConjunctiveConditionView, bool> create_ground_nullary_condition(fd::ConjunctiveConditionView condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::GroundConjunctiveCondition>();
@@ -1457,8 +1441,8 @@ create_ground_nullary_condition(View<Index<fd::ConjunctiveCondition>, fd::Reposi
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-std::pair<View<Index<fd::ConjunctiveCondition>, fd::Repository>, bool>
-create_overapproximation_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
+std::pair<fd::ConjunctiveConditionView, bool>
+create_overapproximation_conjunctive_condition(size_t k, fd::ConjunctiveConditionView condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
@@ -1484,8 +1468,8 @@ create_overapproximation_conjunctive_condition(size_t k, View<Index<fd::Conjunct
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-std::pair<View<Index<fd::ConjunctiveCondition>, fd::Repository>, bool>
-create_static_overapproximation_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
+std::pair<fd::ConjunctiveConditionView, bool>
+create_static_overapproximation_conjunctive_condition(size_t k, fd::ConjunctiveConditionView condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();
@@ -1503,8 +1487,8 @@ create_static_overapproximation_conjunctive_condition(size_t k, View<Index<fd::C
     return context.get_or_create(conj_cond, builder.get_buffer());
 }
 
-std::pair<View<Index<fd::ConjunctiveCondition>, fd::Repository>, bool>
-create_overapproximation_conflicting_conjunctive_condition(size_t k, View<Index<fd::ConjunctiveCondition>, fd::Repository> condition, fd::Repository& context)
+std::pair<fd::ConjunctiveConditionView, bool>
+create_overapproximation_conflicting_conjunctive_condition(size_t k, fd::ConjunctiveConditionView condition, fd::Repository& context)
 {
     auto builder = fd::Builder {};
     auto conj_cond_ptr = builder.get_builder<fd::ConjunctiveCondition>();

@@ -30,7 +30,7 @@ namespace tyr::formalism::planning
 class PlanningFDRTask
 {
 public:
-    PlanningFDRTask(View<Index<FDRTask>, Repository> task, GeneralFDRContext fdr_context, std::shared_ptr<Repository> repository, PlanningDomain domain) :
+    PlanningFDRTask(FDRTaskView task, GeneralFDRContext fdr_context, std::shared_ptr<Repository> repository, PlanningDomain domain) :
         m_repository(std::move(repository)),
         m_task(task),
         m_fdr_context(std::move(fdr_context)),
@@ -47,7 +47,7 @@ public:
 
 private:
     std::shared_ptr<Repository> m_repository;
-    View<Index<FDRTask>, Repository> m_task;
+    FDRTaskView m_task;
     GeneralFDRContext m_fdr_context;
     PlanningDomain m_domain;
 };

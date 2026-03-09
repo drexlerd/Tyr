@@ -109,15 +109,13 @@ std::ostream& print(std::ostream& os, const planning::State<planning::LiftedTask
     for (auto i = derived_atoms_bitset.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms_bitset.find_next(i))
         derived_atoms.push_back(Index<formalism::planning::GroundAtom<formalism::DerivedTag>>(i));
 
-    auto static_fterm_values =
-        std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>>, formalism::planning::Repository>, float_t>> {};
+    auto static_fterm_values = std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::StaticTag>> {};
     for (uint_t i = 0; i < static_numeric_variables.size(); ++i)
         if (!std::isnan(static_numeric_variables[i]))
             static_fterm_values.emplace_back(make_view(Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>>(i), context),
                                              static_numeric_variables[i]);
 
-    auto fluent_fterm_values =
-        std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>> {};
+    auto fluent_fterm_values = std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>> {};
     for (uint_t i = 0; i < fluent_numeric_variables.size(); ++i)
         if (!std::isnan(fluent_numeric_variables[i]))
             fluent_fterm_values.emplace_back(make_view(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>(i), context),
@@ -187,15 +185,13 @@ std::ostream& print(std::ostream& os, const planning::State<planning::GroundTask
     for (auto i = derived_atoms_bitset.find_first(); i != boost::dynamic_bitset<>::npos; i = derived_atoms_bitset.find_next(i))
         derived_atoms.push_back(Index<formalism::planning::GroundAtom<formalism::DerivedTag>>(i));
 
-    auto static_fterm_values =
-        std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>>, formalism::planning::Repository>, float_t>> {};
+    auto static_fterm_values = std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::StaticTag>> {};
     for (uint_t i = 0; i < static_numeric_variables.size(); ++i)
         if (!std::isnan(static_numeric_variables[i]))
             static_fterm_values.emplace_back(make_view(Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>>(i), context),
                                              static_numeric_variables[i]);
 
-    auto fluent_fterm_values =
-        std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>> {};
+    auto fluent_fterm_values = std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>> {};
     for (uint_t i = 0; i < fluent_numeric_variables.size(); ++i)
         if (!std::isnan(fluent_numeric_variables[i]))
             fluent_fterm_values.emplace_back(make_view(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>(i), context),

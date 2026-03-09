@@ -36,10 +36,9 @@ namespace tyr::planning
 namespace action
 {
 
-static auto create_applicability_predicate(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
-                                           formalism::planning::MergeDatalogContext& context)
+static auto create_applicability_predicate(fp::ActionView action, fp::MergeDatalogContext& context)
 {
-    auto predicate_ptr = context.builder.get_builder<formalism::Predicate<formalism::FluentTag>>();
+    auto predicate_ptr = context.builder.get_builder<f::Predicate<f::FluentTag>>();
     auto& predicate = *predicate_ptr;
     predicate.clear();
 
@@ -50,10 +49,9 @@ static auto create_applicability_predicate(View<Index<formalism::planning::Actio
     return context.destination.get_or_create(predicate, context.builder.get_buffer());
 }
 
-static auto create_applicability_atom(View<Index<formalism::planning::Action>, formalism::planning::Repository> action,
-                                      formalism::planning::MergeDatalogContext& context)
+static auto create_applicability_atom(fp::ActionView action, fp::MergeDatalogContext& context)
 {
-    auto atom_ptr = context.builder.get_builder<formalism::datalog::Atom<formalism::FluentTag>>();
+    auto atom_ptr = context.builder.get_builder<f::datalog::Atom<f::FluentTag>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
@@ -61,15 +59,13 @@ static auto create_applicability_atom(View<Index<formalism::planning::Action>, f
 
     atom.predicate = applicability_predicate.get_index();
     for (uint_t i = 0; i < applicability_predicate.get_arity(); ++i)
-        atom.terms.push_back(Data<formalism::Term>(formalism::ParameterIndex(i)));
+        atom.terms.push_back(Data<f::Term>(f::ParameterIndex(i)));
 
     canonicalize(atom);
     return context.destination.get_or_create(atom, context.builder.get_buffer());
 }
 
-static auto create_program(View<Index<fp::Task>, fp::Repository> task,
-                           ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions,
-                           fd::Repository& repository)
+static auto create_program(fp::TaskView task, ApplicableActionProgram::AppPredicateToActionsMapping& predicate_to_actions, fd::Repository& repository)
 {
     auto builder = fd::Builder();
     auto context = fp::MergeDatalogContext(builder, repository);
@@ -165,7 +161,7 @@ static auto create_program(View<Index<fp::Task>, fp::Repository> task,
     return repository.get_or_create(program, builder.get_buffer()).first;
 }
 
-static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, ApplicableActionProgram::AppPredicateToActionsMapping& mapping)
+static auto create_program_context(fp::TaskView task, ApplicableActionProgram::AppPredicateToActionsMapping& mapping)
 {
     auto repository = std::make_shared<fd::Repository>();
     auto program = create_program(task, mapping, *repository);
@@ -177,7 +173,7 @@ static auto create_program_context(View<Index<fp::Task>, fp::Repository> task, A
 }
 }
 
-ApplicableActionProgram::ApplicableActionProgram(View<Index<fp::Task>, fp::Repository> task) :
+ApplicableActionProgram::ApplicableActionProgram(fp::TaskView task) :
     m_predicate_to_actions(),
     m_program_context(action::create_program_context(task, m_predicate_to_actions)),
     m_program_workspace(m_program_context)

@@ -44,9 +44,8 @@ concept StateRepositoryConcept =
              SharedObjectPoolPtr<UnpackedState<Task>> unregistered_state,
              const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
              const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values,
-             const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, formalism::planning::Repository>>& fluent_fact_views,
-             const std::vector<std::pair<View<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, formalism::planning::Repository>, float_t>>&
-                 fterm_value_views) {
+             const std::vector<formalism::planning::FDRFactView<formalism::FluentTag>>& fluent_fact_views,
+             const std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>>& fterm_value_views) {
         { T(task) };
         { r.get_initial_state() } -> std::same_as<State<Task>>;
         { r.get_registered_state(index) } -> std::same_as<State<Task>>;
@@ -56,7 +55,6 @@ concept StateRepositoryConcept =
         { r.register_state(unregistered_state) } -> std::same_as<State<Task>>;
         { r.get_task() } -> std::same_as<const std::shared_ptr<Task>&>;
     };
-
 }
 
 #endif
