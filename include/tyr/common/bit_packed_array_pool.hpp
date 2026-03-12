@@ -147,8 +147,8 @@ public:
             requires std::same_as<std::remove_const_t<Block__>, Block>
         class BasicIterator;
 
-        using iterator = BasicIterator<Block>;
-        using const_iterator = BasicIterator<const Block>;
+        using iterator = BasicIterator<Block_>;
+        using const_iterator = BasicIterator<const Block_>;
 
         BasicArrayView(Block_* data, size_t length, uint8_t width, uint8_t offset) : m_data(data), m_length(length), m_width(width), m_offset(offset) {}
 
