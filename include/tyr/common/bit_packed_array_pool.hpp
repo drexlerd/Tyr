@@ -262,6 +262,7 @@ public:
     uint8_t width() const noexcept { return m_width; }
     size_t capacity() const noexcept { return m_capacity; }
     size_t size() const noexcept { return m_size; }
+    bool empty() const noexcept { return m_size == 0; }
     const auto& segments() const noexcept { return m_segments; }
 
     /**

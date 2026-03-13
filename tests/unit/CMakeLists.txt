@@ -14,6 +14,7 @@ endfunction()
 # Add each test source file as a separate test executable
 
 add_gtest(common_bit_packed_array_pool                   "common/bit_packed_array_pool.cpp")
+add_gtest(common_bit_packed_array_set                    "common/bit_packed_array_set.cpp")
 add_gtest(common_bit_packed_layout                       "common/bit_packed_layout.cpp")
 add_gtest(common_vector                                  "common/vector.cpp")
 add_gtest(common_dynamic_bitset                          "common/dynamic_bitset.cpp")
