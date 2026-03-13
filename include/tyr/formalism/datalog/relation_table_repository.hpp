@@ -26,6 +26,7 @@
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/tuple.hpp"
+#include "tyr/formalism/datalog/binding_view.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 
 #include <cassert>

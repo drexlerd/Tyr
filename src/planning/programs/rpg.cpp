@@ -135,7 +135,7 @@ static auto create_program(fp::TaskView task, fd::Repository& destination, RPGPr
 
 static auto create_program_context(fp::TaskView task, RPGProgram::RuleToActionMapping& rule_to_action)
 {
-    auto repository = std::make_shared<fd::Repository>();
+    auto repository = std::make_shared<fd::Repository>(task.get_domain().get_constants().size() + task.get_objects().size());
     auto program = create_program(task, *repository, rule_to_action);
     auto domains = analysis::compute_variable_domains(program);
     auto strata = analysis::compute_rule_stratification(program);

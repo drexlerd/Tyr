@@ -608,7 +608,7 @@ inline Index<formalism::datalog::Rule> convert(GripperRule e) noexcept { return 
 
 inline std::pair<formalism::datalog::ProgramView, formalism::datalog::RepositoryPtr> create_example_problem()
 {
-    auto repository_ptr = std::make_shared<formalism::datalog::Repository>();
+    auto repository_ptr = std::make_shared<formalism::datalog::Repository>(5);
     auto& repository = *repository_ptr;
     auto program_builder = Data<formalism::datalog::Program> {};
     auto buffer = buffer::Buffer {};

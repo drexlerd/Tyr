@@ -29,6 +29,7 @@
 #include "tyr/common/hash.hpp"
 #include "tyr/common/tuple.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
+#include "tyr/formalism/datalog/relation_table_repository.hpp"
 
 #include <cassert>
 #include <optional>
@@ -126,6 +127,7 @@ private:
     const Repository* m_parent;
     RepositoryStorage m_repository;
     buffer::SegmentedBuffer m_arena;
+    RelationTableRepository m_relation_repository;
 
     template<typename T>
         requires(GroupIndexConcept<Index<T>>)
@@ -176,7 +178,14 @@ private:
     }
 
 public:
-    Repository(const Repository* parent = nullptr) : m_parent(parent), m_repository(), m_arena() { clear_entries(); }
+    Repository(size_t num_objects, const Repository* parent = nullptr) :
+        m_parent(parent),
+        m_repository(),
+        m_arena(),
+        m_relation_repository(num_objects, m_parent ? &m_parent->m_relation_repository : nullptr)
+    {
+        clear_entries();
+    }
 
     template<typename T>
         requires(IndexConcept<Index<T>> && !GroupIndexConcept<Index<T>>)

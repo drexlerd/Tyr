@@ -183,7 +183,7 @@ ProgramWorkspace<OrAP, AndAP, TP>::ProgramWorkspace(ProgramContext& context, con
     statistics()
 {
     for (uint_t i = 0; i < context.get_program().get_rules().size(); ++i)
-        rules.emplace_back(std::make_unique<RuleWorkspace<AndAP>>(context.get_repository(), cws.rules[i], and_ap));
+        rules.emplace_back(std::make_unique<RuleWorkspace<AndAP>>(context.get_program().get_objects().size(), context.get_repository(), cws.rules[i], and_ap));
 }
 
 }

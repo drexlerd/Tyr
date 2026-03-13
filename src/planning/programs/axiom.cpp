@@ -146,7 +146,7 @@ static auto create_program(fp::TaskView task, AxiomEvaluatorProgram::PredicateTo
 
 static auto create_program_context(fp::TaskView task, AxiomEvaluatorProgram::PredicateToPredicateMapping& mapping)
 {
-    auto repository = std::make_shared<fd::Repository>();
+    auto repository = std::make_shared<fd::Repository>(task.get_domain().get_constants().size() + task.get_objects().size());
     auto program = create_program(task, mapping, *repository);
     auto domains = analysis::compute_variable_domains(program);
     auto strata = analysis::compute_rule_stratification(program);
