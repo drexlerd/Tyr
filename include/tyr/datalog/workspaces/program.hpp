@@ -140,6 +140,8 @@ struct ProgramWorkspace
     formalism::planning::Builder planning_builder;
     formalism::datalog::Builder datalog_builder;
 
+    IndexList<formalism::Object> binding;
+
     RuleSchedulerStrata schedulers;
 
     CostBuckets cost_buckets;

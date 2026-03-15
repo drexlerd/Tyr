@@ -67,7 +67,8 @@ struct Data<formalism::planning::GroundAction>
     }
 
     auto cista_members() const noexcept { return std::tie(index, action, row, condition, effects); }
-    auto identifying_members() const noexcept { return std::tie(action, row); }
+    // Have to include effects because row only binds objects to non-effect quantified variables.
+    auto identifying_members() const noexcept { return std::tie(action, row, condition, effects); }
 };
 }
 

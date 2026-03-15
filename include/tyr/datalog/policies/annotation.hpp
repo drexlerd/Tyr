@@ -53,37 +53,24 @@ using OrAnnotationsList = std::vector<std::vector<Cost>>;
 struct Witness
 {
 public:
-    Witness(const formalism::datalog::Repository& context,
-            Index<formalism::datalog::Rule> rule,
-            Index<formalism::Binding> binding,
-            Index<formalism::datalog::GroundConjunctiveCondition> witness_condition,
-            Cost cost) :
-        m_context(&context),
-        m_rule(rule),
-        m_binding(binding),
-        m_witness_condition(witness_condition),
-        m_cost(cost)
-    {
-    }
+    Witness(Index<formalism::datalog::Rule> rule, formalism::datalog::BindingView binding, Cost cost) : m_rule(rule), m_cost(cost), m_binding(binding) {}
 
     auto get_rule() const noexcept { return m_rule; }
 
-    auto get_binding() const noexcept { return make_view(m_binding, *m_context); }
-    auto get_witness_condition() const noexcept { return make_view(m_witness_condition, *m_context); }
-
+    auto get_binding() const noexcept { return m_binding; }
     auto get_cost() const noexcept { return m_cost; }
 
-    auto identifying_members() const noexcept { return std::tie(m_binding, m_rule, m_context); }
+    auto identifying_members() const noexcept { return std::tie(m_binding, m_rule); }
 
 private:
-    const formalism::datalog::Repository* m_context;  ///< include context to read binding and witness condition directly from the thread's repository.
-    Index<formalism::datalog::Rule> m_rule;           ///< lives in program repository
-    Index<formalism::Binding> m_binding;              ///< lives in given context
-    Index<formalism::datalog::GroundConjunctiveCondition> m_witness_condition;  ///< lives in given context
+    Index<formalism::datalog::Rule> m_rule;
     Cost m_cost;
+    formalism::datalog::BindingView m_binding;
 };
 
 using AndAnnotationsMap = UnorderedMap<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>, Witness>;
+
+static_assert(sizeof(AndAnnotationsMap::value_type) == 32);
 
 struct CostUpdate
 {
@@ -308,13 +295,6 @@ private:
         if (best_cost <= body_cost + rule_cost)
             return std::nullopt;  ///< No local or global improvement
 
-        auto ground_conj_cond_ptr = delta_context.builder.get_builder<formalism::datalog::GroundConjunctiveCondition>();
-        auto& ground_conj_cond = *ground_conj_cond_ptr;
-        ground_conj_cond.clear();
-
-        auto ground_literal_ptr = delta_context.builder.get_builder<formalism::datalog::GroundLiteral<formalism::FluentTag>>();
-        auto& ground_literal = *ground_literal_ptr;
-
         for (const auto literal : witness_condition.get_literals<formalism::FluentTag>())
         {
             assert(literal.get_polarity());
@@ -329,23 +309,12 @@ private:
 
             if (best_cost <= body_cost + rule_cost)
                 return std::nullopt;  ///< No local or global improvement
-
-            // TODO: we could get rid of grounding literals by having strictly positive rules
-            ground_literal.clear();
-            ground_literal.atom = program_ground_atom.get_index();
-            ground_literal.polarity = literal.get_polarity();
-
-            ground_conj_cond.fluent_literals.push_back(
-                delta_context.destination.get_or_create(ground_literal, delta_context.builder.get_buffer()).first.get_index());
         }
         const auto witness_cost = body_cost + rule_cost;
 
-        formalism::datalog::canonicalize(ground_conj_cond);
-        const auto new_ground_conj_cond = delta_context.destination.get_or_create(ground_conj_cond, delta_context.builder.get_buffer()).first.get_index();
+        const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first;
 
-        const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first.get_index();
-
-        return Witness(delta_context.destination, rule.get_index(), delta_binding, new_ground_conj_cond, witness_cost);
+        return Witness(rule.get_index(), delta_binding, witness_cost);
     }
 };
 

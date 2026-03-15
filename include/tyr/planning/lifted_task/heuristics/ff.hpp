@@ -20,6 +20,8 @@
 
 #include "tyr/datalog/policies/annotation.hpp"
 #include "tyr/datalog/policies/termination.hpp"
+#include "tyr/formalism/datalog/formatter.hpp"
+#include "tyr/formalism/datalog/grounder.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
 #include "tyr/formalism/planning/grounder.hpp"
 #include "tyr/formalism/planning/merge_datalog.hpp"
@@ -151,10 +153,22 @@ private:
         }
 
         // Divide case: recursively call for preconditions.
-        for (const auto literal : witness.get_witness_condition().get_literals<formalism::FluentTag>())
+
+        auto datalog_grounder_context =
+            formalism::datalog::GrounderContext { m_workspace.datalog_builder, m_workspace.workspace_repository, m_workspace.binding };
+
+        for (const auto literal : m_task->get_rpg_program()
+                                      .get_const_program_workspace()
+                                      .rules[uint_t(witness.get_rule())]
+                                      .get_witness_condition()
+                                      .get_literals<formalism::FluentTag>())
         {
-            // The atom is part of the program but the literal is not, hence, literal.get_data().atom
-            extract_relaxed_plan_and_preferred_actions(make_view(literal.get_data().atom, m_workspace.workspace_repository), state_context, grounder_context);
+            datalog_grounder_context.binding =
+                witness.get_binding().get_data().objects;  //< cannot do this before the loop because of overwrites during recursion; we could binding from a
+                                                           // builder and place it into the grounder context.
+            const auto witness_atom = formalism::datalog::ground(literal.get_atom(), datalog_grounder_context).first;
+
+            extract_relaxed_plan_and_preferred_actions(witness_atom, state_context, grounder_context);
         }
     }
 
