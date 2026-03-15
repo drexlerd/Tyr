@@ -15,19 +15,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_DATALOG_RELATION_TABLE_REPOSITORY_HPP_
-#define TYR_FORMALISM_DATALOG_RELATION_TABLE_REPOSITORY_HPP_
+#ifndef TYR_FORMALISM_RELATION_REPOSITORY_HPP_
+#define TYR_FORMALISM_RELATION_REPOSITORY_HPP_
 
-// Include specialization headers first
-#include "tyr/formalism/datalog/datas.hpp"
-#include "tyr/formalism/datalog/indices.hpp"
-//
 #include "tyr/common/bit_packed_array_set.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/tuple.hpp"
-#include "tyr/formalism/datalog/binding_view.hpp"
-#include "tyr/formalism/datalog/declarations.hpp"
+#include "tyr/common/types.hpp"
+#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/object_index.hpp"
 
 #include <cassert>
 #include <optional>
@@ -35,9 +32,10 @@
 #include <type_traits>
 #include <utility>
 
-namespace tyr::formalism::datalog
+namespace tyr::formalism
 {
-class RelationTableRepository
+template<typename... Ts>
+class RelationRepository
 {
 private:
     template<std::unsigned_integral Block>
@@ -63,10 +61,9 @@ private:
         slot_type slots;
     };
 
-    using RepositoryStorage =
-        std::tuple<Entry<Predicate<StaticTag>>, Entry<Predicate<FluentTag>>, Entry<Function<StaticTag>>, Entry<Function<FluentTag>>, Entry<Rule>>;
+    using RepositoryStorage = std::tuple<Entry<Ts>...>;
 
-    const RelationTableRepository* m_parent;
+    const RelationRepository* m_parent;
     RepositoryStorage m_repository;
     size_t m_num_objects;
 
@@ -113,7 +110,7 @@ private:
 public:
     using ConstViewType = BasicBitPackedArrayView<const uint_t, Coder<uint_t>>;
 
-    RelationTableRepository(size_t num_objects, const RelationTableRepository* parent = nullptr) : m_parent(parent), m_repository(), m_num_objects(num_objects)
+    RelationRepository(size_t num_objects, const RelationRepository* parent = nullptr) : m_parent(parent), m_repository(), m_num_objects(num_objects)
     {
         clear_entries();
     }
@@ -228,7 +225,7 @@ public:
     void clear() noexcept { clear_entries(); }
 
     template<typename T>
-    const RelationTableRepository& get_canonical_context(std::pair<Index<T>, Index<Binding>> index) const noexcept
+    const RelationRepository& get_canonical_context(std::pair<Index<T>, Index<Binding>> index) const noexcept
     {
         const auto& [g, row] = index;
 

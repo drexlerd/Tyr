@@ -47,14 +47,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<formalism::FactKind T>
-using LiteralView = View<Index<Literal<T>>, Repository>;
-
-template<formalism::FactKind T>
-using LiteralListView = View<IndexList<Literal<T>>, Repository>;
-}
 }
 
 #endif

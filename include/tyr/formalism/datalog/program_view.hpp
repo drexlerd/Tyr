@@ -71,12 +71,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-using ProgramView = View<Index<Program>, Repository>;
-
-using ProgramListView = View<IndexList<Program>, Repository>;
-}
 }
 
 #endif

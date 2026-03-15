@@ -20,7 +20,7 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
-#include "tyr/formalism/datalog/binding_view.hpp"
+#include "tyr/formalism/binding_view.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/ground_function_term_index.hpp"
 #include "tyr/formalism/function_view.hpp"
@@ -52,14 +52,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<formalism::FactKind T>
-using GroundFunctionTermView = View<Index<GroundFunctionTerm<T>>, Repository>;
-
-template<formalism::FactKind T>
-using GroundFunctionTermListView = View<IndexList<GroundFunctionTerm<T>>, Repository>;
-}
 }
 
 #endif

@@ -21,8 +21,7 @@
 #include "tyr/common/formatter.hpp"                // for operator<<
 #include "tyr/common/types.hpp"                    // for IndexList
 #include "tyr/formalism/datalog/declarations.hpp"  // for Program (ptr only), Rule
-#include "tyr/formalism/datalog/program_view.hpp"  // for Index
-#include "tyr/formalism/datalog/rule_index.hpp"    // for Index
+#include "tyr/formalism/datalog/repository.hpp"
 
 #include <vector>  // for vector
 

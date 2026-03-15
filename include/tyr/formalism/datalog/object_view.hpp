@@ -23,9 +23,7 @@
 
 namespace tyr::formalism::datalog
 {
-using ObjectView = View<Index<Object>, Repository>;
 
-using ObjectListView = View<IndexList<Object>, Repository>;
 }
 
 #endif

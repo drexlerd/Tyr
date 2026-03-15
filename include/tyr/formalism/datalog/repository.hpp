@@ -21,6 +21,7 @@
 // Include specialization headers first
 #include "tyr/formalism/datalog/datas.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
+#include "tyr/formalism/datalog/views.hpp"
 //
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
@@ -29,10 +30,11 @@
 #include "tyr/common/hash.hpp"
 #include "tyr/common/tuple.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
-#include "tyr/formalism/datalog/relation_table_repository.hpp"
-#include "tyr/formalism/datalog/serialization_repository.hpp"
 #include "tyr/formalism/function_view.hpp"
 #include "tyr/formalism/predicate_view.hpp"
+#include "tyr/formalism/relation_repository.hpp"
+#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/symbol_repository.hpp"
 
 #include <cassert>
 #include <optional>
@@ -42,183 +44,230 @@
 
 namespace tyr::formalism::datalog
 {
+using SymbolRepository = tyr::formalism::SymbolRepository<Variable,
+                                                          Object,
+                                                          Binding,
+                                                          Predicate<StaticTag>,
+                                                          Predicate<FluentTag>,
+                                                          Atom<StaticTag>,
+                                                          Atom<FluentTag>,
+                                                          GroundAtom<StaticTag>,
+                                                          GroundAtom<FluentTag>,
+                                                          Literal<StaticTag>,
+                                                          Literal<FluentTag>,
+                                                          GroundLiteral<StaticTag>,
+                                                          GroundLiteral<FluentTag>,
+                                                          Function<StaticTag>,
+                                                          Function<FluentTag>,
+                                                          FunctionTerm<StaticTag>,
+                                                          FunctionTerm<FluentTag>,
+                                                          GroundFunctionTerm<StaticTag>,
+                                                          GroundFunctionTerm<FluentTag>,
+                                                          GroundFunctionTermValue<StaticTag>,
+                                                          GroundFunctionTermValue<FluentTag>,
+                                                          UnaryOperator<OpSub, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpAdd, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpSub, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpMul, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpDiv, Data<FunctionExpression>>,
+                                                          MultiOperator<OpAdd, Data<FunctionExpression>>,
+                                                          MultiOperator<OpMul, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpEq, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpNe, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpLe, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpLt, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpGe, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpGt, Data<FunctionExpression>>,
+                                                          UnaryOperator<OpSub, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpAdd, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpSub, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpMul, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpDiv, Data<GroundFunctionExpression>>,
+                                                          MultiOperator<OpAdd, Data<GroundFunctionExpression>>,
+                                                          MultiOperator<OpMul, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpEq, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpNe, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpLe, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpLt, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpGe, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpGt, Data<GroundFunctionExpression>>,
+                                                          ConjunctiveCondition,
+                                                          Rule,
+                                                          GroundConjunctiveCondition,
+                                                          GroundRule,
+                                                          Program>;
 
-class Repository
-{
-private:
-    const Repository* m_parent;
-    SerializationRepository m_serialization_repository;
-    RelationTableRepository m_relation_repository;
-    size_t m_num_objects;
+using RelationRepository = tyr::formalism::RelationRepository<Predicate<StaticTag>, Predicate<FluentTag>, Function<StaticTag>, Function<FluentTag>, Rule>;
 
-public:
-    Repository(size_t num_objects, const Repository* parent = nullptr) :
-        m_parent(parent),
-        m_serialization_repository(m_parent ? &m_parent->m_serialization_repository : nullptr),
-        m_relation_repository(num_objects, m_parent ? &m_parent->m_relation_repository : nullptr),
-        m_num_objects(num_objects)
-    {
-        clear();
-    }
-
-    auto get_num_objects() const noexcept { return m_num_objects; }
-
-    /**
-     * SerializationRepository forwarding.
-     */
-
-    template<typename T>
-    std::optional<View<Index<T>, Repository>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
-    {
-        if (auto index_or_nullopt = m_serialization_repository.find_local_with_hash(builder, h))
-            return View<Index<T>, Repository>(*index_or_nullopt, *this);
-
-        return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
-    }
-
-    template<typename T>
-    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const noexcept
-    {
-        if (auto index_or_nullopt = m_serialization_repository.find_local(builder))
-            return View<Index<T>, Repository>(*index_or_nullopt, *this);
-
-        return m_parent ? m_parent->template find<T>(builder) : std::nullopt;
-    }
-
-    template<typename T>
-    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
-    {
-        if (auto index_or_nullopt = m_serialization_repository.find_local(builder))
-            return { View<Index<T>, Repository>(*index_or_nullopt, *this), false };
-
-        if (m_parent)
-            if (auto ptr = m_parent->template find<T>(builder))
-                return { *ptr, false };
-
-        const auto [index, success] = m_serialization_repository.get_or_create_local(builder, buf);
-        return { View<Index<T>, Repository>(index, *this), success };
-    }
-
-    template<typename T>
-    const Data<T>& operator[](Index<T> index) const noexcept
-    {
-        if (!m_serialization_repository.is_local(index))
-        {
-            assert(m_parent);
-            return (*m_parent)[index];
-        }
-
-        return m_serialization_repository.at_local(index);
-    }
-
-    template<typename T>
-    const Data<T>& front() const
-    {
-        if (m_serialization_repository.template parent_size<T>() > 0)
-        {
-            assert(m_parent);
-            return m_parent->template front<T>();
-        }
-
-        return m_serialization_repository.template front_local<T>();
-    }
-
-    template<typename T>
-    size_t size() const noexcept
-    {
-        return m_serialization_repository.template parent_size<T>() + m_serialization_repository.template local_size<T>();
-    }
-
-    void clear() noexcept
-    {
-        m_serialization_repository.clear();
-        m_relation_repository.clear();
-    }
-
-    template<typename T>
-    const Repository& get_canonical_context(Index<T> index) const noexcept
-    {
-        if (!m_serialization_repository.is_local(index))
-        {
-            assert(m_parent && "Element not found in the repository chain.");
-            return m_parent->get_canonical_context(index);
-        }
-        return *this;
-    }
-
-    /**
-     * RelationTableRepository forwarding
-     */
-
-    template<IndexConcept I>
-    std::optional<View<std::pair<I, Index<Binding>>, Repository>> find_with_hash(I g, const IndexList<Object>& builder, size_t h) const noexcept
-    {
-        const auto row_or_nullopt = m_relation_repository.find_local_with_hash(g, builder, h);
-        if (row_or_nullopt)
-            return View<std::pair<I, Index<Binding>>, Repository>(std::make_pair(g, *row_or_nullopt), *this);
-
-        return m_parent ? m_parent->find_with_hash(g, builder, h) : std::nullopt;
-    }
-
-    template<IndexConcept I>
-    std::optional<View<std::pair<I, Index<Binding>>, Repository>> find(I g, const IndexList<Object>& builder) const noexcept
-    {
-        const auto row_or_nullopt = m_relation_repository.find_local(g, builder);
-        if (row_or_nullopt)
-            return View<std::pair<I, Index<Binding>>, Repository>(std::make_pair(g, *row_or_nullopt), *this);
-
-        return m_parent ? m_parent->find(g, builder) : std::nullopt;
-    }
-
-    template<IndexConcept I>
-    std::pair<View<std::pair<I, Index<Binding>>, Repository>, bool> get_or_create(View<I, Repository> g, const IndexList<Object>& builder)
-    {
-        if (auto row_or_nullopt = m_relation_repository.find_local(g.get_index(), builder))
-            return { View<std::pair<I, Index<Binding>>, Repository>(std::make_pair(g.get_index(), *row_or_nullopt), *this), false };
-
-        if (m_parent)
-            if (auto ptr = m_parent->find(g.get_index(), builder))
-                return { *ptr, false };
-
-        const auto [row, success] =
-            m_relation_repository.get_or_create_local(g.get_index(), g.get_arity(), std::max<uint8_t>(1, std::bit_width(m_num_objects)), builder);
-
-        return { View<std::pair<I, Index<Binding>>, Repository>(std::make_pair(g.get_index(), row), *this), success };
-    }
-
-    template<IndexConcept I>
-    RelationTableRepository::ConstViewType operator[](std::pair<I, Index<Binding>> index) const noexcept
-    {
-        if (!m_relation_repository.is_local(index))
-        {
-            assert(m_parent);
-            return (*m_parent)[index];
-        }
-
-        return m_relation_repository.at_local(index);
-    }
-
-    template<IndexConcept I>
-    size_t size(I g) const noexcept
-    {
-        return m_relation_repository.parent_size(g) + m_relation_repository.local_size(g);
-    }
-
-    template<IndexConcept I>
-    const Repository& get_canonical_context(std::pair<I, Index<Binding>> index) const noexcept
-    {
-        if (!m_relation_repository.is_local(index))
-        {
-            assert(m_parent && "Element not found in the repository chain.");
-            return m_parent->get_canonical_context(index);
-        }
-        return *this;
-    }
-};
+using Repository = tyr::formalism::Repository<SymbolRepository, RelationRepository>;
 
 static_assert(RepositoryConcept<Repository>);
 static_assert(Context<Repository>);
 
+using RepositoryPtr = std::shared_ptr<Repository>;
+
+template<typename T>
+using ArithmeticOperatorView = View<Data<ArithmeticOperator<T>>, Repository>;
+using LiftedArithmeticOperatorView = View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository>;
+using GroundArithmeticOperatorView = View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+template<typename T>
+using ArithmeticOperatorListView = View<DataList<ArithmeticOperator<T>>, Repository>;
+using LiftedArithmeticOperatorListView = View<DataList<ArithmeticOperator<Data<FunctionExpression>>>, Repository>;
+using GroundArithmeticOperatorListView = View<DataList<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+template<formalism::FactKind T>
+using AtomView = View<Index<Atom<T>>, Repository>;
+
+template<formalism::FactKind T>
+using AtomListView = View<IndexList<Atom<T>>, Repository>;
+
+template<formalism::OpKind Op, typename T>
+using BinaryOperatorView = View<Index<BinaryOperator<Op, T>>, Repository>;
+template<formalism::OpKind Op>
+using LiftedBinaryOperatorView = View<Index<BinaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundBinaryOperatorView = View<Index<BinaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<formalism::OpKind Op, typename T>
+using BinaryOperatorListView = View<IndexList<BinaryOperator<Op, T>>, Repository>;
+template<formalism::OpKind Op>
+using LiftedBinaryOperatorListView = View<IndexList<BinaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundBinaryOperatorListView = View<IndexList<BinaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+using BindingView = View<Index<Binding>, Repository>;
+template<FactKind T>
+using PredicateBindingView = View<std::pair<Index<Predicate<T>>, Index<Binding>>, Repository>;
+template<FactKind T>
+using FunctionBindingView = View<std::pair<Index<Function<T>>, Index<Binding>>, Repository>;
+using RuleBindingView = View<std::pair<Index<Rule>, Index<Binding>>, Repository>;
+
+template<typename T>
+using BooleanOperatorView = View<Data<BooleanOperator<T>>, Repository>;
+using LiftedBooleanOperatorView = View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository>;
+using GroundBooleanOperatorView = View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+template<typename T>
+using BooleanOperatorListView = View<DataList<BooleanOperator<T>>, Repository>;
+using LiftedBooleanOperatorListView = View<DataList<BooleanOperator<Data<FunctionExpression>>>, Repository>;
+using GroundBooleanOperatorListView = View<DataList<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+using ConjunctiveConditionView = View<Index<ConjunctiveCondition>, Repository>;
+
+using ConjunctiveConditionListView = View<IndexList<ConjunctiveCondition>, Repository>;
+
+using FunctionExpressionView = View<Data<FunctionExpression>, Repository>;
+
+using FunctionExpressionListView = View<DataList<FunctionExpression>, Repository>;
+
+template<formalism::FactKind T>
+using FunctionTermView = View<Index<FunctionTerm<T>>, Repository>;
+
+template<formalism::FactKind T>
+using FunctionTermListView = View<IndexList<FunctionTerm<T>>, Repository>;
+
+template<FactKind T>
+using FunctionView = View<Index<Function<T>>, Repository>;
+
+template<FactKind T>
+using FunctionListView = View<IndexList<Function<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundAtomView = View<Index<GroundAtom<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundAtomListView = View<IndexList<GroundAtom<T>>, Repository>;
+
+using GroundConjunctiveConditionView = View<Index<GroundConjunctiveCondition>, Repository>;
+
+using GroundConjunctiveConditionListView = View<IndexList<GroundConjunctiveCondition>, Repository>;
+
+using GroundFunctionExpressionView = View<Data<GroundFunctionExpression>, Repository>;
+
+using GroundFunctionExpressionListView = View<DataList<GroundFunctionExpression>, Repository>;
+
+template<formalism::FactKind T>
+using GroundFunctionTermValueView = View<Index<GroundFunctionTermValue<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundFunctionTermValueListView = View<IndexList<GroundFunctionTermValue<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundFunctionTermView = View<Index<GroundFunctionTerm<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundFunctionTermListView = View<IndexList<GroundFunctionTerm<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundLiteralView = View<Index<GroundLiteral<T>>, Repository>;
+
+template<formalism::FactKind T>
+using GroundLiteralListView = View<IndexList<GroundLiteral<T>>, Repository>;
+
+using GroundRuleView = View<Index<GroundRule>, Repository>;
+
+using GroundRuleListView = View<IndexList<GroundRule>, Repository>;
+
+template<formalism::FactKind T>
+using LiteralView = View<Index<Literal<T>>, Repository>;
+
+template<formalism::FactKind T>
+using LiteralListView = View<IndexList<Literal<T>>, Repository>;
+
+template<formalism::OpKind Op, typename T>
+using MultiOperatorView = View<Index<MultiOperator<Op, T>>, Repository>;
+template<formalism::OpKind Op>
+using LiftedMultiOperatorView = View<Index<MultiOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundMultiOperatorView = View<Index<MultiOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<formalism::OpKind Op, typename T>
+using MultiOperatorListView = View<IndexList<MultiOperator<Op, T>>, Repository>;
+template<formalism::OpKind Op>
+using LiftedMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+using ObjectView = View<Index<Object>, Repository>;
+
+using ObjectListView = View<IndexList<Object>, Repository>;
+
+template<FactKind T>
+using PredicateView = View<Index<Predicate<T>>, Repository>;
+
+template<FactKind T>
+using PredicateListView = View<IndexList<Predicate<T>>, Repository>;
+
+using ProgramView = View<Index<Program>, Repository>;
+
+using ProgramListView = View<IndexList<Program>, Repository>;
+
+using RuleView = View<Index<Rule>, Repository>;
+
+using RuleListView = View<IndexList<Rule>, Repository>;
+
+using TermView = View<Data<Term>, Repository>;
+
+using TermListView = View<DataList<Term>, Repository>;
+
+template<formalism::OpKind Op, typename T>
+using UnaryOperatorView = View<Index<UnaryOperator<Op, T>>, Repository>;
+template<formalism::OpKind Op>
+using LiftedUnaryOperatorView = View<Index<UnaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundUnaryOperatorView = View<Index<UnaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<formalism::OpKind Op, typename T>
+using UnaryOperatorListView = View<IndexList<UnaryOperator<Op, T>>, Repository>;
+template<formalism::OpKind Op>
+using LiftedUnaryOperatorListView = View<IndexList<UnaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<formalism::OpKind Op>
+using GroundUnaryOperatorListView = View<IndexList<UnaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+using VariableView = View<Index<Variable>, Repository>;
+
+using VariableListView = View<IndexList<Variable>, Repository>;
 }
 
 #endif

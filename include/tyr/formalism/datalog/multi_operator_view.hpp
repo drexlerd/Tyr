@@ -48,22 +48,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<formalism::OpKind Op, typename T>
-using MultiOperatorView = View<Index<MultiOperator<Op, T>>, Repository>;
-template<formalism::OpKind Op>
-using LiftedMultiOperatorView = View<Index<MultiOperator<Op, Data<FunctionExpression>>>, Repository>;
-template<formalism::OpKind Op>
-using GroundMultiOperatorView = View<Index<MultiOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
-
-template<formalism::OpKind Op, typename T>
-using MultiOperatorListView = View<IndexList<MultiOperator<Op, T>>, Repository>;
-template<formalism::OpKind Op>
-using LiftedMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<FunctionExpression>>>, Repository>;
-template<formalism::OpKind Op>
-using GroundMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
-}
 }
 
 #endif

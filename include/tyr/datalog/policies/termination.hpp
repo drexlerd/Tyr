@@ -24,6 +24,8 @@
 #include "tyr/datalog/policies/aggregation.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/ground_atom_index.hpp"
+#include "tyr/formalism/datalog/repository.hpp"
+#include "tyr/formalism/datalog/views.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <concepts>

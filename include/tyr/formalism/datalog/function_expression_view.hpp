@@ -45,12 +45,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-using FunctionExpressionView = View<Data<FunctionExpression>, Repository>;
-
-using FunctionExpressionListView = View<DataList<FunctionExpression>, Repository>;
-}
 }
 
 #endif

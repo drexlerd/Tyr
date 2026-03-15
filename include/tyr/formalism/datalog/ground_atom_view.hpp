@@ -21,7 +21,7 @@
 #include "tyr/common/array.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
-#include "tyr/formalism/datalog/binding_view.hpp"
+#include "tyr/formalism/binding_view.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/ground_atom_index.hpp"
 #include "tyr/formalism/object_view.hpp"
@@ -54,14 +54,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<formalism::FactKind T>
-using GroundAtomView = View<Index<GroundAtom<T>>, Repository>;
-
-template<formalism::FactKind T>
-using GroundAtomListView = View<IndexList<GroundAtom<T>>, Repository>;
-}
 }
 
 #endif

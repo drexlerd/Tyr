@@ -43,18 +43,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<typename T>
-using BooleanOperatorView = View<Data<BooleanOperator<T>>, Repository>;
-using LiftedBooleanOperatorView = View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository>;
-using GroundBooleanOperatorView = View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
-
-template<typename T>
-using BooleanOperatorListView = View<DataList<BooleanOperator<T>>, Repository>;
-using LiftedBooleanOperatorListView = View<DataList<BooleanOperator<Data<FunctionExpression>>>, Repository>;
-using GroundBooleanOperatorListView = View<DataList<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
-}
 }
 
 #endif

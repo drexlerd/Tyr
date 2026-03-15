@@ -20,7 +20,7 @@
 
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
-#include "tyr/formalism/datalog/views.hpp"
+#include "tyr/formalism/datalog/repository.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 #include <iostream>

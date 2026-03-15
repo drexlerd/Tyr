@@ -152,14 +152,12 @@ concept RepositoryConcept =
     && RepositoryAccess<T, BinaryOperator<OpGe, Data<GroundFunctionExpression>>> && RepositoryAccess<T, BinaryOperator<OpGt, Data<GroundFunctionExpression>>>
     && RepositoryAccess<T, Rule> && RepositoryAccess<T, GroundRule> && RepositoryAccess<T, Program>;
 
-class Repository;
-
-using RepositoryPtr = std::shared_ptr<Repository>;
-
-/// @brief Make Repository a trivial context.
-/// @param context
-/// @return
-inline const Repository& get_repository(const Repository& context) noexcept { return context; }
+template<typename T>
+    requires RepositoryConcept<T>
+inline const T& get_repository(const T& context) noexcept
+{
+    return context;
+}
 
 template<typename T>
 concept Context = requires(const T& a) {

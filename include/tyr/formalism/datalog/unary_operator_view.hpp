@@ -57,22 +57,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<formalism::OpKind Op, typename T>
-using UnaryOperatorView = View<Index<UnaryOperator<Op, T>>, Repository>;
-template<formalism::OpKind Op>
-using LiftedUnaryOperatorView = View<Index<UnaryOperator<Op, Data<FunctionExpression>>>, Repository>;
-template<formalism::OpKind Op>
-using GroundUnaryOperatorView = View<Index<UnaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
-
-template<formalism::OpKind Op, typename T>
-using UnaryOperatorListView = View<IndexList<UnaryOperator<Op, T>>, Repository>;
-template<formalism::OpKind Op>
-using LiftedUnaryOperatorListView = View<IndexList<UnaryOperator<Op, Data<FunctionExpression>>>, Repository>;
-template<formalism::OpKind Op>
-using GroundUnaryOperatorListView = View<IndexList<UnaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
-}
 }
 
 #endif

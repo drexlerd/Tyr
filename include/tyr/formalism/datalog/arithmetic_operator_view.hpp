@@ -44,18 +44,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::datalog
-{
-template<typename T>
-using ArithmeticOperatorView = View<Data<ArithmeticOperator<T>>, Repository>;
-using LiftedArithmeticOperatorView = View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository>;
-using GroundArithmeticOperatorView = View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>;
-
-template<typename T>
-using ArithmeticOperatorListView = View<DataList<ArithmeticOperator<T>>, Repository>;
-using LiftedArithmeticOperatorListView = View<DataList<ArithmeticOperator<Data<FunctionExpression>>>, Repository>;
-using GroundArithmeticOperatorListView = View<DataList<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>;
-}
 }
 
 #endif

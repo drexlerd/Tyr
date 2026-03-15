@@ -24,8 +24,8 @@
 #include "tyr/common/hash.hpp"          // for Hash
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"  // for FluentTag, Predicate, Rule
-#include "tyr/formalism/datalog/rule_index.hpp"    // for Index
-#include "tyr/formalism/predicate_index.hpp"       // for Index
+#include "tyr/formalism/datalog/repository.hpp"
+#include "tyr/formalism/predicate_index.hpp"  // for Index
 
 #include <vector>  // for vector
 
