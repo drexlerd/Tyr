@@ -365,7 +365,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::planning::Gro
 template<formalism::FactKind T, formalism::planning::Context C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::planning::GroundAtom<T>>, C>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.get_predicate().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_objects()), " ")));
+    fmt::print(os, "({} {})", to_string(el.get_predicate().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_row().get_objects()), " ")));
     return os;
 }
 
@@ -413,7 +413,7 @@ inline std::ostream& print(std::ostream& os, const Data<formalism::planning::Gro
 template<formalism::FactKind T, formalism::planning::Context C>
 inline std::ostream& print(std::ostream& os, const View<Index<formalism::planning::GroundFunctionTerm<T>>, C>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.get_function().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_objects()), " ")));
+    fmt::print(os, "({} {})", to_string(el.get_function().get_name()), fmt::format("{}", fmt::join(to_strings(el.get_row().get_objects()), " ")));
     return os;
 }
 
@@ -775,7 +775,7 @@ inline std::ostream& print(std::ostream& os, const std::pair<View<Index<formalis
     fmt::print(os, "({}", to_string(el.first.get_action().get_name()));
     for (size_t i = 0; i < el.first.get_action().get_original_arity(); ++i)
     {
-        os << " " << el.first.get_binding().get_objects()[i];
+        os << " " << el.first.get_row().get_objects()[i];
     }
     fmt::print(os, ")");
 

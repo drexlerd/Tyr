@@ -21,12 +21,18 @@
 // Include specialization headers first
 #include "tyr/formalism/planning/datas.hpp"
 #include "tyr/formalism/planning/indices.hpp"
+#include "tyr/formalism/planning/views.hpp"
 //
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
 #include "tyr/buffer/segmented_buffer.hpp"
 #include "tyr/common/tuple.hpp"
+#include "tyr/formalism/function_view.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/predicate_view.hpp"
+#include "tyr/formalism/relation_repository.hpp"
+#include "tyr/formalism/repository.hpp"
+#include "tyr/formalism/symbol_repository.hpp"
 
 #include <cassert>
 #include <optional>
@@ -37,243 +43,350 @@
 namespace tyr::formalism::planning
 {
 
-class Repository
-{
-private:
-    template<typename T>
-    struct Slot
-    {
-        buffer::IndexedHashSet<T> container {};
-        size_t parent_size = 0;
-    };
+using SymbolRepository = tyr::formalism::SymbolRepository<Variable,
+                                                          Object,
+                                                          Binding,
+                                                          Predicate<StaticTag>,
+                                                          Predicate<FluentTag>,
+                                                          Predicate<DerivedTag>,
+                                                          Atom<StaticTag>,
+                                                          Atom<FluentTag>,
+                                                          Atom<DerivedTag>,
+                                                          GroundAtom<StaticTag>,
+                                                          GroundAtom<FluentTag>,
+                                                          GroundAtom<DerivedTag>,
+                                                          Literal<StaticTag>,
+                                                          Literal<FluentTag>,
+                                                          Literal<DerivedTag>,
+                                                          GroundLiteral<StaticTag>,
+                                                          GroundLiteral<FluentTag>,
+                                                          GroundLiteral<DerivedTag>,
+                                                          Function<StaticTag>,
+                                                          Function<FluentTag>,
+                                                          Function<AuxiliaryTag>,
+                                                          FunctionTerm<StaticTag>,
+                                                          FunctionTerm<FluentTag>,
+                                                          FunctionTerm<AuxiliaryTag>,
+                                                          GroundFunctionTerm<StaticTag>,
+                                                          GroundFunctionTerm<FluentTag>,
+                                                          GroundFunctionTerm<AuxiliaryTag>,
+                                                          GroundFunctionTermValue<StaticTag>,
+                                                          GroundFunctionTermValue<FluentTag>,
+                                                          GroundFunctionTermValue<AuxiliaryTag>,
+                                                          UnaryOperator<OpSub, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpAdd, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpSub, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpMul, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpDiv, Data<FunctionExpression>>,
+                                                          MultiOperator<OpAdd, Data<FunctionExpression>>,
+                                                          MultiOperator<OpMul, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpEq, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpNe, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpLe, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpLt, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpGe, Data<FunctionExpression>>,
+                                                          BinaryOperator<OpGt, Data<FunctionExpression>>,
+                                                          UnaryOperator<OpSub, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpAdd, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpSub, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpMul, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpDiv, Data<GroundFunctionExpression>>,
+                                                          MultiOperator<OpAdd, Data<GroundFunctionExpression>>,
+                                                          MultiOperator<OpMul, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpEq, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpNe, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpLe, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpLt, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpGe, Data<GroundFunctionExpression>>,
+                                                          BinaryOperator<OpGt, Data<GroundFunctionExpression>>,
+                                                          NumericEffect<OpAssign, FluentTag>,
+                                                          NumericEffect<OpIncrease, FluentTag>,
+                                                          NumericEffect<OpDecrease, FluentTag>,
+                                                          NumericEffect<OpScaleUp, FluentTag>,
+                                                          NumericEffect<OpScaleDown, FluentTag>,
+                                                          NumericEffect<OpIncrease, AuxiliaryTag>,
+                                                          GroundNumericEffect<OpAssign, FluentTag>,
+                                                          GroundNumericEffect<OpIncrease, FluentTag>,
+                                                          GroundNumericEffect<OpDecrease, FluentTag>,
+                                                          GroundNumericEffect<OpScaleUp, FluentTag>,
+                                                          GroundNumericEffect<OpScaleDown, FluentTag>,
+                                                          GroundNumericEffect<OpIncrease, AuxiliaryTag>,
+                                                          ConditionalEffect,
+                                                          GroundConditionalEffect,
+                                                          ConjunctiveEffect,
+                                                          GroundConjunctiveEffect,
+                                                          Action,
+                                                          GroundAction,
+                                                          Axiom,
+                                                          GroundAxiom,
+                                                          Metric,
+                                                          Domain,
+                                                          Task,
+                                                          FDRVariable<FluentTag>,
+                                                          FDRVariable<DerivedTag>,
+                                                          FDRFact<FluentTag>,
+                                                          FDRFact<DerivedTag>,
+                                                          ConjunctiveCondition,
+                                                          GroundConjunctiveCondition,
+                                                          FDRTask>;
 
-    template<typename T>
-    struct RepositoryEntry
-    {
-        using value_type = T;
-        using slot_type = Slot<T>;
+using RelationRepository = tyr::formalism::RelationRepository<Predicate<StaticTag>,
+                                                              Predicate<FluentTag>,
+                                                              Predicate<DerivedTag>,
+                                                              Function<StaticTag>,
+                                                              Function<FluentTag>,
+                                                              Function<AuxiliaryTag>,
+                                                              Action,
+                                                              Axiom>;
 
-        slot_type slot = slot_type {};
-    };
-
-    using RepositoryStorage = std::tuple<RepositoryEntry<Variable>,
-                                         RepositoryEntry<Object>,
-                                         RepositoryEntry<Binding>,
-                                         RepositoryEntry<Predicate<StaticTag>>,
-                                         RepositoryEntry<Predicate<FluentTag>>,
-                                         RepositoryEntry<Predicate<DerivedTag>>,
-                                         RepositoryEntry<Atom<StaticTag>>,
-                                         RepositoryEntry<Atom<FluentTag>>,
-                                         RepositoryEntry<Atom<DerivedTag>>,
-                                         RepositoryEntry<GroundAtom<StaticTag>>,
-                                         RepositoryEntry<GroundAtom<FluentTag>>,
-                                         RepositoryEntry<GroundAtom<DerivedTag>>,
-                                         RepositoryEntry<Literal<StaticTag>>,
-                                         RepositoryEntry<Literal<FluentTag>>,
-                                         RepositoryEntry<Literal<DerivedTag>>,
-                                         RepositoryEntry<GroundLiteral<StaticTag>>,
-                                         RepositoryEntry<GroundLiteral<FluentTag>>,
-                                         RepositoryEntry<GroundLiteral<DerivedTag>>,
-                                         RepositoryEntry<Function<StaticTag>>,
-                                         RepositoryEntry<Function<FluentTag>>,
-                                         RepositoryEntry<Function<AuxiliaryTag>>,
-                                         RepositoryEntry<FunctionTerm<StaticTag>>,
-                                         RepositoryEntry<FunctionTerm<FluentTag>>,
-                                         RepositoryEntry<FunctionTerm<AuxiliaryTag>>,
-                                         RepositoryEntry<GroundFunctionTerm<StaticTag>>,
-                                         RepositoryEntry<GroundFunctionTerm<FluentTag>>,
-                                         RepositoryEntry<GroundFunctionTerm<AuxiliaryTag>>,
-                                         RepositoryEntry<GroundFunctionTermValue<StaticTag>>,
-                                         RepositoryEntry<GroundFunctionTermValue<FluentTag>>,
-                                         RepositoryEntry<GroundFunctionTermValue<AuxiliaryTag>>,
-                                         RepositoryEntry<UnaryOperator<OpSub, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpAdd, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpSub, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpMul, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpDiv, Data<FunctionExpression>>>,
-                                         RepositoryEntry<MultiOperator<OpAdd, Data<FunctionExpression>>>,
-                                         RepositoryEntry<MultiOperator<OpMul, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpEq, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpNe, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpLe, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpLt, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpGe, Data<FunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpGt, Data<FunctionExpression>>>,
-                                         RepositoryEntry<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<MultiOperator<OpMul, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpNe, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>,
-                                         RepositoryEntry<NumericEffect<OpAssign, FluentTag>>,
-                                         RepositoryEntry<NumericEffect<OpIncrease, FluentTag>>,
-                                         RepositoryEntry<NumericEffect<OpDecrease, FluentTag>>,
-                                         RepositoryEntry<NumericEffect<OpScaleUp, FluentTag>>,
-                                         RepositoryEntry<NumericEffect<OpScaleDown, FluentTag>>,
-                                         RepositoryEntry<NumericEffect<OpIncrease, AuxiliaryTag>>,
-                                         RepositoryEntry<GroundNumericEffect<OpAssign, FluentTag>>,
-                                         RepositoryEntry<GroundNumericEffect<OpIncrease, FluentTag>>,
-                                         RepositoryEntry<GroundNumericEffect<OpDecrease, FluentTag>>,
-                                         RepositoryEntry<GroundNumericEffect<OpScaleUp, FluentTag>>,
-                                         RepositoryEntry<GroundNumericEffect<OpScaleDown, FluentTag>>,
-                                         RepositoryEntry<GroundNumericEffect<OpIncrease, AuxiliaryTag>>,
-                                         RepositoryEntry<ConditionalEffect>,
-                                         RepositoryEntry<GroundConditionalEffect>,
-                                         RepositoryEntry<ConjunctiveEffect>,
-                                         RepositoryEntry<GroundConjunctiveEffect>,
-                                         RepositoryEntry<Action>,
-                                         RepositoryEntry<GroundAction>,
-                                         RepositoryEntry<Axiom>,
-                                         RepositoryEntry<GroundAxiom>,
-                                         RepositoryEntry<Metric>,
-                                         RepositoryEntry<Domain>,
-                                         RepositoryEntry<Task>,
-                                         RepositoryEntry<FDRVariable<FluentTag>>,
-                                         RepositoryEntry<FDRVariable<DerivedTag>>,
-                                         RepositoryEntry<FDRFact<FluentTag>>,
-                                         RepositoryEntry<FDRFact<DerivedTag>>,
-                                         RepositoryEntry<ConjunctiveCondition>,
-                                         RepositoryEntry<GroundConjunctiveCondition>,
-                                         RepositoryEntry<FDRTask>>;
-
-    const Repository* m_parent;
-    RepositoryStorage m_repository;
-    buffer::SegmentedBuffer m_arena;
-
-    template<typename T>
-    void clear_entry(RepositoryEntry<T>& entry)
-    {
-        entry.slot.container.clear();
-        entry.slot.parent_size = m_parent ? m_parent->template size<T>() : 0;
-    }
-
-    void clear_entries() noexcept
-    {
-        std::apply([&](auto&... entry) { (clear_entry(entry), ...); }, m_repository);
-    }
-
-public:
-    Repository(const Repository* parent = nullptr) : m_parent(parent), m_repository(), m_arena() { clear_entries(); }
-
-    template<typename T>
-    std::optional<View<Index<T>, Repository>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
-    {
-        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        const auto& indexed_hash_set = entry.slot.container;
-        assert(h == indexed_hash_set.hash(builder) && "The given hash does not match container internal's hash.");
-
-        if (auto ptr = indexed_hash_set.find_with_hash(builder, h))
-            return View<Index<T>, Repository>(ptr->index, *this);
-
-        return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
-    }
-
-    template<typename T>
-    std::optional<View<Index<T>, Repository>> find(const Data<T>& builder) const noexcept
-    {
-        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        const auto& indexed_hash_set = entry.slot.container;
-        const auto h = indexed_hash_set.hash(builder);
-
-        return find_with_hash<T>(builder, h);
-    }
-
-    template<typename T>
-    std::pair<View<Index<T>, Repository>, bool> get_or_create(Data<T>& builder, buffer::Buffer& buf)
-    {
-        auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        auto& indexed_hash_set = entry.slot.container;
-        const auto h = indexed_hash_set.hash(builder);
-
-        if (m_parent)
-            if (auto ptr = m_parent->template find_with_hash<T>(builder, h))
-                return { *ptr, false };
-
-        // Manually assign index to continue indexing.
-        builder.index.value = entry.slot.parent_size + indexed_hash_set.size();
-
-        const auto [ptr, success] = indexed_hash_set.insert_with_hash(h, builder, buf, m_arena);
-
-        return { View<Index<T>, Repository>(ptr->index, *this), success };
-    }
-
-    /// @brief Access the element with the given index.
-    template<typename T>
-    const Data<T>& operator[](Index<T> index) const noexcept
-    {
-        assert(index != Index<T>::max() && "Unassigned index.");
-
-        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-        const auto parent_size = entry.slot.parent_size;
-
-        // In parent range -> delegate
-        if (index.value < parent_size)
-        {
-            assert(m_parent);
-            return (*m_parent)[index];
-        }
-
-        // Local range -> shift down
-        index.value -= parent_size;
-
-        return entry.slot.container[index];
-    }
-
-    template<typename T>
-    const Data<T>& front() const
-    {
-        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-
-        if (entry.slot.parent_size > 0)
-        {
-            assert(m_parent);
-            return m_parent->template front<T>();  // recurse to root-most non-empty
-        }
-
-        return entry.slot.container.front();
-    }
-
-    /// @brief Get the number of stored elements.
-    template<typename T>
-    size_t size() const noexcept
-    {
-        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-
-        return entry.slot.parent_size + entry.slot.container.size();
-    }
-
-    /// @brief Clear the repository but keep memory allocated.
-    void clear() noexcept
-    {
-        m_arena.clear();
-        clear_entries();
-    }
-
-    // Get the canonical repository which is repository whose container stores the data of the element corresponding to the given index.
-    template<typename T>
-    const Repository& get_canonical_context(Index<T> index) const noexcept
-    {
-        const auto& entry = std::get<RepositoryEntry<T>>(m_repository);
-
-        if (index.value < entry.slot.parent_size)
-        {
-            assert(m_parent && "Element not found in the repository chain.");
-            return m_parent->get_canonical_context(index);
-        }
-
-        return *this;
-    }
-};
+using Repository = tyr::formalism::Repository<SymbolRepository, RelationRepository>;
 
 static_assert(RepositoryConcept<Repository>);
 static_assert(Context<Repository>);
+
+using RepositoryPtr = std::shared_ptr<Repository>;
+
+using ActionView = View<Index<Action>, Repository>;
+
+using ActionListView = View<IndexList<Action>, Repository>;
+
+template<typename T>
+using ArithmeticOperatorView = View<Data<ArithmeticOperator<T>>, Repository>;
+using LiftedArithmeticOperatorView = View<Data<ArithmeticOperator<Data<FunctionExpression>>>, Repository>;
+using GroundArithmeticOperatorView = View<Data<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+template<typename T>
+using ArithmeticOperatorListView = View<DataList<ArithmeticOperator<T>>, Repository>;
+using LiftedArithmeticOperatorListView = View<DataList<ArithmeticOperator<Data<FunctionExpression>>>, Repository>;
+using GroundArithmeticOperatorListView = View<DataList<ArithmeticOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+template<FactKind T>
+using AtomView = View<Index<Atom<T>>, Repository>;
+
+template<FactKind T>
+using AtomListView = View<IndexList<Atom<T>>, Repository>;
+
+using AxiomView = View<Index<Axiom>, Repository>;
+
+using AxiomListView = View<IndexList<Axiom>, Repository>;
+
+template<OpKind Op, typename T>
+using BinaryOperatorView = View<Index<BinaryOperator<Op, T>>, Repository>;
+template<OpKind Op>
+using LiftedBinaryOperatorView = View<Index<BinaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<OpKind Op>
+using GroundBinaryOperatorView = View<Index<BinaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<OpKind Op, typename T>
+using BinaryOperatorListView = View<IndexList<BinaryOperator<Op, T>>, Repository>;
+template<OpKind Op>
+using LiftedBinaryOperatorListView = View<IndexList<BinaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<OpKind Op>
+using GroundBinaryOperatorListView = View<IndexList<BinaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+using BindingView = View<Index<Binding>, Repository>;
+using BindingListView = View<IndexList<Binding>, Repository>;
+template<FactKind T>
+using PredicateBindingView = View<std::pair<Index<Predicate<T>>, Index<Binding>>, Repository>;
+template<FactKind T>
+using FunctionBindingView = View<std::pair<Index<Function<T>>, Index<Binding>>, Repository>;
+using ActionBindingView = View<std::pair<Index<Action>, Index<Binding>>, Repository>;
+using AxiomBindingView = View<std::pair<Index<Axiom>, Index<Binding>>, Repository>;
+
+template<typename T>
+using BooleanOperatorView = View<Data<BooleanOperator<T>>, Repository>;
+using LiftedBooleanOperatorView = View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository>;
+using GroundBooleanOperatorView = View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+template<typename T>
+using BooleanOperatorListView = View<DataList<BooleanOperator<T>>, Repository>;
+using LiftedBooleanOperatorListView = View<DataList<BooleanOperator<Data<FunctionExpression>>>, Repository>;
+using GroundBooleanOperatorListView = View<DataList<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
+
+using ConditionalEffectView = View<Index<ConditionalEffect>, Repository>;
+
+using ConditionalEffectListView = View<IndexList<ConditionalEffect>, Repository>;
+
+using ConjunctiveConditionView = View<Index<ConjunctiveCondition>, Repository>;
+
+using ConjunctiveConditionListView = View<IndexList<ConjunctiveCondition>, Repository>;
+
+using ConjunctiveEffectView = View<Index<ConjunctiveEffect>, Repository>;
+
+using ConjunctiveEffectListView = View<IndexList<ConjunctiveEffect>, Repository>;
+
+using DomainView = View<Index<Domain>, Repository>;
+
+using DomainListView = View<IndexList<Domain>, Repository>;
+
+template<formalism::FactKind T>
+using FDRFactView = View<Data<FDRFact<T>>, Repository>;
+
+template<formalism::FactKind T>
+using FDRFactListView = View<DataList<FDRFact<T>>, Repository>;
+
+using FDRTaskView = View<Index<FDRTask>, Repository>;
+
+using FDRTaskListView = View<IndexList<FDRTask>, Repository>;
+
+template<formalism::FactKind T>
+using FDRVariableView = View<Index<FDRVariable<T>>, Repository>;
+
+template<formalism::FactKind T>
+using FDRVariableListView = View<IndexList<FDRVariable<T>>, Repository>;
+
+using FunctionExpressionView = View<Data<FunctionExpression>, Repository>;
+
+using FunctionExpressionListView = View<DataList<FunctionExpression>, Repository>;
+
+template<FactKind T>
+using FunctionTermView = View<Index<FunctionTerm<T>>, Repository>;
+
+template<FactKind T>
+using FunctionTermListView = View<IndexList<FunctionTerm<T>>, Repository>;
+
+template<FactKind T>
+using FunctionView = View<Index<Function<T>>, Repository>;
+
+template<FactKind T>
+using FunctionListView = View<IndexList<Function<T>>, Repository>;
+
+using GroundActionView = View<Index<GroundAction>, Repository>;
+
+using GroundActionListView = View<IndexList<GroundAction>, Repository>;
+
+template<FactKind T>
+using GroundAtomView = View<Index<GroundAtom<T>>, Repository>;
+
+template<FactKind T>
+using GroundAtomListView = View<IndexList<GroundAtom<T>>, Repository>;
+
+using GroundAxiomView = View<Index<GroundAxiom>, Repository>;
+
+using GroundAxiomListView = View<IndexList<GroundAxiom>, Repository>;
+
+using GroundConditionalEffectView = View<Index<GroundConditionalEffect>, Repository>;
+
+using GroundConditionalEffectListView = View<IndexList<GroundConditionalEffect>, Repository>;
+
+using GroundConjunctiveConditionView = View<Index<GroundConjunctiveCondition>, Repository>;
+
+using GroundConjunctiveConditionListView = View<IndexList<GroundConjunctiveCondition>, Repository>;
+
+using GroundConjunctiveEffectView = View<Index<GroundConjunctiveEffect>, Repository>;
+
+using GroundConjunctiveEffectListView = View<IndexList<GroundConjunctiveEffect>, Repository>;
+
+using GroundFunctionExpressionView = View<Data<GroundFunctionExpression>, Repository>;
+
+using GroundFunctionExpressionListView = View<DataList<GroundFunctionExpression>, Repository>;
+
+template<FactKind T>
+using GroundFunctionTermValueView = View<Index<GroundFunctionTermValue<T>>, Repository>;
+
+template<FactKind T>
+using GroundFunctionTermValueListView = View<IndexList<GroundFunctionTermValue<T>>, Repository>;
+
+template<FactKind T>
+using GroundFunctionTermViewValuePair = std::pair<View<Index<GroundFunctionTerm<T>>, Repository>, float_t>;
+template<FactKind T>
+using GroundFunctionTermViewValuePairList = std::vector<GroundFunctionTermViewValuePair<T>>;
+
+template<FactKind T>
+using GroundFunctionTermView = View<Index<GroundFunctionTerm<T>>, Repository>;
+
+template<FactKind T>
+using GroundFunctionTermListView = View<IndexList<GroundFunctionTerm<T>>, Repository>;
+
+template<FactKind T>
+using GroundLiteralView = View<Index<GroundLiteral<T>>, Repository>;
+
+template<FactKind T>
+using GroundLiteralListView = View<IndexList<GroundLiteral<T>>, Repository>;
+
+template<FactKind T>
+using GroundNumericEffectOperatorView = View<Data<GroundNumericEffectOperator<T>>, Repository>;
+
+template<FactKind T>
+using GroundNumericEffectOperatorListView = View<DataList<GroundNumericEffectOperator<T>>, Repository>;
+
+template<NumericEffectOpKind Op, FactKind T>
+using GroundNumericEffectView = View<Index<GroundNumericEffect<Op, T>>, Repository>;
+
+template<NumericEffectOpKind Op, FactKind T>
+using GroundNumericEffectListView = View<IndexList<GroundNumericEffect<Op, T>>, Repository>;
+
+template<FactKind T>
+using LiteralView = View<Index<Literal<T>>, Repository>;
+
+template<FactKind T>
+using LiteralListView = View<IndexList<Literal<T>>, Repository>;
+
+using MetricView = View<Index<Metric>, Repository>;
+
+using MetricListView = View<IndexList<Metric>, Repository>;
+
+template<OpKind Op, typename T>
+using MultiOperatorView = View<Index<MultiOperator<Op, T>>, Repository>;
+template<OpKind Op>
+using LiftedMultiOperatorView = View<Index<MultiOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<OpKind Op>
+using GroundMultiOperatorView = View<Index<MultiOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<OpKind Op, typename T>
+using MultiOperatorListView = View<IndexList<MultiOperator<Op, T>>, Repository>;
+template<OpKind Op>
+using LiftedMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<OpKind Op>
+using GroundMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<FactKind T>
+using NumericEffectOperatorView = View<Data<NumericEffectOperator<T>>, Repository>;
+
+template<FactKind T>
+using NumericEffectOperatorListView = View<DataList<NumericEffectOperator<T>>, Repository>;
+
+template<NumericEffectOpKind Op, FactKind T>
+using NumericEffectView = View<Index<NumericEffect<Op, T>>, Repository>;
+
+template<NumericEffectOpKind Op, FactKind T>
+using NumericEffectListView = View<IndexList<NumericEffect<Op, T>>, Repository>;
+
+using ObjectView = View<Index<Object>, Repository>;
+
+using ObjectListView = View<IndexList<Object>, Repository>;
+
+template<FactKind T>
+using PredicateView = View<Index<Predicate<T>>, Repository>;
+
+template<FactKind T>
+using PredicateListView = View<IndexList<Predicate<T>>, Repository>;
+
+using TaskView = View<Index<Task>, Repository>;
+
+using TaskListView = View<IndexList<Task>, Repository>;
+
+using TermView = View<Data<Term>, Repository>;
+
+using TermListView = View<DataList<Term>, Repository>;
+
+template<OpKind Op, typename T>
+using UnaryOperatorView = View<Index<UnaryOperator<Op, T>>, Repository>;
+template<OpKind Op>
+using LiftedUnaryOperatorView = View<Index<UnaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<OpKind Op>
+using GroundUnaryOperatorView = View<Index<UnaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+template<OpKind Op, typename T>
+using UnaryOperatorListView = View<IndexList<UnaryOperator<Op, T>>, Repository>;
+template<OpKind Op>
+using LiftedUnaryOperatorListView = View<IndexList<UnaryOperator<Op, Data<FunctionExpression>>>, Repository>;
+template<OpKind Op>
+using GroundUnaryOperatorListView = View<IndexList<UnaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
+
+using VariableView = View<Index<Variable>, Repository>;
+
+using VariableListView = View<IndexList<Variable>, Repository>;
 
 }
 

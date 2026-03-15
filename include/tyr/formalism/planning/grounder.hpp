@@ -85,6 +85,35 @@ inline auto ground(const IndexList<Object>& element, GrounderContext& context)
 }
 
 template<FactKind T>
+inline auto ground(TermListView terms, FunctionView<T> function, GrounderContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto term : terms)
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    binding.objects.push_back(context.binding[uint_t(arg)]);
+                else if constexpr (std::is_same_v<Alternative, ObjectView>)
+                    binding.objects.push_back(arg.get_index());
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    // Canonicalize and Serialize
+    canonicalize(binding);
+    return context.destination.get_or_create(function, binding.objects);
+}
+
+template<FactKind T>
 inline auto ground(FunctionTermView<T> element, GrounderContext& context)
 {
     // Fetch and clear
@@ -94,22 +123,7 @@ inline auto ground(FunctionTermView<T> element, GrounderContext& context)
 
     // Fill data
     fterm.function = element.get_function().get_index();
-    for (const auto term : element.get_terms())
-    {
-        visit(
-            [&](auto&& arg)
-            {
-                using Alternative = std::decay_t<decltype(arg)>;
-
-                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
-                    fterm.objects.push_back(context.binding[uint_t(arg)]);
-                else if constexpr (std::is_same_v<Alternative, ObjectView>)
-                    fterm.objects.push_back(arg.get_index());
-                else
-                    static_assert(dependent_false<Alternative>::value, "Missing case");
-            },
-            term.get_variant());
-    }
+    fterm.row = ground(element.get_terms(), element.get_function(), context).first.get_index().second;
 
     // Canonicalize and Serialize
     canonicalize(fterm);
@@ -195,6 +209,35 @@ inline auto ground(LiftedArithmeticOperatorView element, GrounderContext& contex
                  element.get_variant());
 }
 
+template<FactKind T>
+inline auto ground(TermListView terms, PredicateView<T> predicate, GrounderContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto term : terms)
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    binding.objects.push_back(context.binding[uint_t(arg)]);
+                else if constexpr (std::is_same_v<Alternative, ObjectView>)
+                    binding.objects.push_back(arg.get_index());
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    // Canonicalize and Serialize
+    canonicalize(binding);
+    return context.destination.get_or_create(predicate, binding.objects);
+}
+
 template<FactKind T_SRC, FactKind T_DST>
 inline auto ground(AtomView<T_SRC> element, MergeContext& merge_context, GrounderContext& grounder_context)
 {
@@ -205,22 +248,7 @@ inline auto ground(AtomView<T_SRC> element, MergeContext& merge_context, Grounde
 
     // Fill data
     atom.predicate = merge<T_SRC, T_DST>(element.get_predicate(), merge_context).first.get_index();
-    for (const auto term : element.get_terms())
-    {
-        visit(
-            [&](auto&& arg)
-            {
-                using Alternative = std::decay_t<decltype(arg)>;
-
-                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
-                    atom.objects.push_back(grounder_context.binding[uint_t(arg)]);
-                else if constexpr (std::is_same_v<Alternative, ObjectView>)
-                    atom.objects.push_back(arg.get_index());
-                else
-                    static_assert(dependent_false<Alternative>::value, "Missing case");
-            },
-            term.get_variant());
-    }
+    atom.row = ground(element.get_terms(), element.get_predicate(), grounder_context).first.get_index().second;
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -237,22 +265,7 @@ inline auto ground(AtomView<T_SRC> element, GrounderContext& context)
 
     // Fill data
     atom.predicate = element.get_predicate().get_index();
-    for (const auto term : element.get_terms())
-    {
-        visit(
-            [&](auto&& arg)
-            {
-                using Alternative = std::decay_t<decltype(arg)>;
-
-                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
-                    atom.objects.push_back(context.binding[uint_t(arg)]);
-                else if constexpr (std::is_same_v<Alternative, ObjectView>)
-                    atom.objects.push_back(arg.get_index());
-                else
-                    static_assert(dependent_false<Alternative>::value, "Missing case");
-            },
-            term.get_variant());
-    }
+    atom.row = ground(element.get_terms(), element.get_predicate(), context).first.get_index().second;
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -415,7 +428,7 @@ inline auto ground(ActionView element,
 
     // Fill data
     action.action = element.get_index();
-    action.binding = ground(context.binding, context).first.get_index();
+    action.row = context.destination.get_or_create(element, context.binding).first.get_index().second;
     action.condition = ground(element.get_condition(), context, fdr).first.get_index();
 
     auto binding_size = context.binding.size();
@@ -458,7 +471,7 @@ inline auto ground(AxiomView element, GrounderContext& context, FDR& fdr)
 
     // Fill data
     axiom.axiom = element.get_index();
-    axiom.binding = ground(context.binding, context).first.get_index();
+    axiom.row = context.destination.get_or_create(element, context.binding).first.get_index().second;
     axiom.body = ground(element.get_body(), context, fdr).first.get_index();
     axiom.head = ground(element.get_head(), context).first.get_index();
 

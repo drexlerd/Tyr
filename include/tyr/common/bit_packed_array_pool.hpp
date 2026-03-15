@@ -245,7 +245,7 @@ private:
 
 /// Stores fixed-length arrays as bit-packed unsigned integer codes with stable references.
 /// Values are encoded and decoded via Coder.
-template<std::unsigned_integral Block, typename Coder = bit::ForwardingBlockCoder<Block>, size_t FirstSegmentSize = 1>
+template<std::unsigned_integral Block, typename Coder = bit::ForwardingBlockCoder<Block>, size_t FirstSegmentSize = 16>
     requires bit::BlockCoder<Coder, Block>
 class BitPackedArrayPool
 {

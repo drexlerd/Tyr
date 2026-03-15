@@ -33,13 +33,13 @@ struct Data<formalism::planning::GroundFunctionTerm<T>>
 {
     Index<formalism::planning::GroundFunctionTerm<T>> index;
     Index<formalism::Function<T>> function;
-    IndexList<formalism::Object> objects;
+    Index<formalism::Binding> row;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundFunctionTerm<T>> index, Index<formalism::Function<T>> function, IndexList<formalism::Object> objects) :
+    Data(Index<formalism::planning::GroundFunctionTerm<T>> index, Index<formalism::Function<T>> function, Index<formalism::Binding> row) :
         index(index),
         function(function),
-        objects(objects)
+        row(row)
     {
     }
     Data(const Data& other) = delete;
@@ -51,11 +51,11 @@ struct Data<formalism::planning::GroundFunctionTerm<T>>
     {
         tyr::clear(index);
         tyr::clear(function);
-        tyr::clear(objects);
+        tyr::clear(row);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, function, objects); }
-    auto identifying_members() const noexcept { return std::tie(function, objects); }
+    auto cista_members() const noexcept { return std::tie(index, function, row); }
+    auto identifying_members() const noexcept { return std::tie(function, row); }
 };
 }
 

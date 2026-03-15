@@ -22,10 +22,8 @@
 #include "tyr/common/equal_to.hpp"      // for EqualTo
 #include "tyr/common/hash.hpp"          // for Hash
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/datalog/declarations.hpp"  // for Object, Program (ptr only)
 #include "tyr/formalism/datalog/repository.hpp"
-#include "tyr/formalism/object_index.hpp"        // for Index
-#include "tyr/formalism/planning/task_view.hpp"  // for Index
+#include "tyr/formalism/planning/repository.hpp"
 
 #include <utility>  // for pair
 #include <vector>   // for vector

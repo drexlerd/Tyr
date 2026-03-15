@@ -18,10 +18,11 @@
 #ifndef TYR_FORMALISM_PLANNING_GROUND_FUNCTION_TERM_VIEW_HPP_
 #define TYR_FORMALISM_PLANNING_GROUND_FUNCTION_TERM_VIEW_HPP_
 
+#include "tyr/common/array.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/common/vector.hpp"
+#include "tyr/formalism/binding_view.hpp"
 #include "tyr/formalism/function_view.hpp"
-#include "tyr/formalism/object_view.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/ground_function_term_index.hpp"
 
@@ -43,19 +44,15 @@ public:
 
     auto get_index() const noexcept { return m_handle; }
     auto get_function() const noexcept { return make_view(get_data().function, *m_context); }
-    auto get_objects() const noexcept { return make_view(get_data().objects, *m_context); }
+    auto get_row() const noexcept
+    {
+        const auto& data = get_data();
+        return make_view(std::make_pair(data.function, data.row), *m_context);
+    }
 
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-template<FactKind T>
-using GroundFunctionTermView = View<Index<GroundFunctionTerm<T>>, Repository>;
-
-template<FactKind T>
-using GroundFunctionTermListView = View<IndexList<GroundFunctionTerm<T>>, Repository>;
-}
 }
 
 #endif

@@ -30,7 +30,7 @@
 
 namespace tyr
 {
-template<std::unsigned_integral Block, typename Coder = bit::ForwardingBlockCoder<Block>, size_t FirstSegmentSize = 1>
+template<std::unsigned_integral Block, typename Coder = bit::ForwardingBlockCoder<Block>, size_t FirstSegmentSize = 16>
 class BitPackedArraySet
 {
 private:

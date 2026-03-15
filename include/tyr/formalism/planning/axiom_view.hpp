@@ -51,12 +51,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-using AxiomView = View<Index<Axiom>, Repository>;
-
-using AxiomListView = View<IndexList<Axiom>, Repository>;
-}
 }
 
 #endif

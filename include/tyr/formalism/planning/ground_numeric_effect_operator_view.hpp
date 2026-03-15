@@ -44,14 +44,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-template<FactKind T>
-using GroundNumericEffectOperatorView = View<Data<GroundNumericEffectOperator<T>>, Repository>;
-
-template<FactKind T>
-using GroundNumericEffectOperatorListView = View<DataList<GroundNumericEffectOperator<T>>, Repository>;
-}
 }
 
 #endif

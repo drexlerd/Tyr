@@ -164,6 +164,60 @@ inline auto merge_p2p(BindingView element, MergeContext& context)
     return context.destination.get_or_create(binding, context.builder.get_buffer());
 }
 
+template<FactKind T>
+inline auto merge_p2p(PredicateView<T> predicate, PredicateBindingView<T> element, MergeContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto object : element.get_objects())
+        binding.objects.push_back(object.get_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(predicate, binding.objects);
+}
+
+template<FactKind T>
+inline auto merge_p2p(FunctionView<T> function, FunctionBindingView<T> element, MergeContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto object : element.get_objects())
+        binding.objects.push_back(object.get_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(function, binding.objects);
+}
+
+inline auto merge_p2p(ActionView action, ActionBindingView element, MergeContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto object : element.get_objects())
+        binding.objects.push_back(object.get_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(action, binding.objects);
+}
+
+inline auto merge_p2p(AxiomView axiom, AxiomBindingView element, MergeContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto object : element.get_objects())
+        binding.objects.push_back(object.get_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(axiom, binding.objects);
+}
+
 inline auto merge_p2p(TermView element, MergeContext& context)
 {
     return visit(
@@ -220,7 +274,7 @@ inline auto merge_p2p(GroundAtomView<T> element, MergeContext& context)
     atom.clear();
 
     atom.predicate = merge_p2p(element.get_predicate(), context).first.get_index();
-    atom.objects = element.get_data().objects;
+    atom.row = merge_p2p(element.get_predicate(), element.get_row(), context).first.get_index().second;
 
     canonicalize(atom);
     return context.destination.get_or_create(atom, context.builder.get_buffer());
@@ -312,7 +366,7 @@ inline auto merge_p2p(GroundFunctionTermView<T> element, MergeContext& context)
     fterm.clear();
 
     fterm.function = element.get_function().get_index();
-    fterm.objects = element.get_data().objects;
+    fterm.row = merge_p2p(element.get_function(), element.get_row(), context).first.get_index().second;
 
     canonicalize(fterm);
     return context.destination.get_or_create(fterm, context.builder.get_buffer());

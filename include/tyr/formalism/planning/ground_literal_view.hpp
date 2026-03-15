@@ -48,14 +48,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-template<FactKind T>
-using GroundLiteralView = View<Index<GroundLiteral<T>>, Repository>;
-
-template<FactKind T>
-using GroundLiteralListView = View<IndexList<GroundLiteral<T>>, Repository>;
-}
 }
 
 #endif

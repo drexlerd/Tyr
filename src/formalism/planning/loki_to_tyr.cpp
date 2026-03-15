@@ -236,7 +236,7 @@ void LokiToTyrTranslator::prepare(loki::Problem problem)
 PlanningDomain LokiToTyrTranslator::translate(const loki::Domain& element)
 {
     auto builder = Builder();
-    auto context = std::make_shared<Repository>();
+    auto context = std::make_shared<Repository>(element->get_constants().size());
 
     /* Perform static type analysis */
     prepare(element);
@@ -331,7 +331,7 @@ PlanningTask LokiToTyrTranslator::translate(const loki::Problem& element, Planni
     auto& task = *task_ptr;
     task.clear();
 
-    auto task_context = std::make_shared<Repository>(domain.get_repository().get());
+    auto task_context = std::make_shared<Repository>(element->get_problem_and_domain_objects().size(), domain.get_repository().get());
 
     auto fdr_context = BinaryFDRContext(*task_context);
 

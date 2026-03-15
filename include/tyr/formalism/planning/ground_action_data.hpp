@@ -35,19 +35,19 @@ struct Data<formalism::planning::GroundAction>
 {
     Index<formalism::planning::GroundAction> index;
     Index<formalism::planning::Action> action;
-    Index<formalism::Binding> binding;
+    Index<formalism::Binding> row;
     Index<formalism::planning::GroundConjunctiveCondition> condition;
     IndexList<formalism::planning::GroundConditionalEffect> effects;
 
     Data() = default;
     Data(Index<formalism::planning::GroundAction> index,
          Index<formalism::planning::Action> action,
-         Index<formalism::Binding> binding,
+         Index<formalism::Binding> row,
          Index<formalism::planning::GroundConjunctiveCondition> condition,
          IndexList<formalism::planning::GroundConditionalEffect> effects) :
         index(index),
         action(action),
-        binding(binding),
+        row(row),
         condition(condition),
         effects(std::move(effects))
     {
@@ -61,13 +61,13 @@ struct Data<formalism::planning::GroundAction>
     {
         tyr::clear(index);
         tyr::clear(action);
-        tyr::clear(binding);
+        tyr::clear(row);
         tyr::clear(condition);
         tyr::clear(effects);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, action, binding, condition, effects); }
-    auto identifying_members() const noexcept { return std::tie(action, binding); }
+    auto cista_members() const noexcept { return std::tie(index, action, row, condition, effects); }
+    auto identifying_members() const noexcept { return std::tie(action, row); }
 };
 }
 

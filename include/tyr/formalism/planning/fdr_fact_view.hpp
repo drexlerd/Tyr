@@ -47,14 +47,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-template<formalism::FactKind T>
-using FDRFactView = View<Data<FDRFact<T>>, Repository>;
-
-template<formalism::FactKind T>
-using FDRFactListView = View<DataList<FDRFact<T>>, Repository>;
-}
 }
 
 #endif

@@ -1086,6 +1086,12 @@ private:
         return context.get_or_create(binding, builder.get_buffer()).first.get_index();
     }
 
+    template<typename T>
+    auto to_binding(View<T, Repository> element, const IndexList<Object>& objects, Repository& context)
+    {
+        return context.get_or_create(element, objects);
+    }
+
     IndexGroundAtomVariant translate_grounded(loki::Atom element, Builder& builder, Repository& context)
     {
         auto index_predicate_variant = translate_common(element->get_predicate(), builder, context);
@@ -1098,7 +1104,9 @@ private:
             auto& atom = *atom_ptr;
             atom.clear();
             atom.predicate = predicate_index;
-            atom.objects = this->translate_grounded(element->get_terms(), builder, context);
+            atom.row = to_binding(make_view(predicate_index, context), this->translate_grounded(element->get_terms(), builder, context), context)
+                           .first.get_index()
+                           .second;
             canonicalize(atom);
             return context.get_or_create(atom, builder.get_buffer()).first.get_index();
         };
@@ -1303,7 +1311,9 @@ private:
             auto& fterm = *fterm_ptr;
             fterm.clear();
             fterm.function = function_index;
-            fterm.objects = this->translate_grounded(element->get_terms(), builder, context);
+            fterm.row = to_binding(make_view(function_index, context), this->translate_grounded(element->get_terms(), builder, context), context)
+                            .first.get_index()
+                            .second;
             canonicalize(fterm);
             return context.get_or_create(fterm, builder.get_buffer()).first.get_index();
         };

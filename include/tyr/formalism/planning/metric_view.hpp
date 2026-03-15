@@ -48,12 +48,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-using MetricView = View<Index<Metric>, Repository>;
-
-using MetricListView = View<IndexList<Metric>, Repository>;
-}
 }
 
 #endif

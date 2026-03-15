@@ -32,13 +32,13 @@ struct Data<formalism::planning::GroundAtom<T>>
 {
     Index<formalism::planning::GroundAtom<T>> index;
     Index<formalism::Predicate<T>> predicate;
-    IndexList<formalism::Object> objects;
+    Index<formalism::Binding> row;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundAtom<T>> index, Index<formalism::Predicate<T>> predicate, IndexList<formalism::Object> objects) :
+    Data(Index<formalism::planning::GroundAtom<T>> index, Index<formalism::Predicate<T>> predicate, Index<formalism::Binding> row) :
         index(index),
         predicate(predicate),
-        objects(objects)
+        row(row)
     {
     }
     Data(const Data& other) = delete;
@@ -50,11 +50,11 @@ struct Data<formalism::planning::GroundAtom<T>>
     {
         tyr::clear(index);
         tyr::clear(predicate);
-        tyr::clear(objects);
+        tyr::clear(row);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, predicate, objects); }
-    auto identifying_members() const noexcept { return std::tie(predicate, objects); }
+    auto cista_members() const noexcept { return std::tie(index, predicate, row); }
+    auto identifying_members() const noexcept { return std::tie(predicate, row); }
 };
 
 }

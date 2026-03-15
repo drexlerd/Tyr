@@ -52,14 +52,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-template<NumericEffectOpKind Op, FactKind T>
-using NumericEffectView = View<Index<NumericEffect<Op, T>>, Repository>;
-
-template<NumericEffectOpKind Op, FactKind T>
-using NumericEffectListView = View<IndexList<NumericEffect<Op, T>>, Repository>;
-}
 }
 
 #endif

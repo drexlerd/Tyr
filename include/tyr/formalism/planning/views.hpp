@@ -25,7 +25,6 @@
 #include "tyr/formalism/planning/atom_view.hpp"
 #include "tyr/formalism/planning/axiom_view.hpp"
 #include "tyr/formalism/planning/binary_operator_view.hpp"
-#include "tyr/formalism/planning/binding_view.hpp"
 #include "tyr/formalism/planning/boolean_operator_view.hpp"
 #include "tyr/formalism/planning/conditional_effect_view.hpp"
 #include "tyr/formalism/planning/conjunctive_condition_view.hpp"
@@ -36,7 +35,6 @@
 #include "tyr/formalism/planning/fdr_variable_view.hpp"
 #include "tyr/formalism/planning/function_expression_view.hpp"
 #include "tyr/formalism/planning/function_term_view.hpp"
-#include "tyr/formalism/planning/function_view.hpp"
 #include "tyr/formalism/planning/ground_action_view.hpp"
 #include "tyr/formalism/planning/ground_atom_view.hpp"
 #include "tyr/formalism/planning/ground_axiom_view.hpp"
@@ -54,12 +52,8 @@
 #include "tyr/formalism/planning/multi_operator_view.hpp"
 #include "tyr/formalism/planning/numeric_effect_operator_view.hpp"
 #include "tyr/formalism/planning/numeric_effect_view.hpp"
-#include "tyr/formalism/planning/object_view.hpp"
-#include "tyr/formalism/planning/predicate_view.hpp"
 #include "tyr/formalism/planning/task_view.hpp"
-#include "tyr/formalism/planning/term_view.hpp"
 #include "tyr/formalism/planning/unary_operator_view.hpp"
-#include "tyr/formalism/planning/variable_view.hpp"
 #include "tyr/formalism/views.hpp"
 
 #endif

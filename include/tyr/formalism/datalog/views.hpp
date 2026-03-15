@@ -34,7 +34,6 @@
 #include "tyr/formalism/datalog/ground_rule_view.hpp"
 #include "tyr/formalism/datalog/literal_view.hpp"
 #include "tyr/formalism/datalog/multi_operator_view.hpp"
-#include "tyr/formalism/datalog/object_view.hpp"
 #include "tyr/formalism/datalog/program_view.hpp"
 #include "tyr/formalism/datalog/rule_view.hpp"
 #include "tyr/formalism/datalog/unary_operator_view.hpp"

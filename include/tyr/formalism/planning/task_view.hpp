@@ -76,9 +76,7 @@ public:
 
 namespace formalism::planning
 {
-using TaskView = View<Index<Task>, Repository>;
 
-using TaskListView = View<IndexList<Task>, Repository>;
 }
 }
 

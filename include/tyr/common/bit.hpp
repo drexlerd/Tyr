@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <stdexcept>
 
 namespace tyr::bit
 {

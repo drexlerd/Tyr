@@ -46,14 +46,6 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
 };
 
-namespace formalism::planning
-{
-template<FactKind T>
-using FunctionTermView = View<Index<FunctionTerm<T>>, Repository>;
-
-template<FactKind T>
-using FunctionTermListView = View<IndexList<FunctionTerm<T>>, Repository>;
-}
 }
 
 #endif

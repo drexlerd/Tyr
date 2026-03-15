@@ -20,8 +20,7 @@
 
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
-#include "tyr/formalism/planning/declarations.hpp"
-#include "tyr/formalism/planning/views.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 
 #include <vector>
 

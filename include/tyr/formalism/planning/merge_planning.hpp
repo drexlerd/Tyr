@@ -220,15 +220,29 @@ inline auto merge_d2p(formalism::datalog::AtomView<T_SRC> element, MergePlanning
 }
 
 template<FactKind T_SRC, FactKind T_DST>
+inline auto merge_d2p(PredicateView<T_DST> predicate, formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto object : element.get_objects())
+        binding.objects.push_back(object.get_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(predicate, binding.objects);
+}
+
+template<FactKind T_SRC, FactKind T_DST>
 inline auto merge_d2p(formalism::datalog::GroundAtomView<T_SRC> element, MergePlanningContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T_DST>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.predicate = merge_d2p<T_SRC, T_DST>(element.get_predicate(), context).first.get_index();
-    for (const auto object : element.get_row().get_objects())
-        atom.objects.push_back(object.get_index());
+    const auto predicate_view = merge_d2p<T_SRC, T_DST>(element.get_predicate(), context).first;
+    atom.predicate = predicate_view.get_index();
+    atom.row = merge_d2p(predicate_view, element.get_row(), context).first.get_index().second;
 
     canonicalize(atom);
     return context.destination.get_or_create(atom, context.builder.get_buffer());
@@ -294,15 +308,29 @@ inline auto merge_d2p(formalism::datalog::FunctionTermView<T> element, MergePlan
 }
 
 template<FactKind T>
+inline auto merge_d2p(FunctionView<T> function, formalism::datalog::FunctionBindingView<T> element, MergePlanningContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto object : element.get_objects())
+        binding.objects.push_back(object.get_index());
+
+    canonicalize(binding);
+    return context.destination.get_or_create(function, binding.objects);
+}
+
+template<FactKind T>
 inline auto merge_d2p(formalism::datalog::GroundFunctionTermView<T> element, MergePlanningContext& context)
 {
     auto fterm_ptr = context.builder.template get_builder<GroundFunctionTerm<T>>();
     auto& fterm = *fterm_ptr;
     fterm.clear();
 
-    fterm.function = element.get_function().get_index();
-    for (const auto object : element.get_row().get_objects())
-        fterm.objects.push_back(object.get_index());
+    const auto function_view = merge_d2p(element.get_function(), context).first;
+    fterm.function = function_view.get_index();
+    fterm.row = merge_d2p(function_view, element.get_row(), context).first.get_index().second;
 
     canonicalize(fterm);
     return context.destination.get_or_create(fterm, context.builder.get_buffer());

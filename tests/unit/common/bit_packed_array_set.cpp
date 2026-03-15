@@ -24,7 +24,7 @@ namespace tyr::tests
 
 TEST(TyrTests, TyrCommonBitPackedArraySetOutOfRange)
 {
-    auto set = BitPackedArraySet<uint_t>(2, 2);
+    auto set = BitPackedArraySet<uint_t, bit::ForwardingBlockCoder<uint_t>, 1>(2, 2);
 
     // 4 requires width 3, which exceeds the limit of 2.
     EXPECT_THROW(set.insert(std::vector<uint_t>({ 1, 4 })), std::out_of_range);
@@ -35,7 +35,7 @@ TEST(TyrTests, TyrCommonBitPackedArraySetOutOfRange)
 
 TEST(TyrTests, TyrCommonBitPackedArraySet)
 {
-    auto set = BitPackedArraySet<uint8_t>(2, 3);
+    auto set = BitPackedArraySet<uint8_t, bit::ForwardingBlockCoder<uint8_t>, 1>(2, 3);
 
     // Repeat 5 times on cleared pool.
     for (size_t i = 0; i < 5; ++i)
