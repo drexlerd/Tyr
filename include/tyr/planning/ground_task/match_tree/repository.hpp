@@ -20,21 +20,28 @@
 
 // Include specialization headers first
 #include "tyr/planning/ground_task/match_tree/nodes/atom_data.hpp"
+#include "tyr/planning/ground_task/match_tree/nodes/atom_index.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/atom_view.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/constraint_data.hpp"
+#include "tyr/planning/ground_task/match_tree/nodes/constraint_index.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/constraint_view.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/generator_data.hpp"
+#include "tyr/planning/ground_task/match_tree/nodes/generator_index.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/generator_view.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/node_data.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/node_view.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/variable_data.hpp"
+#include "tyr/planning/ground_task/match_tree/nodes/variable_index.hpp"
 #include "tyr/planning/ground_task/match_tree/nodes/variable_view.hpp"
 //
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
 #include "tyr/buffer/segmented_buffer.hpp"
 #include "tyr/common/tuple.hpp"
+#include "tyr/common/types.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/ground_action_index.hpp"
+#include "tyr/formalism/planning/ground_axiom_index.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/ground_task/match_tree/declarations.hpp"
 
@@ -61,11 +68,8 @@ private:
         Entry(buffer::Buffer& buffer, buffer::SegmentedBuffer& arena) : container(buffer, arena) {}
     };
 
-    using RepositoryStorage = std::tuple<Entry<AtomSelectorNode<Tag>>,
-                                         Entry<VariableSelectorNode<Tag>>,
-                                         Entry<NumericConstraintSelectorNode<Tag>>,
-                                         Entry<ElementGeneratorNode<Tag>>,
-                                         Entry<Node<Tag>>>;
+    using RepositoryStorage =
+        std::tuple<Entry<AtomSelectorNode<Tag>>, Entry<VariableSelectorNode<Tag>>, Entry<NumericConstraintSelectorNode<Tag>>, Entry<ElementGeneratorNode<Tag>>>;
 
     const formalism::planning::Repository& m_formalism_repository;
     buffer::SegmentedBuffer m_arena;
@@ -80,8 +84,7 @@ public:
         m_repository(Entry<AtomSelectorNode<Tag>>(m_buffer, m_arena),
                      Entry<VariableSelectorNode<Tag>>(m_buffer, m_arena),
                      Entry<NumericConstraintSelectorNode<Tag>>(m_buffer, m_arena),
-                     Entry<ElementGeneratorNode<Tag>>(m_buffer, m_arena),
-                     Entry<Node<Tag>>(m_buffer, m_arena))
+                     Entry<ElementGeneratorNode<Tag>>(m_buffer, m_arena))
     {
     }
     Repository(const Repository& other) = delete;

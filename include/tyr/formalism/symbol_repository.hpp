@@ -47,15 +47,10 @@ private:
     template<typename T>
     struct Slot<T, true>
     {
-        //::tyr::IndexedHashSet<T> container;
-        // size_t parent_size = 0;
-
-        // Slot(buffer::Buffer&, buffer::SegmentedBuffer&) : container(), parent_size(0) {}
-
-        buffer::IndexedHashSet<T> container;
+        ::tyr::IndexedHashSet<T> container;
         size_t parent_size = 0;
 
-        Slot(buffer::Buffer& buffer, buffer::SegmentedBuffer& arena) : container(buffer, arena), parent_size(0) {}
+        Slot(buffer::Buffer&, buffer::SegmentedBuffer&) : container(), parent_size(0) {}
     };
 
     template<typename T>
@@ -135,11 +130,12 @@ public:
     std::optional<View<Index<T>, SymbolRepository>> find_with_hash(const Data<T>& builder, size_t h) const noexcept
     {
         const auto& entry = std::get<Entry<T>>(m_repository);
-        const auto& container = entry.slot.container;
+        const auto& slot = entry.slot;
+        const auto& container = slot.container;
         assert(h == container.hash(builder) && "The given hash does not match container internal's hash.");
 
         if (auto index_or_nullopt = container.find_with_hash(builder, h))
-            return View<Index<T>, SymbolRepository>(*index_or_nullopt, *this);
+            return View<Index<T>, SymbolRepository>(slot.parent_size + *index_or_nullopt, *this);
 
         return m_parent ? m_parent->template find_with_hash<T>(builder, h) : std::nullopt;
     }
@@ -158,15 +154,15 @@ public:
         auto& container = slot.container;
 
         if (m_parent)
-            if (auto index_or_nullopt = m_parent->template find_with_hash<T>(builder, h))
-                return { *index_or_nullopt, false };
+            if (auto view_or_nullopt = m_parent->template find_with_hash<T>(builder, h))
+                return { *view_or_nullopt, false };
 
         // Manually assign index to continue indexing.
         builder.index.value = slot.parent_size + container.size();
 
         const auto [index, success] = container.insert_with_hash(h, builder);
 
-        return { View<Index<T>, SymbolRepository>(index, *this), success };
+        return { View<Index<T>, SymbolRepository>(slot.parent_size + index, *this), success };
     }
 
     template<typename T>
@@ -246,11 +242,12 @@ public:
     std::optional<Index<T>> find_local_with_hash(const Data<T>& builder, size_t h) const noexcept
     {
         const auto& entry = std::get<Entry<T>>(m_repository);
-        const auto& container = entry.slot.container;
+        const auto& slot = entry.slot;
+        const auto& container = slot.container;
         assert(h == container.hash(builder));
 
         if (auto index_or_nullopt = container.find_with_hash(builder, h))
-            return *index_or_nullopt;
+            return Index<T>(slot.parent_size + uint_t(*index_or_nullopt));
 
         return std::nullopt;
     }
@@ -271,12 +268,12 @@ public:
         auto& container = slot.container;
 
         if (auto index_or_nullopt = container.find_with_hash(builder, h))
-            return { *index_or_nullopt, false };
+            return { Index<T>(slot.parent_size + uint_t(*index_or_nullopt)), false };
 
         builder.index.value = slot.parent_size + container.size();
 
         const auto [index, success] = container.insert_with_hash(h, builder);
-        return { index, success };
+        return { Index<T>(slot.parent_size + uint_t(index)), success };
     }
 
     template<typename T>

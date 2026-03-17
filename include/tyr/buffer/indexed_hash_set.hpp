@@ -24,7 +24,6 @@
 #include "tyr/common/config.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
-#include "tyr/common/observer_ptr.hpp"
 #include "tyr/common/segmented_vector.hpp"
 #include "tyr/common/types.hpp"
 
@@ -36,40 +35,35 @@
 
 namespace tyr::buffer
 {
-template<typename Tag, typename H, typename E>
+template<typename Tag, typename H = Hash<Data<Tag>>, typename E = EqualTo<Data<Tag>>>
 class IndexedHashSet
 {
 private:
-    // Deduplication
-    gtl::flat_hash_set<ObserverPtr<const Data<Tag>>, H, E> m_set;
+    struct IndexableHash;
+    struct IndexableEqualTo;
 
-    // Randomized access
-    std::vector<const Data<Tag>*> m_vec;
-
-    ::cista::buf<std::vector<uint8_t>>* m_buf;
-    SegmentedBuffer* m_arena;
+    using VectorType = std::vector<const Data<Tag>*>;
 
 public:
     IndexedHashSet() = default;
-    IndexedHashSet(::cista::buf<std::vector<uint8_t>>& buf, SegmentedBuffer& arena) : m_set(), m_vec(), m_buf(&buf), m_arena(&arena) {}
+    IndexedHashSet(::cista::buf<std::vector<uint8_t>>& buf, SegmentedBuffer& arena) :
+        m_storage(std::make_unique<VectorType>()),
+        m_set(0, IndexableHash(*m_storage), IndexableEqualTo(*m_storage)),
+        m_buf(&buf),
+        m_arena(&arena)
+    {
+    }
     IndexedHashSet(const IndexedHashSet& other) = delete;
     IndexedHashSet& operator=(const IndexedHashSet& other) = delete;
     IndexedHashSet(IndexedHashSet&& other) = default;
     IndexedHashSet& operator=(IndexedHashSet&& other) = default;
 
     /**
-     * Iterators
-     */
-
-    auto begin() const noexcept { return m_vec.begin(); }
-    auto end() const noexcept { return m_vec.end(); }
-
-    /**
      * Capacity
      */
 
-    bool empty() const noexcept { return m_vec.empty(); }
-    size_t size() const noexcept { return m_vec.size(); }
+    bool empty() const noexcept { return m_storage->empty(); }
+    size_t size() const noexcept { return m_storage->size(); }
 
     /**
      * Modifiers
@@ -78,19 +72,19 @@ public:
     void clear()
     {
         m_set.clear();
-        m_vec.clear();
+        m_storage->clear();
     }
 
-    size_t hash(const Data<Tag>& element) const noexcept { return m_set.hash(make_observer(element)); }
+    size_t hash(const Data<Tag>& element) const noexcept { return m_set.hash(element); }
 
     std::optional<Index<Tag>> find_with_hash(const Data<Tag>& element, size_t h) const noexcept
     {
         assert(is_canonical(element) && "The given element is not canonical. Did you forget to call canonicalize?");
         assert(h == hash(element) && "The given hash does not match container internal's hash.");
 
-        const auto it = m_set.find(make_observer(element), h);
+        const auto it = m_set.find(element, h);
         if (it != m_set.end())
-            return it->get()->index;
+            return *it;
 
         return std::nullopt;
     }
@@ -110,9 +104,9 @@ public:
 
         // 1. Check if element already exists
 
-        auto it = m_set.find(make_observer(element), h);
+        auto it = m_set.find(element, h);
         if (it != m_set.end())
-            return std::make_pair(it->get()->index, false);
+            return std::make_pair(*it, false);
 
         // 2. Serialize
         m_buf->reset();
@@ -121,15 +115,17 @@ public:
         // 3. Write to storage
         auto begin = m_arena->write(m_buf->base(), m_buf->size(), alignof(Data<Tag>));
 
-        // 4. Insert into set
+        const auto index = Index<Tag>(static_cast<uint_t>(m_storage->size()));
+
+        // 4. Insert into vec
         const auto serialized_element = ::cista::deserialize<const Data<Tag>, Mode>(begin, begin + m_buf->size());
-        auto [it2, inserted] = m_set.emplace_with_hash(h, serialized_element);
+        m_storage->push_back(serialized_element);
+
+        // 5. Insert into set
+        [[maybe_unused]] auto [it2, inserted] = m_set.emplace_with_hash(h, index);
         assert(inserted);
 
-        // 5. Insert to vec
-        m_vec.push_back(it2->get());
-
-        return std::make_pair(it2->get()->index, true);
+        return std::make_pair(index, true);
     }
 
     // const T* always points to a valid instantiation of the class.
@@ -148,16 +144,56 @@ public:
 
     const Data<Tag>& operator[](Index<Tag> index) const noexcept
     {
-        // std::cout << index.get_value() << " " << m_vec.size() << std::endl;
-        assert(index.get_value() < m_vec.size());
-        return *m_vec[index.get_value()];
+        assert(index.get_value() < m_storage->size());
+        return *(*m_storage)[index.get_value()];
     }
 
     const Data<Tag>& front() const
     {
-        assert(!m_vec.empty());
-        return *m_vec.front();
+        assert(!m_storage->empty());
+        return *m_storage->front();
     }
+
+private:
+    class IndexableHash
+    {
+    private:
+        const VectorType* m_storage;
+        H m_hash;
+
+    public:
+        using is_transparent = void;
+
+        IndexableHash() noexcept : m_storage(nullptr) {}
+        explicit IndexableHash(const VectorType& storage) noexcept : m_storage(&storage) {}
+
+        size_t operator()(Index<Tag> el) const noexcept { return m_hash(*(*m_storage)[uint_t(el)]); }
+        size_t operator()(const Data<Tag>& el) const noexcept { return m_hash(el); }
+    };
+
+    class IndexableEqualTo
+    {
+    private:
+        const VectorType* m_storage;
+        E m_equal_to;
+
+    public:
+        using is_transparent = void;
+
+        IndexableEqualTo() noexcept : m_storage(nullptr), m_equal_to() {}
+        explicit IndexableEqualTo(const VectorType& storage) noexcept : m_storage(&storage), m_equal_to() {}
+
+        bool operator()(Index<Tag> lhs, Index<Tag> rhs) const noexcept { return m_equal_to(*(*m_storage)[uint_t(lhs)], *(*m_storage)[uint_t(rhs)]); }
+        bool operator()(const Data<Tag>& lhs, Index<Tag> rhs) const noexcept { return m_equal_to(lhs, *(*m_storage)[uint_t(rhs)]); }
+        bool operator()(Index<Tag> lhs, const Data<Tag>& rhs) const noexcept { return m_equal_to(*(*m_storage)[uint_t(lhs)], rhs); }
+        bool operator()(const Data<Tag>& lhs, const Data<Tag>& rhs) const noexcept { return m_equal_to(lhs, rhs); }
+    };
+
+    std::unique_ptr<VectorType> m_storage;
+    gtl::flat_hash_set<Index<Tag>, IndexableHash, IndexableEqualTo> m_set;
+
+    ::cista::buf<std::vector<uint8_t>>* m_buf;
+    SegmentedBuffer* m_arena;
 };
 
 }

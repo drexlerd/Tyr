@@ -33,13 +33,6 @@ struct buf;
 namespace tyr::buffer
 {
 using Buffer = ::cista::buf<std::vector<uint8_t>>;
-
-template<typename Tag, typename H = Hash<ObserverPtr<const Data<Tag>>>, typename E = EqualTo<ObserverPtr<const Data<Tag>>>>
-class IndexedHashSet;
-
-template<typename Tag, typename H = Hash<ObserverPtr<const Data<Tag>>>, typename E = EqualTo<ObserverPtr<const Data<Tag>>>>
-
-using IndexedHashSetList = std::vector<IndexedHashSet<Tag, H, E>>;
 }
 
 #endif
