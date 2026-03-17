@@ -48,7 +48,7 @@ public:
     auto get_numeric_effects() const noexcept { return make_view(get_data().numeric_effects, *m_context); }
     auto get_auxiliary_numeric_effect() const noexcept { return make_view(get_data().auxiliary_numeric_effect, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

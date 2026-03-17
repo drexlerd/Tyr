@@ -426,8 +426,6 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                         // Merge head from delta into the program
                         const auto program_head = fd::merge_d2d(make_view(worker_head, worker.solve.program_overlay_repository), merge_context).first;
 
-                        // std::cout << make_view(program_head, ws.repository) << std::endl;
-
                         // Update annotation
                         const auto cost_update = ctx.ctx.ws.or_ap.update_annotation(program_head,
                                                                                     worker_head,
@@ -435,7 +433,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                                                                     worker.iteration.and_annot,
                                                                                     ctx.ctx.ws.and_annot);
 
-                        cost_buckets.update(cost_update, program_head);
+                        cost_buckets.update(cost_update, program_head.get_index());
                     }
                 }
             }
@@ -444,8 +442,11 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                 return;  // Terminate if no-nonempty bucket was found.
 
             // Insert next bucket heads into fact and assignment sets + trigger scheduler.
-            for (const auto head : cost_buckets.get_current_bucket())
+            for (const auto head_index : cost_buckets.get_current_bucket())
             {
+                // Fact set behaves deterministically on views.
+                const auto head = make_view(head_index, ctx.ctx.ws.workspace_repository);
+
                 if (!facts.fact_sets.predicate.contains(head))
                 {
                     // Notify scheduler

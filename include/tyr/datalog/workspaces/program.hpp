@@ -40,7 +40,7 @@ namespace tyr::datalog
 class CostBuckets
 {
 public:
-    using Atom = formalism::datalog::GroundAtomView<formalism::FluentTag>;
+    using Atom = Index<formalism::datalog::GroundAtom<formalism::FluentTag>>;  // View would cause nondeterminism
     using Bucket = UnorderedSet<Atom>;
     using Cost = uint_t;
 

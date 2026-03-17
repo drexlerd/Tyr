@@ -45,7 +45,7 @@ public:
 
     auto get_elements() const noexcept { return make_view(get_data().elements, m_context->get_formalism_repository()); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 }
 

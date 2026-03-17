@@ -63,7 +63,7 @@ public:
     auto get_actions() const noexcept { return make_view(get_data().actions, *m_context); }
     auto get_axioms() const noexcept { return make_view(get_data().axioms, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

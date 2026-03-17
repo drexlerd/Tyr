@@ -40,7 +40,7 @@ public:
 
     auto get_variant() const noexcept { return make_view(m_handle.value, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 }
 

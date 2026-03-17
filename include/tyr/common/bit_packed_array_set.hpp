@@ -129,7 +129,7 @@ public:
         const auto index = static_cast<index_type>(m_pool->size());
         m_pool->push_back(elements);
 
-        [[maybe_unused]] const auto [it, inserted] = m_set.insert(index);
+        [[maybe_unused]] const auto [it, inserted] = m_set.emplace_with_hash(h, index);
         assert(inserted);
 
         return { index, true };

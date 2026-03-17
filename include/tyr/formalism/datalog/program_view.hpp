@@ -68,7 +68,7 @@ public:
     }
     auto get_rules() const noexcept { return make_view(get_data().rules, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

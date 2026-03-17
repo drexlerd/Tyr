@@ -44,7 +44,7 @@ public:
     auto has_value() const noexcept { return get_value() != formalism::planning::FDRValue::none(); }
     auto get_atom() const noexcept { return has_value() ? std::make_optional(get_variable().get_atoms()[uint_t(get_value() - 1)]) : std::nullopt; }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

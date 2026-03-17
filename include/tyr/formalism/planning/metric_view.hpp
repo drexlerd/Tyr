@@ -45,7 +45,7 @@ public:
     auto get_objective() const noexcept { return get_data().objective; }
     auto get_fexpr() const noexcept { return make_view(get_data().fexpr, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

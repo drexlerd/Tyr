@@ -45,7 +45,7 @@ public:
     auto get_index() const noexcept { return m_handle; }
     auto get_args() const noexcept { return make_view(get_data().args, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

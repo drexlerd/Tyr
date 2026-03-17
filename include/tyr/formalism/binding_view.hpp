@@ -45,7 +45,7 @@ public:
     auto get_index() const noexcept { return m_handle; }
     auto get_objects() const noexcept { return make_view(get_data().objects, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 template<IndexConcept I, typename C>
@@ -67,7 +67,7 @@ public:
     auto get_relation() const noexcept { return make_view(m_handle.first, *m_context); }
     auto get_objects() const noexcept { return make_view(get_data(), *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }

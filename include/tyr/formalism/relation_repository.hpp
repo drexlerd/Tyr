@@ -185,6 +185,7 @@ public:
     std::optional<View<std::pair<Index<T>, Index<Binding>>, RelationRepository>> find(Index<T> g, const IndexList<Object>& builder) const noexcept
     {
         const auto* slot = find_slot(g);
+
         if (!slot)
             return m_parent ? m_parent->template find<T>(g, builder) : std::nullopt;
 
@@ -192,7 +193,7 @@ public:
         if (auto row_or_nullopt = slot->container.find_with_hash(builder, h))
             return View<std::pair<Index<T>, Index<Binding>>, RelationRepository>(std::make_pair(g, Index<Binding>(slot->parent_size + *row_or_nullopt)), *this);
 
-        return m_parent ? m_parent->template find<T>(g, builder) : std::nullopt;
+        return m_parent ? m_parent->template find_with_hash<T>(g, builder, h) : std::nullopt;
     }
 
     template<typename T>

@@ -45,7 +45,7 @@ public:
     auto get_condition() const noexcept { return make_view(get_data().condition, *m_context); }
     auto get_effect() const noexcept { return make_view(get_data().effect, *m_context); }
 
-    auto identifying_members() const noexcept { return std::tie(m_context, m_handle); }
+    auto identifying_members() const noexcept { return std::tie(m_handle, m_context); }
 };
 
 }
