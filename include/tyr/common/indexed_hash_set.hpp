@@ -41,8 +41,8 @@ class IndexedHashSet
     static_assert(std::is_default_constructible_v<Data<Tag>>);
 
 private:
-    struct IndexableHash;
-    struct IndexableEqualTo;
+    class IndexableHash;
+    class IndexableEqualTo;
 
     using VectorType = SegmentedVector<Data<Tag>, FirstSegmentSize>;
 

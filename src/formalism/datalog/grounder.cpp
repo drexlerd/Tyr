@@ -20,6 +20,8 @@
 #ifndef TYR_HEADER_INSTANTIATION
 #include "tyr/formalism/datalog/grounder.ipp"
 
+namespace tyr::formalism::datalog
+{
 template std::pair<FunctionBindingView<StaticTag>, bool> ground(TermListView terms, FunctionView<StaticTag> function, GrounderContext& context);
 template std::pair<FunctionBindingView<FluentTag>, bool> ground(TermListView terms, FunctionView<FluentTag> function, GrounderContext& context);
 
@@ -50,5 +52,6 @@ template std::pair<GroundAtomView<FluentTag>, bool> ground(AtomView<FluentTag> e
 
 template std::pair<GroundLiteralView<StaticTag>, bool> ground(LiteralView<StaticTag> element, GrounderContext& context);
 template std::pair<GroundLiteralView<FluentTag>, bool> ground(LiteralView<FluentTag> element, GrounderContext& context);
+}
 
 #endif

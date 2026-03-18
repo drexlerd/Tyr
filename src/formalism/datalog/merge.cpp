@@ -20,6 +20,8 @@
 #ifndef TYR_HEADER_INSTANTIATION
 #include "tyr/formalism/datalog/merge.ipp"
 
+namespace tyr::formalism::datalog
+{
 template std::pair<PredicateView<StaticTag>, bool> merge_d2d(PredicateView<StaticTag> element, MergeContext& context);
 template std::pair<PredicateView<FluentTag>, bool> merge_d2d(PredicateView<FluentTag> element, MergeContext& context);
 
@@ -115,5 +117,6 @@ template std::pair<MultiOperatorView<OpMul, Data<GroundFunctionExpression>>, boo
 template Data<ArithmeticOperator<Data<FunctionExpression>>> merge_d2d(ArithmeticOperatorView<Data<FunctionExpression>> element, MergeContext& context);
 template Data<ArithmeticOperator<Data<GroundFunctionExpression>>> merge_d2d(ArithmeticOperatorView<Data<GroundFunctionExpression>> element,
                                                                             MergeContext& context);
+}
 
 #endif

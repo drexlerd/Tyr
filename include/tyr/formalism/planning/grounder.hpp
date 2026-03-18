@@ -68,26 +68,17 @@ Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground(LiftedArithmetic
 template<FactKind T>
 std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateView<T> predicate, GrounderContext& context);
 
-template<FactKind T_SRC, FactKind T_DST>
-std::pair<GroundAtomView<T_DST>, bool> ground(AtomView<T_SRC> element, MergeContext& merge_context, GrounderContext& grounder_context);
+template<FactKind T>
+std::pair<GroundAtomView<T>, bool> ground(AtomView<T> element, GrounderContext& context);
 
-template<FactKind T_SRC, FactKind T_DST = T_SRC>
-std::pair<GroundAtomView<T_DST>, bool> ground(AtomView<T_SRC> element, GrounderContext& context);
-
-template<typename FDR>
-    requires FDRContext<FDR>
-Data<FDRFact<FluentTag>> ground(AtomView<FluentTag> element, GrounderContext& context, FDR& fdr);
+Data<FDRFact<FluentTag>> ground(AtomView<FluentTag> element, GrounderContext& context, BinaryFDRContext& fdr);
 
 template<FactKind T>
 std::pair<GroundLiteralView<T>, bool> ground(LiteralView<T> element, GrounderContext& context);
 
-template<typename FDR>
-    requires FDRContext<FDR>
-Data<FDRFact<FluentTag>> ground(LiteralView<FluentTag> element, GrounderContext& context, FDR& fdr);
+Data<FDRFact<FluentTag>> ground(LiteralView<FluentTag> element, GrounderContext& context, BinaryFDRContext& fdr);
 
-template<typename FDR>
-    requires FDRContext<FDR>
-std::pair<GroundConjunctiveConditionView, bool> ground(ConjunctiveConditionView element, GrounderContext& context, FDR& fdr);
+std::pair<GroundConjunctiveConditionView, bool> ground(ConjunctiveConditionView element, GrounderContext& context, BinaryFDRContext& fdr);
 
 template<NumericEffectOpKind Op, FactKind T>
 std::pair<GroundNumericEffectView<Op, T>, bool> ground(NumericEffectView<Op, T> element, GrounderContext& context);
@@ -95,30 +86,22 @@ std::pair<GroundNumericEffectView<Op, T>, bool> ground(NumericEffectView<Op, T> 
 template<FactKind T>
 Data<GroundNumericEffectOperator<T>> ground(NumericEffectOperatorView<T> element, GrounderContext& context);
 
-template<typename FDR>
-    requires FDRContext<FDR>
 std::pair<GroundConjunctiveEffectView, bool>
-ground(ConjunctiveEffectView element, GrounderContext& context, UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign, FDR& fdr);
+ground(ConjunctiveEffectView element, GrounderContext& context, UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign, BinaryFDRContext& fdr);
 
-template<typename FDR>
-    requires FDRContext<FDR>
 std::pair<GroundConditionalEffectView, bool>
-ground(ConditionalEffectView element, GrounderContext& context, UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign, FDR& fdr);
+ground(ConditionalEffectView element, GrounderContext& context, UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign, BinaryFDRContext& fdr);
 
 std::pair<ActionBindingView, bool> ground(ActionView action, GrounderContext& context);
 
-template<typename FDR>
-    requires FDRContext<FDR>
 std::pair<GroundActionView, bool> ground(ActionView element,
                                          GrounderContext& context,
                                          const analysis::DomainListListList& cond_effect_domains,
                                          UnorderedMap<Index<FDRVariable<FluentTag>>, FDRValue>& assign,
                                          itertools::cartesian_set::Workspace<Index<formalism::Object>>& iter_workspace,
-                                         FDR& fdr);
+                                         BinaryFDRContext& fdr);
 
-template<typename FDR>
-    requires FDRContext<FDR>
-std::pair<GroundAxiomView, bool> ground(AxiomView element, GrounderContext& context, FDR& fdr);
+std::pair<GroundAxiomView, bool> ground(AxiomView element, GrounderContext& context, BinaryFDRContext& fdr);
 
 }
 
