@@ -188,15 +188,13 @@ public:
     }
 
     template<IndexConcept I>
-    RelationRepo::ConstViewType operator[](std::pair<I, Index<Binding>> index) const noexcept
+    auto operator[](std::pair<I, Index<Binding>> index) const noexcept
     {
-        if (!m_relation_repository.is_local(index))
-        {
-            assert(m_parent);
-            return (*m_parent)[index];
-        }
+        if (m_relation_repository.is_local(index))
+            return m_relation_repository.at_local(index);
 
-        return m_relation_repository.at_local(index);
+        assert(m_parent);
+        return (*m_parent)[index];
     }
 
     template<IndexConcept I>

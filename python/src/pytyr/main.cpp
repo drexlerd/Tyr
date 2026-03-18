@@ -20,9 +20,6 @@
 namespace nb = nanobind;
 using namespace nb::literals;
 
-namespace tyr
-{
-
 NB_MODULE(pytyr, m)
 {
     // Create submodules before binding to avoid missing bindings
@@ -30,8 +27,8 @@ NB_MODULE(pytyr, m)
     auto formalism = m.def_submodule("formalism");
     auto formalism_planning = formalism.def_submodule("planning");
 
-    formalism::bind_module_definitions(formalism);
-    formalism::planning::bind_module_definitions(formalism_planning);
+    tyr::formalism::bind_module_definitions(formalism);
+    tyr::formalism::planning::bind_module_definitions(formalism_planning);
 
     auto planning = m.def_submodule("planning");
     auto planning_ground = planning.def_submodule("ground");
@@ -41,13 +38,11 @@ NB_MODULE(pytyr, m)
     auto planning_lifted_astar_eager = planning_lifted.def_submodule("astar_eager");
     auto planning_lifted_gbfs_lazy = planning_lifted.def_submodule("gbfs_lazy");
 
-    planning::bind_module_definitions(planning);
-    planning::bind_ground_module_definitions(planning_ground);
-    planning::bind_lifted_module_definitions(planning_lifted);
-    planning::astar_eager::bind_ground_module_definitions(planning_ground_astar_eager);
-    planning::astar_eager::bind_lifted_module_definitions(planning_lifted_astar_eager);
-    planning::gbfs_lazy::bind_ground_module_definitions(planning_ground_gbfs_lazy);
-    planning::gbfs_lazy::bind_lifted_module_definitions(planning_lifted_gbfs_lazy);
-}
-
+    tyr::planning::bind_module_definitions(planning);
+    tyr::planning::bind_ground_module_definitions(planning_ground);
+    tyr::planning::bind_lifted_module_definitions(planning_lifted);
+    tyr::planning::astar_eager::bind_ground_module_definitions(planning_ground_astar_eager);
+    tyr::planning::astar_eager::bind_lifted_module_definitions(planning_lifted_astar_eager);
+    tyr::planning::gbfs_lazy::bind_ground_module_definitions(planning_ground_gbfs_lazy);
+    tyr::planning::gbfs_lazy::bind_lifted_module_definitions(planning_lifted_gbfs_lazy);
 }

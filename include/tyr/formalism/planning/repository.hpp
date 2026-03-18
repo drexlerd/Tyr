@@ -18,17 +18,16 @@
 #ifndef TYR_FORMALISM_PLANNING_REPOSITORY_HPP_
 #define TYR_FORMALISM_PLANNING_REPOSITORY_HPP_
 
-// Include specialization headers first
-#include "tyr/formalism/planning/datas.hpp"
-#include "tyr/formalism/planning/indices.hpp"
-#include "tyr/formalism/planning/views.hpp"
-//
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
 #include "tyr/buffer/segmented_buffer.hpp"
 #include "tyr/common/tuple.hpp"
 #include "tyr/formalism/function_view.hpp"
+#include "tyr/formalism/planning/canonicalization.hpp"
+#include "tyr/formalism/planning/datas.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/indices.hpp"
+#include "tyr/formalism/planning/views.hpp"
 #include "tyr/formalism/predicate_view.hpp"
 #include "tyr/formalism/relation_repository.hpp"
 #include "tyr/formalism/repository.hpp"
@@ -391,6 +390,103 @@ namespace tyr::formalism
  * Explicit instantiations
  */
 
+// BasicRelationRepository
+extern template class BasicRelationRepository<Predicate<StaticTag>>;
+extern template class BasicRelationRepository<Predicate<FluentTag>>;
+extern template class BasicRelationRepository<Predicate<DerivedTag>>;
+extern template class BasicRelationRepository<Function<StaticTag>>;
+extern template class BasicRelationRepository<Function<FluentTag>>;
+extern template class BasicRelationRepository<Function<AuxiliaryTag>>;
+extern template class BasicRelationRepository<planning::Action>;
+extern template class BasicRelationRepository<planning::Axiom>;
+
+// BasicSymbolRepository
+extern template class BasicSymbolRepository<Variable>;
+extern template class BasicSymbolRepository<Object>;
+extern template class BasicSymbolRepository<Binding>;
+extern template class BasicSymbolRepository<Predicate<StaticTag>>;
+extern template class BasicSymbolRepository<Predicate<FluentTag>>;
+extern template class BasicSymbolRepository<Predicate<DerivedTag>>;
+extern template class BasicSymbolRepository<planning::Atom<StaticTag>>;
+extern template class BasicSymbolRepository<planning::Atom<FluentTag>>;
+extern template class BasicSymbolRepository<planning::Atom<DerivedTag>>;
+extern template class BasicSymbolRepository<planning::GroundAtom<StaticTag>>;
+extern template class BasicSymbolRepository<planning::GroundAtom<FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundAtom<DerivedTag>>;
+extern template class BasicSymbolRepository<planning::Literal<StaticTag>>;
+extern template class BasicSymbolRepository<planning::Literal<FluentTag>>;
+extern template class BasicSymbolRepository<planning::Literal<DerivedTag>>;
+extern template class BasicSymbolRepository<planning::GroundLiteral<StaticTag>>;
+extern template class BasicSymbolRepository<planning::GroundLiteral<FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundLiteral<DerivedTag>>;
+extern template class BasicSymbolRepository<Function<StaticTag>>;
+extern template class BasicSymbolRepository<Function<FluentTag>>;
+extern template class BasicSymbolRepository<Function<AuxiliaryTag>>;
+extern template class BasicSymbolRepository<planning::FunctionTerm<StaticTag>>;
+extern template class BasicSymbolRepository<planning::FunctionTerm<FluentTag>>;
+extern template class BasicSymbolRepository<planning::FunctionTerm<AuxiliaryTag>>;
+extern template class BasicSymbolRepository<planning::GroundFunctionTerm<StaticTag>>;
+extern template class BasicSymbolRepository<planning::GroundFunctionTerm<FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundFunctionTerm<AuxiliaryTag>>;
+extern template class BasicSymbolRepository<planning::GroundFunctionTermValue<StaticTag>>;
+extern template class BasicSymbolRepository<planning::GroundFunctionTermValue<FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundFunctionTermValue<AuxiliaryTag>>;
+extern template class BasicSymbolRepository<planning::UnaryOperator<OpSub, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpAdd, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpSub, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpMul, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpDiv, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::MultiOperator<OpAdd, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::MultiOperator<OpMul, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpEq, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpNe, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpLe, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpLt, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpGe, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpGt, Data<planning::FunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::UnaryOperator<OpSub, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpAdd, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpSub, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpMul, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpDiv, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::MultiOperator<OpAdd, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::MultiOperator<OpMul, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpEq, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpNe, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpLe, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpLt, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpGe, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::BinaryOperator<OpGt, Data<planning::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<planning::NumericEffect<planning::OpAssign, FluentTag>>;
+extern template class BasicSymbolRepository<planning::NumericEffect<planning::OpIncrease, FluentTag>>;
+extern template class BasicSymbolRepository<planning::NumericEffect<planning::OpDecrease, FluentTag>>;
+extern template class BasicSymbolRepository<planning::NumericEffect<planning::OpScaleUp, FluentTag>>;
+extern template class BasicSymbolRepository<planning::NumericEffect<planning::OpScaleDown, FluentTag>>;
+extern template class BasicSymbolRepository<planning::NumericEffect<planning::OpIncrease, AuxiliaryTag>>;
+extern template class BasicSymbolRepository<planning::GroundNumericEffect<planning::OpAssign, FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundNumericEffect<planning::OpIncrease, FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundNumericEffect<planning::OpDecrease, FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundNumericEffect<planning::OpScaleUp, FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundNumericEffect<planning::OpScaleDown, FluentTag>>;
+extern template class BasicSymbolRepository<planning::GroundNumericEffect<planning::OpIncrease, AuxiliaryTag>>;
+extern template class BasicSymbolRepository<planning::ConditionalEffect>;
+extern template class BasicSymbolRepository<planning::GroundConditionalEffect>;
+extern template class BasicSymbolRepository<planning::ConjunctiveEffect>;
+extern template class BasicSymbolRepository<planning::GroundConjunctiveEffect>;
+extern template class BasicSymbolRepository<planning::Action>;
+extern template class BasicSymbolRepository<planning::GroundAction>;
+extern template class BasicSymbolRepository<planning::Axiom>;
+extern template class BasicSymbolRepository<planning::GroundAxiom>;
+extern template class BasicSymbolRepository<planning::Metric>;
+extern template class BasicSymbolRepository<planning::Domain>;
+extern template class BasicSymbolRepository<planning::Task>;
+extern template class BasicSymbolRepository<planning::FDRVariable<FluentTag>>;
+extern template class BasicSymbolRepository<planning::FDRVariable<DerivedTag>>;
+extern template class BasicSymbolRepository<planning::ConjunctiveCondition>;
+extern template class BasicSymbolRepository<planning::GroundConjunctiveCondition>;
+extern template class BasicSymbolRepository<planning::FDRTask>;
+
+// Outer repository
 extern template class Repository<tyr::formalism::planning::SymbolRepository, tyr::formalism::planning::RelationRepository>;
 }
 

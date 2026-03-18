@@ -18,18 +18,17 @@
 #ifndef TYR_FORMALISM_DATALOG_REPOSITORY_HPP_
 #define TYR_FORMALISM_DATALOG_REPOSITORY_HPP_
 
-// Include specialization headers first
-#include "tyr/formalism/datalog/datas.hpp"
-#include "tyr/formalism/datalog/indices.hpp"
-#include "tyr/formalism/datalog/views.hpp"
-//
 #include "tyr/buffer/declarations.hpp"
 #include "tyr/buffer/indexed_hash_set.hpp"
 #include "tyr/buffer/segmented_buffer.hpp"
 #include "tyr/common/equal_to.hpp"
 #include "tyr/common/hash.hpp"
 #include "tyr/common/tuple.hpp"
+#include "tyr/formalism/datalog/canonicalization.hpp"
+#include "tyr/formalism/datalog/datas.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
+#include "tyr/formalism/datalog/indices.hpp"
+#include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/function_view.hpp"
 #include "tyr/formalism/predicate_view.hpp"
 #include "tyr/formalism/relation_repository.hpp"
@@ -274,6 +273,68 @@ namespace tyr::formalism
  * Explicit instantiations
  */
 
+// BasicRelationRepository
+extern template class BasicRelationRepository<Predicate<StaticTag>>;
+extern template class BasicRelationRepository<Predicate<FluentTag>>;
+extern template class BasicRelationRepository<Function<StaticTag>>;
+extern template class BasicRelationRepository<Function<FluentTag>>;
+extern template class BasicRelationRepository<datalog::Rule>;
+
+// BasicSymbolRepository
+extern template class BasicSymbolRepository<Variable>;
+extern template class BasicSymbolRepository<Object>;
+extern template class BasicSymbolRepository<Binding>;
+extern template class BasicSymbolRepository<Predicate<StaticTag>>;
+extern template class BasicSymbolRepository<Predicate<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::Atom<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::Atom<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::GroundAtom<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::GroundAtom<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::Literal<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::Literal<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::GroundLiteral<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::GroundLiteral<FluentTag>>;
+extern template class BasicSymbolRepository<Function<StaticTag>>;
+extern template class BasicSymbolRepository<Function<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::FunctionTerm<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::FunctionTerm<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::GroundFunctionTerm<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::GroundFunctionTerm<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::GroundFunctionTermValue<StaticTag>>;
+extern template class BasicSymbolRepository<datalog::GroundFunctionTermValue<FluentTag>>;
+extern template class BasicSymbolRepository<datalog::UnaryOperator<OpSub, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpAdd, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpSub, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpMul, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpDiv, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::MultiOperator<OpAdd, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::MultiOperator<OpMul, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpEq, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpNe, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpLe, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpLt, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpGe, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpGt, Data<datalog::FunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::UnaryOperator<OpSub, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpAdd, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpSub, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpMul, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpDiv, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::MultiOperator<OpAdd, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::MultiOperator<OpMul, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpEq, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpNe, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpLe, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpLt, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpGe, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::BinaryOperator<OpGt, Data<datalog::GroundFunctionExpression>>>;
+extern template class BasicSymbolRepository<datalog::ConjunctiveCondition>;
+extern template class BasicSymbolRepository<datalog::Rule>;
+extern template class BasicSymbolRepository<datalog::GroundConjunctiveCondition>;
+extern template class BasicSymbolRepository<datalog::GroundRule>;
+extern template class BasicSymbolRepository<datalog::Program>;
+
+// Outer repository
 extern template class Repository<tyr::formalism::datalog::SymbolRepository, tyr::formalism::datalog::RelationRepository>;
 }
 
