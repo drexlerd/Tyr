@@ -113,6 +113,7 @@ void bind_module_definitions(nb::module_& m)
     bind_index<Index<GroundFunctionTermValue<AuxiliaryTag>>>(m, "AuxiliaryGroundFunctionTermValueIndex");
 
     bind_index<Index<UnaryOperator<OpSub, Data<FunctionExpression>>>>(m, "UnaryOperatorSubIndex");
+
     bind_index<Index<BinaryOperator<OpAdd, Data<FunctionExpression>>>>(m, "BinaryOperatorAddIndex");
     bind_index<Index<BinaryOperator<OpSub, Data<FunctionExpression>>>>(m, "BinaryOperatorSubIndex");
     bind_index<Index<BinaryOperator<OpMul, Data<FunctionExpression>>>>(m, "BinaryOperatorMulIndex");
@@ -140,6 +141,22 @@ void bind_module_definitions(nb::module_& m)
     bind_index<Index<ConditionalEffect>>(m, "ConditionalEffectIndex");
     bind_index<Index<Action>>(m, "ActionIndex");
     bind_index<Index<Axiom>>(m, "AxiomIndex");
+
+    bind_index<Index<UnaryOperator<OpSub, Data<GroundFunctionExpression>>>>(m, "GroundUnaryOperatorSubIndex");
+
+    bind_index<Index<BinaryOperator<OpAdd, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorAddIndex");
+    bind_index<Index<BinaryOperator<OpSub, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorSubIndex");
+    bind_index<Index<BinaryOperator<OpMul, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorMulIndex");
+    bind_index<Index<BinaryOperator<OpDiv, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorDivIndex");
+    bind_index<Index<BinaryOperator<OpEq, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorEqIndex");
+    bind_index<Index<BinaryOperator<OpNe, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorNeIndex");
+    bind_index<Index<BinaryOperator<OpLe, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorLeIndex");
+    bind_index<Index<BinaryOperator<OpLt, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorLtIndex");
+    bind_index<Index<BinaryOperator<OpGe, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorGeIndex");
+    bind_index<Index<BinaryOperator<OpGt, Data<GroundFunctionExpression>>>>(m, "GroundBinaryOperatorGtIndex");
+
+    bind_index<Index<MultiOperator<OpAdd, Data<GroundFunctionExpression>>>>(m, "GroundMultiOperatorAddIndex");
+    bind_index<Index<MultiOperator<OpMul, Data<GroundFunctionExpression>>>>(m, "GroundMultiOperatorMulIndex");
 
     bind_index<Index<GroundConjunctiveCondition>>(m, "GroundConjunctiveConditionIndex");
 

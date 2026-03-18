@@ -33,6 +33,7 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
 
     formalism/planning/builder.cpp
     formalism/planning/grounder.cpp
+    formalism/planning/merge_planning.cpp
     formalism/planning/merge.cpp
     formalism/planning/repository.cpp
     formalism/planning/loki_to_tyr.cpp
