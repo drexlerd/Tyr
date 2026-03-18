@@ -19,6 +19,10 @@
 #define TYR_COMMON_COMMON_HPP_
 
 #include "tyr/common/bit.hpp"
+#include "tyr/common/bit_packed_array_pool.hpp"
+#include "tyr/common/bit_packed_array_set.hpp"
+#include "tyr/common/block_array_pool.hpp"
+#include "tyr/common/block_array_set.hpp"
 #include "tyr/common/chrono.hpp"
 #include "tyr/common/closed_interval.hpp"
 #include "tyr/common/config.hpp"

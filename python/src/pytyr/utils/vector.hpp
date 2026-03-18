@@ -11,6 +11,7 @@
 
 #include <nanobind/nanobind.h>
 #include <type_traits>
+#include <tyr/common/block_array_pool.hpp>
 #include <tyr/common/vector.hpp>
 
 NAMESPACE_BEGIN(NB_NAMESPACE)
@@ -21,6 +22,48 @@ template<typename Type, template<typename> typename Ptr, bool IndexPointers, typ
 struct type_caster<::tyr::View<::cista::basic_vector<Type, Ptr, IndexPointers, TemplateSizeType, Allocator>, C>>
 {
     using ViewT = ::tyr::View<::cista::basic_vector<Type, Ptr, IndexPointers, TemplateSizeType, Allocator>, C>;
+
+    using Entry = std::conditional_t<::tyr::ViewConcept<Type, C>, ::tyr::View<Type, C>, Type>;
+    using Caster = make_caster<Entry>;
+
+    NB_TYPE_CASTER(ViewT, io_name("collections.abc.Sequence", "list") + const_name("[") + Caster::Name + const_name("]"))
+
+    // No Python -> C++ conversion (cannot build a View without backing storage + context)
+    bool from_python(handle, uint8_t, cleanup_list*) noexcept { return false; }
+
+    // Taken from nanobind/stl/detail/nb_list.h
+    template<typename T>
+    static handle from_cpp(T&& src, rv_policy policy, cleanup_list* cleanup)
+    {
+        object ret = steal(PyList_New(src.size()));
+
+        if (ret.is_valid())
+        {
+            Py_ssize_t index = 0;
+
+            for (auto&& value : src)
+            {
+                handle h = Caster::from_cpp(forward_like_<T>(value), policy, cleanup);
+
+                if (!h.is_valid())
+                {
+                    ret.reset();
+                    break;
+                }
+
+                NB_LIST_SET_ITEM(ret.ptr(), index++, h.ptr());
+            }
+        }
+
+        return ret.release();
+    }
+};
+
+template<std::unsigned_integral Block, typename Coder, typename C>
+struct type_caster<::tyr::View<::tyr::BasicBlockArrayView<Block, Coder>, C>>
+{
+    using ViewT = ::tyr::View<::tyr::BasicBlockArrayView<Block, Coder>, C>;
+    using Type = typename Coder::value_type;
 
     using Entry = std::conditional_t<::tyr::ViewConcept<Type, C>, ::tyr::View<Type, C>, Type>;
     using Caster = make_caster<Entry>;
