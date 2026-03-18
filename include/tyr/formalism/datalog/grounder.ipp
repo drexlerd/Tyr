@@ -122,7 +122,7 @@ std::pair<GroundFunctionTermView<T>, bool> ground(FunctionTermView<T> element, G
     return context.destination.get_or_create(fterm);
 }
 
-Data<GroundFunctionExpression> ground(FunctionExpressionView element, GrounderContext& context)
+TYR_INLINE_IMPL Data<GroundFunctionExpression> ground(FunctionExpressionView element, GrounderContext& context)
 {
     return visit(
         [&](auto&& arg)
