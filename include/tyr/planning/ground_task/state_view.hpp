@@ -32,7 +32,7 @@
 namespace tyr
 {
 template<>
-class View<Index<planning::State<planning::GroundTask>>, std::shared_ptr<planning::StateRepository<planning::GroundTask>>>
+struct View<Index<planning::State<planning::GroundTask>>, std::shared_ptr<planning::StateRepository<planning::GroundTask>>>
 {
 public:
     using TaskType = planning::GroundTask;

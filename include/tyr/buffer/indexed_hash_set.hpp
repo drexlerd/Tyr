@@ -39,8 +39,8 @@ template<typename Tag, typename H = Hash<Data<Tag>>, typename E = EqualTo<Data<T
 class IndexedHashSet
 {
 private:
-    struct IndexableHash;
-    struct IndexableEqualTo;
+    class IndexableHash;
+    class IndexableEqualTo;
 
     using VectorType = std::vector<const Data<Tag>*>;
 

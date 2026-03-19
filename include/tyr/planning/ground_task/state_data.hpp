@@ -32,7 +32,7 @@ namespace tyr
 {
 
 template<>
-class Data<planning::State<planning::GroundTask>>
+struct Data<planning::State<planning::GroundTask>>
 {
 public:
     using TaskType = planning::GroundTask;

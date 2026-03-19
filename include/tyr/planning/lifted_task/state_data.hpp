@@ -34,7 +34,7 @@
 namespace tyr
 {
 template<>
-class Data<planning::State<planning::LiftedTask>>
+struct Data<planning::State<planning::LiftedTask>>
 {
 public:
     using TaskType = planning::LiftedTask;
