@@ -64,7 +64,7 @@ else()
 
     add_compile_options(-Wall)
 
-    add_compile_options(-ftime-report)
+    # add_compile_options(-ftime-report)
 
     if(TYR_USE_LLD)
         find_program(LLD_LINKER NAMES ld.lld)
