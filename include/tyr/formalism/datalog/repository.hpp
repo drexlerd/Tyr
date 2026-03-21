@@ -144,6 +144,9 @@ template<FactKind T>
 using FunctionBindingView = View<RelationBindingIndex<Function<T>>, Repository>;
 using RuleBindingView = View<RelationBindingIndex<Rule>, Repository>;
 
+template<FactKind T>
+using PredicateBindingVecView = View<RelationBindingsForwardRange<Predicate<T>, std::vector<Index<Binding>>>, Repository>;
+
 template<typename T>
 using BooleanOperatorView = View<Data<BooleanOperator<T>>, Repository>;
 using LiftedBooleanOperatorView = View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository>;

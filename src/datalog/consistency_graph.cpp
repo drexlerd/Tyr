@@ -1109,9 +1109,9 @@ void StaticConsistencyGraph::initialize_dynamic_consistency_graphs(const Assignm
     {
         const auto predicate_index = group.predicate;
 
-        for (const auto fact : predicate_sets[uint_t(predicate_index)].get_facts())  ///< Outter loop because |facts| > |infos|
+        for (const auto binding : predicate_sets[uint_t(predicate_index)].get_bindings())  ///< Outter loop because |facts| > |infos|
         {
-            const auto objects = fact.get_row().get_objects();
+            const auto objects = binding.get_objects();
 
             // std::cout << fact << std::endl;
 

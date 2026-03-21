@@ -58,7 +58,7 @@ CostUpdate update_min_cost(Cost& cost, Cost candidate)
     return CostUpdate(old_cost, cost);
 }
 
-std::optional<Witness> fetch_best_head_witness_cost(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+std::optional<Witness> fetch_best_head_witness_cost(formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                                     const AndAnnotationsMap& delta_and_annot)
 {
     if (auto it = delta_and_annot.find(delta_head); it != delta_and_annot.end())
@@ -67,25 +67,31 @@ std::optional<Witness> fetch_best_head_witness_cost(Index<formalism::datalog::Gr
     return std::nullopt;  // No witness available (not derived yet / skipped / not tracked) -> no update from AND side
 }
 
-void resize_or_annot_to_fit(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head, OrAnnotationsList& or_annot)
+void resize_or_annot_to_fit(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head, OrAnnotationsList& or_annot)
 {
-    assert(uint_t(program_head.get_predicate().get_index()) < or_annot.size());
+    const auto g = uint_t(program_head.get_index().relation);
+    const auto i = uint_t(program_head.get_index().row);
 
-    auto& vec = or_annot[uint_t(program_head.get_predicate().get_index())];
-    if (uint_t(program_head.get_row().get_index().row) >= vec.size())
-        vec.resize(uint_t(program_head.get_row().get_index().row) + 1, std::numeric_limits<Cost>::max());
+    assert(g < or_annot.size());
+
+    auto& vec = or_annot[g];
+    if (i >= vec.size())
+        vec.resize(i + 1, std::numeric_limits<Cost>::max());
 }
 }
 
-void OrAnnotationPolicy::initialize_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head, OrAnnotationsList& or_annot) const
+void OrAnnotationPolicy::initialize_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head, OrAnnotationsList& or_annot) const
 {
     resize_or_annot_to_fit(program_head, or_annot);
 
-    or_annot[uint_t(program_head.get_predicate().get_index())][uint_t(program_head.get_row().get_index().row)] = Cost(0);
+    const auto g = uint_t(program_head.get_index().relation);
+    const auto i = uint_t(program_head.get_index().row);
+
+    or_annot[g][i] = Cost(0);
 }
 
-CostUpdate OrAnnotationPolicy::update_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+CostUpdate OrAnnotationPolicy::update_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                                                 formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                                  OrAnnotationsList& or_annot,
                                                  const AndAnnotationsMap& delta_and_annot,
                                                  AndAnnotationsMap& program_and_annot) const
@@ -93,7 +99,10 @@ CostUpdate OrAnnotationPolicy::update_annotation(formalism::datalog::GroundAtomV
     resize_or_annot_to_fit(program_head, or_annot);
 
     // Fast path 1: already optimal
-    auto& or_cost = or_annot[uint_t(program_head.get_predicate().get_index())][uint_t(program_head.get_row().get_index().row)];
+    const auto g = uint_t(program_head.get_index().relation);
+    const auto i = uint_t(program_head.get_index().row);
+
+    auto& or_cost = or_annot[g][i];
     if (or_cost == Cost(0))
         return CostUpdate(or_cost, or_cost);
 
@@ -110,7 +119,7 @@ CostUpdate OrAnnotationPolicy::update_annotation(formalism::datalog::GroundAtomV
     const auto cost_update = update_min_cost(or_cost, witness.get_cost());
 
     if (or_cost < old_cost)
-        program_and_annot.insert_or_assign(program_head.get_index(), witness);
+        program_and_annot.insert_or_assign(program_head, witness);
 
     return cost_update;
 }
@@ -122,7 +131,7 @@ CostUpdate OrAnnotationPolicy::update_annotation(formalism::datalog::GroundAtomV
 namespace
 {
 
-uint_t fetch_current_best_cost(Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head, const AndAnnotationsMap& delta_and_annot)
+uint_t fetch_current_best_cost(formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head, const AndAnnotationsMap& delta_and_annot)
 {
     if (auto it = delta_and_annot.find(delta_head); it != delta_and_annot.end())
         return it->second.get_cost();
@@ -130,9 +139,12 @@ uint_t fetch_current_best_cost(Index<formalism::datalog::GroundAtom<formalism::F
     return std::numeric_limits<uint_t>::max();
 }
 
-uint_t fetch_atom_cost(formalism::datalog::GroundAtomView<formalism::FluentTag> atom, const OrAnnotationsList& or_annot)
+uint_t fetch_atom_cost(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head, const OrAnnotationsList& or_annot)
 {
-    return tyr::get(uint_t(atom.get_row().get_index().row), or_annot[uint_t(atom.get_predicate().get_index())], std::numeric_limits<uint_t>::max());
+    const auto g = uint_t(program_head.get_index().relation);
+    const auto i = uint_t(program_head.get_index().row);
+
+    return tyr::get(i, or_annot[g], std::numeric_limits<uint_t>::max());
 }
 
 template<typename AggregationFunction>
@@ -156,7 +168,7 @@ std::optional<Witness> try_ground_better_witness(uint_t best_cost,
         const auto [program_ground_atom, inserted] = formalism::datalog::ground(literal.get_atom(), iteration_context);
         assert(!inserted);  ///< must exist in program because the precondition is applicable in program fact set.
 
-        const auto program_ground_atom_cost = fetch_atom_cost(program_ground_atom, or_annot);
+        const auto program_ground_atom_cost = fetch_atom_cost(program_ground_atom.get_row(), or_annot);
         assert(program_ground_atom_cost != std::numeric_limits<uint_t>::max());
 
         body_cost = AggregationFunction()(body_cost, program_ground_atom_cost);
@@ -166,15 +178,15 @@ std::optional<Witness> try_ground_better_witness(uint_t best_cost,
     }
     const auto witness_cost = body_cost + rule_cost;
 
-    const auto delta_binding = formalism::datalog::ground(delta_context.binding, delta_context).first;
+    const auto delta_binding = formalism::datalog::ground_binding(rule, delta_context).first;
 
-    return Witness(rule.get_index(), delta_binding, witness_cost);
+    return Witness(delta_binding, witness_cost);
 }
 }
 
 template<typename AggregationFunction>
-void AndAnnotationPolicy<AggregationFunction>::update_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                                                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+void AndAnnotationPolicy<AggregationFunction>::update_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                                                                 formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                                                  uint_t current_cost,
                                                                  formalism::datalog::RuleView rule,
                                                                  formalism::datalog::ConjunctiveConditionView witness_condition,

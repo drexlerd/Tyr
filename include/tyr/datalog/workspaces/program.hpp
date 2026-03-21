@@ -40,8 +40,8 @@ namespace tyr::datalog
 class CostBuckets
 {
 public:
-    using Atom = Index<formalism::datalog::GroundAtom<formalism::FluentTag>>;  // View would cause nondeterminism
-    using Bucket = UnorderedSet<Atom>;
+    using ViewType = formalism::datalog::PredicateBindingView<formalism::FluentTag>;
+    using Bucket = UnorderedSet<ViewType>;
     using Cost = uint_t;
 
     CostBuckets() : m_buckets(1), m_current(0), m_total_size(0) {}
@@ -64,7 +64,7 @@ public:
             m_buckets.resize(static_cast<size_t>(c) + 1);
     }
 
-    bool insert(Cost c, Atom a)
+    bool insert(Cost c, ViewType a)
     {
         resize_to_fit(c);
         const auto [it, inserted] = m_buckets[c].insert(a);
@@ -73,7 +73,7 @@ public:
         return inserted;
     }
 
-    bool erase(Cost c, Atom a)
+    bool erase(Cost c, ViewType a)
     {
         if (c >= m_buckets.size())
             return false;
@@ -83,7 +83,7 @@ public:
         return erased;
     }
 
-    void update(const CostUpdate& update, Atom a)
+    void update(const CostUpdate& update, ViewType a)
     {
         if (update.old_cost.has_value())
             erase(*update.old_cost, a);

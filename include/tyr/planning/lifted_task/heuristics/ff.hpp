@@ -53,10 +53,10 @@ public:
 
     const UnorderedSet<formalism::planning::GroundActionView>& get_preferred_action_views() override;
 
-    bool mark_atom(formalism::datalog::GroundAtomView<formalism::FluentTag> atom);
+    bool mark_atom(formalism::datalog::PredicateBindingView<formalism::FluentTag> atom);
 
 private:
-    void extract_relaxed_plan_and_preferred_actions(formalism::datalog::GroundAtomView<formalism::FluentTag> atom,
+    void extract_relaxed_plan_and_preferred_actions(formalism::datalog::PredicateBindingView<formalism::FluentTag> atom,
                                                     const StateContext<LiftedTask>& state_context,
                                                     formalism::planning::GrounderContext& grounder_context);
 

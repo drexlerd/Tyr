@@ -65,6 +65,9 @@ template<FactKind T_SRC, FactKind T_DST>
 std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::GroundAtomView<T_SRC> element, MergePlanningContext& context);
 
 template<FactKind T_SRC, FactKind T_DST>
+std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context);
+
+template<FactKind T_SRC, FactKind T_DST>
 std::pair<LiteralView<T_DST>, bool> merge_d2p(formalism::datalog::LiteralView<T_SRC> element, MergePlanningContext& context);
 
 template<FactKind T_SRC, FactKind T_DST>

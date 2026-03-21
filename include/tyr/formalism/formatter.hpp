@@ -223,7 +223,7 @@ inline std::ostream& print(std::ostream& os, const formalism::RelationBindingInd
 template<typename T, typename C>
 inline std::ostream& print(std::ostream& os, const View<formalism::RelationBindingIndex<T>, C>& el)
 {
-    fmt::print(os, "{}", fmt::join(to_strings(el.get_objects()), " "));
+    fmt::print(os, "({})", fmt::join(to_strings(el.get_objects()), " "));
     return os;
 }
 

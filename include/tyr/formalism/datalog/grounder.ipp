@@ -23,6 +23,7 @@
 #include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
+#include "tyr/formalism/datalog/grounder_decl.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
@@ -231,6 +232,35 @@ std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateVie
 }
 
 template<FactKind T>
+std::pair<PredicateBindingView<T>, bool> ground_binding(AtomView<T> element, GrounderContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    for (const auto term : element.get_terms())
+    {
+        visit(
+            [&](auto&& arg)
+            {
+                using Alternative = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<Alternative, ParameterIndex>)
+                    binding.objects.push_back(context.binding[uint_t(arg)]);
+                else if constexpr (std::is_same_v<Alternative, ObjectView>)
+                    binding.objects.push_back(arg.get_index());
+                else
+                    static_assert(dependent_false<Alternative>::value, "Missing case");
+            },
+            term.get_variant());
+    }
+
+    // Canonicalize and Serialize
+    canonicalize(binding);
+    return context.destination.get_or_create(element.get_predicate(), binding.objects);
+}
+
+template<FactKind T>
 std::pair<GroundAtomView<T>, bool> ground(AtomView<T> element, GrounderContext& context)
 {
     // Fetch and clear
@@ -282,6 +312,11 @@ TYR_INLINE_IMPL std::pair<GroundConjunctiveConditionView, bool> ground(Conjuncti
     // Canonicalize and Serialize
     canonicalize(conj_cond);
     return context.destination.get_or_create(conj_cond);
+}
+
+TYR_INLINE_IMPL std::pair<RuleBindingView, bool> ground_binding(RuleView element, GrounderContext& context)
+{
+    return context.destination.get_or_create(element, context.binding);
 }
 
 TYR_INLINE_IMPL std::pair<GroundRuleView, bool> ground(RuleView element, GrounderContext& context)

@@ -60,10 +60,10 @@ struct ProgramExecutionContext
         // Initialize first fact layer.
         for (const auto& set : ws.facts.fact_sets.predicate.get_sets())
         {
-            for (const auto fact : set.get_facts())
+            for (const auto binding : set.get_bindings())
             {
-                ws.or_ap.initialize_annotation(fact, ws.or_annot);
-                ws.tp.achieve(fact);
+                ws.or_ap.initialize_annotation(binding, ws.or_annot);
+                ws.tp.achieve(binding);
             }
         }
 

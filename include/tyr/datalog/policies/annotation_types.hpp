@@ -45,24 +45,21 @@ using OrAnnotationsList = std::vector<std::vector<Cost>>;
 struct Witness
 {
 public:
-    Witness(Index<formalism::datalog::Rule> rule, formalism::datalog::BindingView binding, Cost cost) : m_rule(rule), m_cost(cost), m_binding(binding) {}
+    Witness(formalism::datalog::RuleBindingView rule_row, Cost cost) : m_rule_row(rule_row), m_cost(cost) {}
 
-    auto get_rule() const noexcept { return m_rule; }
-
-    auto get_binding() const noexcept { return m_binding; }
+    auto get_rule_row() const noexcept { return m_rule_row; }
     auto get_cost() const noexcept { return m_cost; }
 
-    auto identifying_members() const noexcept { return std::tie(m_binding, m_rule); }
+    auto identifying_members() const noexcept { return std::tie(m_rule_row); }
 
 private:
-    Index<formalism::datalog::Rule> m_rule;
+    formalism::datalog::RuleBindingView m_rule_row;
     Cost m_cost;
-    formalism::datalog::BindingView m_binding;
 };
 
-using AndAnnotationsMap = UnorderedMap<Index<formalism::datalog::GroundAtom<formalism::FluentTag>>, Witness>;
+using AndAnnotationsMap = UnorderedMap<formalism::datalog::PredicateBindingView<formalism::FluentTag>, Witness>;
 
-static_assert(sizeof(AndAnnotationsMap::value_type) == 32);
+static_assert(sizeof(AndAnnotationsMap::value_type) == 40);
 
 struct CostUpdate
 {

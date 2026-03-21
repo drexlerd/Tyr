@@ -37,11 +37,11 @@ namespace tyr::datalog
 template<typename T>
 concept TerminationPolicyConcept = requires(T& p,
                                             const T& cp,
-                                            formalism::datalog::GroundAtomView<formalism::FluentTag> atom,
+                                            formalism::datalog::PredicateBindingView<formalism::FluentTag> binding,
                                             const PredicateFactSets<formalism::FluentTag>& goals,
                                             const OrAnnotationsList& or_annot) {
     { p.set_goals(goals) } -> std::same_as<void>;
-    { p.achieve(atom) } -> std::same_as<void>;
+    { p.achieve(binding) } -> std::same_as<void>;
     { cp.check() } -> std::same_as<bool>;
     { cp.get_total_cost(or_annot) } -> std::same_as<Cost>;
     { p.reset() } -> std::same_as<void>;
@@ -54,7 +54,7 @@ public:
     NoTerminationPolicy() = default;
 
     void set_goals(const PredicateFactSets<formalism::FluentTag>& goals) {}
-    void achieve(formalism::datalog::GroundAtomView<formalism::FluentTag> atom) noexcept {}
+    void achieve(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding) noexcept {}
     bool check() const noexcept { return false; }
     Cost get_total_cost(const OrAnnotationsList& or_annot) const noexcept { return Cost(0); }
     void reset() noexcept {}
@@ -69,7 +69,7 @@ public:
 
     void set_goals(const PredicateFactSets<formalism::FluentTag>& goals);
 
-    void achieve(formalism::datalog::GroundAtomView<formalism::FluentTag> atom) noexcept;
+    void achieve(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding) noexcept;
 
     bool check() const noexcept;
 
@@ -79,13 +79,13 @@ public:
 
     void clear() noexcept;
 
-    const std::vector<formalism::datalog::GroundAtomView<formalism::FluentTag>>& get_atoms() const noexcept { return atoms; }
+    const std::vector<formalism::datalog::PredicateBindingView<formalism::FluentTag>>& get_bindings() const noexcept { return bindings; }
 
 private:
     std::vector<boost::dynamic_bitset<>> unsat_goals;
     size_t num_unsat_goals;
 
-    std::vector<formalism::datalog::GroundAtomView<formalism::FluentTag>> atoms;
+    std::vector<formalism::datalog::PredicateBindingView<formalism::FluentTag>> bindings;
 
     AggregationFunction agg;
 };

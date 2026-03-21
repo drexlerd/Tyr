@@ -72,7 +72,7 @@ float_t FFHeuristic<LiftedTask>::extract_cost_and_set_preferred_actions_impl(con
     auto state_context = StateContext<LiftedTask>(*this->m_task, state.get_unpacked_state(), float_t(0));
     auto grounder_context = formalism::planning::GrounderContext { this->m_workspace.planning_builder, *this->m_task->get_repository(), m_binding };
 
-    for (const auto atom : m_workspace.tp.get_atoms())
+    for (const auto atom : m_workspace.tp.get_bindings())
         extract_relaxed_plan_and_preferred_actions(atom, state_context, grounder_context);
 
     return m_relaxed_plan.size();
@@ -94,11 +94,10 @@ const UnorderedSet<formalism::planning::GroundActionView>& FFHeuristic<LiftedTas
     return m_preferred_action_views;
 }
 
-bool FFHeuristic<LiftedTask>::mark_atom(formalism::datalog::GroundAtomView<formalism::FluentTag> atom)
+bool FFHeuristic<LiftedTask>::mark_atom(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding)
 {
-    const auto binding = atom.get_row().get_index();
-    const auto g = uint_t(binding.relation);
-    const auto i = uint_t(binding.row);
+    const auto g = uint_t(binding.get_index().relation);
+    const auto i = uint_t(binding.get_index().row);
 
     assert(g < m_markings.size());
     if (tyr::test(i, m_markings[g]))
@@ -107,27 +106,33 @@ bool FFHeuristic<LiftedTask>::mark_atom(formalism::datalog::GroundAtomView<forma
     return false;
 }
 
-void FFHeuristic<LiftedTask>::extract_relaxed_plan_and_preferred_actions(formalism::datalog::GroundAtomView<formalism::FluentTag> atom,
+void FFHeuristic<LiftedTask>::extract_relaxed_plan_and_preferred_actions(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding,
                                                                          const StateContext<LiftedTask>& state_context,
                                                                          formalism::planning::GrounderContext& grounder_context)
 {
     // Base case 1: atom is already marked => do not recurse again
-    if (mark_atom(atom))
+    if (mark_atom(binding))
         return;
 
     // Base case 2: atom has no witness, i.e., was true initially => do not recurse again
-    const auto it = m_workspace.and_annot.find(atom.get_index());
+    const auto it = m_workspace.and_annot.find(binding);
     if (it == m_workspace.and_annot.end())
         return;
 
     const auto& witness = it->second;
     const auto& mapping = this->m_task->get_rpg_program().get_rule_to_action_mapping();
 
-    if (const auto it = mapping.find(witness.get_rule()); it != mapping.end())
+    const auto rule_row = witness.get_rule_row();
+    const auto rule = rule_row.get_relation();
+    const auto row = rule_row.get_objects();
+
+    if (const auto it = mapping.find(rule.get_index()); it != mapping.end())
     {
         const auto action = it->second;
 
-        grounder_context.binding = witness.get_binding().get_data().objects;
+        grounder_context.binding.clear();
+        for (const auto object : row)
+            grounder_context.binding.push_back(object.get_index());
 
         const auto ground_action = formalism::planning::ground(make_view(action, grounder_context.destination),
                                                                grounder_context,
@@ -150,14 +155,16 @@ void FFHeuristic<LiftedTask>::extract_relaxed_plan_and_preferred_actions(formali
     auto datalog_grounder_context = formalism::datalog::GrounderContext { m_workspace.datalog_builder, m_workspace.workspace_repository, m_workspace.binding };
 
     for (const auto literal :
-         m_task->get_rpg_program().get_const_program_workspace().rules[uint_t(witness.get_rule())].get_witness_condition().get_literals<formalism::FluentTag>())
+         m_task->get_rpg_program().get_const_program_workspace().rules[uint_t(rule.get_index())].get_witness_condition().get_literals<formalism::FluentTag>())
     {
-        datalog_grounder_context.binding =
-            witness.get_binding().get_data().objects;  //< cannot do this before the loop because of overwrites during recursion; we could binding from a
-                                                       // builder and place it into the grounder context.
+        // Cannot do this before the loop because of overwrites during recursion; we could binding from a builder and place it into the grounder context.
+        datalog_grounder_context.binding.clear();
+        for (const auto object : row)
+            datalog_grounder_context.binding.push_back(object.get_index());
+
         const auto witness_atom = formalism::datalog::ground(literal.get_atom(), datalog_grounder_context).first;
 
-        extract_relaxed_plan_and_preferred_actions(witness_atom, state_context, grounder_context);
+        extract_relaxed_plan_and_preferred_actions(witness_atom.get_row(), state_context, grounder_context);
     }
 }
 

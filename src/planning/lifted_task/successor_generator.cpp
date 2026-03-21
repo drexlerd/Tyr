@@ -120,11 +120,11 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
     /// TODO: store facts by predicate such that we can swap the iteration, i.e., first over predicate_to_actions_mapping, then facts of the predicate
     for (const auto& set : m_workspace.facts.fact_sets.predicate.get_sets())
     {
-        for (const auto& fact : set.get_facts())
+        for (const auto& binding : set.get_bindings())
         {
             const auto& mapping = m_task->get_action_program().get_predicate_to_actions_mapping();
 
-            if (const auto it = mapping.find(fact.get_predicate().get_index()); it != mapping.end())
+            if (const auto it = mapping.find(binding.get_index().relation); it != mapping.end())
             {
                 const auto action_index = it->second;
 
@@ -133,7 +133,7 @@ void SuccessorGenerator<LiftedTask>::get_labeled_successor_nodes(const Node<Lift
                 const auto action = make_view(action_index, grounder_context.destination);
 
                 m_workspace.d2p.binding.clear();
-                for (const auto object : fact.get_row().get_objects())
+                for (const auto object : binding.get_objects())
                     m_workspace.d2p.binding.push_back(object.get_index());
 
                 const auto ground_action = fp::ground(action,

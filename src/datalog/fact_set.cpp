@@ -33,60 +33,139 @@ namespace tyr::datalog
  */
 
 template<f::FactKind T>
-PredicateFactSet<T>::PredicateFactSet(fd::PredicateView<T> predicate) : m_predicate(predicate), m_views(), m_bitset()
+PredicateFactSet<T>::PredicateFactSet(fd::PredicateView<T> predicate) :
+    m_predicate(predicate),
+    m_predicate_index(m_predicate.get_index()),
+    m_bindings(),
+    m_bitset()
 {
 }
 
 template<f::FactKind T>
 void PredicateFactSet<T>::reset()
 {
-    m_views.clear();
+    m_bindings.clear();
     m_bitset.reset();
 }
 
 template<f::FactKind T>
-void PredicateFactSet<T>::insert(fd::GroundAtomView<T> ground_atom)
+void PredicateFactSet<T>::insert(const PredicateFactSet<T>& other)
 {
-    const auto ground_atom_index = uint_t(ground_atom.get_index());
-
-    if (ground_atom_index >= m_bitset.size())
-        m_bitset.resize(ground_atom_index + 1, false);
-
-    if (m_bitset.test(ground_atom_index))
-        return;
-
-    m_views.push_back(ground_atom);
-    m_bitset.set(ground_atom_index);
+    insert(other.get_bindings());
 }
 
 template<f::FactKind T>
-void PredicateFactSet<T>::insert(fd::GroundAtomListView<T> ground_atoms)
+void PredicateFactSet<T>::insert(formalism::datalog::GroundAtomView<T> ground_atom)
 {
-    for (const auto ground_atom : ground_atoms)
-        insert(ground_atom);
+    insert(ground_atom.get_row());
 }
 
 template<f::FactKind T>
-void PredicateFactSet<T>::insert(const std::vector<formalism::datalog::GroundAtomView<T>>& ground_atoms)
+void PredicateFactSet<T>::insert(fd::PredicateBindingView<T> binding)
 {
-    for (const auto ground_atom : ground_atoms)
-        insert(ground_atom);
+    const auto i = uint_t(binding.get_index().row);
+
+    if (!tyr::test(i, m_bitset))
+    {
+        tyr::set(i, true, m_bitset);
+        m_bindings.push_back(binding.get_index().row);
+    }
 }
 
 template<f::FactKind T>
-bool PredicateFactSet<T>::contains(fd::GroundAtomView<T> ground_atom) const noexcept
+void PredicateFactSet<T>::insert(fd::PredicateBindingVecView<T> bindings)
 {
-    return tyr::test(uint_t(ground_atom.get_index()), m_bitset);
+    for (const auto binding : bindings)
+        insert(binding);
 }
 
 template<f::FactKind T>
-const std::vector<fd::GroundAtomView<T>>& PredicateFactSet<T>::get_facts() const noexcept
+void PredicateFactSet<T>::insert(const std::vector<fd::PredicateBindingView<T>>& bindings)
 {
-    return m_views;
+    for (const auto binding : bindings)
+        insert(binding);
+}
+
+template<f::FactKind T>
+bool PredicateFactSet<T>::contains(fd::PredicateBindingView<T> binding) const noexcept
+{
+    return tyr::test(uint_t(binding.get_index().row), m_bitset);
+}
+
+template<f::FactKind T>
+fd::PredicateBindingVecView<T> PredicateFactSet<T>::get_bindings() const noexcept
+{
+    return make_view(f::RelationBindingsForwardRange { m_predicate_index, m_bindings }, m_predicate.get_context());
 }
 
 template class PredicateFactSet<f::StaticTag>;
 template class PredicateFactSet<f::FluentTag>;
+
+/**
+ * PredicateFactSets
+ */
+
+template<f::FactKind T>
+PredicateFactSets<T>::PredicateFactSets(formalism::datalog::PredicateListView<T> predicates) : m_sets()
+{
+    /* Validate inputs. */
+    for (uint_t i = 0; i < predicates.size(); ++i)
+        assert(uint_t(predicates[i].get_index()) == i);
+
+    /* Initialize sets. */
+    for (const auto predicate : predicates)
+        m_sets.emplace_back(PredicateFactSet<T>(predicate));
+}
+
+template<f::FactKind T>
+void PredicateFactSets<T>::reset()
+{
+    for (auto& set : m_sets)
+        set.reset();
+}
+
+template<f::FactKind T>
+void PredicateFactSets<T>::insert(const PredicateFactSets<T>& other)
+{
+    assert(m_sets.size() == other.m_sets.size());
+
+    for (uint_t i = 0; i < m_sets.size(); ++i)
+        m_sets[i].insert(other.m_sets[i]);
+}
+
+template<f::FactKind T>
+void PredicateFactSets<T>::insert(formalism::datalog::GroundAtomView<T> ground_atom)
+{
+    insert(ground_atom.get_row());
+}
+
+template<f::FactKind T>
+void PredicateFactSets<T>::insert(formalism::datalog::PredicateBindingView<T> binding)
+{
+    m_sets[uint_t(binding.get_index().relation)].insert(binding);
+}
+
+template<formalism::FactKind T>
+void PredicateFactSets<T>::insert(formalism::datalog::PredicateBindingVecView<T> bindings)
+{
+    for (const auto binding : bindings)
+        insert(binding);
+}
+
+template<formalism::FactKind T>
+bool PredicateFactSets<T>::contains(formalism::datalog::PredicateBindingView<T> binding) const noexcept
+{
+    return m_sets[uint_t(binding.get_index().relation)].contains(binding);
+}
+
+template<formalism::FactKind T>
+const std::vector<PredicateFactSet<T>>& PredicateFactSets<T>::get_sets() const noexcept
+{
+    return m_sets;
+}
+
+template class PredicateFactSets<f::StaticTag>;
+template class PredicateFactSets<f::FluentTag>;
 
 /**
  * FunctionFactSet

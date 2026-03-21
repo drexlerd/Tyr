@@ -93,13 +93,13 @@ void generate_nullary_case(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
     if (is_applicable(in.cws_rule().get_nullary_condition(), in.fact_sets())
         && is_valid_binding(in.cws_rule().get_rule().get_body(), in.fact_sets(), out.ground_context_iteration()))
     {
-        const auto program_head = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
-        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first.get_index();
+        const auto program_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
+        const auto worker_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
 
-        out.heads().insert(worker_head_index);
+        out.heads_rows().insert(worker_head.get_index().row);
 
         in.and_ap().update_annotation(program_head,
-                                      worker_head_index,
+                                      worker_head,
                                       in.cost_buckets().current_cost(),
                                       in.cws_rule().get_rule(),
                                       in.cws_rule().get_witness_condition(),
@@ -150,7 +150,7 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
 
     ++out.statistics().num_generated_rules;
 
-    const auto program_head = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
+    const auto program_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
     if (in.fact_sets().fluent_sets.predicate.contains(program_head))
         return;  ///< optimal cost proven
 
@@ -171,15 +171,15 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
 
         // std::cout << rctx.cws_rule.rule << " " << rctx.out.ground_context_solve().binding << std::endl;
 
-        const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first.get_index();
+        const auto worker_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
 
         // std::cout << make_view(ground(rctx.cws_rule.get_rule(), rctx.ground_context_iter).first, rctx.ground_context_iter.destination)
         //           << std::endl;
 
-        out.heads().insert(worker_head_index);
+        out.heads_rows().insert(worker_head.get_index().row);
 
         in.and_ap().update_annotation(program_head,
-                                      worker_head_index,
+                                      worker_head,
                                       in.cost_buckets().current_cost(),
                                       in.cws_rule().get_rule(),
                                       in.cws_rule().get_witness_condition(),
@@ -287,7 +287,7 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             out.ground_context_solve().binding = make_view(it->first, out.ground_context_solve().destination).get_objects().get_data();
 
             assert(out.ground_context_solve().binding == out.ground_context_iteration().binding);
-            const auto program_head = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
+            const auto program_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
 
             if (in.fact_sets().fluent_sets.predicate.contains(program_head))  ///< optimal cost proven
             {
@@ -297,12 +297,12 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             {
                 assert(ensure_applicability(in.cws_rule().get_rule(), out.ground_context_iteration(), in.fact_sets()));
 
-                const auto worker_head_index = fd::ground(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first.get_index();
+                const auto worker_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_solve()).first;
 
-                out.heads().insert(worker_head_index);
+                out.heads_rows().insert(worker_head.get_index().row);
 
                 in.and_ap().update_annotation(program_head,
-                                              worker_head_index,
+                                              worker_head,
                                               in.cost_buckets().current_cost(),
                                               in.cws_rule().get_rule(),
                                               in.cws_rule().get_witness_condition(),
@@ -336,7 +336,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
     while (true)
     {
-        // std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
+        std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
 
         // Check whether min cost for goal was proven.
         if (tp.check())
@@ -344,19 +344,21 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
             return;
         }
 
-        // std::cout << std::endl;
-        // std::cout << "=======================================================================" << std::endl;
-        // std::cout << "Facts: " << std::endl;
-        // for (const auto& set : facts.fact_sets.predicate.get_sets())
-        // {
-        //     std::cout << set.get_facts() << std::endl;
-        // }
-        // std::cout << "Delta facts: " << std::endl;
-        // for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
-        // {
-        //     std::cout << set.get_facts() << std::endl;
-        // }
-        // std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << "=======================================================================" << std::endl;
+        std::cout << "Facts: " << std::endl;
+        for (const auto& set : facts.fact_sets.predicate.get_sets())
+        {
+            for (const auto binding : set.get_bindings())
+                std::cout << binding << std::endl;
+        }
+        std::cout << "Delta facts: " << std::endl;
+        for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
+        {
+            for (const auto binding : set.get_bindings())
+                std::cout << binding << std::endl;
+        }
+        std::cout << std::endl;
 
         scheduler.on_start_iteration();
 
@@ -421,10 +423,15 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
                 for (const auto& worker : ws_rule->worker)
                 {
-                    for (const auto worker_head : worker.iteration.heads)
+                    for (const auto worker_head_index : worker.iteration.head_rows)
                     {
+                        const auto worker_head =
+                            make_view(f::RelationBindingIndex { worker.iteration.head_predicate, worker_head_index }, worker.solve.program_overlay_repository);
+
                         // Merge head from delta into the program
-                        const auto program_head = fd::merge_d2d(make_view(worker_head, worker.solve.program_overlay_repository), merge_context).first;
+                        const auto program_head = fd::merge_d2d(worker_head, merge_context).first;
+
+                        std::cout << "Program merge: " << program_head << std::endl;
 
                         // Update annotation
                         const auto cost_update = ctx.ctx.ws.or_ap.update_annotation(program_head,
@@ -433,7 +440,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                                                                                     worker.iteration.and_annot,
                                                                                     ctx.ctx.ws.and_annot);
 
-                        cost_buckets.update(cost_update, program_head.get_index());
+                        cost_buckets.update(cost_update, program_head);
                     }
                 }
             }
@@ -442,15 +449,14 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                 return;  // Terminate if no-nonempty bucket was found.
 
             // Insert next bucket heads into fact and assignment sets + trigger scheduler.
-            for (const auto head_index : cost_buckets.get_current_bucket())
+            for (const auto head : cost_buckets.get_current_bucket())
             {
-                // Fact set behaves deterministically on views.
-                const auto head = make_view(head_index, ctx.ctx.ws.workspace_repository);
-
                 if (!facts.fact_sets.predicate.contains(head))
                 {
+                    std::cout << "Bucket insert: " << head << std::endl;
+
                     // Notify scheduler
-                    scheduler.on_generate(head.get_predicate().get_index());
+                    scheduler.on_generate(head.get_index().relation);
 
                     // Notify termination policy
                     tp.achieve(head);
@@ -461,6 +467,26 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     facts.delta_fact_sets.predicate.insert(head);
                 }
             }
+
+            std::cout << std::endl;
+            std::cout << "=======================================================================" << std::endl;
+            std::cout << "=======================================================================" << std::endl;
+            std::cout << "Facts: " << std::endl;
+            for (const auto& set : facts.fact_sets.predicate.get_sets())
+            {
+                for (const auto binding : set.get_bindings())
+                    std::cout << binding << std::endl;
+            }
+            std::cout << "Delta facts: " << std::endl;
+            for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
+            {
+                for (const auto binding : set.get_bindings())
+                    std::cout << binding << std::endl;
+            }
+            std::cout << std::endl;
+
+            std::cout << "=======================================================================" << std::endl;
+            std::cout << "=======================================================================" << std::endl;
         }
 
         scheduler.on_finish_iteration();

@@ -15,22 +15,19 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_DATALOG_RULE_INDEX_HPP_
-#define TYR_FORMALISM_DATALOG_RULE_INDEX_HPP_
+#ifndef TYR_FORMALISM_DATALOG_MERGE_DECL_HPP_
+#define TYR_FORMALISM_DATALOG_MERGE_DECL_HPP_
 
-#include "tyr/common/index_mixins.hpp"
-#include "tyr/common/types.hpp"
-#include "tyr/formalism/datalog/declarations.hpp"
-#include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/datalog/builder.hpp"
+#include "tyr/formalism/datalog/repository.hpp"
 
-namespace tyr
+namespace tyr::formalism::datalog
 {
-template<>
-struct Index<formalism::datalog::Rule> : IndexMixin<Index<formalism::datalog::Rule>>
+
+struct MergeContext
 {
-    // Inherit constructors
-    using Base = IndexMixin<Index<formalism::datalog::Rule>>;
-    using Base::Base;
+    Builder& builder;
+    Repository& destination;
 };
 
 }

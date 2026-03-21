@@ -138,14 +138,16 @@ template<formalism::FactKind T>
 class PredicateAssignmentSet
 {
 private:
-    Index<formalism::Predicate<T>> m_predicate;
+    formalism::datalog::PredicateView<T> m_predicate;
+    Index<formalism::Predicate<T>> m_predicate_index;
 
     PerfectAssignmentHash m_hash;
     boost::dynamic_bitset<> m_set;
 
 public:
     PredicateAssignmentSet(formalism::datalog::PredicateView<T> predicate, const analysis::DomainListList& parameter_domains, size_t num_objects) :
-        m_predicate(predicate.get_index()),
+        m_predicate(predicate),
+        m_predicate_index(predicate.get_index()),
         m_hash(PerfectAssignmentHash(parameter_domains, num_objects)),
         m_set(m_hash.size(), false)
     {
@@ -153,12 +155,12 @@ public:
 
     void reset() noexcept { m_set.reset(); }
 
-    void insert(formalism::datalog::GroundAtomView<T> ground_atom)
+    void insert(formalism::datalog::PredicateBindingView<T> binding)
     {
-        const auto arity = ground_atom.get_predicate().get_arity();
-        const auto objects = ground_atom.get_row().get_objects();
+        const auto arity = m_predicate.get_arity();
+        const auto objects = binding.get_objects();
 
-        assert(ground_atom.get_predicate().get_index() == m_predicate);
+        assert(binding.get_index().relation == m_predicate_index);
 
         for (uint_t first_index = 0; first_index < arity; ++first_index)
         {
@@ -219,19 +221,15 @@ public:
             set.reset();
     }
 
-    void insert(formalism::datalog::GroundAtomListView<T> ground_atoms)
-    {
-        for (const auto ground_atom : ground_atoms)
-            insert(ground_atom);
-    }
+    void insert(formalism::datalog::GroundAtomView<T> ground_atom) { insert(ground_atom.get_row()); }
 
-    void insert(const std::vector<formalism::datalog::GroundAtomView<T>>& ground_atoms)
-    {
-        for (const auto ground_atom : ground_atoms)
-            insert(ground_atom);
-    }
+    void insert(formalism::datalog::PredicateBindingView<T> binding) { m_sets[uint_t(binding.get_index().relation)].insert(binding); }
 
-    void insert(formalism::datalog::GroundAtomView<T> ground_atom) { m_sets[uint_t(ground_atom.get_predicate().get_index())].insert(ground_atom); }
+    void insert(formalism::datalog::PredicateBindingVecView<T> bindings)
+    {
+        for (const auto binding : bindings)
+            insert(binding);
+    }
 
     const PredicateAssignmentSet<T>& get_set(Index<formalism::Predicate<T>> index) const noexcept { return m_sets[uint_t(index)]; }
 
@@ -394,7 +392,7 @@ struct TaggedAssignmentSets
     void insert(const TaggedFactSets<T>& fact_sets)
     {
         for (const auto& set : fact_sets.predicate.get_sets())
-            predicate.insert(set.get_facts());
+            predicate.insert(set.get_bindings());
 
         for (uint_t i = 0; i < fact_sets.function.get_sets().size(); ++i)
         {

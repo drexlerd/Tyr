@@ -102,7 +102,7 @@ TYR_INLINE_IMPL bool evaluate(formalism::datalog::GroundBooleanOperatorView elem
 template<formalism::FactKind T>
 bool is_applicable(formalism::datalog::GroundLiteralView<T> element, const FactSets& fact_sets)
 {
-    return fact_sets.template get<T>().predicate.contains(element.get_atom()) == element.get_polarity();
+    return fact_sets.template get<T>().predicate.contains(element.get_atom().get_row()) == element.get_polarity();
 }
 
 template<formalism::FactKind T>
@@ -145,7 +145,7 @@ is_valid_binding(formalism::datalog::LiftedBooleanOperatorView element, const Fa
 template<formalism::FactKind T>
 bool is_valid_binding(formalism::datalog::LiteralView<T> element, const FactSets& fact_sets, formalism::datalog::GrounderContext& context)
 {
-    return fact_sets.template get<T>().predicate.contains(formalism::datalog::ground(element.get_atom(), context).first) == element.get_polarity();
+    return fact_sets.template get<T>().predicate.contains(formalism::datalog::ground(element.get_atom(), context).first.get_row()) == element.get_polarity();
 }
 
 template<formalism::FactKind T>

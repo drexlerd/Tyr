@@ -22,6 +22,7 @@
 #include "tyr/formalism/datalog/builder.hpp"
 #include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
+#include "tyr/formalism/datalog/merge_decl.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/declarations.hpp"
@@ -118,7 +119,7 @@ std::pair<AtomView<T>, bool> merge_d2d(AtomView<T> element, MergeContext& contex
 }
 
 template<FactKind T>
-std::pair<PredicateBindingView<T>, bool> merge_d2d(PredicateView<T> predicate, PredicateBindingView<T> element, MergeContext& context)
+std::pair<PredicateBindingView<T>, bool> merge_d2d(PredicateBindingView<T> element, MergeContext& context)
 {
     auto binding_ptr = context.builder.template get_builder<Binding>();
     auto& binding = *binding_ptr;
@@ -128,7 +129,7 @@ std::pair<PredicateBindingView<T>, bool> merge_d2d(PredicateView<T> predicate, P
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(predicate, binding.objects);
+    return context.destination.get_or_create(element.get_relation(), binding.objects);
 }
 
 template<FactKind T>
@@ -139,7 +140,7 @@ std::pair<GroundAtomView<T>, bool> merge_d2d(GroundAtomView<T> element, MergeCon
     atom.clear();
 
     atom.predicate = element.get_predicate().get_index();
-    atom.row = merge_d2d(element.get_predicate(), element.get_row(), context).first.get_index().row;
+    atom.row = merge_d2d(element.get_row(), context).first.get_index().row;
 
     canonicalize(atom);
     return context.destination.get_or_create(atom);
@@ -205,7 +206,7 @@ std::pair<FunctionTermView<T>, bool> merge_d2d(FunctionTermView<T> element, Merg
 }
 
 template<FactKind T>
-std::pair<FunctionBindingView<T>, bool> merge_d2d(FunctionView<T> function, FunctionBindingView<T> element, MergeContext& context)
+std::pair<FunctionBindingView<T>, bool> merge_d2d(FunctionBindingView<T> element, MergeContext& context)
 {
     auto binding_ptr = context.builder.template get_builder<Binding>();
     auto& binding = *binding_ptr;
@@ -215,7 +216,7 @@ std::pair<FunctionBindingView<T>, bool> merge_d2d(FunctionView<T> function, Func
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(function, binding.objects);
+    return context.destination.get_or_create(element.get_relation(), binding.objects);
 }
 
 template<FactKind T>
@@ -226,7 +227,7 @@ std::pair<GroundFunctionTermView<T>, bool> merge_d2d(GroundFunctionTermView<T> e
     fterm.clear();
 
     fterm.function = element.get_function().get_index();
-    fterm.row = merge_d2d(element.get_function(), element.get_row(), context).first.get_index().row;
+    fterm.row = merge_d2d(element.get_row(), context).first.get_index().row;
 
     canonicalize(fterm);
     return context.destination.get_or_create(fterm);

@@ -21,6 +21,8 @@
 #include "tyr/common/index_mixins.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
+#include "tyr/formalism/function_index.hpp"
+#include "tyr/formalism/predicate_index.hpp"
 
 namespace tyr
 {
@@ -43,11 +45,12 @@ struct RelationBindingIndex
     auto identifying_members() const noexcept { return std::tie(relation, row); }
 };
 
-template<typename Tag>
-struct RelationBindingListHandle
+template<typename Tag, std::ranges::forward_range BindingRange>
+    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+struct RelationBindingsForwardRange
 {
     const Index<Tag>& relation;
-    const IndexList<Binding>& rows;
+    const BindingRange& rows;
 };
 }
 }

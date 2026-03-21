@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_DATALOG_GROUNDER_DATALOG_HPP_
-#define TYR_FORMALISM_DATALOG_GROUNDER_DATALOG_HPP_
+#ifndef TYR_FORMALISM_DATALOG_GROUNDER_HPP_
+#define TYR_FORMALISM_DATALOG_GROUNDER_HPP_
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/itertools.hpp"
@@ -25,6 +25,7 @@
 #include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/formatter.hpp"
+#include "tyr/formalism/datalog/grounder_decl.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
@@ -32,12 +33,6 @@
 
 namespace tyr::formalism::datalog
 {
-struct GrounderContext
-{
-    Builder& builder;
-    Repository& destination;
-    IndexList<Object>& binding;
-};
 
 /**
  * Declarations
@@ -72,12 +67,17 @@ template<FactKind T>
 std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateView<T> predicate, GrounderContext& context);
 
 template<FactKind T>
+std::pair<PredicateBindingView<T>, bool> ground_binding(AtomView<T> element, GrounderContext& context);
+
+template<FactKind T>
 std::pair<GroundAtomView<T>, bool> ground(AtomView<T> element, GrounderContext& context);
 
 template<FactKind T>
 std::pair<GroundLiteralView<T>, bool> ground(LiteralView<T> element, GrounderContext& context);
 
 std::pair<GroundConjunctiveConditionView, bool> ground(ConjunctiveConditionView element, GrounderContext& context);
+
+std::pair<RuleBindingView, bool> ground_binding(RuleView element, GrounderContext& context);
 
 std::pair<GroundRuleView, bool> ground(RuleView element, GrounderContext& context);
 

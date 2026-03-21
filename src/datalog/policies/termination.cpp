@@ -33,7 +33,7 @@ namespace tyr::datalog
 {
 
 template<typename AggregationFunction>
-TerminationPolicy<AggregationFunction>::TerminationPolicy(size_t num_fluent_predicates) : unsat_goals(num_fluent_predicates), num_unsat_goals(0), atoms()
+TerminationPolicy<AggregationFunction>::TerminationPolicy(size_t num_fluent_predicates) : unsat_goals(num_fluent_predicates), num_unsat_goals(0), bindings()
 {
 }
 
@@ -45,22 +45,28 @@ void TerminationPolicy<AggregationFunction>::set_goals(const PredicateFactSets<f
     num_unsat_goals = 0;
     for (const auto& set : goals.get_sets())
     {
-        for (const auto& atom : set.get_facts())
+        for (const auto& binding : set.get_bindings())
         {
-            tyr::set(uint_t(atom.get_row().get_index().row), true, unsat_goals[uint_t(atom.get_predicate().get_index())]);
+            const auto g = uint_t(binding.get_index().relation);
+            const auto i = uint_t(binding.get_index().row);
+
+            tyr::set(i, true, unsat_goals[g]);
             ++num_unsat_goals;
-            atoms.push_back(atom);
+            bindings.push_back(binding);
         }
     }
 }
 
 template<typename AggregationFunction>
-void TerminationPolicy<AggregationFunction>::achieve(formalism::datalog::GroundAtomView<formalism::FluentTag> atom) noexcept
+void TerminationPolicy<AggregationFunction>::achieve(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding) noexcept
 {
-    if (tyr::test(uint_t(atom.get_row().get_index().row), unsat_goals[uint_t(atom.get_predicate().get_index())]))
+    const auto g = uint_t(binding.get_index().relation);
+    const auto i = uint_t(binding.get_index().row);
+
+    if (tyr::test(i, unsat_goals[g]))
     {
         --num_unsat_goals;
-        tyr::set(uint_t(atom.get_row().get_index().row), false, unsat_goals[uint_t(atom.get_predicate().get_index())]);
+        tyr::set(i, false, unsat_goals[g]);
     }
 }
 
@@ -75,11 +81,14 @@ Cost TerminationPolicy<AggregationFunction>::get_total_cost(const OrAnnotationsL
 {
     auto cost = AggregationFunction::identity();
 
-    for (const auto atom : atoms)
+    for (const auto binding : bindings)
     {
-        assert(uint_t(atom.get_predicate().get_index()) < or_annot.size());
-        assert(uint_t(atom.get_row().get_index().row) < or_annot[uint_t(atom.get_predicate().get_index())].size());
-        cost = agg(cost, or_annot[uint_t(atom.get_predicate().get_index())][uint_t(atom.get_row().get_index().row)]);
+        const auto g = uint_t(binding.get_index().relation);
+        const auto i = uint_t(binding.get_index().row);
+        assert(g < or_annot.size());
+        assert(i < or_annot[g].size());
+
+        cost = agg(cost, or_annot[g][i]);
     }
 
     return cost;
@@ -92,8 +101,13 @@ void TerminationPolicy<AggregationFunction>::reset() noexcept
     for (auto& bitset : unsat_goals)
         bitset.reset();
 
-    for (const auto& atom : atoms)
-        tyr::set(uint_t(atom.get_row().get_index().row), true, unsat_goals[uint_t(atom.get_predicate().get_index())]);
+    for (const auto& binding : bindings)
+    {
+        const auto g = uint_t(binding.get_index().relation);
+        const auto i = uint_t(binding.get_index().row);
+
+        tyr::set(i, true, unsat_goals[g]);
+    }
 }
 
 template<typename AggregationFunction>
@@ -103,7 +117,7 @@ void TerminationPolicy<AggregationFunction>::clear() noexcept
     for (auto& bitset : unsat_goals)
         bitset.reset();
 
-    atoms.clear();
+    bindings.clear();
 }
 
 template class TerminationPolicy<SumAggregation>;

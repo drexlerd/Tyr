@@ -28,10 +28,8 @@ template std::pair<PredicateView<FluentTag>, bool> merge_d2d(PredicateView<Fluen
 template std::pair<AtomView<StaticTag>, bool> merge_d2d(AtomView<StaticTag> element, MergeContext& context);
 template std::pair<AtomView<FluentTag>, bool> merge_d2d(AtomView<FluentTag> element, MergeContext& context);
 
-template std::pair<PredicateBindingView<StaticTag>, bool>
-merge_d2d(PredicateView<StaticTag> predicate, PredicateBindingView<StaticTag> element, MergeContext& context);
-template std::pair<PredicateBindingView<FluentTag>, bool>
-merge_d2d(PredicateView<FluentTag> predicate, PredicateBindingView<FluentTag> element, MergeContext& context);
+template std::pair<PredicateBindingView<StaticTag>, bool> merge_d2d(PredicateBindingView<StaticTag> element, MergeContext& context);
+template std::pair<PredicateBindingView<FluentTag>, bool> merge_d2d(PredicateBindingView<FluentTag> element, MergeContext& context);
 
 template std::pair<GroundAtomView<StaticTag>, bool> merge_d2d(GroundAtomView<StaticTag> element, MergeContext& context);
 template std::pair<GroundAtomView<FluentTag>, bool> merge_d2d(GroundAtomView<FluentTag> element, MergeContext& context);
@@ -48,10 +46,8 @@ template std::pair<FunctionView<FluentTag>, bool> merge_d2d(FunctionView<FluentT
 template std::pair<FunctionTermView<StaticTag>, bool> merge_d2d(FunctionTermView<StaticTag> element, MergeContext& context);
 template std::pair<FunctionTermView<FluentTag>, bool> merge_d2d(FunctionTermView<FluentTag> element, MergeContext& context);
 
-template std::pair<FunctionBindingView<StaticTag>, bool>
-merge_d2d(FunctionView<StaticTag> function, FunctionBindingView<StaticTag> element, MergeContext& context);
-template std::pair<FunctionBindingView<FluentTag>, bool>
-merge_d2d(FunctionView<FluentTag> function, FunctionBindingView<FluentTag> element, MergeContext& context);
+template std::pair<FunctionBindingView<StaticTag>, bool> merge_d2d(FunctionBindingView<StaticTag> element, MergeContext& context);
+template std::pair<FunctionBindingView<FluentTag>, bool> merge_d2d(FunctionBindingView<FluentTag> element, MergeContext& context);
 
 template std::pair<GroundFunctionTermView<StaticTag>, bool> merge_d2d(GroundFunctionTermView<StaticTag> element, MergeContext& context);
 template std::pair<GroundFunctionTermView<FluentTag>, bool> merge_d2d(GroundFunctionTermView<FluentTag> element, MergeContext& context);

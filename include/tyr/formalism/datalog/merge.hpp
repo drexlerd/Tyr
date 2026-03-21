@@ -24,6 +24,7 @@
 #include "tyr/formalism/datalog/builder.hpp"
 #include "tyr/formalism/datalog/canonicalization.hpp"
 #include "tyr/formalism/datalog/indices.hpp"
+#include "tyr/formalism/datalog/merge_decl.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
 #include "tyr/formalism/datalog/views.hpp"
 #include "tyr/formalism/declarations.hpp"
@@ -32,12 +33,6 @@
 
 namespace tyr::formalism::datalog
 {
-
-struct MergeContext
-{
-    Builder& builder;
-    Repository& destination;
-};
 
 // Common
 
@@ -58,7 +53,7 @@ template<FactKind T>
 std::pair<AtomView<T>, bool> merge_d2d(AtomView<T> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<PredicateBindingView<T>, bool> merge_d2d(PredicateView<T> predicate, PredicateBindingView<T> element, MergeContext& context);
+std::pair<PredicateBindingView<T>, bool> merge_d2d(PredicateBindingView<T> element, MergeContext& context);
 
 template<FactKind T>
 std::pair<GroundAtomView<T>, bool> merge_d2d(GroundAtomView<T> element, MergeContext& context);
@@ -78,7 +73,7 @@ template<FactKind T>
 std::pair<FunctionTermView<T>, bool> merge_d2d(FunctionTermView<T> element, MergeContext& context);
 
 template<FactKind T>
-std::pair<FunctionBindingView<T>, bool> merge_d2d(FunctionView<T> function, FunctionBindingView<T> element, MergeContext& context);
+std::pair<FunctionBindingView<T>, bool> merge_d2d(FunctionBindingView<T> element, MergeContext& context);
 
 template<FactKind T>
 std::pair<GroundFunctionTermView<T>, bool> merge_d2d(GroundFunctionTermView<T> element, MergeContext& context);

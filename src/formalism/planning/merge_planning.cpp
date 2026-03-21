@@ -31,6 +31,13 @@ template std::pair<AtomView<StaticTag>, bool> merge_d2p(formalism::datalog::Atom
 template std::pair<AtomView<FluentTag>, bool> merge_d2p(formalism::datalog::AtomView<FluentTag> element, MergePlanningContext& context);
 template std::pair<AtomView<DerivedTag>, bool> merge_d2p(formalism::datalog::AtomView<FluentTag> element, MergePlanningContext& context);
 
+template std::pair<GroundAtomView<StaticTag>, bool> merge_d2p<StaticTag, StaticTag>(formalism::datalog::PredicateBindingView<StaticTag> element,
+                                                                                    MergePlanningContext& context);
+template std::pair<GroundAtomView<FluentTag>, bool> merge_d2p<FluentTag, FluentTag>(formalism::datalog::PredicateBindingView<FluentTag> element,
+                                                                                    MergePlanningContext& context);
+template std::pair<GroundAtomView<DerivedTag>, bool> merge_d2p<FluentTag, DerivedTag>(formalism::datalog::PredicateBindingView<FluentTag> element,
+                                                                                      MergePlanningContext& context);
+
 template std::pair<PredicateBindingView<StaticTag>, bool>
 merge_d2p(PredicateView<StaticTag> predicate, formalism::datalog::PredicateBindingView<StaticTag> element, MergePlanningContext& context);
 template std::pair<PredicateBindingView<FluentTag>, bool>

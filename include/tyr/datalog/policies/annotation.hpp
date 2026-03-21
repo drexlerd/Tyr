@@ -39,8 +39,8 @@ namespace tyr::datalog
 // circle "or"-node
 template<typename T>
 concept OrAnnotationPolicyConcept = requires(const T& p,
-                                             formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                                             Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+                                             formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                                             formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                              OrAnnotationsList& or_annot,
                                              const AndAnnotationsMap& delta_and_annot,
                                              AndAnnotationsMap& program_and_annot) {
@@ -54,8 +54,8 @@ concept OrAnnotationPolicyConcept = requires(const T& p,
 // rectangular "and"-node
 template<typename T>
 concept AndAnnotationPolicyConcept = requires(const T& p,
-                                              formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                                              Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+                                              formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                                              formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                               uint_t current_cost,
                                               formalism::datalog::RuleView rule,
                                               formalism::datalog::ConjunctiveConditionView witness_condition,
@@ -72,10 +72,10 @@ concept AndAnnotationPolicyConcept = requires(const T& p,
 class NoOrAnnotationPolicy
 {
 public:
-    void initialize_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> head, OrAnnotationsList& or_annot) const noexcept {}
+    void initialize_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> head, OrAnnotationsList& or_annot) const noexcept {}
 
-    CostUpdate update_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+    CostUpdate update_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                                 formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                  OrAnnotationsList& or_annot,
                                  const AndAnnotationsMap& delta_and_annot,
                                  AndAnnotationsMap& program_and_annot) const noexcept
@@ -87,8 +87,8 @@ public:
 class NoAndAnnotationPolicy
 {
 public:
-    void update_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                           Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+    void update_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                           formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                            uint_t current_cost,
                            formalism::datalog::RuleView rule,
                            formalism::datalog::ConjunctiveConditionView witness_condition,
@@ -103,10 +103,10 @@ public:
 class OrAnnotationPolicy
 {
 public:
-    void initialize_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head, OrAnnotationsList& or_annot) const;
+    void initialize_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head, OrAnnotationsList& or_annot) const;
 
-    CostUpdate update_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                                 Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+    CostUpdate update_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                                 formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                                  OrAnnotationsList& or_annot,
                                  const AndAnnotationsMap& delta_and_annot,
                                  AndAnnotationsMap& program_and_annot) const;
@@ -118,8 +118,8 @@ class AndAnnotationPolicy
 public:
     static constexpr AggregationFunction agg = AggregationFunction {};
 
-    void update_annotation(formalism::datalog::GroundAtomView<formalism::FluentTag> program_head,
-                           Index<formalism::datalog::GroundAtom<formalism::FluentTag>> delta_head,
+    void update_annotation(formalism::datalog::PredicateBindingView<formalism::FluentTag> program_head,
+                           formalism::datalog::PredicateBindingView<formalism::FluentTag> delta_head,
                            uint_t current_cost,
                            formalism::datalog::RuleView rule,
                            formalism::datalog::ConjunctiveConditionView witness_condition,

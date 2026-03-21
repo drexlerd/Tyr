@@ -139,6 +139,21 @@ merge_d2p(PredicateView<T_DST> predicate, formalism::datalog::PredicateBindingVi
 }
 
 template<FactKind T_SRC, FactKind T_DST>
+std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context)
+{
+    auto atom_ptr = context.builder.template get_builder<GroundAtom<T_DST>>();
+    auto& atom = *atom_ptr;
+    atom.clear();
+
+    const auto predicate_view = merge_d2p<T_SRC, T_DST>(element.get_relation(), context).first;
+    atom.predicate = predicate_view.get_index();
+    atom.row = merge_d2p(predicate_view, element, context).first.get_index().row;
+
+    canonicalize(atom);
+    return context.destination.get_or_create(atom);
+}
+
+template<FactKind T_SRC, FactKind T_DST>
 std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::GroundAtomView<T_SRC> element, MergePlanningContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T_DST>>();
