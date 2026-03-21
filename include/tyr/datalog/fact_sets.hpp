@@ -34,13 +34,14 @@ class PredicateFactSet
 private:
     formalism::datalog::PredicateView<T> m_predicate;
 
+    const formalism::datalog::Repository& m_repository;
     Index<formalism::Predicate<T>> m_predicate_index;
     std::vector<Index<formalism::Binding>> m_bindings;
 
     boost::dynamic_bitset<> m_bitset;
 
 public:
-    explicit PredicateFactSet(formalism::datalog::PredicateView<T> predicate);
+    explicit PredicateFactSet(formalism::datalog::PredicateView<T> predicate, const formalism::datalog::Repository& repository);
 
     auto get_predicate() const noexcept { return m_predicate; }
 
@@ -64,7 +65,7 @@ private:
     std::vector<PredicateFactSet<T>> m_sets;
 
 public:
-    explicit PredicateFactSets(formalism::datalog::PredicateListView<T> predicates);
+    explicit PredicateFactSets(formalism::datalog::PredicateListView<T> predicates, const formalism::datalog::Repository& repository);
 
     void reset();
 
@@ -84,12 +85,14 @@ class FunctionFactSet
 private:
     formalism::datalog::FunctionView<T> m_function;
 
+    const formalism::datalog::Repository& m_repository;
+
     std::vector<uint_t> m_remap;
     std::vector<formalism::datalog::FunctionBindingView<T>> m_bindings;
     std::vector<float_t> m_values;
 
 public:
-    explicit FunctionFactSet(formalism::datalog::FunctionView<T> function);
+    explicit FunctionFactSet(formalism::datalog::FunctionView<T> function, const formalism::datalog::Repository& repository);
 
     void insert(const FunctionFactSet& other) { insert(other.get_bindings(), other.get_values()); }
 
@@ -119,7 +122,7 @@ private:
     std::vector<FunctionFactSet<T>> m_sets;
 
 public:
-    explicit FunctionFactSets(formalism::datalog::FunctionListView<T> functions) : m_sets()
+    explicit FunctionFactSets(formalism::datalog::FunctionListView<T> functions, const formalism::datalog::Repository& repository) : m_sets()
     {
         /* Validate inputs. */
         for (uint_t i = 0; i < functions.size(); ++i)
@@ -127,7 +130,7 @@ public:
 
         /* Initialize sets. */
         for (const auto function : functions)
-            m_sets.emplace_back(FunctionFactSet<T>(function));
+            m_sets.emplace_back(FunctionFactSet<T>(function, repository));
     }
 
     void reset()
@@ -179,17 +182,20 @@ struct TaggedFactSets
     PredicateFactSets<T> predicate;
     FunctionFactSets<T> function;
 
-    TaggedFactSets(formalism::datalog::PredicateListView<T> predicates, formalism::datalog::FunctionListView<T> functions) :
-        predicate(predicates),
-        function(functions)
+    TaggedFactSets(formalism::datalog::PredicateListView<T> predicates,
+                   formalism::datalog::FunctionListView<T> functions,
+                   const formalism::datalog::Repository& repository) :
+        predicate(predicates, repository),
+        function(functions, repository)
     {
     }
 
     TaggedFactSets(formalism::datalog::PredicateListView<T> predicates,
                    formalism::datalog::FunctionListView<T> functions,
                    formalism::datalog::GroundAtomListView<T> atoms,
-                   formalism::datalog::GroundFunctionTermValueListView<T> fterm_values) :
-        TaggedFactSets(predicates, functions)
+                   formalism::datalog::GroundFunctionTermValueListView<T> fterm_values,
+                   const formalism::datalog::Repository& repository) :
+        TaggedFactSets(predicates, functions, repository)
     {
         for (const auto atom : atoms)
             predicate.insert(atom);

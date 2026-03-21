@@ -30,11 +30,12 @@ FactsWorkspace::FactsWorkspace(fd::PredicateListView<f::FluentTag> predicates,
                                const a::DomainListListList& function_domains,
                                size_t num_objects,
                                fd::GroundAtomListView<formalism::FluentTag> atoms,
-                               fd::GroundFunctionTermValueListView<formalism::FluentTag> fterm_values) :
-    fact_sets(predicates, functions, atoms, fterm_values),
+                               fd::GroundFunctionTermValueListView<formalism::FluentTag> fterm_values,
+                               const formalism::datalog::Repository& workspace_repository) :
+    fact_sets(predicates, functions, atoms, fterm_values, workspace_repository),
     assignment_sets(predicates, functions, predicate_domains, function_domains, num_objects, fact_sets),
-    delta_fact_sets(predicates, functions),
-    goal_fact_sets(predicates)
+    delta_fact_sets(predicates, functions, workspace_repository),
+    goal_fact_sets(predicates, workspace_repository)
 {
 }
 
@@ -51,8 +52,9 @@ ConstFactsWorkspace::ConstFactsWorkspace(fd::PredicateListView<f::StaticTag> pre
                                          const a::DomainListListList& function_domains,
                                          size_t num_objects,
                                          fd::GroundAtomListView<f::StaticTag> atoms,
-                                         fd::GroundFunctionTermValueListView<f::StaticTag> fterm_values) :
-    fact_sets(predicates, functions, atoms, fterm_values),
+                                         fd::GroundFunctionTermValueListView<f::StaticTag> fterm_values,
+                                         const formalism::datalog::Repository& program_repository) :
+    fact_sets(predicates, functions, atoms, fterm_values, program_repository),
     assignment_sets(predicates, functions, predicate_domains, function_domains, num_objects, fact_sets)
 {
 }

@@ -33,8 +33,9 @@ namespace tyr::datalog
  */
 
 template<f::FactKind T>
-PredicateFactSet<T>::PredicateFactSet(fd::PredicateView<T> predicate) :
+PredicateFactSet<T>::PredicateFactSet(fd::PredicateView<T> predicate, const formalism::datalog::Repository& repository) :
     m_predicate(predicate),
+    m_repository(repository),
     m_predicate_index(m_predicate.get_index()),
     m_bindings(),
     m_bitset()
@@ -95,7 +96,7 @@ bool PredicateFactSet<T>::contains(fd::PredicateBindingView<T> binding) const no
 template<f::FactKind T>
 fd::PredicateBindingVecView<T> PredicateFactSet<T>::get_bindings() const noexcept
 {
-    return make_view(f::RelationBindingsForwardRange { m_predicate_index, m_bindings }, m_predicate.get_context());
+    return make_view(f::RelationBindingsForwardRange { m_predicate_index, m_bindings }, m_repository);
 }
 
 template class PredicateFactSet<f::StaticTag>;
@@ -106,7 +107,7 @@ template class PredicateFactSet<f::FluentTag>;
  */
 
 template<f::FactKind T>
-PredicateFactSets<T>::PredicateFactSets(formalism::datalog::PredicateListView<T> predicates) : m_sets()
+PredicateFactSets<T>::PredicateFactSets(formalism::datalog::PredicateListView<T> predicates, const formalism::datalog::Repository& repository) : m_sets()
 {
     /* Validate inputs. */
     for (uint_t i = 0; i < predicates.size(); ++i)
@@ -114,7 +115,7 @@ PredicateFactSets<T>::PredicateFactSets(formalism::datalog::PredicateListView<T>
 
     /* Initialize sets. */
     for (const auto predicate : predicates)
-        m_sets.emplace_back(PredicateFactSet<T>(predicate));
+        m_sets.emplace_back(PredicateFactSet<T>(predicate, repository));
 }
 
 template<f::FactKind T>
@@ -172,7 +173,11 @@ template class PredicateFactSets<f::FluentTag>;
  */
 
 template<f::FactKind T>
-FunctionFactSet<T>::FunctionFactSet(fd::FunctionView<T> function) : m_function(function), m_bindings(), m_values()
+FunctionFactSet<T>::FunctionFactSet(fd::FunctionView<T> function, const formalism::datalog::Repository& repository) :
+    m_function(function),
+    m_repository(repository),
+    m_bindings(),
+    m_values()
 {
 }
 

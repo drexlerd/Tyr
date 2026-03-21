@@ -336,7 +336,7 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
 
     while (true)
     {
-        std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
+        // std::cout << "Cost: " << cost_buckets.current_cost() << std::endl;
 
         // Check whether min cost for goal was proven.
         if (tp.check())
@@ -344,21 +344,21 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
             return;
         }
 
-        std::cout << std::endl;
-        std::cout << "=======================================================================" << std::endl;
-        std::cout << "Facts: " << std::endl;
-        for (const auto& set : facts.fact_sets.predicate.get_sets())
-        {
-            for (const auto binding : set.get_bindings())
-                std::cout << binding << std::endl;
-        }
-        std::cout << "Delta facts: " << std::endl;
-        for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
-        {
-            for (const auto binding : set.get_bindings())
-                std::cout << binding << std::endl;
-        }
-        std::cout << std::endl;
+        // std::cout << std::endl;
+        // std::cout << "=======================================================================" << std::endl;
+        // std::cout << "Facts: " << std::endl;
+        // for (const auto& set : facts.fact_sets.predicate.get_sets())
+        // {
+        //     for (const auto binding : set.get_bindings())
+        //         std::cout << binding << std::endl;
+        // }
+        // std::cout << "Delta facts: " << std::endl;
+        // for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
+        // {
+        //     for (const auto binding : set.get_bindings())
+        //         std::cout << binding << std::endl;
+        // }
+        // std::cout << std::endl;
 
         scheduler.on_start_iteration();
 
@@ -431,8 +431,6 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                         // Merge head from delta into the program
                         const auto program_head = fd::merge_d2d(worker_head, merge_context).first;
 
-                        std::cout << "Program merge: " << program_head << std::endl;
-
                         // Update annotation
                         const auto cost_update = ctx.ctx.ws.or_ap.update_annotation(program_head,
                                                                                     worker_head,
@@ -453,8 +451,6 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
             {
                 if (!facts.fact_sets.predicate.contains(head))
                 {
-                    std::cout << "Bucket insert: " << head << std::endl;
-
                     // Notify scheduler
                     scheduler.on_generate(head.get_index().relation);
 
@@ -467,26 +463,6 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     facts.delta_fact_sets.predicate.insert(head);
                 }
             }
-
-            std::cout << std::endl;
-            std::cout << "=======================================================================" << std::endl;
-            std::cout << "=======================================================================" << std::endl;
-            std::cout << "Facts: " << std::endl;
-            for (const auto& set : facts.fact_sets.predicate.get_sets())
-            {
-                for (const auto binding : set.get_bindings())
-                    std::cout << binding << std::endl;
-            }
-            std::cout << "Delta facts: " << std::endl;
-            for (const auto& set : facts.delta_fact_sets.predicate.get_sets())
-            {
-                for (const auto binding : set.get_bindings())
-                    std::cout << binding << std::endl;
-            }
-            std::cout << std::endl;
-
-            std::cout << "=======================================================================" << std::endl;
-            std::cout << "=======================================================================" << std::endl;
         }
 
         scheduler.on_finish_iteration();

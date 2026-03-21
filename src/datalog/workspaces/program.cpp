@@ -33,7 +33,8 @@ ProgramWorkspace<OrAP, AndAP, TP>::ProgramWorkspace(ProgramContext& context, con
           context.get_domains().fluent_function_domains,
           context.get_program().get_objects().size(),
           context.get_program().get_atoms<formalism::FluentTag>(),
-          context.get_program().get_fterm_values<formalism::FluentTag>()),
+          context.get_program().get_fterm_values<formalism::FluentTag>(),
+          context.get_workspace_repository()),
     or_ap(or_ap),
     or_annot(context.get_program().get_predicates<formalism::FluentTag>().size()),
     and_annot(),
@@ -64,7 +65,8 @@ ConstProgramWorkspace::ConstProgramWorkspace(ProgramContext& context) :
           context.get_domains().static_function_domains,
           context.get_program().get_objects().size(),
           context.get_program().get_atoms<formalism::StaticTag>(),
-          context.get_program().get_fterm_values<formalism::StaticTag>()),
+          context.get_program().get_fterm_values<formalism::StaticTag>(),
+          context.get_program_repository()),
     rules()
 {
     rules.reserve(context.get_program().get_rules().size());  // Ensure enough space to avoid move on reallocation

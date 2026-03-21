@@ -42,7 +42,8 @@ struct FactsWorkspace
                             const analysis::DomainListListList& function_domains,
                             size_t num_objects,
                             formalism::datalog::GroundAtomListView<formalism::FluentTag> atoms,
-                            formalism::datalog::GroundFunctionTermValueListView<formalism::FluentTag> fterm_values);
+                            formalism::datalog::GroundFunctionTermValueListView<formalism::FluentTag> fterm_values,
+                            const formalism::datalog::Repository& workspace_repository);
 
     void reset();
 };
@@ -58,7 +59,8 @@ struct ConstFactsWorkspace
                                  const analysis::DomainListListList& function_domains,
                                  size_t num_objects,
                                  formalism::datalog::GroundAtomListView<formalism::StaticTag> atoms,
-                                 formalism::datalog::GroundFunctionTermValueListView<formalism::StaticTag> fterm_values);
+                                 formalism::datalog::GroundFunctionTermValueListView<formalism::StaticTag> fterm_values,
+                                 const formalism::datalog::Repository& program_repository);
 };
 
 }
