@@ -52,6 +52,14 @@ struct RelationBindingsForwardRange
     const Index<Tag>& relation;
     const BindingRange& rows;
 };
+
+template<typename Tag, std::ranges::random_access_range BindingRange>
+    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+struct RelationBindingsRandomAccessRange
+{
+    const Index<Tag>& relation;
+    const BindingRange& rows;
+};
 }
 }
 

@@ -225,7 +225,7 @@ public:
 
     void insert(formalism::datalog::PredicateBindingView<T> binding) { m_sets[uint_t(binding.get_index().relation)].insert(binding); }
 
-    void insert(formalism::datalog::PredicateBindingVecView<T> bindings)
+    void insert(formalism::datalog::PredicateBindingForwardRangeView<T> bindings)
     {
         for (const auto binding : bindings)
             insert(binding);

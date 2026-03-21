@@ -145,7 +145,9 @@ using FunctionBindingView = View<RelationBindingIndex<Function<T>>, Repository>;
 using RuleBindingView = View<RelationBindingIndex<Rule>, Repository>;
 
 template<FactKind T>
-using PredicateBindingVecView = View<RelationBindingsForwardRange<Predicate<T>, std::vector<Index<Binding>>>, Repository>;
+using PredicateBindingForwardRangeView = View<RelationBindingsForwardRange<Predicate<T>, std::vector<Index<Binding>>>, Repository>;
+template<FactKind T>
+using FunctionBindingRandomAccessRangeView = View<RelationBindingsRandomAccessRange<Function<T>, std::vector<Index<Binding>>>, Repository>;
 
 template<typename T>
 using BooleanOperatorView = View<Data<BooleanOperator<T>>, Repository>;

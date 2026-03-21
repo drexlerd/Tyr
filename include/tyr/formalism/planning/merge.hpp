@@ -24,18 +24,11 @@
 #include "tyr/formalism/planning/builder.hpp"
 #include "tyr/formalism/planning/canonicalization.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
-#include "tyr/formalism/planning/indices.hpp"
+#include "tyr/formalism/planning/merge_decl.hpp"
 #include "tyr/formalism/planning/repository.hpp"
-#include "tyr/formalism/planning/views.hpp"
 
 namespace tyr::formalism::planning
 {
-
-struct MergeContext
-{
-    Builder& builder;
-    Repository& destination;
-};
 
 // Common
 

@@ -157,6 +157,165 @@ private:
     Container m_handle;
 };
 
+template<typename Tag, std::ranges::random_access_range BindingRange, typename C>
+    requires std::ranges::sized_range<BindingRange>
+             && std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+class View<formalism::RelationBindingsRandomAccessRange<Tag, BindingRange>, C>
+{
+public:
+    using Container = formalism::RelationBindingsRandomAccessRange<Tag, BindingRange>;
+    using T = formalism::RelationBindingIndex<Tag>;
+    using I1 = Index<Tag>;
+
+    View(Container handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+
+    bool empty() const noexcept { return std::ranges::begin(get_data().rows) == std::ranges::end(get_data().rows); }
+
+    size_t size() const noexcept { return std::ranges::size(get_data().rows); }
+
+    decltype(auto) front() const noexcept
+    {
+        auto it = std::ranges::begin(get_data().rows);
+        assert(it != std::ranges::end(get_data().rows));
+        if constexpr (ViewConcept<T, C>)
+            return make_view(T { get_data().relation, *it }, get_context());
+        else
+            return T { get_data().relation, *it };
+    }
+
+    decltype(auto) back() const noexcept
+    {
+        assert(!empty());
+        auto it = std::ranges::begin(get_data().rows) + (std::ranges::ssize(get_data().rows) - 1);
+        if constexpr (ViewConcept<T, C>)
+            return make_view(T { get_data().relation, *it }, get_context());
+        else
+            return T { get_data().relation, *it };
+    }
+
+    decltype(auto) operator[](size_t i) const noexcept
+    {
+        auto it = std::ranges::begin(get_data().rows) + static_cast<std::ptrdiff_t>(i);
+        if constexpr (ViewConcept<T, C>)
+            return make_view(T { get_data().relation, *it }, get_context());
+        else
+            return T { get_data().relation, *it };
+    }
+
+    struct const_iterator
+    {
+        using BaseIt = std::ranges::iterator_t<const BindingRange>;
+
+        const C* ctx;
+        BaseIt it;
+        I1 relation;
+
+        using difference_type = std::ptrdiff_t;
+        using value_type = std::conditional_t<ViewConcept<T, C>, ::tyr::View<T, C>, T>;
+        using iterator_category = std::random_access_iterator_tag;
+        using iterator_concept = std::random_access_iterator_tag;
+
+        const_iterator() noexcept : ctx(nullptr), it() {}
+        const_iterator(I1 relation, BaseIt it, const C& ctx) noexcept : ctx(&ctx), it(it), relation(relation) {}
+
+        decltype(auto) operator*() const noexcept
+        {
+            if constexpr (ViewConcept<T, C>)
+                return make_view(T { relation, *it }, *ctx);
+            else
+                return T { relation, *it };
+        }
+
+        const_iterator& operator++() noexcept
+        {
+            ++it;
+            return *this;
+        }
+
+        const_iterator operator++(int) noexcept
+        {
+            auto tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        const_iterator& operator--() noexcept
+        {
+            --it;
+            return *this;
+        }
+
+        const_iterator operator--(int) noexcept
+        {
+            auto tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
+        const_iterator& operator+=(difference_type n) noexcept
+        {
+            it += n;
+            return *this;
+        }
+
+        const_iterator& operator-=(difference_type n) noexcept
+        {
+            it -= n;
+            return *this;
+        }
+
+        friend const_iterator operator+(const const_iterator& it, difference_type n) noexcept
+        {
+            auto tmp = it;
+            tmp += n;
+            return tmp;
+        }
+
+        friend const_iterator operator+(difference_type n, const const_iterator& it) noexcept
+        {
+            auto tmp = it;
+            tmp += n;
+            return tmp;
+        }
+
+        friend const_iterator operator-(const const_iterator& it, difference_type n) noexcept
+        {
+            auto tmp = it;
+            tmp -= n;
+            return tmp;
+        }
+
+        friend difference_type operator-(const const_iterator& lhs, const const_iterator& rhs) noexcept { return lhs.it - rhs.it; }
+
+        decltype(auto) operator[](difference_type n) const noexcept
+        {
+            if constexpr (ViewConcept<T, C>)
+                return make_view(T { relation, it[n] }, *ctx);
+            else
+                return T { relation, it[n] };
+        }
+
+        friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) noexcept { return lhs.it == rhs.it; }
+        friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) noexcept { return !(lhs == rhs); }
+        friend bool operator<(const const_iterator& lhs, const const_iterator& rhs) noexcept { return lhs.it < rhs.it; }
+        friend bool operator>(const const_iterator& lhs, const const_iterator& rhs) noexcept { return rhs < lhs; }
+        friend bool operator<=(const const_iterator& lhs, const const_iterator& rhs) noexcept { return !(rhs < lhs); }
+        friend bool operator>=(const const_iterator& lhs, const const_iterator& rhs) noexcept { return !(lhs < rhs); }
+    };
+
+    const_iterator begin() const noexcept { return const_iterator { get_data().relation, std::ranges::begin(get_data().rows), get_context() }; }
+
+    const_iterator end() const noexcept { return const_iterator { get_data().relation, std::ranges::end(get_data().rows), get_context() }; }
+
+    const auto& get_data() const noexcept { return m_handle; }
+    const auto& get_context() const noexcept { return *m_context; }
+    const auto& get_handle() const noexcept { return m_handle; }
+
+private:
+    const C* m_context;
+    Container m_handle;
+};
+
 }
 
 #endif

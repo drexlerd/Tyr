@@ -151,7 +151,7 @@ void process_clique(RuleWorkerExecutionContext<OrAP, AndAP, TP>& wrctx, std::spa
     ++out.statistics().num_generated_rules;
 
     const auto program_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
-    if (in.fact_sets().fluent_sets.predicate.contains(program_head))
+    if (in.fact_sets().template get<f::FluentTag>().predicate.contains(program_head))
         return;  ///< optimal cost proven
 
     auto applicability_check = out.applicability_check_pool().get_or_allocate(in.cws_rule().get_nullary_condition(),
@@ -289,7 +289,7 @@ void process_pending(RuleExecutionContext<OrAP, AndAP, TP>& rctx)
             assert(out.ground_context_solve().binding == out.ground_context_iteration().binding);
             const auto program_head = fd::ground_binding(in.cws_rule().get_rule().get_head(), out.ground_context_iteration()).first;
 
-            if (in.fact_sets().fluent_sets.predicate.contains(program_head))  ///< optimal cost proven
+            if (in.fact_sets().template get<f::FluentTag>().predicate.contains(program_head))  ///< optimal cost proven
             {
                 it = out.pending_rules().erase(it);
             }

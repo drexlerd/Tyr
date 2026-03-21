@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_FORMALISM_PLANNING_GROUNDER_PLANNING_HPP_
-#define TYR_FORMALISM_PLANNING_GROUNDER_PLANNING_HPP_
+#ifndef TYR_FORMALISM_PLANNING_GROUNDER_HPP_
+#define TYR_FORMALISM_PLANNING_GROUNDER_HPP_
 
 #include "tyr/analysis/domains.hpp"
 #include "tyr/common/itertools.hpp"
@@ -26,19 +26,13 @@
 #include "tyr/formalism/planning/declarations.hpp"
 #include "tyr/formalism/planning/fdr_context.hpp"
 #include "tyr/formalism/planning/formatter.hpp"
-#include "tyr/formalism/planning/grounder.hpp"
+#include "tyr/formalism/planning/grounder_decl.hpp"
 #include "tyr/formalism/planning/merge.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/formalism/planning/views.hpp"
 
 namespace tyr::formalism::planning
 {
-struct GrounderContext
-{
-    Builder& builder;
-    Repository& destination;
-    IndexList<Object>& binding;
-};
 
 std::pair<BindingView, bool> ground(TermListView element, GrounderContext& context);
 

@@ -165,13 +165,13 @@ std::optional<Witness> try_ground_better_witness(uint_t best_cost,
     {
         assert(literal.get_polarity());
 
-        const auto [program_ground_atom, inserted] = formalism::datalog::ground(literal.get_atom(), iteration_context);
+        const auto [program_binding, inserted] = formalism::datalog::ground_binding(literal.get_atom(), iteration_context);
         assert(!inserted);  ///< must exist in program because the precondition is applicable in program fact set.
 
-        const auto program_ground_atom_cost = fetch_atom_cost(program_ground_atom.get_row(), or_annot);
-        assert(program_ground_atom_cost != std::numeric_limits<uint_t>::max());
+        const auto program_binding_cost = fetch_atom_cost(program_binding, or_annot);
+        assert(program_binding_cost != std::numeric_limits<uint_t>::max());
 
-        body_cost = AggregationFunction()(body_cost, program_ground_atom_cost);
+        body_cost = AggregationFunction()(body_cost, program_binding_cost);
 
         if (best_cost <= body_cost + rule_cost)
             return std::nullopt;  ///< No local or global improvement
