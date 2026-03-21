@@ -43,36 +43,36 @@ def main():
     
     # 1. Re-create existing atom (at ball1 rooma)
     object_builder.name = "ball1"
-    ball1, inserted = repository.get_or_create_object(object_builder)
+    ball1, inserted = repository.get_or_create(object_builder)
     assert not inserted
     object_builder.name = "rooma"
-    rooma, inserted = repository.get_or_create_object(object_builder)
+    rooma, inserted = repository.get_or_create(object_builder)
     assert not inserted 
 
     predicate_builder.name = "at"
     predicate_builder.arity = 2
-    at, inserted = repository.get_or_create_fluent_predicate(predicate_builder)
+    at, inserted = repository.get_or_create(predicate_builder)
     assert not inserted
 
-    row, inserted = repository.get_or_create_fluent_predicate_row(at, [ball1.get_index(), rooma.get_index()])
+    row, inserted = repository.get_or_create(at, [ball1.get_index(), rooma.get_index()])
     assert not inserted
 
     ground_atom_builder.predicate = row.get_index().relation_index
     ground_atom_builder.row = row.get_index().row_index
-    at_ball1_rooma, inserted = repository.get_or_create_fluent_ground_atom(ground_atom_builder)
+    at_ball1_rooma, inserted = repository.get_or_create(ground_atom_builder)
     assert not inserted
 
     # 2. Create non existing atom (at ball1 roomb)
     object_builder.name = "roomb"
-    roomb, inserted = repository.get_or_create_object(object_builder)
+    roomb, inserted = repository.get_or_create(object_builder)
     assert not inserted 
 
-    row, inserted = repository.get_or_create_fluent_predicate_row(at, [ball1.get_index(), roomb.get_index()])
+    row, inserted = repository.get_or_create(at, [ball1.get_index(), roomb.get_index()])
     assert inserted 
 
     ground_atom_builder.predicate = row.get_index().relation_index 
     ground_atom_builder.row = row.get_index().row_index
-    at_ball1_roomb, inserted = repository.get_or_create_fluent_ground_atom(ground_atom_builder)
+    at_ball1_roomb, inserted = repository.get_or_create(ground_atom_builder)
     assert inserted
 
     # 3. Map atom to FDRFact to be passed into state repository for state creations

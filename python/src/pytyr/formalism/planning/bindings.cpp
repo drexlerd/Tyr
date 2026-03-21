@@ -450,31 +450,70 @@ void bind_module_definitions(nb::module_& m)
      */
 
     nb::class_<Repository>(m, "Repository")  //
-        .def("get_or_create_object", nb::overload_cast<Data<Object>&>(&Repository::get_or_create<Object>), "builder"_a)
-        .def("get_or_create_static_predicate", nb::overload_cast<Data<Predicate<StaticTag>>&>(&Repository::get_or_create<Predicate<StaticTag>>), "builder"_a)
-        .def("get_or_create_fluent_predicate", nb::overload_cast<Data<Predicate<FluentTag>>&>(&Repository::get_or_create<Predicate<FluentTag>>), "builder"_a)
-        .def("get_or_create_derived_predicate", nb::overload_cast<Data<Predicate<DerivedTag>>&>(&Repository::get_or_create<Predicate<DerivedTag>>), "builder"_a)
-        .def("get_or_create_static_ground_atom",
-             nb::overload_cast<Data<GroundAtom<StaticTag>>&>(&Repository::get_or_create<GroundAtom<StaticTag>>),
-             "builder"_a)
-        .def("get_or_create_fluent_ground_atom",
-             nb::overload_cast<Data<GroundAtom<FluentTag>>&>(&Repository::get_or_create<GroundAtom<FluentTag>>),
-             "builder"_a)
-        .def("get_or_create_derived_ground_atom",
-             nb::overload_cast<Data<GroundAtom<DerivedTag>>&>(&Repository::get_or_create<GroundAtom<DerivedTag>>),
-             "builder"_a)
-        .def("get_or_create_static_predicate_row",
+        .def("get_or_create", nb::overload_cast<Data<Object>&>(&Repository::get_or_create<Object>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Variable>&>(&Repository::get_or_create<Variable>), "builder"_a)
+        .def("get_or_create",
              nb::overload_cast<PredicateView<StaticTag>, const IndexList<Object>&>(&Repository::get_or_create<Predicate<StaticTag>>),
              "predicate"_a,
              "object_indices"_a)
-        .def("get_or_create_fluent_predicate_row",
+        .def("get_or_create",
              nb::overload_cast<PredicateView<FluentTag>, const IndexList<Object>&>(&Repository::get_or_create<Predicate<FluentTag>>),
              "predicate"_a,
              "object_indices"_a)
-        .def("get_or_create_derived_predicate_row",
+        .def("get_or_create",
              nb::overload_cast<PredicateView<DerivedTag>, const IndexList<Object>&>(&Repository::get_or_create<Predicate<DerivedTag>>),
              "predicate"_a,
-             "object_indices"_a);
+             "object_indices"_a)
+        .def("get_or_create",
+             nb::overload_cast<FunctionView<StaticTag>, const IndexList<Object>&>(&Repository::get_or_create<Function<StaticTag>>),
+             "function"_a,
+             "object_indices"_a)
+        .def("get_or_create",
+             nb::overload_cast<FunctionView<FluentTag>, const IndexList<Object>&>(&Repository::get_or_create<Function<FluentTag>>),
+             "function"_a,
+             "object_indices"_a)
+        .def("get_or_create",
+             nb::overload_cast<FunctionView<AuxiliaryTag>, const IndexList<Object>&>(&Repository::get_or_create<Function<AuxiliaryTag>>),
+             "function"_a,
+             "object_indices"_a)
+        .def("get_or_create", nb::overload_cast<ActionView, const IndexList<Object>&>(&Repository::get_or_create<Action>), "action"_a, "object_indices"_a)
+        .def("get_or_create", nb::overload_cast<AxiomView, const IndexList<Object>&>(&Repository::get_or_create<Axiom>), "axiom"_a, "object_indices"_a)
+        .def("get_or_create", nb::overload_cast<Data<Predicate<StaticTag>>&>(&Repository::get_or_create<Predicate<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Predicate<FluentTag>>&>(&Repository::get_or_create<Predicate<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Predicate<DerivedTag>>&>(&Repository::get_or_create<Predicate<DerivedTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Atom<StaticTag>>&>(&Repository::get_or_create<Atom<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Atom<FluentTag>>&>(&Repository::get_or_create<Atom<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Atom<DerivedTag>>&>(&Repository::get_or_create<Atom<DerivedTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundAtom<StaticTag>>&>(&Repository::get_or_create<GroundAtom<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundAtom<FluentTag>>&>(&Repository::get_or_create<GroundAtom<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundAtom<DerivedTag>>&>(&Repository::get_or_create<GroundAtom<DerivedTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Literal<StaticTag>>&>(&Repository::get_or_create<Literal<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Literal<FluentTag>>&>(&Repository::get_or_create<Literal<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Literal<DerivedTag>>&>(&Repository::get_or_create<Literal<DerivedTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundLiteral<StaticTag>>&>(&Repository::get_or_create<GroundLiteral<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundLiteral<FluentTag>>&>(&Repository::get_or_create<GroundLiteral<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundLiteral<DerivedTag>>&>(&Repository::get_or_create<GroundLiteral<DerivedTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<FDRVariable<FluentTag>>&>(&Repository::get_or_create<FDRVariable<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Function<StaticTag>>&>(&Repository::get_or_create<Function<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Function<FluentTag>>&>(&Repository::get_or_create<Function<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<Function<AuxiliaryTag>>&>(&Repository::get_or_create<Function<AuxiliaryTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<FunctionTerm<StaticTag>>&>(&Repository::get_or_create<FunctionTerm<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<FunctionTerm<FluentTag>>&>(&Repository::get_or_create<FunctionTerm<FluentTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<FunctionTerm<AuxiliaryTag>>&>(&Repository::get_or_create<FunctionTerm<AuxiliaryTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundFunctionTerm<StaticTag>>&>(&Repository::get_or_create<GroundFunctionTerm<StaticTag>>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<Data<GroundFunctionTerm<FluentTag>>&>(&Repository::get_or_create<GroundFunctionTerm<FluentTag>>), "builder"_a)
+        .def("get_or_create",
+             nb::overload_cast<Data<GroundFunctionTerm<AuxiliaryTag>>&>(&Repository::get_or_create<GroundFunctionTerm<AuxiliaryTag>>),
+             "builder"_a)
+        .def("get_or_create",
+             nb::overload_cast<Data<GroundFunctionTermValue<StaticTag>>&>(&Repository::get_or_create<GroundFunctionTermValue<StaticTag>>),
+             "builder"_a)
+        .def("get_or_create",
+             nb::overload_cast<Data<GroundFunctionTermValue<FluentTag>>&>(&Repository::get_or_create<GroundFunctionTermValue<FluentTag>>),
+             "builder"_a)
+        .def("get_or_create",
+             nb::overload_cast<Data<GroundFunctionTermValue<AuxiliaryTag>>&>(&Repository::get_or_create<GroundFunctionTermValue<AuxiliaryTag>>),
+             "builder"_a);
 
     /**
      * FDRContexts
