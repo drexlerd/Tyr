@@ -544,7 +544,7 @@ void TaggedAssignmentSets<T>::insert(const TaggedFactSets<T>& fact_sets)
 }
 
 template<formalism::FactKind T>
-void TaggedAssignmentSets<T>::reset()
+void TaggedAssignmentSets<T>::reset() noexcept
 {
     predicate.reset();
     function.reset();

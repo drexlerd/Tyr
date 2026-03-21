@@ -188,7 +188,7 @@ struct TaggedAssignmentSets
 
     void insert(const TaggedFactSets<T>& fact_sets);
 
-    void reset();
+    void reset() noexcept;
 };
 
 struct AssignmentSets

@@ -190,7 +190,6 @@ void bind_module_definitions(nb::module_& m)
      */
 
     bind_object(m, "Object");
-    bind_binding(m, "Binding");
     bind_variable(m, "Variable");
     bind_fixed_uint<ParameterIndex>(m, "ParameterIndex");
     bind_term(m, "Term");

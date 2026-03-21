@@ -57,7 +57,7 @@ def main():
     row, inserted = repository.get_or_create_fluent_predicate_row(at, [ball1.get_index(), rooma.get_index()])
     assert not inserted
 
-    ground_atom_builder.predicate = row.get_index().predicate_index
+    ground_atom_builder.predicate = row.get_index().relation_index
     ground_atom_builder.row = row.get_index().row_index
     at_ball1_rooma, inserted = repository.get_or_create_fluent_ground_atom(ground_atom_builder)
     assert not inserted
@@ -70,7 +70,7 @@ def main():
     row, inserted = repository.get_or_create_fluent_predicate_row(at, [ball1.get_index(), roomb.get_index()])
     assert inserted 
 
-    ground_atom_builder.predicate = row.get_index().predicate_index 
+    ground_atom_builder.predicate = row.get_index().relation_index 
     ground_atom_builder.row = row.get_index().row_index
     at_ball1_roomb, inserted = repository.get_or_create_fluent_ground_atom(ground_atom_builder)
     assert inserted

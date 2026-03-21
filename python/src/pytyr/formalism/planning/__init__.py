@@ -5,7 +5,6 @@ from pytyr.pytyr.formalism.planning import (
     Object,
     ObjectIndex,
     ObjectBuilder,
-    Binding,
     BindingIndex,
     BindingBuilder,
     Variable,

@@ -135,17 +135,6 @@ void bind_object(nb::module_& m, const std::string& name)
     add_hash(cls);
 }
 
-void bind_binding(nb::module_& m, const std::string& name)
-{
-    using V = BindingView;
-
-    auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def("get_index", &V::get_index)
-                   .def("get_objects", &V::get_objects);
-    add_print(cls);
-    add_hash(cls);
-}
-
 void bind_variable(nb::module_& m, const std::string& name)
 {
     using V = VariableView;
