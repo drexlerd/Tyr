@@ -23,6 +23,7 @@
 #include "tyr/common/hash.hpp"
 #include "tyr/common/tuple.hpp"
 #include "tyr/common/types.hpp"
+#include "tyr/formalism/binding_data.hpp"
 #include "tyr/formalism/binding_index.hpp"
 #include "tyr/formalism/declarations.hpp"
 #include "tyr/formalism/object_index.hpp"
@@ -141,43 +142,47 @@ public:
      * Local methods
      */
 
-    static size_t hash(const IndexList<Object>& builder) noexcept { return BlockArraySet<uint_t, Coder<uint_t>>::hash(builder); }
+    static size_t hash(const Data<RelationBinding<T>>& builder) noexcept { return BlockArraySet<uint_t, Coder<uint_t>>::hash(builder.objects); }
 
-    std::optional<Index<Binding>> find_local_with_hash(Index<T> g, const IndexList<Object>& builder, size_t h) const noexcept
+    std::optional<Index<Row>> find_local_with_hash(const Data<RelationBinding<T>>& builder, size_t h) const noexcept
     {
+        const auto g = builder.relation;
+
         const auto* slot = find_slot(g);
         if (!slot)
             return std::nullopt;
 
-        if (auto row_or_nullopt = slot->container.find_with_hash(builder, h))
-            return Index<Binding>(slot->parent_size + *row_or_nullopt);
+        if (auto row_or_nullopt = slot->container.find_with_hash(builder.objects, h))
+            return Index<Row>(slot->parent_size + *row_or_nullopt);
 
         return std::nullopt;
     }
 
-    std::optional<Index<Binding>> find_local(Index<T> g, const IndexList<Object>& builder) const noexcept
+    std::optional<Index<Row>> find_local(const Data<RelationBinding<T>>& builder) const noexcept
     {
-        return find_local_with_hash(g, builder, BasicRelationRepository::hash(builder));
+        return find_local_with_hash(builder, BasicRelationRepository::hash(builder));
     }
 
-    std::pair<Index<Binding>, bool> get_or_create_local_with_hash(Index<T> g, size_t arity, const IndexList<Object>& builder, size_t h)
+    std::pair<Index<Row>, bool> get_or_create_local_with_hash(const Data<RelationBinding<T>>& builder, size_t h)
     {
-        auto& slot = get_or_create_slot(g, arity);
+        const auto g = builder.relation;
+
+        auto& slot = get_or_create_slot(g, builder.objects.size());
         auto& container = slot.container;
 
-        if (auto row_or_nullopt = container.find_with_hash(builder, h))
-            return { Index<Binding>(slot.parent_size + *row_or_nullopt), false };
+        if (auto row_or_nullopt = container.find_with_hash(builder.objects, h))
+            return { Index<Row>(slot.parent_size + *row_or_nullopt), false };
 
-        const auto [row, success] = container.insert_with_hash(h, builder);
-        return { Index<Binding>(slot.parent_size + row), success };
+        const auto [row, success] = container.insert_with_hash(h, builder.objects);
+        return { Index<Row>(slot.parent_size + row), success };
     }
 
-    std::pair<Index<Binding>, bool> get_or_create_local(Index<T> g, size_t arity, const IndexList<Object>& builder)
+    std::pair<Index<Row>, bool> get_or_create_local(const Data<RelationBinding<T>>& builder)
     {
-        return get_or_create_local_with_hash(g, arity, builder, BasicRelationRepository::hash(builder));
+        return get_or_create_local_with_hash(builder, BasicRelationRepository::hash(builder));
     }
 
-    ConstViewType at_local(RelationBindingIndex<T> index) const noexcept
+    ConstViewType at_local(Index<RelationBinding<T>> index) const noexcept
     {
         const auto& [g, row] = index;
 
@@ -216,11 +221,11 @@ public:
         return slot ? slot->parent_size : (m_parent ? m_parent->size(g) : 0);
     }
 
-    bool is_local(RelationBindingIndex<T> index) const noexcept
+    bool is_local(Index<RelationBinding<T>> index) const noexcept
     {
         const auto& [g, row] = index;
         assert(g != Index<T>::max() && "Unassigned index.");
-        assert(row != Index<Binding>::max() && "Unassigned index.");
+        assert(row != Index<Row>::max() && "Unassigned index.");
 
         const auto* slot = find_slot(g);
         if (!slot)

@@ -24,7 +24,7 @@ namespace
 template<typename Tag>
 void bind_relation_binding_index(nb::module_& m, const std::string& name)
 {
-    using V = RelationBindingIndex<Tag>;
+    using V = Index<RelationBinding<Tag>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
                    .def_ro("relation_index", &V::relation)
@@ -38,7 +38,6 @@ void bind_relation_binding_index(nb::module_& m, const std::string& name)
 void bind_indices(nb::module_& m)
 {
     bind_index<Index<Object>>(m, "ObjectIndex");
-    bind_index<Index<Binding>>(m, "BindingIndex");
     bind_index<Index<Variable>>(m, "VariableIndex");
 
     bind_relation_binding_index<Predicate<StaticTag>>(m, "StaticPredicateBindingIndex");

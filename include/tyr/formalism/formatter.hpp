@@ -74,13 +74,14 @@ inline std::ostream& operator<<(std::ostream& os, const View<Index<formalism::Va
 template<typename C>
 inline std::ostream& operator<<(std::ostream& os, const View<Index<Object>, C>& el);
 
-inline std::ostream& operator<<(std::ostream& os, const Data<Binding>& el);
+template<typename Tag>
+inline std::ostream& operator<<(std::ostream& os, const Data<RelationBinding<Tag>>& el);
 
 template<typename T, typename C>
-inline std::ostream& operator<<(std::ostream& os, const View<RelationBindingIndex<T>, C>& el);
+inline std::ostream& operator<<(std::ostream& os, const View<Index<RelationBinding<T>>, C>& el);
 
 template<typename T>
-inline std::ostream& operator<<(std::ostream& os, const formalism::RelationBindingIndex<T>& el);
+inline std::ostream& operator<<(std::ostream& os, const Index<formalism::RelationBinding<T>>& el);
 
 inline std::ostream& operator<<(std::ostream& os, const Data<Term>& el);
 
@@ -197,21 +198,22 @@ inline std::ostream& print(std::ostream& os, const View<Index<formalism::Object>
     return os;
 }
 
-inline std::ostream& print(std::ostream& os, const Data<formalism::Binding>& el)
+template<typename Tag>
+inline std::ostream& print(std::ostream& os, const Data<formalism::RelationBinding<Tag>>& el)
 {
-    fmt::print(os, "{}", fmt::join(to_strings(el.objects), " "));
+    fmt::print(os, "{} {}", to_string(el.relation), fmt::join(to_strings(el.objects), " "));
     return os;
 }
 
 template<typename T>
-inline std::ostream& print(std::ostream& os, const formalism::RelationBindingIndex<T>& el)
+inline std::ostream& print(std::ostream& os, const Index<formalism::RelationBinding<T>>& el)
 {
     fmt::print(os, "<{},{}>", to_string(el.relation), to_string(el.row));
     return os;
 }
 
 template<typename T, typename C>
-inline std::ostream& print(std::ostream& os, const View<formalism::RelationBindingIndex<T>, C>& el)
+inline std::ostream& print(std::ostream& os, const View<Index<formalism::RelationBinding<T>>, C>& el)
 {
     fmt::print(os, "({})", fmt::join(to_strings(el.get_objects()), " "));
     return os;
@@ -298,16 +300,20 @@ inline std::ostream& operator<<(std::ostream& os, const View<Index<Object>, C>& 
     return tyr::print(os, el);
 }
 
-inline std::ostream& operator<<(std::ostream& os, const Data<Binding>& el) { return tyr::print(os, el); }
+template<typename Tag>
+inline std::ostream& operator<<(std::ostream& os, const Data<RelationBinding<Tag>>& el)
+{
+    return tyr::print(os, el);
+}
 
 template<typename T, typename C>
-inline std::ostream& operator<<(std::ostream& os, const View<RelationBindingIndex<T>, C>& el)
+inline std::ostream& operator<<(std::ostream& os, const View<Index<RelationBinding<T>>, C>& el)
 {
     return tyr::print(os, el);
 }
 
 template<typename T>
-inline std::ostream& operator<<(std::ostream& os, const formalism::RelationBindingIndex<T>& el)
+inline std::ostream& operator<<(std::ostream& os, const Index<formalism::RelationBinding<T>>& el)
 {
     return tyr::print(os, el);
 }

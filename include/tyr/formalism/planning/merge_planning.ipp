@@ -108,30 +108,28 @@ std::pair<AtomView<T_DST>, bool> merge_d2p(formalism::datalog::AtomView<T_SRC> e
 }
 
 template<FactKind T_SRC, FactKind T_DST>
-std::pair<PredicateBindingView<T_DST>, bool>
-merge_d2p(PredicateView<T_DST> predicate, formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context)
+std::pair<PredicateBindingView<T_DST>, bool> merge_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Predicate<T_DST>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = merge_d2p<T_SRC, T_DST>(element.get_relation(), context).first.get_index();
     for (const auto object : element.get_objects())
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(predicate, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T_SRC, FactKind T_DST>
-std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context)
+std::pair<GroundAtomView<T_DST>, bool> merge_atom_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context)
 {
     auto atom_ptr = context.builder.template get_builder<GroundAtom<T_DST>>();
     auto& atom = *atom_ptr;
     atom.clear();
 
-    const auto predicate_view = merge_d2p<T_SRC, T_DST>(element.get_relation(), context).first;
-    atom.predicate = predicate_view.get_index();
-    atom.row = merge_d2p(predicate_view, element, context).first.get_index().row;
+    atom.binding = merge_d2p<T_SRC, T_DST>(element, context).first.get_index();
 
     canonicalize(atom);
     return context.destination.get_or_create(atom);
@@ -144,9 +142,7 @@ std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::GroundAtomV
     auto& atom = *atom_ptr;
     atom.clear();
 
-    const auto predicate_view = merge_d2p<T_SRC, T_DST>(element.get_predicate(), context).first;
-    atom.predicate = predicate_view.get_index();
-    atom.row = merge_d2p(predicate_view, element.get_row(), context).first.get_index().row;
+    atom.binding = merge_d2p<T_SRC, T_DST>(element.get_row(), context).first.get_index();
 
     canonicalize(atom);
     return context.destination.get_or_create(atom);
@@ -212,17 +208,18 @@ std::pair<FunctionTermView<T>, bool> merge_d2p(formalism::datalog::FunctionTermV
 }
 
 template<FactKind T>
-std::pair<FunctionBindingView<T>, bool> merge_d2p(FunctionView<T> function, formalism::datalog::FunctionBindingView<T> element, MergePlanningContext& context)
+std::pair<FunctionBindingView<T>, bool> merge_d2p(formalism::datalog::FunctionBindingView<T> element, MergePlanningContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Function<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = merge_d2p(element.get_relation(), context).first.get_index();
     for (const auto object : element.get_objects())
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(function, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
@@ -232,9 +229,7 @@ std::pair<GroundFunctionTermView<T>, bool> merge_d2p(formalism::datalog::GroundF
     auto& fterm = *fterm_ptr;
     fterm.clear();
 
-    const auto function_view = merge_d2p(element.get_function(), context).first;
-    fterm.function = function_view.get_index();
-    fterm.row = merge_d2p(function_view, element.get_row(), context).first.get_index().row;
+    fterm.binding = merge_d2p(element.get_row(), context).first.get_index();
 
     canonicalize(fterm);
     return context.destination.get_or_create(fterm);

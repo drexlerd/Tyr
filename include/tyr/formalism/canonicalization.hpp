@@ -37,7 +37,11 @@ inline bool is_canonical(const Data<Variable>& data) { return true; }
 
 inline bool is_canonical(const Data<Object>& data) { return true; }
 
-inline bool is_canonical(const Data<Binding>& data) { return true; }
+template<typename Tag>
+bool is_canonical(const Data<RelationBinding<Tag>>& data)
+{
+    return true;
+}
 
 inline bool is_canonical(const Data<Term>& data) { return true; }
 
@@ -62,7 +66,8 @@ inline void canonicalize(Data<Object>& data)
     // Trivially canonical
 }
 
-inline void canonicalize(Data<Binding>& data)
+template<typename Tag>
+void canonicalize(Data<RelationBinding<Tag>>& data)
 {
     // Trivially canonical
 }

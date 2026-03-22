@@ -33,14 +33,14 @@ namespace tyr
 {
 
 template<typename Tag, typename C>
-class View<formalism::RelationBindingIndex<Tag>, C>
+class View<Index<formalism::RelationBinding<Tag>>, C>
 {
 private:
     const C* m_context;
-    formalism::RelationBindingIndex<Tag> m_handle;
+    Index<formalism::RelationBinding<Tag>> m_handle;
 
 public:
-    View(formalism::RelationBindingIndex<Tag> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
+    View(Index<formalism::RelationBinding<Tag>> handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
 
     // This will return an ArrayView aleady
     auto get_data() const noexcept { return get_repository(*m_context)[m_handle]; }
@@ -55,12 +55,12 @@ public:
 };
 
 template<typename Tag, std::ranges::forward_range BindingRange, typename C>
-    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Row>>
 class View<formalism::RelationBindingsForwardRange<Tag, BindingRange>, C>
 {
 public:
     using Container = formalism::RelationBindingsForwardRange<Tag, BindingRange>;
-    using T = formalism::RelationBindingIndex<Tag>;
+    using T = Index<formalism::RelationBinding<Tag>>;
     using I1 = Index<Tag>;
 
     View(Container handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}
@@ -139,13 +139,12 @@ private:
 };
 
 template<typename Tag, std::ranges::random_access_range BindingRange, typename C>
-    requires std::ranges::sized_range<BindingRange>
-             && std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+    requires std::ranges::sized_range<BindingRange> && std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Row>>
 class View<formalism::RelationBindingsRandomAccessRange<Tag, BindingRange>, C>
 {
 public:
     using Container = formalism::RelationBindingsRandomAccessRange<Tag, BindingRange>;
-    using T = formalism::RelationBindingIndex<Tag>;
+    using T = Index<formalism::RelationBinding<Tag>>;
     using I1 = Index<Tag>;
 
     View(Container handle, const C& context) noexcept : m_context(&context), m_handle(handle) {}

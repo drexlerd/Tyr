@@ -47,7 +47,6 @@ std::pair<FDRVariableView<FluentTag>, bool> merge_p2p(FDRVariableView<FluentTag>
     auto& variable = *variable_ptr;
     variable.clear();
 
-    variable.domain_size = element.get_domain_size();
     for (const auto atom : element.get_atoms())
         variable.atoms.push_back(merge_p2p(atom, context).first.get_index());
 
@@ -74,7 +73,6 @@ FDRContext::FDRContext(const std::vector<std::vector<GroundAtomView<FluentTag>>>
     for (const auto& group : mutexes)
     {
         variable.clear();
-        variable.domain_size = group.size() + 1;
         for (const auto& atom : group)
             variable.atoms.push_back(atom.get_index());
         canonicalize(variable);
@@ -112,7 +110,6 @@ Data<FDRFact<FluentTag>> FDRContext::get_fact(Index<GroundAtom<FluentTag>> atom)
 
     // Construct a new binary FDR variable
     m_builder.clear();
-    m_builder.domain_size = 2;
     m_builder.atoms.push_back(atom);
     canonicalize(m_builder);
     const auto var_index = m_context->get_or_create(m_builder).first.get_index();

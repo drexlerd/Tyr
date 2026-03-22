@@ -48,13 +48,8 @@ std::pair<formalism::datalog::PredicateView<T_DST>, bool> merge_p2d(PredicateVie
 template<FactKind T_SRC, FactKind T_DST = T_SRC>
 std::pair<formalism::datalog::AtomView<T_DST>, bool> merge_p2d(AtomView<T_SRC> element, MergeDatalogContext& context);
 
-template<FactKind T>
-std::pair<formalism::datalog::PredicateBindingView<T>, bool>
-merge_p2d(formalism::datalog::PredicateView<T> predicate, const IndexList<Object>& objects, MergeDatalogContext& context);
-
 template<FactKind T_SRC, FactKind T_DST = T_SRC>
-std::pair<formalism::datalog::PredicateBindingView<T_DST>, bool>
-merge_p2d(formalism::datalog::PredicateView<T_DST> predicate, PredicateBindingView<T_SRC> element, MergeDatalogContext& context);
+std::pair<formalism::datalog::PredicateBindingView<T_DST>, bool> merge_p2d(PredicateBindingView<T_SRC> element, MergeDatalogContext& context);
 
 template<FactKind T_SRC, FactKind T_DST = T_SRC>
 std::pair<formalism::datalog::GroundAtomView<T_DST>, bool> merge_p2d(GroundAtomView<T_SRC> element, MergeDatalogContext& context);
@@ -74,12 +69,7 @@ template<FactKind T>
 std::pair<formalism::datalog::FunctionTermView<T>, bool> merge_p2d(FunctionTermView<T> element, MergeDatalogContext& context);
 
 template<FactKind T>
-std::pair<formalism::datalog::FunctionBindingView<T>, bool>
-merge_p2d(formalism::datalog::FunctionView<T> function, const IndexList<Object>& objects, MergeDatalogContext& context);
-
-template<FactKind T>
-std::pair<formalism::datalog::FunctionBindingView<T>, bool>
-merge_p2d(formalism::datalog::FunctionView<T> function, FunctionBindingView<T> element, MergeDatalogContext& context);
+std::pair<formalism::datalog::FunctionBindingView<T>, bool> merge_p2d(FunctionBindingView<T> element, MergeDatalogContext& context);
 
 template<FactKind T>
 std::pair<formalism::datalog::GroundFunctionTermView<T>, bool> merge_p2d(GroundFunctionTermView<T> element, MergeDatalogContext& context);

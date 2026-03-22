@@ -34,20 +34,17 @@ template<>
 struct Data<formalism::planning::GroundAxiom>
 {
     Index<formalism::planning::GroundAxiom> index;
-    Index<formalism::planning::Axiom> axiom;
-    Index<formalism::Binding> row;
+    Index<formalism::RelationBinding<formalism::planning::Axiom>> binding;
     Index<formalism::planning::GroundConjunctiveCondition> body;
     Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head;
 
     Data() = default;
     Data(Index<formalism::planning::GroundAxiom> index,
-         Index<formalism::planning::Axiom> axiom,
-         Index<formalism::Binding> row,
+         Index<formalism::RelationBinding<formalism::planning::Axiom>> binding,
          Index<formalism::planning::GroundConjunctiveCondition> body,
          Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head) :
         index(index),
-        axiom(axiom),
-        row(row),
+        binding(binding),
         body(body),
         head(head)
     {
@@ -60,14 +57,13 @@ struct Data<formalism::planning::GroundAxiom>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(axiom);
-        tyr::clear(row);
+        tyr::clear(binding);
         tyr::clear(body);
         tyr::clear(head);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, axiom, row, body, head); }
-    auto identifying_members() const noexcept { return std::tie(axiom, row); }
+    auto cista_members() const noexcept { return std::tie(index, binding, body, head); }
+    auto identifying_members() const noexcept { return std::tie(binding); }
 };
 
 static_assert(uses_trivial_storage_v<formalism::planning::GroundAxiom>);

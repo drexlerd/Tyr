@@ -353,7 +353,7 @@ std::ostream& print(std::ostream& os, const formalism::planning::LiteralView<T>&
 template<formalism::FactKind T>
 std::ostream& print(std::ostream& os, const Data<formalism::planning::GroundAtom<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.predicate), to_string(el.row));
+    fmt::print(os, "({})", to_string(el.binding));
     return os;
 }
 
@@ -401,7 +401,7 @@ std::ostream& print(std::ostream& os, const formalism::planning::FunctionTermVie
 template<formalism::FactKind T>
 std::ostream& print(std::ostream& os, const Data<formalism::planning::GroundFunctionTerm<T>>& el)
 {
-    fmt::print(os, "({} {})", to_string(el.function), to_string(el.row));
+    fmt::print(os, "({})", to_string(el.binding));
     return os;
 }
 
@@ -559,8 +559,6 @@ std::ostream& print(std::ostream& os, const Data<formalism::planning::FDRVariabl
 
         os << print_indent << "index = " << el.index << "\n";
 
-        os << print_indent << "domain size = " << el.domain_size << "\n";
-
         os << print_indent << "atoms = " << el.atoms << "\n";
     }
     os << print_indent << ")";
@@ -576,8 +574,6 @@ std::ostream& print(std::ostream& os, const formalism::planning::FDRVariableView
         IndentScope scope(os);
 
         os << print_indent << "index = " << el.get_index() << "\n";
-
-        os << print_indent << "domain size = " << el.get_domain_size() << "\n";
 
         os << print_indent << "atoms = " << el.get_atoms() << "\n";
     }

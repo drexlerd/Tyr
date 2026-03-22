@@ -174,16 +174,16 @@ template class View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, fo
 template class View<Data<formalism::planning::FDRFact<formalism::DerivedTag>>, formalism::planning::Repository>;
 
 // Pair views
-template class View<formalism::RelationBindingIndex<formalism::Predicate<formalism::StaticTag>>, formalism::planning::Repository>;
-template class View<formalism::RelationBindingIndex<formalism::Predicate<formalism::FluentTag>>, formalism::planning::Repository>;
-template class View<formalism::RelationBindingIndex<formalism::Predicate<formalism::DerivedTag>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::Predicate<formalism::StaticTag>>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::Predicate<formalism::FluentTag>>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::Predicate<formalism::DerivedTag>>>, formalism::planning::Repository>;
 
-template class View<formalism::RelationBindingIndex<formalism::Function<formalism::StaticTag>>, formalism::planning::Repository>;
-template class View<formalism::RelationBindingIndex<formalism::Function<formalism::FluentTag>>, formalism::planning::Repository>;
-template class View<formalism::RelationBindingIndex<formalism::Function<formalism::AuxiliaryTag>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::Function<formalism::StaticTag>>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::Function<formalism::FluentTag>>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::Function<formalism::AuxiliaryTag>>>, formalism::planning::Repository>;
 
-template class View<formalism::RelationBindingIndex<formalism::planning::Action>, formalism::planning::Repository>;
-template class View<formalism::RelationBindingIndex<formalism::planning::Axiom>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::planning::Action>>, formalism::planning::Repository>;
+template class View<Index<formalism::RelationBinding<formalism::planning::Axiom>>, formalism::planning::Repository>;
 }
 
 #endif

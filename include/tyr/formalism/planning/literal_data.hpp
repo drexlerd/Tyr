@@ -34,8 +34,12 @@ struct Data<formalism::planning::Literal<T>>
     bool polarity;
 
     Data() = default;
-    Data(Index<formalism::planning::Literal<T>> index, Index<formalism::planning::Atom<T>> atom, bool polarity) : index(index), atom(atom), polarity(polarity)
+    Data(Index<formalism::planning::Atom<T>> atom_, bool polarity_) : index(), atom(atom_), polarity(polarity_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::planning::Atom<T>>, C> atom_, bool polarity_) : index(), atom(), polarity(polarity_)
     {
+        set(atom_, atom);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

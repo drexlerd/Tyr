@@ -429,7 +429,8 @@ void solve_bottom_up_for_stratum(StratumExecutionContext<OrAP, AndAP, TP>& ctx)
                     for (const auto worker_head_index : worker.iteration.head_rows)
                     {
                         const auto worker_head =
-                            make_view(f::RelationBindingIndex { worker.iteration.head_predicate, worker_head_index }, worker.solve.program_overlay_repository);
+                            make_view(Index<f::RelationBinding<f::Predicate<f::FluentTag>>> { worker.iteration.head_predicate, worker_head_index },
+                                      worker.solve.program_overlay_repository);
 
                         // Merge head from delta into the program
                         const auto program_head = fd::merge_d2d(worker_head, merge_context).first;

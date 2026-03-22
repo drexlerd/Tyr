@@ -282,7 +282,7 @@ std::ostream& print(std::ostream& os, const Data<formalism::planning::GroundActi
 
         os << print_indent << "index = " << el.index << "\n";
 
-        os << print_indent << "action index = " << el.action << "\n";
+        os << print_indent << "binding = " << el.binding << "\n";
 
         os << print_indent << "condition = " << el.condition << "\n";
 
@@ -370,7 +370,7 @@ std::ostream& print(std::ostream& os, const Data<formalism::planning::GroundAxio
 
         os << print_indent << "index = " << el.index << "\n";
 
-        os << print_indent << "axiom index = " << el.axiom << "\n";
+        os << print_indent << "binding = " << el.binding << "\n";
 
         os << print_indent << "body = " << el.body << "\n";
 

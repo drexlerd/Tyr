@@ -35,10 +35,11 @@ namespace tyr::formalism::datalog
 template<FactKind T>
 std::pair<FunctionBindingView<T>, bool> ground(TermListView terms, FunctionView<T> function, GrounderContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Function<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = function.get_index();
     for (const auto term : terms)
     {
         visit(
@@ -58,7 +59,7 @@ std::pair<FunctionBindingView<T>, bool> ground(TermListView terms, FunctionView<
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(function, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
@@ -70,8 +71,7 @@ std::pair<GroundFunctionTermView<T>, bool> ground(FunctionTermView<T> element, G
     fterm.clear();
 
     // Fill data
-    fterm.function = element.get_function().get_index();
-    fterm.row = ground(element.get_terms(), element.get_function(), context).first.get_index().row;
+    fterm.binding = ground(element.get_terms(), element.get_function(), context).first.get_index();
 
     // Canonicalize and Serialize
     canonicalize(fterm);
@@ -160,10 +160,11 @@ TYR_INLINE_IMPL Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground(
 template<FactKind T>
 std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateView<T> predicate, GrounderContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Predicate<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = predicate.get_index();
     for (const auto term : terms)
     {
         visit(
@@ -183,16 +184,17 @@ std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateVie
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(predicate, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
 std::pair<PredicateBindingView<T>, bool> ground_binding(AtomView<T> element, GrounderContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Predicate<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = element.get_predicate().get_index();
     for (const auto term : element.get_terms())
     {
         visit(
@@ -212,7 +214,7 @@ std::pair<PredicateBindingView<T>, bool> ground_binding(AtomView<T> element, Gro
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(element.get_predicate(), binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
@@ -224,8 +226,7 @@ std::pair<GroundAtomView<T>, bool> ground(AtomView<T> element, GrounderContext& 
     atom.clear();
 
     // Fill data
-    atom.predicate = element.get_predicate().get_index();
-    atom.row = ground(element.get_terms(), element.get_predicate(), context).first.get_index().row;
+    atom.binding = ground(element.get_terms(), element.get_predicate(), context).first.get_index();
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -271,7 +272,15 @@ TYR_INLINE_IMPL std::pair<GroundConjunctiveConditionView, bool> ground(Conjuncti
 
 TYR_INLINE_IMPL std::pair<RuleBindingView, bool> ground_binding(RuleView element, GrounderContext& context)
 {
-    return context.destination.get_or_create(element, context.binding);
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Rule>>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    binding.relation = element.get_index();
+    for (const auto object : context.binding)
+        binding.objects.push_back(object);
+
+    return context.destination.get_or_create(binding);
 }
 
 TYR_INLINE_IMPL std::pair<GroundRuleView, bool> ground(RuleView element, GrounderContext& context)
@@ -282,8 +291,7 @@ TYR_INLINE_IMPL std::pair<GroundRuleView, bool> ground(RuleView element, Grounde
     rule.clear();
 
     // Fill data
-    rule.rule = element.get_index();
-    rule.row = context.destination.get_or_create(element, context.binding).first.get_index().row;
+    rule.binding = ground_binding(element, context).first.get_index();
     rule.body = ground(element.get_body(), context).first.get_index();
     rule.head = ground(element.get_head(), context).first.get_index();
 

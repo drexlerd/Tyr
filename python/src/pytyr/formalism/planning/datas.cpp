@@ -54,12 +54,13 @@ void bind_term_builder(nb::module_& m, const std::string& name)
     add_hash(cls);
 }
 
-void bind_binding_builder(nb::module_& m, const std::string& name)
+template<typename Tag>
+void bind_relation_binding_builder(nb::module_& m, const std::string& name)
 {
-    using V = Data<Binding>;
+    using V = Data<RelationBinding<Tag>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<const ObjectViewList&>(), "objects"_a);
+                   .def(nb::init<View<Index<Tag>, Repository>, const ObjectViewList&>(), "relation"_a, "objects"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -92,9 +93,7 @@ void bind_ground_atom_builder(nb::module_& m, const std::string& name)
     using V = Data<GroundAtom<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("predicate", &V::predicate)
-                   .def_rw("row", &V::row);
+                   .def(nb::init<PredicateBindingView<T>>(), "binding"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -105,9 +104,7 @@ void bind_literal_builder(nb::module_& m, const std::string& name)
     using V = Data<Literal<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("atom", &V::atom)
-                   .def_rw("polarity", &V::polarity);
+                   .def(nb::init<AtomView<T>, bool>(), "atom"_a, "polarity"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -118,9 +115,7 @@ void bind_ground_literal_builder(nb::module_& m, const std::string& name)
     using V = Data<GroundLiteral<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("atom", &V::atom)
-                   .def_rw("polarity", &V::polarity);
+                   .def(nb::init<GroundAtomView<T>, bool>(), "atom"_a, "polarity"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -131,9 +126,7 @@ void bind_fdr_variable_builder(nb::module_& m, const std::string& name)
     using V = Data<FDRVariable<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("domain_size", &V::domain_size)
-                   .def_rw("atoms", &V::atoms);
+                   .def(nb::init<const GroundAtomViewList<T>>(), "atoms"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -144,9 +137,7 @@ void bind_fdr_fact_builder(nb::module_& m, const std::string& name)
     using V = Data<FDRFact<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("value", &V::value)
-                   .def_rw("variable", &V::variable);
+                   .def(nb::init<FDRVariableView<T>, FDRValue>(), "variable"_a, "value"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -168,9 +159,7 @@ void bind_function_term_builder(nb::module_& m, const std::string& name)
     using V = Data<FunctionTerm<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("function", &V::function)
-                   .def_rw("terms", &V::terms);
+                   .def(nb::init<FunctionView<T>, const TermViewList&>(), "function"_a, "terms"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -181,9 +170,7 @@ void bind_ground_function_term_builder(nb::module_& m, const std::string& name)
     using V = Data<GroundFunctionTerm<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("function", &V::function)
-                   .def_rw("row", &V::row);
+                   .def(nb::init<FunctionBindingView<T>>(), "binding"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -194,9 +181,7 @@ void bind_ground_function_term_value_builder(nb::module_& m, const std::string& 
     using V = Data<GroundFunctionTermValue<T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("fterm", &V::fterm)
-                   .def_rw("value", &V::value);
+                   .def(nb::init<GroundFunctionTermView<T>, float_t>(), "fterm"_a, "value"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -383,8 +368,7 @@ void bind_ground_action_builder(nb::module_& m, const std::string& name)
 
     auto cls = nb::class_<V>(m, name.c_str())  //
                    .def(nb::init<>())
-                   .def_rw("action", &V::action)
-                   .def_rw("row", &V::row)
+                   .def_rw("binding", &V::binding)
                    .def_rw("condition", &V::condition)
                    .def_rw("effects", &V::effects);
     add_print(cls);
@@ -397,8 +381,7 @@ void bind_ground_axiom_builder(nb::module_& m, const std::string& name)
 
     auto cls = nb::class_<V>(m, name.c_str())  //
                    .def(nb::init<>())
-                   .def_rw("axiom", &V::axiom)
-                   .def_rw("row", &V::row)
+                   .def_rw("binding", &V::binding)
                    .def_rw("body", &V::body)
                    .def_rw("head", &V::head);
     add_print(cls);
@@ -554,7 +537,14 @@ void bind_datas(nb::module_& m)
     bind_object_builder(m, "ObjectBuilder");
     bind_variable_builder(m, "VariableBuilder");
     bind_term_builder(m, "TermBuilder");
-    bind_binding_builder(m, "BindingBuilder");
+    bind_relation_binding_builder<Predicate<StaticTag>>(m, "StaticPredicateBindingBuilder");
+    bind_relation_binding_builder<Predicate<FluentTag>>(m, "FluentPredicateBindingBuilder");
+    bind_relation_binding_builder<Predicate<DerivedTag>>(m, "DerivedPredicateBindingBuilder");
+    bind_relation_binding_builder<Function<StaticTag>>(m, "StaticFunctionBindingBuilder");
+    bind_relation_binding_builder<Function<FluentTag>>(m, "FluentFunctionBindingBuilder");
+    bind_relation_binding_builder<Function<AuxiliaryTag>>(m, "AuxiliaryFunctionBindingBuilder");
+    bind_relation_binding_builder<Action>(m, "ActionBindingBuilder");
+    bind_relation_binding_builder<Axiom>(m, "AxiomBindingBuilder");
 
     bind_predicate_builder<StaticTag>(m, "StaticPredicateBuilder");
     bind_predicate_builder<FluentTag>(m, "FluentPredicateBuilder");

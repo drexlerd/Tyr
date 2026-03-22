@@ -35,11 +35,13 @@ struct Data<formalism::planning::FunctionTerm<T>>
     DataList<formalism::Term> terms;
 
     Data() = default;
-    Data(Index<formalism::planning::FunctionTerm<T>> index, Index<formalism::Function<T>> function, DataList<formalism::Term> terms) :
-        index(index),
-        function(function),
-        terms(std::move(terms))
+    Data(Index<formalism::Function<T>> function_, DataList<formalism::Term> terms_) : index(), function(function_), terms(std::move(terms_)) {}
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::Function<T>>, C> function_, const std::vector<View<Data<formalism::Term>, C>>& terms_) : index(), function(), terms()
     {
+        set(function_, function);
+        set(terms_, terms);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;

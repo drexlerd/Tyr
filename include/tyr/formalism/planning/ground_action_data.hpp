@@ -35,20 +35,17 @@ template<>
 struct Data<formalism::planning::GroundAction>
 {
     Index<formalism::planning::GroundAction> index;
-    Index<formalism::planning::Action> action;
-    Index<formalism::Binding> row;
+    Index<formalism::RelationBinding<formalism::planning::Action>> binding;
     Index<formalism::planning::GroundConjunctiveCondition> condition;
     IndexList<formalism::planning::GroundConditionalEffect> effects;
 
     Data() = default;
     Data(Index<formalism::planning::GroundAction> index,
-         Index<formalism::planning::Action> action,
-         Index<formalism::Binding> row,
+         Index<formalism::RelationBinding<formalism::planning::Action>> binding,
          Index<formalism::planning::GroundConjunctiveCondition> condition,
          IndexList<formalism::planning::GroundConditionalEffect> effects) :
         index(index),
-        action(action),
-        row(row),
+        binding(binding),
         condition(condition),
         effects(std::move(effects))
     {
@@ -61,15 +58,14 @@ struct Data<formalism::planning::GroundAction>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(action);
-        tyr::clear(row);
+        tyr::clear(binding);
         tyr::clear(condition);
         tyr::clear(effects);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, action, row, condition, effects); }
+    auto cista_members() const noexcept { return std::tie(index, binding, condition, effects); }
     // Have to include effects because row only binds objects to non-effect quantified variables.
-    auto identifying_members() const noexcept { return std::tie(action, row, condition, effects); }
+    auto identifying_members() const noexcept { return std::tie(binding, condition, effects); }
 };
 
 static_assert(!uses_trivial_storage_v<formalism::planning::GroundAction>);

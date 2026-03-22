@@ -57,7 +57,7 @@ void bind_term(nb::module_& m, const std::string& name)
 template<typename T>
 void bind_relation_binding(nb::module_& m, const std::string& name)
 {
-    using V = View<RelationBindingIndex<T>, Repository>;
+    using V = View<Index<RelationBinding<T>>, Repository>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
                    .def("get_index", &V::get_index)

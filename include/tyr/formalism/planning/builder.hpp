@@ -31,7 +31,14 @@ class Builder
 private:
     using BuilderStorage = std::tuple<BasicBuilder<formalism::Variable>,
                                       BasicBuilder<formalism::Object>,
-                                      BasicBuilder<formalism::Binding>,
+                                      BasicBuilder<RelationBinding<Predicate<StaticTag>>>,
+                                      BasicBuilder<RelationBinding<Predicate<FluentTag>>>,
+                                      BasicBuilder<RelationBinding<Predicate<DerivedTag>>>,
+                                      BasicBuilder<RelationBinding<Function<StaticTag>>>,
+                                      BasicBuilder<RelationBinding<Function<FluentTag>>>,
+                                      BasicBuilder<RelationBinding<Function<AuxiliaryTag>>>,
+                                      BasicBuilder<RelationBinding<Action>>,
+                                      BasicBuilder<RelationBinding<Axiom>>,
                                       BasicBuilder<formalism::Predicate<StaticTag>>,
                                       BasicBuilder<formalism::Predicate<FluentTag>>,
                                       BasicBuilder<formalism::Predicate<DerivedTag>>,
@@ -137,7 +144,14 @@ namespace tyr::formalism
 
 extern template class BasicBuilder<Variable>;
 extern template class BasicBuilder<Object>;
-extern template class BasicBuilder<Binding>;
+extern template class BasicBuilder<RelationBinding<Predicate<StaticTag>>>;
+extern template class BasicBuilder<RelationBinding<Predicate<FluentTag>>>;
+extern template class BasicBuilder<RelationBinding<Predicate<DerivedTag>>>;
+extern template class BasicBuilder<RelationBinding<Function<StaticTag>>>;
+extern template class BasicBuilder<RelationBinding<Function<FluentTag>>>;
+extern template class BasicBuilder<RelationBinding<Function<AuxiliaryTag>>>;
+extern template class BasicBuilder<RelationBinding<planning::Action>>;
+extern template class BasicBuilder<RelationBinding<planning::Axiom>>;
 
 extern template class BasicBuilder<formalism::Predicate<StaticTag>>;
 extern template class BasicBuilder<formalism::Predicate<FluentTag>>;

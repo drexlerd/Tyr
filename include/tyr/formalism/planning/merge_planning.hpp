@@ -51,14 +51,13 @@ template<FactKind T_SRC, FactKind T_DST>
 std::pair<AtomView<T_DST>, bool> merge_d2p(formalism::datalog::AtomView<T_SRC> element, MergePlanningContext& context);
 
 template<FactKind T_SRC, FactKind T_DST>
-std::pair<PredicateBindingView<T_DST>, bool>
-merge_d2p(PredicateView<T_DST> predicate, formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context);
+std::pair<PredicateBindingView<T_DST>, bool> merge_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context);
+
+template<FactKind T_SRC, FactKind T_DST>
+std::pair<GroundAtomView<T_DST>, bool> merge_atom_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context);
 
 template<FactKind T_SRC, FactKind T_DST>
 std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::GroundAtomView<T_SRC> element, MergePlanningContext& context);
-
-template<FactKind T_SRC, FactKind T_DST>
-std::pair<GroundAtomView<T_DST>, bool> merge_d2p(formalism::datalog::PredicateBindingView<T_SRC> element, MergePlanningContext& context);
 
 template<FactKind T_SRC, FactKind T_DST>
 std::pair<LiteralView<T_DST>, bool> merge_d2p(formalism::datalog::LiteralView<T_SRC> element, MergePlanningContext& context);
@@ -75,7 +74,7 @@ template<FactKind T>
 std::pair<FunctionTermView<T>, bool> merge_d2p(formalism::datalog::FunctionTermView<T> element, MergePlanningContext& context);
 
 template<FactKind T>
-std::pair<FunctionBindingView<T>, bool> merge_d2p(FunctionView<T> function, formalism::datalog::FunctionBindingView<T> element, MergePlanningContext& context);
+std::pair<FunctionBindingView<T>, bool> merge_d2p(formalism::datalog::FunctionBindingView<T> element, MergePlanningContext& context);
 
 template<FactKind T>
 std::pair<GroundFunctionTermView<T>, bool> merge_d2p(formalism::datalog::GroundFunctionTermView<T> element, MergePlanningContext& context);

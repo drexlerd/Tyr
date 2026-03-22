@@ -26,19 +26,19 @@
 
 namespace tyr
 {
-// Only used to fetch temporaries from a Builder class to construct RelationBindings.
-template<>
-struct Data<formalism::Binding>
+template<typename T>
+struct Data<formalism::RelationBinding<T>>
 {
-    Index<formalism::Binding> index;
+    Index<T> relation;
     IndexList<formalism::Object> objects;
 
     Data() = default;
-    Data(IndexList<formalism::Object> objects_) : index(), objects(std::move(objects)) {}
+    Data(Index<T> relation_, size_t arity_, IndexList<formalism::Object> objects_) : relation(relation_), objects(std::move(objects_)) {}
     // Python constructor
     template<typename C>
-    Data(const std::vector<View<Index<formalism::Object>, C>>& objects_) : index(), objects()
+    Data(View<Index<T>, C> relation_, const std::vector<View<Index<formalism::Object>, C>>& objects_) : relation(), objects()
     {
+        set(relation_, relation);
         set(objects_, objects);
     }
     Data(const Data& other) = delete;
@@ -48,15 +48,13 @@ struct Data<formalism::Binding>
 
     void clear() noexcept
     {
-        tyr::clear(index);
+        tyr::clear(relation);
         tyr::clear(objects);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, objects); }
-    auto identifying_members() const noexcept { return std::tie(objects); }
+    auto cista_members() const noexcept { return std::tie(relation, objects); }
+    auto identifying_members() const noexcept { return std::tie(relation, objects); }
 };
-
-static_assert(!uses_trivial_storage_v<formalism::Binding>);
 
 }
 

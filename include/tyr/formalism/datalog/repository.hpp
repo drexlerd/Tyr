@@ -137,15 +137,15 @@ template<formalism::OpKind Op>
 using GroundBinaryOperatorListView = View<IndexList<BinaryOperator<Op, Data<GroundFunctionExpression>>>, Repository>;
 
 template<FactKind T>
-using PredicateBindingView = View<RelationBindingIndex<Predicate<T>>, Repository>;
+using PredicateBindingView = View<Index<RelationBinding<Predicate<T>>>, Repository>;
 template<FactKind T>
-using FunctionBindingView = View<RelationBindingIndex<Function<T>>, Repository>;
-using RuleBindingView = View<RelationBindingIndex<Rule>, Repository>;
+using FunctionBindingView = View<Index<RelationBinding<Function<T>>>, Repository>;
+using RuleBindingView = View<Index<RelationBinding<Rule>>, Repository>;
 
 template<FactKind T>
-using PredicateBindingForwardRangeView = View<RelationBindingsForwardRange<Predicate<T>, std::vector<Index<Binding>>>, Repository>;
+using PredicateBindingForwardRangeView = View<RelationBindingsForwardRange<Predicate<T>, std::vector<Index<Row>>>, Repository>;
 template<FactKind T>
-using FunctionBindingRandomAccessRangeView = View<RelationBindingsRandomAccessRange<Function<T>, std::vector<Index<Binding>>>, Repository>;
+using FunctionBindingRandomAccessRangeView = View<RelationBindingsRandomAccessRange<Function<T>, std::vector<Index<Row>>>, Repository>;
 
 template<typename T>
 using BooleanOperatorView = View<Data<BooleanOperator<T>>, Repository>;
@@ -294,7 +294,6 @@ extern template class BasicRelationRepository<datalog::Rule>;
 // BasicSymbolRepository
 extern template class BasicSymbolRepository<Variable>;
 extern template class BasicSymbolRepository<Object>;
-extern template class BasicSymbolRepository<Binding>;
 extern template class BasicSymbolRepository<Predicate<StaticTag>>;
 extern template class BasicSymbolRepository<Predicate<FluentTag>>;
 extern template class BasicSymbolRepository<datalog::Atom<StaticTag>>;
@@ -358,7 +357,6 @@ namespace tyr
 
 extern template class View<Index<formalism::Variable>, formalism::datalog::Repository>;
 extern template class View<Index<formalism::Object>, formalism::datalog::Repository>;
-extern template class View<Index<formalism::Binding>, formalism::datalog::Repository>;
 
 extern template class View<Index<formalism::Predicate<formalism::StaticTag>>, formalism::datalog::Repository>;
 extern template class View<Index<formalism::Predicate<formalism::FluentTag>>, formalism::datalog::Repository>;
@@ -463,13 +461,13 @@ extern template class View<Index<formalism::datalog::Program>, formalism::datalo
 
 extern template class View<Data<formalism::Term>, formalism::datalog::Repository>;
 
-extern template class View<formalism::RelationBindingIndex<formalism::Predicate<formalism::StaticTag>>, formalism::datalog::Repository>;
-extern template class View<formalism::RelationBindingIndex<formalism::Predicate<formalism::FluentTag>>, formalism::datalog::Repository>;
+extern template class View<Index<formalism::RelationBinding<formalism::Predicate<formalism::StaticTag>>>, formalism::datalog::Repository>;
+extern template class View<Index<formalism::RelationBinding<formalism::Predicate<formalism::FluentTag>>>, formalism::datalog::Repository>;
 
-extern template class View<formalism::RelationBindingIndex<formalism::Function<formalism::StaticTag>>, formalism::datalog::Repository>;
-extern template class View<formalism::RelationBindingIndex<formalism::Function<formalism::FluentTag>>, formalism::datalog::Repository>;
+extern template class View<Index<formalism::RelationBinding<formalism::Function<formalism::StaticTag>>>, formalism::datalog::Repository>;
+extern template class View<Index<formalism::RelationBinding<formalism::Function<formalism::FluentTag>>>, formalism::datalog::Repository>;
 
-extern template class View<formalism::RelationBindingIndex<formalism::datalog::Rule>, formalism::datalog::Repository>;
+extern template class View<Index<formalism::RelationBinding<formalism::datalog::Rule>>, formalism::datalog::Repository>;
 
 #endif
 }

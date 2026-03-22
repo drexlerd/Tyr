@@ -31,19 +31,17 @@ template std::pair<AtomView<StaticTag>, bool> merge_d2p(formalism::datalog::Atom
 template std::pair<AtomView<FluentTag>, bool> merge_d2p(formalism::datalog::AtomView<FluentTag> element, MergePlanningContext& context);
 template std::pair<AtomView<DerivedTag>, bool> merge_d2p(formalism::datalog::AtomView<FluentTag> element, MergePlanningContext& context);
 
-template std::pair<GroundAtomView<StaticTag>, bool> merge_d2p<StaticTag, StaticTag>(formalism::datalog::PredicateBindingView<StaticTag> element,
-                                                                                    MergePlanningContext& context);
-template std::pair<GroundAtomView<FluentTag>, bool> merge_d2p<FluentTag, FluentTag>(formalism::datalog::PredicateBindingView<FluentTag> element,
-                                                                                    MergePlanningContext& context);
-template std::pair<GroundAtomView<DerivedTag>, bool> merge_d2p<FluentTag, DerivedTag>(formalism::datalog::PredicateBindingView<FluentTag> element,
-                                                                                      MergePlanningContext& context);
+template std::pair<PredicateBindingView<StaticTag>, bool> merge_d2p(formalism::datalog::PredicateBindingView<StaticTag> element, MergePlanningContext& context);
+template std::pair<PredicateBindingView<FluentTag>, bool> merge_d2p(formalism::datalog::PredicateBindingView<FluentTag> element, MergePlanningContext& context);
+template std::pair<PredicateBindingView<DerivedTag>, bool> merge_d2p(formalism::datalog::PredicateBindingView<FluentTag> element,
+                                                                     MergePlanningContext& context);
 
-template std::pair<PredicateBindingView<StaticTag>, bool>
-merge_d2p(PredicateView<StaticTag> predicate, formalism::datalog::PredicateBindingView<StaticTag> element, MergePlanningContext& context);
-template std::pair<PredicateBindingView<FluentTag>, bool>
-merge_d2p(PredicateView<FluentTag> predicate, formalism::datalog::PredicateBindingView<FluentTag> element, MergePlanningContext& context);
-template std::pair<PredicateBindingView<DerivedTag>, bool>
-merge_d2p(PredicateView<DerivedTag> predicate, formalism::datalog::PredicateBindingView<FluentTag> element, MergePlanningContext& context);
+template std::pair<GroundAtomView<StaticTag>, bool> merge_atom_d2p<StaticTag, StaticTag>(formalism::datalog::PredicateBindingView<StaticTag> element,
+                                                                                         MergePlanningContext& context);
+template std::pair<GroundAtomView<FluentTag>, bool> merge_atom_d2p<FluentTag, FluentTag>(formalism::datalog::PredicateBindingView<FluentTag> element,
+                                                                                         MergePlanningContext& context);
+template std::pair<GroundAtomView<DerivedTag>, bool> merge_atom_d2p<FluentTag, DerivedTag>(formalism::datalog::PredicateBindingView<FluentTag> element,
+                                                                                           MergePlanningContext& context);
 
 template std::pair<GroundAtomView<StaticTag>, bool> merge_d2p(formalism::datalog::GroundAtomView<StaticTag> element, MergePlanningContext& context);
 template std::pair<GroundAtomView<FluentTag>, bool> merge_d2p(formalism::datalog::GroundAtomView<FluentTag> element, MergePlanningContext& context);
@@ -65,10 +63,8 @@ template std::pair<FunctionView<FluentTag>, bool> merge_d2p(formalism::datalog::
 template std::pair<FunctionTermView<StaticTag>, bool> merge_d2p(formalism::datalog::FunctionTermView<StaticTag> element, MergePlanningContext& context);
 template std::pair<FunctionTermView<FluentTag>, bool> merge_d2p(formalism::datalog::FunctionTermView<FluentTag> element, MergePlanningContext& context);
 
-template std::pair<FunctionBindingView<StaticTag>, bool>
-merge_d2p(FunctionView<StaticTag> function, formalism::datalog::FunctionBindingView<StaticTag> element, MergePlanningContext& context);
-template std::pair<FunctionBindingView<FluentTag>, bool>
-merge_d2p(FunctionView<FluentTag> function, formalism::datalog::FunctionBindingView<FluentTag> element, MergePlanningContext& context);
+template std::pair<FunctionBindingView<StaticTag>, bool> merge_d2p(formalism::datalog::FunctionBindingView<StaticTag> element, MergePlanningContext& context);
+template std::pair<FunctionBindingView<FluentTag>, bool> merge_d2p(formalism::datalog::FunctionBindingView<FluentTag> element, MergePlanningContext& context);
 
 template std::pair<GroundFunctionTermView<StaticTag>, bool> merge_d2p(formalism::datalog::GroundFunctionTermView<StaticTag> element,
                                                                       MergePlanningContext& context);

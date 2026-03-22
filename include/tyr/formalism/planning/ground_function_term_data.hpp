@@ -32,15 +32,15 @@ template<formalism::FactKind T>
 struct Data<formalism::planning::GroundFunctionTerm<T>>
 {
     Index<formalism::planning::GroundFunctionTerm<T>> index;
-    Index<formalism::Function<T>> function;
-    Index<formalism::Binding> row;
+    Index<formalism::RelationBinding<formalism::Function<T>>> binding;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundFunctionTerm<T>> index, Index<formalism::Function<T>> function, Index<formalism::Binding> row) :
-        index(index),
-        function(function),
-        row(row)
+    Data(Index<formalism::RelationBinding<formalism::Function<T>>> binding_) : index(), binding(binding_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::RelationBinding<formalism::Function<T>>>, C> binding_) : index(), binding()
     {
+        set(binding_, binding);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;
@@ -50,12 +50,11 @@ struct Data<formalism::planning::GroundFunctionTerm<T>>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(function);
-        tyr::clear(row);
+        tyr::clear(binding);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, function, row); }
-    auto identifying_members() const noexcept { return std::tie(function, row); }
+    auto cista_members() const noexcept { return std::tie(index, binding); }
+    auto identifying_members() const noexcept { return std::tie(binding); }
 };
 
 static_assert(uses_trivial_storage_v<formalism::planning::GroundFunctionTerm<formalism::StaticTag>>);

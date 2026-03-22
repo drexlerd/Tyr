@@ -27,26 +27,27 @@
 namespace tyr
 {
 template<>
-struct Index<formalism::Binding> : IndexMixin<Index<formalism::Binding>>
+struct Index<formalism::Row> : IndexMixin<Index<formalism::Row>>
 {
     // Inherit constructors
-    using Base = IndexMixin<Index<formalism::Binding>>;
+    using Base = IndexMixin<Index<formalism::Row>>;
     using Base::Base;
 };
 
-namespace formalism
-{
 template<typename Tag>
-struct RelationBindingIndex
+struct Index<formalism::RelationBinding<Tag>>
 {
     Index<Tag> relation;
-    Index<Binding> row;
+    Index<formalism::Row> row;
 
     auto identifying_members() const noexcept { return std::tie(relation, row); }
 };
 
+namespace formalism
+{
+
 template<typename Tag, std::ranges::forward_range BindingRange>
-    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Row>>
 struct RelationBindingsForwardRange
 {
     const Index<Tag>& relation;
@@ -54,7 +55,7 @@ struct RelationBindingsForwardRange
 };
 
 template<typename Tag, std::ranges::random_access_range BindingRange>
-    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Binding>>
+    requires std::same_as<std::remove_cvref_t<std::ranges::range_reference_t<BindingRange>>, Index<formalism::Row>>
 struct RelationBindingsRandomAccessRange
 {
     const Index<Tag>& relation;

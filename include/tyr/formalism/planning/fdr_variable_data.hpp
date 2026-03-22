@@ -30,15 +30,15 @@ template<formalism::FactKind T>
 struct Data<formalism::planning::FDRVariable<T>>
 {
     Index<formalism::planning::FDRVariable<T>> index;
-    uint_t domain_size;
     IndexList<formalism::planning::GroundAtom<T>> atoms;
 
     Data() = default;
-    Data(Index<formalism::planning::FDRVariable<T>> index, uint_t domain_size, IndexList<formalism::planning::GroundAtom<T>> atoms) :
-        index(index),
-        domain_size(domain_size),
-        atoms(std::move(atoms))
+    Data(IndexList<formalism::planning::GroundAtom<T>> atoms_) : index(), atoms(std::move(atoms_)) {}
+    // Python constructor
+    template<typename C>
+    Data(const std::vector<View<Index<formalism::planning::GroundAtom<T>>, C>>& atoms_) : index(), atoms()
     {
+        set(atoms_, atoms);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
@@ -48,12 +48,11 @@ struct Data<formalism::planning::FDRVariable<T>>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(domain_size);
         tyr::clear(atoms);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, domain_size, atoms); }
-    auto identifying_members() const noexcept { return std::tie(domain_size, atoms); }
+    auto cista_members() const noexcept { return std::tie(index, atoms); }
+    auto identifying_members() const noexcept { return std::tie(atoms); }
 };
 
 static_assert(!uses_trivial_storage_v<formalism::planning::FDRVariable<formalism::StaticTag>>);

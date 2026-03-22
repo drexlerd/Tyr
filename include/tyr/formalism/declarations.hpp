@@ -122,15 +122,33 @@ struct Object
 {
 };
 
-struct Binding
+struct Row
 {
 };
 
-// TODO: rename to Binding and get rid of the old one.
 template<typename T>
 struct RelationBinding
 {
 };
+
+template<typename T>
+struct is_relation_binding : std::false_type
+{
+};
+
+template<typename T>
+struct is_relation_binding<RelationBinding<T>> : std::true_type
+{
+};
+
+template<typename T>
+inline constexpr bool is_relation_binding_v = is_relation_binding<std::remove_cvref_t<T>>::value;
+
+template<typename T>
+concept RelationBindingConcept = is_relation_binding_v<T>;
+
+template<typename T>
+concept NonRelationBindingConcept = !RelationBindingConcept<T>;
 
 struct Term
 {

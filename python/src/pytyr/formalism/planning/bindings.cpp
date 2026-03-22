@@ -98,31 +98,25 @@ void bind_module_definitions(nb::module_& m)
         .def("get_or_create", nb::overload_cast<Data<Object>&>(&Repository::get_or_create<Object>), "builder"_a)
         .def("get_or_create", nb::overload_cast<Data<Variable>&>(&Repository::get_or_create<Variable>), "builder"_a)
         .def("get_or_create",
-             nb::overload_cast<PredicateView<StaticTag>, const IndexList<Object>&>(&Repository::get_or_create<Predicate<StaticTag>>),
-             "predicate"_a,
-             "object_indices"_a)
+             nb::overload_cast<const Data<RelationBinding<Predicate<StaticTag>>>&>(&Repository::get_or_create<Predicate<StaticTag>>),
+             "builder"_a)
         .def("get_or_create",
-             nb::overload_cast<PredicateView<FluentTag>, const IndexList<Object>&>(&Repository::get_or_create<Predicate<FluentTag>>),
-             "predicate"_a,
-             "object_indices"_a)
+             nb::overload_cast<const Data<RelationBinding<Predicate<FluentTag>>>&>(&Repository::get_or_create<Predicate<FluentTag>>),
+             "builder"_a)
         .def("get_or_create",
-             nb::overload_cast<PredicateView<DerivedTag>, const IndexList<Object>&>(&Repository::get_or_create<Predicate<DerivedTag>>),
-             "predicate"_a,
-             "object_indices"_a)
+             nb::overload_cast<const Data<RelationBinding<Predicate<DerivedTag>>>&>(&Repository::get_or_create<Predicate<DerivedTag>>),
+             "builder"_a)
         .def("get_or_create",
-             nb::overload_cast<FunctionView<StaticTag>, const IndexList<Object>&>(&Repository::get_or_create<Function<StaticTag>>),
-             "function"_a,
-             "object_indices"_a)
+             nb::overload_cast<const Data<RelationBinding<Function<StaticTag>>>&>(&Repository::get_or_create<Function<StaticTag>>),
+             "builder"_a)
         .def("get_or_create",
-             nb::overload_cast<FunctionView<FluentTag>, const IndexList<Object>&>(&Repository::get_or_create<Function<FluentTag>>),
-             "function"_a,
-             "object_indices"_a)
+             nb::overload_cast<const Data<RelationBinding<Function<FluentTag>>>&>(&Repository::get_or_create<Function<FluentTag>>),
+             "builder"_a)
         .def("get_or_create",
-             nb::overload_cast<FunctionView<AuxiliaryTag>, const IndexList<Object>&>(&Repository::get_or_create<Function<AuxiliaryTag>>),
-             "function"_a,
-             "object_indices"_a)
-        .def("get_or_create", nb::overload_cast<ActionView, const IndexList<Object>&>(&Repository::get_or_create<Action>), "action"_a, "object_indices"_a)
-        .def("get_or_create", nb::overload_cast<AxiomView, const IndexList<Object>&>(&Repository::get_or_create<Axiom>), "axiom"_a, "object_indices"_a)
+             nb::overload_cast<const Data<RelationBinding<Function<AuxiliaryTag>>>&>(&Repository::get_or_create<Function<AuxiliaryTag>>),
+             "builder"_a)
+        .def("get_or_create", nb::overload_cast<const Data<RelationBinding<Action>>&>(&Repository::get_or_create<Action>), "builder"_a)
+        .def("get_or_create", nb::overload_cast<const Data<RelationBinding<Axiom>>&>(&Repository::get_or_create<Axiom>), "builder"_a)
         .def("get_or_create", nb::overload_cast<Data<Predicate<StaticTag>>&>(&Repository::get_or_create<Predicate<StaticTag>>), "builder"_a)
         .def("get_or_create", nb::overload_cast<Data<Predicate<FluentTag>>&>(&Repository::get_or_create<Predicate<FluentTag>>), "builder"_a)
         .def("get_or_create", nb::overload_cast<Data<Predicate<DerivedTag>>&>(&Repository::get_or_create<Predicate<DerivedTag>>), "builder"_a)

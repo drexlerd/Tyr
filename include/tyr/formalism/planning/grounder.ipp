@@ -35,10 +35,11 @@ namespace tyr::formalism::planning
 template<FactKind T>
 std::pair<FunctionBindingView<T>, bool> ground(TermListView terms, FunctionView<T> function, GrounderContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Function<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = function.get_index();
     for (const auto term : terms)
     {
         visit(
@@ -58,7 +59,7 @@ std::pair<FunctionBindingView<T>, bool> ground(TermListView terms, FunctionView<
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(function, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
@@ -70,8 +71,7 @@ std::pair<GroundFunctionTermView<T>, bool> ground(FunctionTermView<T> element, G
     fterm.clear();
 
     // Fill data
-    fterm.function = element.get_function().get_index();
-    fterm.row = ground(element.get_terms(), element.get_function(), context).first.get_index().row;
+    fterm.binding = ground(element.get_terms(), element.get_function(), context).first.get_index();
 
     // Canonicalize and Serialize
     canonicalize(fterm);
@@ -160,10 +160,11 @@ TYR_INLINE_IMPL Data<ArithmeticOperator<Data<GroundFunctionExpression>>> ground(
 template<FactKind T>
 std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateView<T> predicate, GrounderContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Predicate<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = predicate.get_index();
     for (const auto term : terms)
     {
         visit(
@@ -183,7 +184,7 @@ std::pair<PredicateBindingView<T>, bool> ground(TermListView terms, PredicateVie
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(predicate, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
@@ -195,8 +196,7 @@ std::pair<GroundAtomView<T>, bool> ground(AtomView<T> element, GrounderContext& 
     atom.clear();
 
     // Fill data
-    atom.predicate = element.get_predicate().get_index();
-    atom.row = ground(element.get_terms(), element.get_predicate(), context).first.get_index().row;
+    atom.binding = ground(element.get_terms(), element.get_predicate(), context).first.get_index();
 
     // Canonicalize and Serialize
     canonicalize(atom);
@@ -337,16 +337,17 @@ ground(ConditionalEffectView element, GrounderContext& context, UnorderedMap<Ind
 
 TYR_INLINE_IMPL std::pair<ActionBindingView, bool> ground(ActionView action, GrounderContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Action>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = action.get_index();
     for (uint_t i = 0; i < action.get_arity(); ++i)
         binding.objects.push_back(context.binding[i]);
 
     // Canonicalize and Serialize
     canonicalize(binding);
-    return context.destination.get_or_create(action, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 TYR_INLINE_IMPL std::pair<GroundActionView, bool> ground(ActionView element,
@@ -362,8 +363,7 @@ TYR_INLINE_IMPL std::pair<GroundActionView, bool> ground(ActionView element,
     action.clear();
 
     // Fill data
-    action.action = element.get_index();
-    action.row = ground(element, context).first.get_index().row;
+    action.binding = ground(element, context).first.get_index();
     action.condition = ground(element.get_condition(), context, fdr).first.get_index();
 
     auto binding_size = context.binding.size();
@@ -395,6 +395,21 @@ TYR_INLINE_IMPL std::pair<GroundActionView, bool> ground(ActionView element,
     return context.destination.get_or_create(action);
 }
 
+TYR_INLINE_IMPL std::pair<AxiomBindingView, bool> ground(AxiomView axiom, GrounderContext& context)
+{
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Axiom>>();
+    auto& binding = *binding_ptr;
+    binding.clear();
+
+    binding.relation = axiom.get_index();
+    for (uint_t i = 0; i < axiom.get_arity(); ++i)
+        binding.objects.push_back(context.binding[i]);
+
+    // Canonicalize and Serialize
+    canonicalize(binding);
+    return context.destination.get_or_create(binding);
+}
+
 TYR_INLINE_IMPL std::pair<GroundAxiomView, bool> ground(AxiomView element, GrounderContext& context, FDRContext& fdr)
 {
     // Fetch and clear
@@ -403,8 +418,7 @@ TYR_INLINE_IMPL std::pair<GroundAxiomView, bool> ground(AxiomView element, Groun
     axiom.clear();
 
     // Fill data
-    axiom.axiom = element.get_index();
-    axiom.row = context.destination.get_or_create(element, context.binding).first.get_index().row;
+    axiom.binding = ground(element, context).first.get_index();
     axiom.body = ground(element.get_body(), context, fdr).first.get_index();
     axiom.head = ground(element.get_head(), context).first.get_index();
 

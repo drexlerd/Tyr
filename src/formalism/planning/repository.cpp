@@ -34,7 +34,6 @@ template class BasicRelationRepository<planning::Axiom>;
 // BasicSymbolRepository
 template class BasicSymbolRepository<Variable>;
 template class BasicSymbolRepository<Object>;
-template class BasicSymbolRepository<Binding>;
 template class BasicSymbolRepository<Predicate<StaticTag>>;
 template class BasicSymbolRepository<Predicate<FluentTag>>;
 template class BasicSymbolRepository<Predicate<DerivedTag>>;

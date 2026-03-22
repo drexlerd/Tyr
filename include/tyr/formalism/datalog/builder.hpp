@@ -31,7 +31,11 @@ class Builder
 private:
     using BuilderStorage = std::tuple<BasicBuilder<Variable>,
                                       BasicBuilder<Object>,
-                                      BasicBuilder<Binding>,
+                                      BasicBuilder<RelationBinding<Predicate<StaticTag>>>,
+                                      BasicBuilder<RelationBinding<Predicate<FluentTag>>>,
+                                      BasicBuilder<RelationBinding<Function<StaticTag>>>,
+                                      BasicBuilder<RelationBinding<Function<FluentTag>>>,
+                                      BasicBuilder<RelationBinding<Rule>>,
                                       BasicBuilder<Predicate<StaticTag>>,
                                       BasicBuilder<Predicate<FluentTag>>,
                                       BasicBuilder<Atom<StaticTag>>,
@@ -104,7 +108,11 @@ namespace tyr::formalism
 
 extern template class BasicBuilder<Variable>;
 extern template class BasicBuilder<Object>;
-extern template class BasicBuilder<Binding>;
+extern template class BasicBuilder<RelationBinding<Predicate<StaticTag>>>;
+extern template class BasicBuilder<RelationBinding<Predicate<FluentTag>>>;
+extern template class BasicBuilder<RelationBinding<Function<StaticTag>>>;
+extern template class BasicBuilder<RelationBinding<Function<FluentTag>>>;
+extern template class BasicBuilder<RelationBinding<datalog::Rule>>;
 
 extern template class BasicBuilder<Predicate<StaticTag>>;
 extern template class BasicBuilder<Predicate<FluentTag>>;

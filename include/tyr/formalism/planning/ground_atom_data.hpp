@@ -32,20 +32,15 @@ template<formalism::FactKind T>
 struct Data<formalism::planning::GroundAtom<T>>
 {
     Index<formalism::planning::GroundAtom<T>> index;
-    Index<formalism::Predicate<T>> predicate;
-    Index<formalism::Binding> row;
+    Index<formalism::RelationBinding<formalism::Predicate<T>>> binding;
 
     Data() = default;
-    Data(Index<formalism::Predicate<T>> predicate_, Index<formalism::Binding> row_) : index(), predicate(predicate_), row(row_) {}
+    Data(Index<formalism::RelationBinding<formalism::Predicate<T>>> binding_) : index(), binding(binding_) {}
     // Python constructor
     template<typename C>
-    Data(View<Index<formalism::Predicate<T>>, C> predicate_, View<formalism::RelationBindingIndex<formalism::Predicate<T>>, C> row_) :
-        index(),
-        predicate(),
-        row()
+    Data(View<Index<formalism::RelationBinding<formalism::Predicate<T>>>, C> binding_) : index(), binding()
     {
-        // set(predicate_, predicate);
-        // set(terms_, terms);
+        set(binding_, binding);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;
@@ -55,12 +50,11 @@ struct Data<formalism::planning::GroundAtom<T>>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(predicate);
-        tyr::clear(row);
+        tyr::clear(binding);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, predicate, row); }
-    auto identifying_members() const noexcept { return std::tie(predicate, row); }
+    auto cista_members() const noexcept { return std::tie(index, binding); }
+    auto identifying_members() const noexcept { return std::tie(binding); }
 };
 
 static_assert(uses_trivial_storage_v<formalism::planning::GroundAtom<formalism::StaticTag>>);

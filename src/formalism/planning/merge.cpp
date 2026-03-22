@@ -23,19 +23,13 @@
 namespace tyr::formalism::planning
 {
 
-template std::pair<PredicateBindingView<StaticTag>, bool>
-merge_p2p(PredicateView<StaticTag> predicate, PredicateBindingView<StaticTag> element, MergeContext& context);
-template std::pair<PredicateBindingView<FluentTag>, bool>
-merge_p2p(PredicateView<FluentTag> predicate, PredicateBindingView<FluentTag> element, MergeContext& context);
-template std::pair<PredicateBindingView<DerivedTag>, bool>
-merge_p2p(PredicateView<DerivedTag> predicate, PredicateBindingView<DerivedTag> element, MergeContext& context);
+template std::pair<PredicateBindingView<StaticTag>, bool> merge_p2p(PredicateBindingView<StaticTag> element, MergeContext& context);
+template std::pair<PredicateBindingView<FluentTag>, bool> merge_p2p(PredicateBindingView<FluentTag> element, MergeContext& context);
+template std::pair<PredicateBindingView<DerivedTag>, bool> merge_p2p(PredicateBindingView<DerivedTag> element, MergeContext& context);
 
-template std::pair<FunctionBindingView<StaticTag>, bool>
-merge_p2p(FunctionView<StaticTag> function, FunctionBindingView<StaticTag> element, MergeContext& context);
-template std::pair<FunctionBindingView<FluentTag>, bool>
-merge_p2p(FunctionView<FluentTag> function, FunctionBindingView<FluentTag> element, MergeContext& context);
-template std::pair<FunctionBindingView<AuxiliaryTag>, bool>
-merge_p2p(FunctionView<AuxiliaryTag> function, FunctionBindingView<AuxiliaryTag> element, MergeContext& context);
+template std::pair<FunctionBindingView<StaticTag>, bool> merge_p2p(FunctionBindingView<StaticTag> element, MergeContext& context);
+template std::pair<FunctionBindingView<FluentTag>, bool> merge_p2p(FunctionBindingView<FluentTag> element, MergeContext& context);
+template std::pair<FunctionBindingView<AuxiliaryTag>, bool> merge_p2p(FunctionBindingView<AuxiliaryTag> element, MergeContext& context);
 
 template std::pair<PredicateView<StaticTag>, bool> merge_p2p(PredicateView<StaticTag> element, MergeContext& context);
 template std::pair<PredicateView<FluentTag>, bool> merge_p2p(PredicateView<FluentTag> element, MergeContext& context);

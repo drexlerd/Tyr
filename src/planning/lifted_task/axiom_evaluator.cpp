@@ -72,7 +72,7 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
         {
             if (axiom_program.get_predicate_to_predicate_mapping().contains(binding.get_relation()))
             {
-                const auto ground_atom = fp::merge_d2p<f::FluentTag, f::DerivedTag>(binding, merge_context).first.get_index();
+                const auto ground_atom = fp::merge_atom_d2p<f::FluentTag, f::DerivedTag>(binding, merge_context).first.get_index();
 
                 unpacked_state.set(ground_atom);
             }

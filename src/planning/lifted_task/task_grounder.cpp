@@ -125,8 +125,7 @@ static auto create_ground_action(fp::GroundActionView element, fp::FDRContext& f
     auto& fdr_action = *fdr_action_ptr;
     fdr_action.clear();
 
-    fdr_action.row = merge_p2p(element.get_action(), element.get_row(), context).first.get_index().row;
-    fdr_action.action = element.get_action().get_index();
+    fdr_action.binding = merge_p2p(element.get_row(), context).first.get_index();
     fdr_action.condition = create_ground_fdr_conjunctive_condition(element.get_condition(), fdr_context, context).first.get_index();
     for (const auto cond_eff : element.get_effects())
         fdr_action.effects.push_back(create_ground_conditional_effect(cond_eff, fdr_context, context).first.get_index());
@@ -141,8 +140,7 @@ static auto create_ground_axiom(fp::GroundAxiomView element, fp::FDRContext& fdr
     auto& fdr_axiom = *fdr_axiom_ptr;
     fdr_axiom.clear();
 
-    fdr_axiom.row = merge_p2p(element.get_axiom(), element.get_row(), context).first.get_index().row;
-    fdr_axiom.axiom = element.get_axiom().get_index();
+    fdr_axiom.binding = merge_p2p(element.get_row(), context).first.get_index();
     fdr_axiom.body = create_ground_fdr_conjunctive_condition(element.get_body(), fdr_context, context).first.get_index();
     fdr_axiom.head = merge_p2p(element.get_head(), context).first.get_index();
 

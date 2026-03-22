@@ -36,7 +36,7 @@ private:
     const formalism::datalog::Repository& m_repository;
 
     Index<formalism::Predicate<T>> m_predicate_index;
-    std::vector<Index<formalism::Binding>> m_bindings;
+    std::vector<Index<formalism::Row>> m_bindings;
 
     boost::dynamic_bitset<> m_bitset;
 
@@ -88,7 +88,7 @@ private:
 
     Index<formalism::Function<T>> m_function_index;
     std::vector<uint_t> m_remap;
-    std::vector<Index<formalism::Binding>> m_bindings;
+    std::vector<Index<formalism::Row>> m_bindings;
     std::vector<float_t> m_values;
 
 public:

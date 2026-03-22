@@ -55,57 +55,61 @@ TYR_INLINE_IMPL std::pair<ObjectView, bool> merge_p2p(ObjectView element, MergeC
 }
 
 template<FactKind T>
-std::pair<PredicateBindingView<T>, bool> merge_p2p(PredicateView<T> predicate, PredicateBindingView<T> element, MergeContext& context)
+std::pair<PredicateBindingView<T>, bool> merge_p2p(PredicateBindingView<T> element, MergeContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Predicate<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = element.get_relation().get_index();
     for (const auto object : element.get_objects())
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(predicate, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 template<FactKind T>
-std::pair<FunctionBindingView<T>, bool> merge_p2p(FunctionView<T> function, FunctionBindingView<T> element, MergeContext& context)
+std::pair<FunctionBindingView<T>, bool> merge_p2p(FunctionBindingView<T> element, MergeContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Function<T>>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = element.get_relation().get_index();
     for (const auto object : element.get_objects())
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(function, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
-TYR_INLINE_IMPL std::pair<ActionBindingView, bool> merge_p2p(ActionView action, ActionBindingView element, MergeContext& context)
+TYR_INLINE_IMPL std::pair<ActionBindingView, bool> merge_p2p(ActionBindingView element, MergeContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Action>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = element.get_relation().get_index();
     for (const auto object : element.get_objects())
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(action, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
-TYR_INLINE_IMPL std::pair<AxiomBindingView, bool> merge_p2p(AxiomView axiom, AxiomBindingView element, MergeContext& context)
+TYR_INLINE_IMPL std::pair<AxiomBindingView, bool> merge_p2p(AxiomBindingView element, MergeContext& context)
 {
-    auto binding_ptr = context.builder.template get_builder<Binding>();
+    auto binding_ptr = context.builder.template get_builder<RelationBinding<Axiom>>();
     auto& binding = *binding_ptr;
     binding.clear();
 
+    binding.relation = element.get_relation().get_index();
     for (const auto object : element.get_objects())
         binding.objects.push_back(object.get_index());
 
     canonicalize(binding);
-    return context.destination.get_or_create(axiom, binding.objects);
+    return context.destination.get_or_create(binding);
 }
 
 TYR_INLINE_IMPL Data<Term> merge_p2p(TermView element, MergeContext& context)
@@ -163,8 +167,7 @@ std::pair<GroundAtomView<T>, bool> merge_p2p(GroundAtomView<T> element, MergeCon
     auto& atom = *atom_ptr;
     atom.clear();
 
-    atom.predicate = merge_p2p(element.get_predicate(), context).first.get_index();
-    atom.row = merge_p2p(element.get_predicate(), element.get_row(), context).first.get_index().row;
+    atom.binding = merge_p2p(element.get_row(), context).first.get_index();
 
     canonicalize(atom);
     return context.destination.get_or_create(atom);
@@ -236,8 +239,7 @@ std::pair<GroundFunctionTermView<T>, bool> merge_p2p(GroundFunctionTermView<T> e
     auto& fterm = *fterm_ptr;
     fterm.clear();
 
-    fterm.function = element.get_function().get_index();
-    fterm.row = merge_p2p(element.get_function(), element.get_row(), context).first.get_index().row;
+    fterm.binding = merge_p2p(element.get_row(), context).first.get_index();
 
     canonicalize(fterm);
     return context.destination.get_or_create(fterm);

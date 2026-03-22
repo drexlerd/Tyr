@@ -46,12 +46,8 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_action() const noexcept { return make_view(get_data().action, *m_context); }
-    auto get_row() const noexcept
-    {
-        const auto& data = get_data();
-        return make_view(formalism::RelationBindingIndex { data.action, data.row }, *m_context);
-    }
+    auto get_action() const noexcept { return get_row().get_relation(); }
+    auto get_row() const noexcept { return make_view(get_data().binding, *m_context); }
     auto get_condition() const noexcept { return make_view(get_data().condition, *m_context); }
     auto get_effects() const noexcept { return make_view(get_data().effects, *m_context); }
 

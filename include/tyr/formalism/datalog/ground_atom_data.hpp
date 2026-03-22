@@ -32,16 +32,10 @@ template<formalism::FactKind T>
 struct Data<formalism::datalog::GroundAtom<T>>
 {
     Index<formalism::datalog::GroundAtom<T>> index;
-    Index<formalism::Predicate<T>> predicate;
-    Index<formalism::Binding> row;
+    Index<formalism::RelationBinding<formalism::Predicate<T>>> binding;
 
     Data() = default;
-    Data(Index<formalism::datalog::GroundAtom<T>> index, Index<formalism::Function<T>> predicate, Index<formalism::Binding> row) :
-        index(index),
-        predicate(predicate),
-        row(row)
-    {
-    }
+    Data(Index<formalism::RelationBinding<formalism::Predicate<T>>> binding) : index(), binding(binding) {}
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;
     Data(Data&& other) = default;
@@ -50,12 +44,11 @@ struct Data<formalism::datalog::GroundAtom<T>>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(predicate);
-        tyr::clear(row);
+        tyr::clear(binding);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, predicate, row); }
-    auto identifying_members() const noexcept { return std::tie(predicate, row); }
+    auto cista_members() const noexcept { return std::tie(index, binding); }
+    auto identifying_members() const noexcept { return std::tie(binding); }
 };
 
 static_assert(uses_trivial_storage_v<formalism::datalog::GroundAtom<formalism::StaticTag>>);

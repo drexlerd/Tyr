@@ -22,7 +22,14 @@ namespace tyr::formalism
 
 template class BasicBuilder<Variable>;
 template class BasicBuilder<Object>;
-template class BasicBuilder<Binding>;
+template class BasicBuilder<RelationBinding<Predicate<StaticTag>>>;
+template class BasicBuilder<RelationBinding<Predicate<FluentTag>>>;
+template class BasicBuilder<RelationBinding<Predicate<DerivedTag>>>;
+template class BasicBuilder<RelationBinding<Function<StaticTag>>>;
+template class BasicBuilder<RelationBinding<Function<FluentTag>>>;
+template class BasicBuilder<RelationBinding<Function<AuxiliaryTag>>>;
+template class BasicBuilder<RelationBinding<planning::Action>>;
+template class BasicBuilder<RelationBinding<planning::Axiom>>;
 
 template class BasicBuilder<Predicate<StaticTag>>;
 template class BasicBuilder<Predicate<FluentTag>>;

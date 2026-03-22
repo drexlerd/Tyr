@@ -1074,9 +1074,9 @@ private:
     }
 
     template<typename T>
-    auto to_binding(View<T, Repository> element, const IndexList<Object>& objects, Repository& context)
+    auto to_binding(View<Index<T>, Repository> element, const IndexList<Object>& objects, Repository& context)
     {
-        return context.get_or_create(element, objects);
+        return context.get_or_create(Data<RelationBinding<T>>(element.get_index(), element.get_arity(), objects));
     }
 
     IndexGroundAtomVariant translate_grounded(loki::Atom element, Builder& builder, Repository& context)
@@ -1090,10 +1090,8 @@ private:
             auto atom_ptr = builder.template get_builder<GroundAtom<Tag>>();
             auto& atom = *atom_ptr;
             atom.clear();
-            atom.predicate = predicate_index;
-            atom.row = to_binding(make_view(predicate_index, context), this->translate_grounded(element->get_terms(), builder, context), context)
-                           .first.get_index()
-                           .row;
+            atom.binding =
+                to_binding(make_view(predicate_index, context), this->translate_grounded(element->get_terms(), builder, context), context).first.get_index();
             canonicalize(atom);
             return context.get_or_create(atom).first.get_index();
         };
@@ -1294,9 +1292,8 @@ private:
             auto fterm_ptr = builder.template get_builder<GroundFunctionTerm<Tag>>();
             auto& fterm = *fterm_ptr;
             fterm.clear();
-            fterm.function = function_index;
-            fterm.row =
-                to_binding(make_view(function_index, context), this->translate_grounded(element->get_terms(), builder, context), context).first.get_index().row;
+            fterm.binding =
+                to_binding(make_view(function_index, context), this->translate_grounded(element->get_terms(), builder, context), context).first.get_index();
             canonicalize(fterm);
             return context.get_or_create(fterm).first.get_index();
         };

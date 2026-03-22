@@ -36,11 +36,12 @@ struct Data<formalism::planning::GroundFunctionTermValue<T>>
     float_t value;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundFunctionTermValue<T>> index, Index<formalism::planning::GroundFunctionTerm<T>> fterm, float_t value) :
-        index(index),
-        fterm(fterm),
-        value(value)
+    Data(Index<formalism::planning::GroundFunctionTerm<T>> fterm_, float_t value_) : index(), fterm(fterm_), value(value_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::planning::GroundFunctionTerm<T>>, C> fterm_, float_t value_) : index(), fterm(), value(value_)
     {
+        set(fterm_, fterm);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

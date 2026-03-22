@@ -72,31 +72,31 @@ public:
     }
 
     template<typename T>
-    static size_t hash(Index<T>, const IndexList<Object>& builder) noexcept
+    static size_t hash(const Data<RelationBinding<T>>& builder) noexcept
     {
         return BasicRelationRepository<T>::hash(builder);
     }
 
     template<typename T>
-    auto find_with_hash(Index<T> g, const IndexList<Object>& builder, size_t h) const noexcept
+    auto find_with_hash(const Data<RelationBinding<T>>& builder, size_t h) const noexcept
     {
-        return get<T>().find_with_hash(g, builder, h);
+        return get<T>().find_with_hash(builder, h);
     }
 
     template<typename T>
-    auto find(Index<T> g, const IndexList<Object>& builder) const noexcept
+    auto find(const Data<RelationBinding<T>>& builder) const noexcept
     {
-        return get<T>().find(g, builder);
+        return get<T>().find(builder);
     }
 
     template<typename T>
-    auto get_or_create(Index<T> g, size_t arity, const IndexList<Object>& builder)
+    auto get_or_create(const Data<RelationBinding<T>>& builder)
     {
-        return get<T>().get_or_create(g, arity, builder);
+        return get<T>().get_or_create(builder);
     }
 
     template<typename T>
-    auto operator[](RelationBindingIndex<T> index) const noexcept
+    auto operator[](Index<RelationBinding<T>> index) const noexcept
     {
         return get<T>()[index];
     }
@@ -108,37 +108,37 @@ public:
     }
 
     template<typename T>
-    const BasicRelationRepository<T>& get_canonical_context(RelationBindingIndex<T> index) const noexcept
+    const BasicRelationRepository<T>& get_canonical_context(Index<RelationBinding<T>> index) const noexcept
     {
         return get<T>().get_canonical_context(index);
     }
 
     template<typename T>
-    auto find_local_with_hash(Index<T> g, const IndexList<Object>& builder, size_t h) const noexcept
+    auto find_local_with_hash(const Data<RelationBinding<T>>& builder, size_t h) const noexcept
     {
-        return get<T>().find_local_with_hash(g, builder, h);
+        return get<T>().find_local_with_hash(builder, h);
     }
 
     template<typename T>
-    auto find_local(Index<T> g, const IndexList<Object>& builder) const noexcept
+    auto find_local(const Data<RelationBinding<T>>& builder) const noexcept
     {
-        return get<T>().find_local(g, builder);
+        return get<T>().find_local(builder);
     }
 
     template<typename T>
-    auto get_or_create_local_with_hash(Index<T> g, size_t arity, const IndexList<Object>& builder, size_t h)
+    auto get_or_create_local_with_hash(const Data<RelationBinding<T>>& builder, size_t h)
     {
-        return get<T>().get_or_create_local_with_hash(g, arity, builder, h);
+        return get<T>().get_or_create_local_with_hash(builder, h);
     }
 
     template<typename T>
-    auto get_or_create_local(Index<T> g, size_t arity, const IndexList<Object>& builder)
+    auto get_or_create_local(const Data<RelationBinding<T>>& builder)
     {
-        return get<T>().get_or_create_local(g, arity, builder);
+        return get<T>().get_or_create_local(builder);
     }
 
     template<typename T>
-    auto at_local(RelationBindingIndex<T> index) const noexcept
+    auto at_local(Index<RelationBinding<T>> index) const noexcept
     {
         return get<T>().at_local(index);
     }
@@ -162,7 +162,7 @@ public:
     }
 
     template<typename T>
-    bool is_local(RelationBindingIndex<T> index) const noexcept
+    bool is_local(Index<RelationBinding<T>> index) const noexcept
     {
         return get<T>().is_local(index);
     }

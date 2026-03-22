@@ -104,8 +104,6 @@ std::pair<GroundConjunctiveConditionView, bool> merge_d2d(GroundConjunctiveCondi
 
 std::pair<RuleView, bool> merge_d2d(RuleView element, MergeContext& context);
 
-std::pair<GroundRuleView, bool> merge_d2d(GroundRuleView element, MergeContext& context);
-
 }
 
 #ifdef TYR_HEADER_INSTANTIATION

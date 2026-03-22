@@ -196,7 +196,7 @@ struct RuleWorkspace
 
         /// Heads
         Index<formalism::Predicate<formalism::FluentTag>> head_predicate;
-        UnorderedSet<Index<formalism::Binding>> head_rows;
+        UnorderedSet<Index<formalism::Row>> head_rows;
 
         // Annotations stored in program_overlay_repository
         AndAnnotationsMap and_annot;

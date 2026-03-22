@@ -44,12 +44,8 @@ public:
     const auto& get_handle() const noexcept { return m_handle; }
 
     auto get_index() const noexcept { return m_handle; }
-    auto get_predicate() const noexcept { return make_view(get_data().predicate, *m_context); }
-    auto get_row() const noexcept
-    {
-        const auto& data = get_data();
-        return make_view(formalism::RelationBindingIndex { data.predicate, data.row }, *m_context);
-    }
+    auto get_predicate() const noexcept { return get_row().get_relation(); }
+    auto get_row() const noexcept { return make_view(get_data().binding, *m_context); }
 
     auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
 };

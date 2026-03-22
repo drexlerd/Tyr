@@ -31,12 +31,9 @@ template std::pair<formalism::datalog::AtomView<StaticTag>, bool> merge_p2d(Atom
 template std::pair<formalism::datalog::AtomView<FluentTag>, bool> merge_p2d(AtomView<FluentTag> element, MergeDatalogContext& context);
 template std::pair<formalism::datalog::AtomView<FluentTag>, bool> merge_p2d(AtomView<DerivedTag> element, MergeDatalogContext& context);
 
-template std::pair<formalism::datalog::PredicateBindingView<StaticTag>, bool>
-merge_p2d(formalism::datalog::PredicateView<StaticTag> predicate, PredicateBindingView<StaticTag> element, MergeDatalogContext& context);
-template std::pair<formalism::datalog::PredicateBindingView<FluentTag>, bool>
-merge_p2d(formalism::datalog::PredicateView<FluentTag> predicate, PredicateBindingView<FluentTag> element, MergeDatalogContext& context);
-template std::pair<formalism::datalog::PredicateBindingView<FluentTag>, bool>
-merge_p2d(formalism::datalog::PredicateView<FluentTag> predicate, PredicateBindingView<DerivedTag> element, MergeDatalogContext& context);
+template std::pair<formalism::datalog::PredicateBindingView<StaticTag>, bool> merge_p2d(PredicateBindingView<StaticTag> element, MergeDatalogContext& context);
+template std::pair<formalism::datalog::PredicateBindingView<FluentTag>, bool> merge_p2d(PredicateBindingView<FluentTag> element, MergeDatalogContext& context);
+template std::pair<formalism::datalog::PredicateBindingView<FluentTag>, bool> merge_p2d(PredicateBindingView<DerivedTag> element, MergeDatalogContext& context);
 
 template std::pair<formalism::datalog::GroundAtomView<StaticTag>, bool> merge_p2d(GroundAtomView<StaticTag> element, MergeDatalogContext& context);
 template std::pair<formalism::datalog::GroundAtomView<FluentTag>, bool> merge_p2d(GroundAtomView<FluentTag> element, MergeDatalogContext& context);
@@ -58,10 +55,8 @@ template std::pair<formalism::datalog::FunctionView<FluentTag>, bool> merge_p2d(
 template std::pair<formalism::datalog::FunctionTermView<StaticTag>, bool> merge_p2d(FunctionTermView<StaticTag> element, MergeDatalogContext& context);
 template std::pair<formalism::datalog::FunctionTermView<FluentTag>, bool> merge_p2d(FunctionTermView<FluentTag> element, MergeDatalogContext& context);
 
-template std::pair<formalism::datalog::FunctionBindingView<StaticTag>, bool>
-merge_p2d(formalism::datalog::FunctionView<StaticTag> function, FunctionBindingView<StaticTag> element, MergeDatalogContext& context);
-template std::pair<formalism::datalog::FunctionBindingView<FluentTag>, bool>
-merge_p2d(formalism::datalog::FunctionView<FluentTag> function, FunctionBindingView<FluentTag> element, MergeDatalogContext& context);
+template std::pair<formalism::datalog::FunctionBindingView<StaticTag>, bool> merge_p2d(FunctionBindingView<StaticTag> element, MergeDatalogContext& context);
+template std::pair<formalism::datalog::FunctionBindingView<FluentTag>, bool> merge_p2d(FunctionBindingView<FluentTag> element, MergeDatalogContext& context);
 
 template std::pair<formalism::datalog::GroundFunctionTermView<StaticTag>, bool> merge_p2d(GroundFunctionTermView<StaticTag> element,
                                                                                           MergeDatalogContext& context);

@@ -36,20 +36,17 @@ template<>
 struct Data<formalism::datalog::GroundRule>
 {
     Index<formalism::datalog::GroundRule> index;
-    Index<formalism::datalog::Rule> rule;
-    Index<formalism::Binding> row;
+    Index<formalism::RelationBinding<formalism::datalog::Rule>> binding;
     Index<formalism::datalog::GroundConjunctiveCondition> body;
     Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head;
 
     Data() = default;
     Data(Index<formalism::datalog::GroundRule> index,
-         Index<formalism::datalog::Rule> rule,
-         Index<formalism::Binding> row,
+         Index<formalism::RelationBinding<formalism::datalog::Rule>> binding,
          Index<formalism::datalog::GroundConjunctiveCondition> body,
          Index<formalism::datalog::GroundAtom<formalism::FluentTag>> head) :
         index(index),
-        rule(rule),
-        row(row),
+        binding(binding),
         body(body),
         head(head)
     {
@@ -62,14 +59,13 @@ struct Data<formalism::datalog::GroundRule>
     void clear() noexcept
     {
         tyr::clear(index);
-        tyr::clear(rule);
-        tyr::clear(row);
+        tyr::clear(binding);
         tyr::clear(body);
         tyr::clear(head);
     }
 
-    auto cista_members() const noexcept { return std::tie(index, row, rule, body, head); }
-    auto identifying_members() const noexcept { return std::tie(rule, row); }
+    auto cista_members() const noexcept { return std::tie(index, binding, body, head); }
+    auto identifying_members() const noexcept { return std::tie(binding); }
 };
 
 static_assert(uses_trivial_storage_v<formalism::datalog::GroundRule>);

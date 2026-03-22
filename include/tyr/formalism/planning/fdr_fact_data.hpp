@@ -34,7 +34,13 @@ struct Data<formalism::planning::FDRFact<T>>
     formalism::planning::FDRValue value;
 
     Data() = default;
-    Data(Index<formalism::planning::FDRVariable<T>> variable, formalism::planning::FDRValue value) : variable(variable), value(value) {}
+    Data(Index<formalism::planning::FDRVariable<T>> variable_, formalism::planning::FDRValue value_) : variable(variable_), value(value_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::planning::FDRVariable<T>>, C> variable_, formalism::planning::FDRValue value_) : variable(), value(value_)
+    {
+        set(variable_, variable);
+    }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;
     Data(Data&& other) = default;
