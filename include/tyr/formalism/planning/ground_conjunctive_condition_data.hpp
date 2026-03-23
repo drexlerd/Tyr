@@ -39,17 +39,33 @@ struct Data<formalism::planning::GroundConjunctiveCondition>
     DataList<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>> numeric_constraints;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundConjunctiveCondition> index,
-         IndexList<formalism::planning::GroundLiteral<formalism::StaticTag>> static_literals,
-         DataList<formalism::planning::FDRFact<formalism::FluentTag>> fluent_facts,
-         IndexList<formalism::planning::GroundLiteral<formalism::DerivedTag>> derived_literals,
-         DataList<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>> numeric_constraints) :
-        index(index),
-        static_literals(std::move(static_literals)),
-        fluent_facts(std::move(fluent_facts)),
-        derived_literals(std::move(derived_literals)),
-        numeric_constraints(std::move(numeric_constraints))
+    Data(IndexList<formalism::planning::GroundLiteral<formalism::StaticTag>> static_literals_,
+         DataList<formalism::planning::FDRFact<formalism::FluentTag>> fluent_facts_,
+         IndexList<formalism::planning::GroundLiteral<formalism::DerivedTag>> derived_literals_,
+         DataList<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>> numeric_constraints_) :
+        index(),
+        static_literals(std::move(static_literals_)),
+        fluent_facts(std::move(fluent_facts_)),
+        derived_literals(std::move(derived_literals_)),
+        numeric_constraints(std::move(numeric_constraints_))
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(const std::vector<View<Index<formalism::planning::GroundLiteral<formalism::StaticTag>>, C>>& static_literals_,
+         const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, C>>& fluent_facts_,
+         const std::vector<View<Index<formalism::planning::GroundLiteral<formalism::DerivedTag>>, C>>& derived_literals_,
+         const std::vector<View<Data<formalism::planning::BooleanOperator<Data<formalism::planning::GroundFunctionExpression>>>, C>>& numeric_constraints_) :
+        index(),
+        static_literals(),
+        fluent_facts(),
+        derived_literals(),
+        numeric_constraints()
+    {
+        set(static_literals_, static_literals);
+        set(fluent_facts_, fluent_facts);
+        set(derived_literals_, derived_literals);
+        set(numeric_constraints_, numeric_constraints);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;

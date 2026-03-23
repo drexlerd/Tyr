@@ -39,15 +39,28 @@ struct Data<formalism::planning::GroundAxiom>
     Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundAxiom> index,
-         Index<formalism::RelationBinding<formalism::planning::Axiom>> binding,
-         Index<formalism::planning::GroundConjunctiveCondition> body,
-         Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head) :
-        index(index),
-        binding(binding),
-        body(body),
-        head(head)
+    Data(Index<formalism::RelationBinding<formalism::planning::Axiom>> binding_,
+         Index<formalism::planning::GroundConjunctiveCondition> body_,
+         Index<formalism::planning::GroundAtom<formalism::DerivedTag>> head_) :
+        index(),
+        binding(binding_),
+        body(body_),
+        head(head_)
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::RelationBinding<formalism::planning::Axiom>>, C> binding_,
+         View<Index<formalism::planning::GroundConjunctiveCondition>, C> body_,
+         View<Index<formalism::planning::GroundAtom<formalism::DerivedTag>>, C> head_) :
+        index(),
+        binding(),
+        body(),
+        head()
+    {
+        set(binding_, binding);
+        set(body_, body);
+        set(head_, head);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

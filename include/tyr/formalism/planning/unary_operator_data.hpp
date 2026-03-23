@@ -36,7 +36,13 @@ struct Data<formalism::planning::UnaryOperator<Op, T>>
     T arg;
 
     Data() = default;
-    Data(Index<formalism::planning::UnaryOperator<Op, T>> index, T arg) : index(index), arg(arg) {}
+    Data(T arg_) : index(), arg(arg_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<T, C> arg_) : index(), arg()
+    {
+        set(arg_, arg);
+    }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;
     Data(Data&& other) = default;

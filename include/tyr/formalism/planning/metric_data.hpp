@@ -37,11 +37,12 @@ struct Data<formalism::planning::Metric>
     Data<formalism::planning::GroundFunctionExpression> fexpr;
 
     Data() = default;
-    Data(Index<formalism::planning::Metric> index, ObjectiveVariant objective, Data<formalism::planning::GroundFunctionExpression> fexpr) :
-        index(index),
-        objective(objective),
-        fexpr(fexpr)
+    Data(ObjectiveVariant objective_, Data<formalism::planning::GroundFunctionExpression> fexpr_) : index(), objective(objective_), fexpr(fexpr_) {}
+    // Python constructor
+    template<typename C>
+    Data(ObjectiveVariant objective_, View<Data<formalism::planning::GroundFunctionExpression>, C> fexpr_) : index(), objective(objective_), fexpr()
     {
+        set(fexpr_, fexpr);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

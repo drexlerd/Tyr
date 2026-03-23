@@ -36,13 +36,21 @@ struct Data<formalism::planning::GroundConditionalEffect>
     Index<formalism::planning::GroundConjunctiveEffect> effect;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundConditionalEffect> index,
-         Index<formalism::planning::GroundConjunctiveCondition> condition,
-         Index<formalism::planning::GroundConjunctiveEffect> effect) :
-        index(index),
-        condition(condition),
-        effect(effect)
+    Data(Index<formalism::planning::GroundConjunctiveCondition> condition_, Index<formalism::planning::GroundConjunctiveEffect> effect_) :
+        index(),
+        condition(condition_),
+        effect(effect_)
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::planning::GroundConjunctiveCondition>, C> condition_, View<Index<formalism::planning::GroundConjunctiveEffect>, C> effect_) :
+        index(),
+        condition(),
+        effect()
+    {
+        set(condition_, condition);
+        set(effect_, effect);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

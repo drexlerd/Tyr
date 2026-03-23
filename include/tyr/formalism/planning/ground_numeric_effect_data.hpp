@@ -39,13 +39,21 @@ struct Data<formalism::planning::GroundNumericEffect<Op, T>>
     Data<formalism::planning::GroundFunctionExpression> fexpr;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundNumericEffect<Op, T>> index,
-         Index<formalism::planning::GroundFunctionTerm<T>> fterm,
-         Data<formalism::planning::GroundFunctionExpression> fexpr) :
-        index(index),
-        fterm(fterm),
-        fexpr(fexpr)
+    Data(Index<formalism::planning::GroundFunctionTerm<T>> fterm_, Data<formalism::planning::GroundFunctionExpression> fexpr_) :
+        index(),
+        fterm(fterm_),
+        fexpr(fexpr_)
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::planning::GroundFunctionTerm<T>>, C> fterm_, View<Data<formalism::planning::GroundFunctionExpression>, C> fexpr_) :
+        index(),
+        fterm(),
+        fexpr()
+    {
+        set(fterm_, fterm);
+        set(fexpr_, fexpr);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

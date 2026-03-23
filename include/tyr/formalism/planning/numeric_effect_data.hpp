@@ -39,13 +39,13 @@ struct Data<formalism::planning::NumericEffect<Op, T>>
     Data<formalism::planning::FunctionExpression> fexpr;
 
     Data() = default;
-    Data(Index<formalism::planning::NumericEffect<Op, T>> index,
-         Index<formalism::planning::FunctionTerm<T>> fterm,
-         Data<formalism::planning::FunctionExpression> fexpr) :
-        index(index),
-        fterm(fterm),
-        fexpr(fexpr)
+    Data(Index<formalism::planning::FunctionTerm<T>> fterm_, Data<formalism::planning::FunctionExpression> fexpr_) : index(), fterm(fterm_), fexpr(fexpr_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::planning::FunctionTerm<T>>, C> fterm_, View<Data<formalism::planning::FunctionExpression>, C> fexpr_) : index(), fterm(), fexpr()
     {
+        set(fterm_, fterm);
+        set(fexpr_, fexpr);
     }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;

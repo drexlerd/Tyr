@@ -38,15 +38,28 @@ struct Data<formalism::planning::GroundConjunctiveEffect>
     ::cista::optional<Data<formalism::planning::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect;  // :action-cost
 
     Data() = default;
-    Data(Index<formalism::planning::GroundConjunctiveEffect> index,
-         DataList<formalism::planning::FDRFact<formalism::FluentTag>> facts,
-         DataList<formalism::planning::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects,
-         ::cista::optional<Data<formalism::planning::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect) :
-        index(index),
-        facts(std::move(facts)),
-        numeric_effects(std::move(numeric_effects)),
-        auxiliary_numeric_effect(std::move(auxiliary_numeric_effect))
+    Data(DataList<formalism::planning::FDRFact<formalism::FluentTag>> facts_,
+         DataList<formalism::planning::GroundNumericEffectOperator<formalism::FluentTag>> numeric_effects_,
+         ::cista::optional<Data<formalism::planning::GroundNumericEffectOperator<formalism::AuxiliaryTag>>> auxiliary_numeric_effect_) :
+        index(),
+        facts(std::move(facts_)),
+        numeric_effects(std::move(numeric_effects_)),
+        auxiliary_numeric_effect(std::move(auxiliary_numeric_effect_))
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(const std::vector<View<Data<formalism::planning::FDRFact<formalism::FluentTag>>, C>>& facts_,
+         const std::vector<View<Data<formalism::planning::GroundNumericEffectOperator<formalism::FluentTag>>, C>>& numeric_effects_,
+         const std::optional<View<Data<formalism::planning::GroundNumericEffectOperator<formalism::AuxiliaryTag>>, C>>& auxiliary_numeric_effect_) :
+        index(),
+        facts(),
+        numeric_effects(),
+        auxiliary_numeric_effect()
+    {
+        set(facts_, facts);
+        set(numeric_effects_, numeric_effects);
+        set(auxiliary_numeric_effect_, auxiliary_numeric_effect);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;

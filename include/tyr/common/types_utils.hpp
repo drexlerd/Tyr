@@ -116,6 +116,32 @@ void set(View<Data<T>, C> view, Data<T>& data)
 }
 
 template<typename T, typename C>
+void set(const std::optional<View<Index<T>, C>>& view, ::cista::optional<Index<T>>& data)
+{
+    if (view)
+    {
+        data = view->get_index();
+    }
+    else
+    {
+        data = std::nullopt;
+    }
+}
+
+template<typename T, typename C>
+void set(const std::optional<View<Data<T>, C>>& view, ::cista::optional<Data<T>>& data)
+{
+    if (view)
+    {
+        data = view->get_data();
+    }
+    else
+    {
+        data = std::nullopt;
+    }
+}
+
+template<typename T, typename C>
 void set(const std::vector<View<Index<T>, C>>& views, IndexList<T>& out_list)
 {
     out_list.clear();

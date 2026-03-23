@@ -52,33 +52,72 @@ struct Data<formalism::planning::Task>
     IndexList<formalism::planning::Axiom> axioms;
 
     Data() = default;
-    Data(Index<formalism::planning::Task> index,
-         ::cista::offset::string name,
-         Index<formalism::planning::Domain> domain,
-         IndexList<formalism::Predicate<formalism::DerivedTag>> derived_predicates,
-         IndexList<formalism::Object> objects,
-         IndexList<formalism::planning::GroundAtom<formalism::StaticTag>> static_atoms,
-         IndexList<formalism::planning::GroundAtom<formalism::FluentTag>> fluent_atoms,
-         IndexList<formalism::planning::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values,
-         IndexList<formalism::planning::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values,
-         ::cista::optional<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>> auxiliary_fterm_value,
-         Index<formalism::planning::GroundConjunctiveCondition> goal,
-         ::cista::optional<Index<formalism::planning::Metric>> metric,
-         IndexList<formalism::planning::Axiom> axioms) :
-        index(index),
-        name(std::move(name)),
-        domain(domain),
-        derived_predicates(std::move(derived_predicates)),
-        objects(std::move(objects)),
-        static_atoms(std::move(static_atoms)),
-        fluent_atoms(std::move(fluent_atoms)),
-        static_fterm_values(std::move(static_fterm_values)),
-        fluent_fterm_values(std::move(fluent_fterm_values)),
-        auxiliary_fterm_value(auxiliary_fterm_value),
-        goal(goal),
-        metric(metric),
-        axioms(std::move(axioms))
+    Data(::cista::offset::string name_,
+         Index<formalism::planning::Domain> domain_,
+         IndexList<formalism::Predicate<formalism::DerivedTag>> derived_predicates_,
+         IndexList<formalism::Object> objects_,
+         IndexList<formalism::planning::GroundAtom<formalism::StaticTag>> static_atoms_,
+         IndexList<formalism::planning::GroundAtom<formalism::FluentTag>> fluent_atoms_,
+         IndexList<formalism::planning::GroundFunctionTermValue<formalism::StaticTag>> static_fterm_values_,
+         IndexList<formalism::planning::GroundFunctionTermValue<formalism::FluentTag>> fluent_fterm_values_,
+         ::cista::optional<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>> auxiliary_fterm_value_,
+         Index<formalism::planning::GroundConjunctiveCondition> goal_,
+         ::cista::optional<Index<formalism::planning::Metric>> metric_,
+         IndexList<formalism::planning::Axiom> axioms_) :
+        index(),
+        name(std::move(name_)),
+        domain(domain_),
+        derived_predicates(std::move(derived_predicates_)),
+        objects(std::move(objects_)),
+        static_atoms(std::move(static_atoms_)),
+        fluent_atoms(std::move(fluent_atoms_)),
+        static_fterm_values(std::move(static_fterm_values_)),
+        fluent_fterm_values(std::move(fluent_fterm_values_)),
+        auxiliary_fterm_value(auxiliary_fterm_value_),
+        goal(goal_),
+        metric(metric_),
+        axioms(std::move(axioms_))
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(const std::string& name_,
+         View<Index<formalism::planning::Domain>, C> domain_,
+         const std::vector<View<Index<formalism::Predicate<formalism::DerivedTag>>, C>>& derived_predicates_,
+         const std::vector<View<Index<formalism::Object>, C>>& objects_,
+         const std::vector<View<Index<formalism::planning::GroundAtom<formalism::StaticTag>>, C>>& static_atoms_,
+         const std::vector<View<Index<formalism::planning::GroundAtom<formalism::FluentTag>>, C>>& fluent_atoms_,
+         const std::vector<View<Index<formalism::planning::GroundFunctionTermValue<formalism::StaticTag>>, C>>& static_fterm_values_,
+         const std::vector<View<Index<formalism::planning::GroundFunctionTermValue<formalism::FluentTag>>, C>>& fluent_fterm_values_,
+         const std::optional<View<Index<formalism::planning::GroundFunctionTermValue<formalism::AuxiliaryTag>>, C>>& auxiliary_fterm_value_,
+         View<Index<formalism::planning::GroundConjunctiveCondition>, C> goal_,
+         const std::optional<View<Index<formalism::planning::Metric>, C>>& metric_,
+         const std::vector<View<Index<formalism::planning::Axiom>, C>>& axioms_) :
+        index(),
+        name(name_),
+        domain(),
+        derived_predicates(),
+        objects(),
+        static_atoms(),
+        fluent_atoms(),
+        static_fterm_values(),
+        fluent_fterm_values(),
+        auxiliary_fterm_value(),
+        goal(),
+        metric(),
+        axioms()
+    {
+        set(domain_, domain);
+        set(derived_predicates_, derived_predicates);
+        set(objects_, objects);
+        set(static_atoms_, static_atoms);
+        set(fluent_atoms_, fluent_atoms);
+        set(static_fterm_values_, static_fterm_values);
+        set(fluent_fterm_values_, fluent_fterm_values);
+        set(auxiliary_fterm_value_, auxiliary_fterm_value);
+        set(goal_, goal);
+        set(metric_, metric);
+        set(axioms_, axioms);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;

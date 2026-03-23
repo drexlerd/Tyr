@@ -192,9 +192,7 @@ void bind_numeric_effect_builder(nb::module_& m, const std::string& name)
     using V = Data<NumericEffect<Op, T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("fterm", &V::fterm)
-                   .def_rw("fexpr", &V::fexpr);
+                   .def(nb::init<FunctionTermView<T>, FunctionExpressionView>(), "fterm"_a, "fexpr"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -205,9 +203,7 @@ void bind_ground_numeric_effect_builder(nb::module_& m, const std::string& name)
     using V = Data<GroundNumericEffect<Op, T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("fterm", &V::fterm)
-                   .def_rw("fexpr", &V::fexpr);
+                   .def(nb::init<GroundFunctionTermView<T>, GroundFunctionExpressionView>(), "fterm"_a, "fexpr"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -249,12 +245,16 @@ void bind_conjunctive_condition_builder(nb::module_& m, const std::string& name)
     using V = Data<ConjunctiveCondition>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("variables", &V::variables)
-                   .def_rw("static_literals", &V::static_literals)
-                   .def_rw("fluent_literals", &V::fluent_literals)
-                   .def_rw("derived_literals", &V::derived_literals)
-                   .def_rw("numeric_constraints", &V::numeric_constraints);
+                   .def(nb::init<const VariableViewList&,
+                                 const LiteralViewList<StaticTag>&,
+                                 const LiteralViewList<FluentTag>&,
+                                 const LiteralViewList<DerivedTag>&,
+                                 const LiftedBooleanOperatorViewList&>(),
+                        "variables"_a,
+                        "static_literals"_a,
+                        "fluent_literals"_a,
+                        "derived_literals"_a,
+                        "numeric_constraints"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -264,10 +264,12 @@ void bind_conjunctive_effect_builder(nb::module_& m, const std::string& name)
     using V = Data<ConjunctiveEffect>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("literals", &V::literals)
-                   .def_rw("numeric_effects", &V::numeric_effects)
-                   .def_rw("auxiliary_numeric_effect", &V::auxiliary_numeric_effect);
+                   .def(nb::init<const LiteralViewList<FluentTag>&,
+                                 const NumericEffectOperatorViewList<FluentTag>&,
+                                 const std::optional<NumericEffectOperatorView<AuxiliaryTag>>&>(),
+                        "fluent_literals"_a,
+                        "fluent_numeric_effects"_a,
+                        "auxiliary_numeric_effect"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -277,10 +279,7 @@ void bind_conditional_effect_builder(nb::module_& m, const std::string& name)
     using V = Data<ConditionalEffect>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("variables", &V::variables)
-                   .def_rw("condition", &V::condition)
-                   .def_rw("effect", &V::effect);
+                   .def(nb::init<const VariableViewList&, ConjunctiveConditionView, ConjunctiveEffectView>(), "variables"_a, "condition"_a, "effect"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -305,10 +304,7 @@ void bind_axiom_builder(nb::module_& m, const std::string& name)
     using V = Data<Axiom>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("variables", &V::variables)
-                   .def_rw("body", &V::body)
-                   .def_rw("head", &V::head);
+                   .def(nb::init<const VariableViewList&, ConjunctiveConditionView, AtomView<DerivedTag>>(), "variables"_a, "body"_a, "head"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -328,11 +324,14 @@ void bind_ground_conjunctive_condition_builder(nb::module_& m, const std::string
     using V = Data<GroundConjunctiveCondition>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("static_facts", &V::static_literals)
-                   .def_rw("fluent_facts", &V::fluent_facts)
-                   .def_rw("derived_facts", &V::derived_literals)
-                   .def_rw("numeric_constraints", &V::numeric_constraints);
+                   .def(nb::init<const GroundLiteralViewList<StaticTag>&,
+                                 const FDRFactViewList<FluentTag>&,
+                                 const GroundLiteralViewList<DerivedTag>&,
+                                 const GroundBooleanOperatorViewList&>(),
+                        "static_literals"_a,
+                        "fluent_facts"_a,
+                        "derived_literals"_a,
+                        "numeric_constraints"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -342,10 +341,12 @@ void bind_ground_conjunctive_effect_builder(nb::module_& m, const std::string& n
     using V = Data<GroundConjunctiveEffect>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("facts", &V::facts)
-                   .def_rw("numeric_effects", &V::numeric_effects)
-                   .def_rw("auxiliary_numeric_effect", &V::auxiliary_numeric_effect);
+                   .def(nb::init<const FDRFactViewList<FluentTag>&,
+                                 const GroundNumericEffectOperatorViewList<FluentTag>&,
+                                 const std::optional<GroundNumericEffectOperatorView<AuxiliaryTag>>&>(),
+                        "fluent_facts"_a,
+                        "fluent_numeric_effects"_a,
+                        "auxiliary_numeric_effect"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -355,9 +356,7 @@ void bind_ground_conditional_effect_builder(nb::module_& m, const std::string& n
     using V = Data<GroundConditionalEffect>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("condition", &V::condition)
-                   .def_rw("effect", &V::effect);
+                   .def(nb::init<GroundConjunctiveConditionView, GroundConjunctiveEffectView>(), "condition"_a, "effect"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -367,10 +366,10 @@ void bind_ground_action_builder(nb::module_& m, const std::string& name)
     using V = Data<GroundAction>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("binding", &V::binding)
-                   .def_rw("condition", &V::condition)
-                   .def_rw("effects", &V::effects);
+                   .def(nb::init<ActionBindingView, GroundConjunctiveConditionView, const GroundConditionalEffectViewList&>(),
+                        "binding"_a,
+                        "condition"_a,
+                        "effects"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -380,10 +379,7 @@ void bind_ground_axiom_builder(nb::module_& m, const std::string& name)
     using V = Data<GroundAxiom>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("binding", &V::binding)
-                   .def_rw("body", &V::body)
-                   .def_rw("head", &V::head);
+                   .def(nb::init<AxiomBindingView, GroundConjunctiveConditionView, GroundAtomView<DerivedTag>>(), "binding"_a, "body"_a, "head"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -393,9 +389,7 @@ void bind_metric_builder(nb::module_& m, const std::string& name)
     using V = Data<Metric>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("objective", &V::objective)
-                   .def_rw("fexpr", &V::fexpr);
+                   .def(nb::init<typename V::ObjectiveVariant, GroundFunctionExpressionView>(), "objective_kind"_a, "fexpr"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -405,17 +399,26 @@ void bind_domain_builder(nb::module_& m, const std::string& name)
     using V = Data<Domain>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("name", &V::name)
-                   .def_rw("static_predicates", &V::static_predicates)
-                   .def_rw("fluent_predicates", &V::fluent_predicates)
-                   .def_rw("derived_predicates", &V::derived_predicates)
-                   .def_rw("static_functions", &V::static_functions)
-                   .def_rw("fluent_functions", &V::fluent_functions)
-                   .def_rw("auxiliary_function", &V::auxiliary_function)
-                   .def_rw("constants", &V::constants)
-                   .def_rw("actions", &V::actions)
-                   .def_rw("axioms", &V::axioms);
+                   .def(nb::init<const std::string&,
+                                 const PredicateViewList<StaticTag>&,
+                                 const PredicateViewList<FluentTag>&,
+                                 const PredicateViewList<DerivedTag>&,
+                                 const FunctionViewList<StaticTag>&,
+                                 const FunctionViewList<FluentTag>&,
+                                 const std::optional<FunctionView<AuxiliaryTag>>&,
+                                 const ObjectViewList&,
+                                 const ActionViewList&,
+                                 const AxiomViewList&>(),
+                        "name"_a,
+                        "static_predicates"_a,
+                        "fluent_predicates"_a,
+                        "derived_predicates"_a,
+                        "static_predicates"_a,
+                        "static_functions"_a,
+                        "auxiliary_function"_a,
+                        "constants"_a,
+                        "actions"_a,
+                        "axioms"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -425,19 +428,30 @@ void bind_lifted_task_builder(nb::module_& m, const std::string& name)
     using V = Data<Task>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("name", &V::name)
-                   .def_rw("domain", &V::domain)
-                   .def_rw("derived_predicates", &V::derived_predicates)
-                   .def_rw("objects", &V::objects)
-                   .def_rw("static_atoms", &V::static_atoms)
-                   .def_rw("fluent_atoms", &V::fluent_atoms)
-                   .def_rw("static_fterm_values", &V::static_fterm_values)
-                   .def_rw("fluent_fterm_values", &V::fluent_fterm_values)
-                   .def_rw("auxiliary_fterm_value", &V::auxiliary_fterm_value)
-                   .def_rw("goal", &V::goal)
-                   .def_rw("metric", &V::metric)
-                   .def_rw("axioms", &V::axioms);
+                   .def(nb::init<const std::string&,
+                                 DomainView,
+                                 const PredicateViewList<DerivedTag>&,
+                                 const ObjectViewList&,
+                                 const GroundAtomViewList<StaticTag>&,
+                                 const GroundAtomViewList<FluentTag>&,
+                                 const GroundFunctionTermValueViewList<StaticTag>&,
+                                 const GroundFunctionTermValueViewList<FluentTag>&,
+                                 const std::optional<GroundFunctionTermValueView<AuxiliaryTag>>&,
+                                 GroundConjunctiveConditionView,
+                                 const std::optional<MetricView>&,
+                                 const AxiomViewList&>(),
+                        "name"_a,
+                        "domain"_a,
+                        "derived_predicates"_a,
+                        "objects"_a,
+                        "static_atoms"_a,
+                        "fluent_atoms"_a,
+                        "static_fterm_values"_a,
+                        "fluent_fterm_values"_a,
+                        "auxiliary_fterm_value"_a,
+                        "goal"_a,
+                        "metric"_a,
+                        "axioms"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -478,8 +492,7 @@ void bind_unary_operator_builder(nb::module_& m, const std::string& name)
     using V = Data<UnaryOperator<Op, T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("arg", &V::arg);
+                   .def(nb::init<View<T, Repository>>(), "arg"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -490,9 +503,7 @@ void bind_binary_operator_builder(nb::module_& m, const std::string& name)
     using V = Data<BinaryOperator<Op, T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("lhs", &V::lhs)
-                   .def_rw("rhs", &V::rhs);
+                   .def(nb::init<View<T, Repository>, View<T, Repository>>(), "lhs"_a, "rhs"_a);
     add_print(cls);
     add_hash(cls);
 }
@@ -503,8 +514,7 @@ void bind_multi_operator_builder(nb::module_& m, const std::string& name)
     using V = Data<MultiOperator<Op, T>>;
 
     auto cls = nb::class_<V>(m, name.c_str())  //
-                   .def(nb::init<>())
-                   .def_rw("args", &V::args);
+                   .def(nb::init<const std::vector<View<T, Repository>>&>(), "args"_a);
     add_print(cls);
     add_hash(cls);
 }

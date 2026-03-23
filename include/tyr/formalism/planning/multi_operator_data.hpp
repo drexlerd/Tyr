@@ -34,7 +34,13 @@ struct Data<formalism::planning::MultiOperator<Op, T>>
     ::cista::offset::vector<T> args;
 
     Data() = default;
-    Data(Index<formalism::planning::MultiOperator<Op, T>> index, ::cista::offset::vector<T> args) : index(index), args(std::move(args)) {}
+    Data(::cista::offset::vector<T> args_) : index(), args(std::move(args_)) {}
+    // Python constructor
+    template<typename C>
+    Data(const std::vector<View<T, C>>& args_) : index(), args()
+    {
+        set(args_, args);
+    }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
     Data(Data&& other) = default;

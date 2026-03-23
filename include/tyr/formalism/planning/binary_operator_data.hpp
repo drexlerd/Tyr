@@ -37,7 +37,14 @@ struct Data<formalism::planning::BinaryOperator<Op, T>>
     T rhs;
 
     Data() = default;
-    Data(Index<formalism::planning::BinaryOperator<Op, T>> index, T lhs, T rhs) : index(index), lhs(lhs), rhs(rhs) {}
+    Data(T lhs_, T rhs_) : index(), lhs(lhs_), rhs(rhs_) {}
+    // Python constructor
+    template<typename C>
+    Data(View<T, C> lhs_, View<T, C> rhs_) : index(), lhs(), rhs()
+    {
+        set(lhs_, lhs);
+        set(rhs_, rhs);
+    }
     Data(const Data& other) = default;
     Data& operator=(const Data& other) = default;
     Data(Data&& other) = default;

@@ -138,16 +138,14 @@ using RelationRepository = tyr::formalism::RelationRepository<Predicate<StaticTa
                                                               Axiom>;
 
 using Repository = tyr::formalism::Repository<SymbolRepository, RelationRepository>;
-
 using RepositoryPtr = std::shared_ptr<Repository>;
 
 using RepositoryFactory = tyr::formalism::RepositoryFactory<SymbolRepository, RelationRepository>;
-
 using RepositoryFactoryPtr = std::shared_ptr<RepositoryFactory>;
 
 using ActionView = View<Index<Action>, Repository>;
-
 using ActionListView = View<IndexList<Action>, Repository>;
+using ActionViewList = std::vector<ActionView>;
 
 template<typename T>
 using ArithmeticOperatorView = View<Data<ArithmeticOperator<T>>, Repository>;
@@ -164,10 +162,9 @@ using AtomView = View<Index<Atom<T>>, Repository>;
 
 template<FactKind T>
 using AtomListView = View<IndexList<Atom<T>>, Repository>;
-
 using AxiomView = View<Index<Axiom>, Repository>;
-
 using AxiomListView = View<IndexList<Axiom>, Repository>;
+using AxiomViewList = std::vector<AxiomView>;
 
 template<OpKind Op, typename T>
 using BinaryOperatorView = View<Index<BinaryOperator<Op, T>>, Repository>;
@@ -199,31 +196,30 @@ template<typename T>
 using BooleanOperatorListView = View<DataList<BooleanOperator<T>>, Repository>;
 using LiftedBooleanOperatorListView = View<DataList<BooleanOperator<Data<FunctionExpression>>>, Repository>;
 using GroundBooleanOperatorListView = View<DataList<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>;
+using LiftedBooleanOperatorViewList = std::vector<View<Data<BooleanOperator<Data<FunctionExpression>>>, Repository>>;
+using GroundBooleanOperatorViewList = std::vector<View<Data<BooleanOperator<Data<GroundFunctionExpression>>>, Repository>>;
 
 using ConditionalEffectView = View<Index<ConditionalEffect>, Repository>;
 using ConditionalEffectListView = View<IndexList<ConditionalEffect>, Repository>;
 using ConditionalEffectViewList = std::vector<View<Index<ConditionalEffect>, Repository>>;
 
 using ConjunctiveConditionView = View<Index<ConjunctiveCondition>, Repository>;
-
 using ConjunctiveConditionListView = View<IndexList<ConjunctiveCondition>, Repository>;
 
 using ConjunctiveEffectView = View<Index<ConjunctiveEffect>, Repository>;
-
 using ConjunctiveEffectListView = View<IndexList<ConjunctiveEffect>, Repository>;
 
 using DomainView = View<Index<Domain>, Repository>;
-
 using DomainListView = View<IndexList<Domain>, Repository>;
 
 template<formalism::FactKind T>
 using FDRFactView = View<Data<FDRFact<T>>, Repository>;
-
 template<formalism::FactKind T>
 using FDRFactListView = View<DataList<FDRFact<T>>, Repository>;
+template<formalism::FactKind T>
+using FDRFactViewList = std::vector<FDRFactView<T>>;
 
 using FDRTaskView = View<Index<FDRTask>, Repository>;
-
 using FDRTaskListView = View<IndexList<FDRTask>, Repository>;
 
 template<formalism::FactKind T>
@@ -233,23 +229,21 @@ template<formalism::FactKind T>
 using FDRVariableListView = View<IndexList<FDRVariable<T>>, Repository>;
 
 using FunctionExpressionView = View<Data<FunctionExpression>, Repository>;
-
 using FunctionExpressionListView = View<DataList<FunctionExpression>, Repository>;
 
 template<FactKind T>
 using FunctionTermView = View<Index<FunctionTerm<T>>, Repository>;
-
 template<FactKind T>
 using FunctionTermListView = View<IndexList<FunctionTerm<T>>, Repository>;
 
 template<FactKind T>
 using FunctionView = View<Index<Function<T>>, Repository>;
-
 template<FactKind T>
 using FunctionListView = View<IndexList<Function<T>>, Repository>;
+template<FactKind T>
+using FunctionViewList = std::vector<FunctionView<T>>;
 
 using GroundActionView = View<Index<GroundAction>, Repository>;
-
 using GroundActionListView = View<IndexList<GroundAction>, Repository>;
 
 template<FactKind T>
@@ -260,30 +254,27 @@ template<FactKind T>
 using GroundAtomViewList = std::vector<GroundAtomView<T>>;
 
 using GroundAxiomView = View<Index<GroundAxiom>, Repository>;
-
 using GroundAxiomListView = View<IndexList<GroundAxiom>, Repository>;
 
 using GroundConditionalEffectView = View<Index<GroundConditionalEffect>, Repository>;
-
 using GroundConditionalEffectListView = View<IndexList<GroundConditionalEffect>, Repository>;
+using GroundConditionalEffectViewList = std::vector<GroundConditionalEffectView>;
 
 using GroundConjunctiveConditionView = View<Index<GroundConjunctiveCondition>, Repository>;
-
 using GroundConjunctiveConditionListView = View<IndexList<GroundConjunctiveCondition>, Repository>;
 
 using GroundConjunctiveEffectView = View<Index<GroundConjunctiveEffect>, Repository>;
-
 using GroundConjunctiveEffectListView = View<IndexList<GroundConjunctiveEffect>, Repository>;
 
 using GroundFunctionExpressionView = View<Data<GroundFunctionExpression>, Repository>;
-
 using GroundFunctionExpressionListView = View<DataList<GroundFunctionExpression>, Repository>;
 
 template<FactKind T>
 using GroundFunctionTermValueView = View<Index<GroundFunctionTermValue<T>>, Repository>;
-
 template<FactKind T>
 using GroundFunctionTermValueListView = View<IndexList<GroundFunctionTermValue<T>>, Repository>;
+template<FactKind T>
+using GroundFunctionTermValueViewList = std::vector<GroundFunctionTermValueView<T>>;
 
 template<FactKind T>
 using GroundFunctionTermViewValuePair = std::pair<View<Index<GroundFunctionTerm<T>>, Repository>, float_t>;
@@ -292,36 +283,36 @@ using GroundFunctionTermViewValuePairList = std::vector<GroundFunctionTermViewVa
 
 template<FactKind T>
 using GroundFunctionTermView = View<Index<GroundFunctionTerm<T>>, Repository>;
-
 template<FactKind T>
 using GroundFunctionTermListView = View<IndexList<GroundFunctionTerm<T>>, Repository>;
 
 template<FactKind T>
 using GroundLiteralView = View<Index<GroundLiteral<T>>, Repository>;
-
 template<FactKind T>
 using GroundLiteralListView = View<IndexList<GroundLiteral<T>>, Repository>;
+template<FactKind T>
+using GroundLiteralViewList = std::vector<GroundLiteralView<T>>;
 
 template<FactKind T>
 using GroundNumericEffectOperatorView = View<Data<GroundNumericEffectOperator<T>>, Repository>;
-
 template<FactKind T>
 using GroundNumericEffectOperatorListView = View<DataList<GroundNumericEffectOperator<T>>, Repository>;
+template<FactKind T>
+using GroundNumericEffectOperatorViewList = std::vector<GroundNumericEffectOperatorView<T>>;
 
 template<NumericEffectOpKind Op, FactKind T>
 using GroundNumericEffectView = View<Index<GroundNumericEffect<Op, T>>, Repository>;
-
 template<NumericEffectOpKind Op, FactKind T>
 using GroundNumericEffectListView = View<IndexList<GroundNumericEffect<Op, T>>, Repository>;
 
 template<FactKind T>
 using LiteralView = View<Index<Literal<T>>, Repository>;
-
 template<FactKind T>
 using LiteralListView = View<IndexList<Literal<T>>, Repository>;
+template<FactKind T>
+using LiteralViewList = std::vector<LiteralView<T>>;
 
 using MetricView = View<Index<Metric>, Repository>;
-
 using MetricListView = View<IndexList<Metric>, Repository>;
 
 template<OpKind Op, typename T>
@@ -340,13 +331,13 @@ using GroundMultiOperatorListView = View<IndexList<MultiOperator<Op, Data<Ground
 
 template<FactKind T>
 using NumericEffectOperatorView = View<Data<NumericEffectOperator<T>>, Repository>;
-
 template<FactKind T>
 using NumericEffectOperatorListView = View<DataList<NumericEffectOperator<T>>, Repository>;
+template<FactKind T>
+using NumericEffectOperatorViewList = std::vector<NumericEffectOperatorView<T>>;
 
 template<NumericEffectOpKind Op, FactKind T>
 using NumericEffectView = View<Index<NumericEffect<Op, T>>, Repository>;
-
 template<NumericEffectOpKind Op, FactKind T>
 using NumericEffectListView = View<IndexList<NumericEffect<Op, T>>, Repository>;
 
@@ -358,6 +349,8 @@ template<FactKind T>
 using PredicateView = View<Index<Predicate<T>>, Repository>;
 template<FactKind T>
 using PredicateListView = View<IndexList<Predicate<T>>, Repository>;
+template<FactKind T>
+using PredicateViewList = std::vector<PredicateView<T>>;
 
 using TaskView = View<Index<Task>, Repository>;
 using TaskListView = View<IndexList<Task>, Repository>;

@@ -40,15 +40,28 @@ struct Data<formalism::planning::GroundAction>
     IndexList<formalism::planning::GroundConditionalEffect> effects;
 
     Data() = default;
-    Data(Index<formalism::planning::GroundAction> index,
-         Index<formalism::RelationBinding<formalism::planning::Action>> binding,
-         Index<formalism::planning::GroundConjunctiveCondition> condition,
-         IndexList<formalism::planning::GroundConditionalEffect> effects) :
-        index(index),
-        binding(binding),
-        condition(condition),
-        effects(std::move(effects))
+    Data(Index<formalism::RelationBinding<formalism::planning::Action>> binding_,
+         Index<formalism::planning::GroundConjunctiveCondition> condition_,
+         IndexList<formalism::planning::GroundConditionalEffect> effects_) :
+        index(),
+        binding(binding_),
+        condition(condition_),
+        effects(std::move(effects_))
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(View<Index<formalism::RelationBinding<formalism::planning::Action>>, C> binding_,
+         View<Index<formalism::planning::GroundConjunctiveCondition>, C> condition_,
+         const std::vector<View<Index<formalism::planning::GroundConditionalEffect>, C>>& effects_) :
+        index(),
+        binding(),
+        condition(),
+        effects()
+    {
+        set(binding_, binding);
+        set(condition_, condition);
+        set(effects_, effects);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;

@@ -38,15 +38,28 @@ struct Data<formalism::planning::Axiom>
     Index<formalism::planning::Atom<formalism::DerivedTag>> head;
 
     Data() = default;
-    Data(Index<formalism::planning::Axiom> index,
-         IndexList<formalism::Variable> variables,
-         Index<formalism::planning::ConjunctiveCondition> body,
-         Index<formalism::planning::Atom<formalism::DerivedTag>> head) :
-        index(index),
-        variables(std::move(variables)),
-        body(body),
-        head(head)
+    Data(IndexList<formalism::Variable> variables_,
+         Index<formalism::planning::ConjunctiveCondition> body_,
+         Index<formalism::planning::Atom<formalism::DerivedTag>> head_) :
+        index(),
+        variables(std::move(variables_)),
+        body(body_),
+        head(head_)
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(const std::vector<View<Index<formalism::Variable>, C>>& variables_,
+         View<Index<formalism::planning::ConjunctiveCondition>, C> body_,
+         View<Index<formalism::planning::Atom<formalism::DerivedTag>>, C> head_) :
+        index(),
+        variables(),
+        body(),
+        head()
+    {
+        set(variables_, variables);
+        set(body_, body);
+        set(head_, head);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;

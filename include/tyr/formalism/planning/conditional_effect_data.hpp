@@ -38,15 +38,28 @@ struct Data<formalism::planning::ConditionalEffect>
     Index<formalism::planning::ConjunctiveEffect> effect;
 
     Data() = default;
-    Data(Index<formalism::planning::ConditionalEffect> index,
-         IndexList<formalism::Variable> variables,
-         Index<formalism::planning::ConjunctiveCondition> condition,
-         Index<formalism::planning::ConjunctiveEffect> effect) :
-        index(index),
-        variables(std::move(variables)),
-        condition(condition),
-        effect(effect)
+    Data(IndexList<formalism::Variable> variables_,
+         Index<formalism::planning::ConjunctiveCondition> condition_,
+         Index<formalism::planning::ConjunctiveEffect> effect_) :
+        index(),
+        variables(std::move(variables_)),
+        condition(condition_),
+        effect(effect_)
     {
+    }
+    // Python constructor
+    template<typename C>
+    Data(const std::vector<View<Index<formalism::Variable>, C>>& variables_,
+         View<Index<formalism::planning::ConjunctiveCondition>, C> condition_,
+         View<Index<formalism::planning::ConjunctiveEffect>, C> effect_) :
+        index(),
+        variables(),
+        condition(),
+        effect()
+    {
+        set(variables_, variables);
+        set(condition_, condition);
+        set(effect_, effect);
     }
     Data(const Data& other) = delete;
     Data& operator=(const Data& other) = delete;
