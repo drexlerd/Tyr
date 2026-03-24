@@ -91,6 +91,7 @@ def main():
     # 1. Build the domain
     # --------------------------------------------------------------------------
 
+    # Create a root repository
     domain_repository = factory.create_repository()
 
     # Static predicates
@@ -358,6 +359,8 @@ def main():
     # 2. Build the lifted task
     # --------------------------------------------------------------------------
 
+    # Create a child repository, effectively inheriting all domain structures.
+    # 
     task_repository = factory.create_repository(domain_repository)
 
     fdr_context = FDRContext(task_repository)

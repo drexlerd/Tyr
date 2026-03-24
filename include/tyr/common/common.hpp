@@ -36,6 +36,7 @@
 #include "tyr/common/itertools.hpp"
 #include "tyr/common/memory.hpp"
 #include "tyr/common/observer_ptr.hpp"
+#include "tyr/common/onetbb.hpp"
 #include "tyr/common/raw_array_pool.hpp"
 #include "tyr/common/raw_array_set.hpp"
 #include "tyr/common/segmented_vector.hpp"

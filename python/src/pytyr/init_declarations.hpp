@@ -57,10 +57,8 @@ namespace tyr
  * init - declarations:
  */
 
-namespace common
-{
 extern void bind_module_definitions(nb::module_& m);
-}
+
 namespace formalism
 {
 extern void bind_module_definitions(nb::module_& m);

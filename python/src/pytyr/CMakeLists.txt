@@ -12,6 +12,7 @@ endif()
 
 nanobind_add_module(pytyr
     main.cpp
+    common/bindings.cpp
     formalism/bindings.cpp
     formalism/planning/bindings.cpp
     formalism/planning/datas.cpp
