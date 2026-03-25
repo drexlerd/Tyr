@@ -26,7 +26,7 @@ if (NOT cista_FOUND)
     ExternalProject_Add(
         cista
         GIT_REPOSITORY https://github.com/drexlerd/cista.git
-        GIT_TAG db34b0a1bbef1f5166bbf360c05fbbd79fe0596e
+        GIT_TAG 0065e285d25797c52206a570d06ab19aa1cb1887
         PREFIX ${CMAKE_BINARY_DIR}/cista
         CMAKE_ARGS ${CMAKE_ARGS}
     )

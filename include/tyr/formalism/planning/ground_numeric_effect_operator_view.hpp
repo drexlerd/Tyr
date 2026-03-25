@@ -44,6 +44,14 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
 };
 
+template<formalism::FactKind T, typename C>
+auto make_view(const Data<formalism::planning::GroundNumericEffectOperator<T>>& element, const C& context) noexcept
+{
+    return View<Data<formalism::planning::GroundNumericEffectOperator<T>>, C>(
+        element,
+        std::visit([&](const auto& arg) -> decltype(auto) { return make_view(arg, context).get_context(); }, element.value));
+}
+
 }
 
 #endif

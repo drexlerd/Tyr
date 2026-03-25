@@ -20,8 +20,11 @@
 
 #include "tyr/common/types.hpp"
 #include "tyr/common/variant.hpp"
+#include "tyr/formalism/planning/binary_operator_view.hpp"
 #include "tyr/formalism/planning/boolean_operator_data.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/function_expression_data.hpp"
+#include "tyr/formalism/planning/ground_function_expression_data.hpp"
 
 namespace tyr
 {
@@ -42,6 +45,15 @@ public:
     auto get_variant() const noexcept { return make_view(m_handle.value, *m_context); }
     auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
 };
+
+/// Canonical context depends on variable.
+template<typename T, typename C>
+auto make_view(const Data<formalism::planning::BooleanOperator<T>>& element, const C& context) noexcept
+{
+    return View<Data<formalism::planning::BooleanOperator<T>>, C>(
+        element,
+        std::visit([&](auto&& arg) -> decltype(auto) { return make_view(arg, context).get_context(); }, element.value));
+}
 
 }
 

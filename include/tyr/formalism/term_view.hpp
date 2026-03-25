@@ -42,6 +42,23 @@ public:
 
     auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
 };
+
+template<typename C>
+auto make_view(const Data<formalism::Term>& element, const C& context) noexcept
+{
+    return View<Data<formalism::Term>, C>(element,
+                                          std::visit(
+                                              [&](const auto& arg) -> const C&
+                                              {
+                                                  using Alternative = std::decay_t<decltype(arg)>;
+
+                                                  if constexpr (std::is_same_v<Alternative, formalism::ParameterIndex>)
+                                                      return context;
+                                                  else
+                                                      return make_view(arg, context).get_context();
+                                              },
+                                              element.value));
+}
 }
 
 #endif

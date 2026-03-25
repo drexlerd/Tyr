@@ -21,6 +21,7 @@
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/object_index.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
+#include "tyr/formalism/planning/fdr_fact_data.hpp"
 #include "tyr/formalism/planning/fdr_value.hpp"
 
 namespace tyr
@@ -46,6 +47,13 @@ public:
 
     auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
 };
+
+/// Canonical context depends on variable.
+template<formalism::FactKind T, typename C>
+auto make_view(const Data<formalism::planning::FDRFact<T>>& element, const C& context) noexcept
+{
+    return View<Data<formalism::planning::FDRFact<T>>, C>(element, make_view(element.variable, context).get_context());
+}
 
 }
 

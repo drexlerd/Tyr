@@ -22,6 +22,8 @@
 #include "tyr/common/variant.hpp"
 #include "tyr/formalism/datalog/boolean_operator_data.hpp"
 #include "tyr/formalism/datalog/declarations.hpp"
+#include "tyr/formalism/datalog/function_expression_data.hpp"
+#include "tyr/formalism/datalog/ground_function_expression_data.hpp"
 
 namespace tyr
 {
@@ -42,6 +44,15 @@ public:
     auto get_variant() const noexcept { return make_view(m_handle.value, *m_context); }
     auto identifying_members() const noexcept { return std::tie(m_handle, m_context->get_index()); }
 };
+
+/// Canonical context depends on variable.
+template<typename T, typename C>
+auto make_view(const Data<formalism::datalog::BooleanOperator<T>>& element, const C& context) noexcept
+{
+    return View<Data<formalism::datalog::BooleanOperator<T>>, C>(
+        element,
+        std::visit([&](auto&& arg) -> decltype(auto) { return make_view(arg, context).get_context(); }, element.value));
+}
 
 }
 
