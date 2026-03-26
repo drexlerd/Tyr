@@ -88,7 +88,6 @@ int main(int argc, char** argv)
         options.shuffle_labeled_succ_nodes = shuffle_labeled_succ_nodes;
 
         auto ff_heuristic = planning::FFRPGHeuristic<planning::LiftedTask>::create(lifted_task, execution_context);
-        ff_heuristic->set_goal(lifted_task->get_task().get_goal());
 
         auto result = planning::astar_eager::find_solution(*lifted_task, successor_generator, *ff_heuristic, options);
 

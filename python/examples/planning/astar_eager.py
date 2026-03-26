@@ -14,20 +14,55 @@ import argparse
 
 from pathlib import Path
 
-from pytyr.common import ExecutionContext
-from pytyr.formalism.planning import ParserOptions, Parser, GroundConjunctiveCondition, GroundAction
+from pytyr.common import (
+    ExecutionContext
+)
+
+from pytyr.formalism.planning import (
+    ParserOptions, 
+    Parser, 
+    GroundConjunctiveCondition, 
+    GroundAction
+)
+
 # Note: we can easily switch between lifted and ground planning by swapping the submodule, 
 # e.g., from pytyr.planning.ground import ..., and from pytyr.planning.ground.astar_eager import ...
 # However, some heuristics, like MaxRPGHeuristic might not be available yet.
-from pytyr.planning.lifted import Task, SuccessorGenerator, Heuristic, MaxRPGHeuristic, PruningStrategy, GoalStrategy, TaskGoalStrategy, State, Node, LabeledNode, Plan, Task
-from pytyr.planning.lifted.astar_eager import Options, EventHandler, DefaultEventHandler, find_solution
+from pytyr.planning.lifted import (
+    Task, 
+    SuccessorGenerator, 
+    Heuristic, 
+    FFRPGHeuristic, 
+    AddRPGHeuristic, 
+    MaxRPGHeuristic, 
+    GoalCountHeuristic, 
+    PruningStrategy, 
+    GoalStrategy, 
+    TaskGoalStrategy, 
+    State, 
+    Node, 
+    LabeledNode, 
+    Plan, 
+    Task
+)
+
+from pytyr.planning.lifted.astar_eager import (
+    Options, 
+    EventHandler, 
+    DefaultEventHandler, 
+    find_solution
+)
 
 # Lazy Greedy Best-First Search (GBFS) exposes an almost identical interface,
 # although some options and EventHandler events differ slightly.
 # To switch the search algorithm, typically only the following import needs to be changed:
 #
-# from pytyr.planning.lifted.gbfs_lazy import Options, EventHandler, DefaultEventHandler, find_solution
-
+# from pytyr.planning.lifted.gbfs_lazy import (
+#     Options, 
+#     EventHandler, 
+#     DefaultEventHandler, 
+#     find_solution
+# )
 
 class CustomHeuristic(Heuristic):
     """
@@ -134,7 +169,7 @@ def main():
     parser_options = ParserOptions()
     parser = Parser(domain_filepath, parser_options)
     lifted_task = Task(parser.parse_task(task_filepath, parser_options))
-    heuristic = MaxRPGHeuristic(lifted_task, execution_context)
+    heuristic = GoalCountHeuristic(lifted_task)
     successor_generator = SuccessorGenerator(lifted_task, execution_context)
 
     options = Options()                               # Lifted search is parallelized but only useful on large tasks.

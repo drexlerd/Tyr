@@ -115,6 +115,9 @@ template<typename Task>
 bool is_applicable(formalism::planning::FDRFactListView<formalism::FluentTag> elements, const StateContext<Task>& context);
 
 template<typename Task>
+bool is_applicable(formalism::planning::GroundBooleanOperatorView element, const StateContext<Task>& context);
+
+template<typename Task>
 bool is_applicable(formalism::planning::GroundBooleanOperatorListView elements, const StateContext<Task>& context);
 
 template<typename Task, formalism::planning::NumericEffectOpKind Op>

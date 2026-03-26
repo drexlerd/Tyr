@@ -180,9 +180,15 @@ bool is_applicable(formalism::planning::FDRFactListView<formalism::FluentTag> el
 }
 
 template<typename Task>
+bool is_applicable(formalism::planning::GroundBooleanOperatorView element, const StateContext<Task>& context)
+{
+    return evaluate(element, context);
+}
+
+template<typename Task>
 bool is_applicable(formalism::planning::GroundBooleanOperatorListView elements, const StateContext<Task>& context)
 {
-    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return evaluate(arg, context); });
+    return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, context); });
 }
 
 template<typename Task, formalism::planning::NumericEffectOpKind Op>

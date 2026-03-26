@@ -16,6 +16,7 @@ from pytyr.pytyr.planning.ground import (
     PruningStrategy,
     Heuristic,
     BlindHeuristic,
+    GoalCountHeuristic,
 )
 
 from . import (

@@ -21,10 +21,34 @@ from queue import PriorityQueue
 from dataclasses import dataclass
 from enum import Enum
 
-from pytyr.common import ExecutionContext
-from pytyr.formalism.planning import ParserOptions, Parser
-from pytyr.planning import SearchStatus
-from pytyr.planning.lifted import StateIndex, SearchResult, SuccessorGenerator, Heuristic, FFRPGHeuristic, PruningStrategy, GoalStrategy, TaskGoalStrategy, State, Node, LabeledNode, Plan, Task
+from pytyr.common import (
+    ExecutionContext
+)
+
+from pytyr.formalism.planning import (
+    ParserOptions, 
+    Parser
+)
+
+from pytyr.planning import (
+    SearchStatus
+)
+
+from pytyr.planning.lifted import (
+    StateIndex, 
+    SearchResult, 
+    SuccessorGenerator, 
+    Heuristic, 
+    FFRPGHeuristic, 
+    PruningStrategy, 
+    GoalStrategy,
+    TaskGoalStrategy, 
+    State, 
+    Node, 
+    LabeledNode, 
+    Plan, 
+    Task
+)
 
 
 class SearchNodeStatus(Enum):
@@ -59,13 +83,10 @@ def backtrack_plan(goal_node : Node, goal_search_node : SearchNode, search_nodes
 
     assert(forward_state_trajectory)
 
-    start_node = successor_generator.get_node(forward_state_trajectory[0])
+    node = successor_generator.get_node(forward_state_trajectory[0])
     labeled_succ_nodes : list[LabeledNode] = []
     
     for i in range(len(forward_state_trajectory) - 1):
-        state_index = forward_state_trajectory[i]
-        node = successor_generator.get_node(state_index)
-
         for labeled_succ_node in successor_generator.get_labeled_successor_nodes(node):
             succ_node = labeled_succ_node.node
             succ_state = succ_node.get_state()
@@ -73,8 +94,9 @@ def backtrack_plan(goal_node : Node, goal_search_node : SearchNode, search_nodes
 
             if succ_state_index == forward_state_trajectory[i + 1]:
                 labeled_succ_nodes.append(labeled_succ_node)
+                node = labeled_succ_node.node
 
-    return Plan(start_node, labeled_succ_nodes)
+    return Plan(node, labeled_succ_nodes)
 
 
 def find_solution(task : Task, successor_generator : SuccessorGenerator, heuristic : Heuristic) -> SearchResult: 

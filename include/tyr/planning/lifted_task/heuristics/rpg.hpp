@@ -46,6 +46,7 @@ public:
         m_execution_context(std::move(execution_context)),
         m_workspace(m_task->get_rpg_program().get_program_context(), m_task->get_rpg_program().get_const_program_workspace(), or_ap, and_ap, tp)
     {
+        set_goal(m_task->get_task().get_goal());
     }
 
     void set_goal(formalism::planning::GroundConjunctiveConditionView goal) override

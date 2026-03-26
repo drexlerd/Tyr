@@ -76,6 +76,9 @@ template float_t evaluate(formalism::planning::GroundFunctionExpressionView elem
 template float_t evaluate(formalism::planning::GroundArithmeticOperatorView element, const StateContext<LiftedTask>& context);
 template float_t evaluate(formalism::planning::GroundArithmeticOperatorView element, const StateContext<GroundTask>& context);
 
+template bool is_applicable(formalism::planning::GroundBooleanOperatorView element, const StateContext<LiftedTask>& context);
+template bool is_applicable(formalism::planning::GroundBooleanOperatorView element, const StateContext<GroundTask>& context);
+
 template bool evaluate(formalism::planning::GroundBooleanOperatorView element, const StateContext<LiftedTask>& context);
 template bool evaluate(formalism::planning::GroundBooleanOperatorView element, const StateContext<GroundTask>& context);
 

@@ -291,6 +291,15 @@ void bind_blind_heuristic(nb::module_& m, const std::string& name)
 }
 
 template<typename Task>
+void bind_goal_count_heuristic(nb::module_& m, const std::string& name)
+{
+    using T = GoalCountHeuristic<Task>;
+
+    nb::class_<T, Heuristic<Task>>(m, name.c_str())  //
+        .def(nb::new_([](std::shared_ptr<const Task> task) { return T::create(std::move(task)); }));
+}
+
+template<typename Task>
 void bind_rpg_max_heuristic(nb::module_& m, const std::string& name)
 {
     using T = MaxRPGHeuristic<Task>;

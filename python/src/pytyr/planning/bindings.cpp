@@ -71,6 +71,7 @@ void bind_ground_module_definitions(nb::module_& m)
     bind_pruning_strategy<GroundTask>(m, "PruningStrategy");
     bind_heuristic<GroundTask>(m, "Heuristic");
     bind_blind_heuristic<GroundTask>(m, "BlindHeuristic");
+    bind_goal_count_heuristic<GroundTask>(m, "GoalCountHeuristic");
 }
 
 void bind_lifted_module_definitions(nb::module_& m)
@@ -115,6 +116,7 @@ should not be used further.
     bind_rpg_max_heuristic<LiftedTask>(m, "MaxRPGHeuristic");
     bind_rpg_add_heuristic<LiftedTask>(m, "AddRPGHeuristic");
     bind_rpg_ff_heuristic<LiftedTask>(m, "FFRPGHeuristic");
+    bind_goal_count_heuristic<LiftedTask>(m, "GoalCountHeuristic");
 }
 
 namespace astar_eager

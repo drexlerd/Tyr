@@ -18,7 +18,10 @@ import argparse
 
 from pathlib import Path
 
-from pytyr.formalism.planning import ParserOptions, Parser
+from pytyr.formalism.planning import (
+    ParserOptions, 
+    Parser
+)
 
 
 def main():

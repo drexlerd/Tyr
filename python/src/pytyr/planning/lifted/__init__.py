@@ -19,6 +19,7 @@ from pytyr.pytyr.planning.lifted import (
     MaxRPGHeuristic,
     AddRPGHeuristic,
     FFRPGHeuristic,
+    GoalCountHeuristic,
 )
 
 from . import (

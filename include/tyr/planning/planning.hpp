@@ -38,6 +38,7 @@
 #include "tyr/planning/ground_task/successor_generator.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/heuristics/blind.hpp"
+#include "tyr/planning/heuristics/goal_count.hpp"
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/axiom_evaluator.hpp"
 #include "tyr/planning/lifted_task/heuristics/rpg_add.hpp"
