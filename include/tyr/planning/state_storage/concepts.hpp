@@ -30,7 +30,7 @@ namespace tyr::planning
 
 template<typename T, typename Packed, typename Unpacked>
 concept StorageBackendConcept = requires(T& backend, const T& cbackend, const Packed& cpacked, Unpacked& unpacked, uint_t index) {
-    { backend.insert(cpacked) } -> std::same_as<std::pair<uint_t, bool>>;
+    { backend.insert(cpacked) } -> std::same_as<Packed>;
     { cbackend.unpack(cpacked, unpacked) } -> std::same_as<void>;
 };
 }

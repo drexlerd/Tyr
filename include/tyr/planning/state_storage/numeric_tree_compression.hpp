@@ -41,15 +41,17 @@ public:
     using Unpacked = NumericUnpackedStorage<Task>;
     using Packed = NumericPackedStorage<Task, TreeCompression>;
 
-    NumericStorageBackend();
+    explicit NumericStorageBackend(StateStorageContext<Task, TreeCompression>& ctx);
 
-    std::pair<Packed, bool> insert(const Unpacked& unpacked);
+    Packed insert(const Unpacked& unpacked);
 
-    void unpack(const Packed& packed, Unpacked& unpacked) const;
+    void unpack(const Packed& packed, Unpacked& unpacked);
 
 private:
-    valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;
-    valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
+    valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& m_uint_nodes;
+    valla::IndexedHashSet<float_t, uint_t>& m_float_nodes;
+
+    std::vector<uint_t> m_uint_node_buffer;
 };
 
 }

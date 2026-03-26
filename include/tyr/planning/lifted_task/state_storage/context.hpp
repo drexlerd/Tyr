@@ -15,12 +15,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_STATE_STORAGE_HPP_
-#define TYR_PLANNING_STATE_STORAGE_HPP_
+#ifndef TYR_PLANNING_LIFTED_TASK_STATE_STORAGE_CONTEXT_HPP_
+#define TYR_PLANNING_LIFTED_TASK_STATE_STORAGE_CONTEXT_HPP_
 
 #include "tyr/common/config.hpp"
+#include "tyr/planning/state_storage.hpp"
 
 #include <concepts>
+#include <valla/valla.hpp>
 #include <vector>
 
 namespace tyr::planning
@@ -30,49 +32,11 @@ namespace tyr::planning
  * Context
  */
 
-template<typename Task, typename Tag>
-struct StateStorageContext;
-
-/**
- * Backend
- */
-
-template<typename Task, typename Tag>
-struct AtomStorageBackend;
-
-template<typename Task, typename Tag>
-struct FactStorageBackend;
-
-template<typename Task, typename Tag>
-struct NumericStorageBackend;
-
-/**
- * Packed
- */
-
-template<typename Task, typename Tag>
-struct AtomPackedStorage;
-
-template<typename Task, typename Tag>
-struct FactPackedStorage;
-
-template<typename Task, typename Tag>
-struct NumericPackedStorage;
-
-/**
- * Unpacked
- */
-
-template<typename Task>
-struct AtomUnpackedStorage;
-
-template<typename Task>
-struct FactUnpackedStorage;
-
-template<typename Task>
-struct NumericUnpackedStorage
+template<>
+struct StateStorageContext<LiftedTask, TreeCompression>
 {
-    std::vector<float_t> values;
+    valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> uint_nodes;
+    valla::IndexedHashSet<float_t, uint_t> float_nodes;
 };
 
 }
