@@ -22,6 +22,8 @@ class CMakeExtension(Extension):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = Path(os.path.abspath(sourcedir))
 
+def get_build_type():
+    return os.environ.get("TYR_BUILD_TYPE", "Release")
 
 def get_num_jobs():
     return int(os.environ.get("TYR_JOBS", multiprocessing.cpu_count()))
@@ -41,9 +43,6 @@ class CMakeBuild(build_ext):
         print("output_directory", output_directory)
         print("temp_directory", temp_directory)
 
-        build_type = "Debug" if os.environ.get('TYR_DEBUG_BUILD') else "Release"
-        print("tyr build type:", build_type)
-
         # Create the temporary build directory, if it does not already exist
         os.makedirs(temp_directory, exist_ok=True)
 
@@ -52,7 +51,7 @@ class CMakeBuild(build_ext):
         #######################################################################
 
         cmake_args = [
-            f"-DCMAKE_BUILD_TYPE={build_type}",
+            f"-DCMAKE_BUILD_TYPE={get_build_type()}",
             f"-DCMAKE_INSTALL_PREFIX={str(temp_directory / 'dependencies' / 'installs')}",
             f"-DCMAKE_PREFIX_PATH={str(temp_directory / 'dependencies' / 'installs')}",
             f"-DPython_EXECUTABLE={sys.executable}"
@@ -78,7 +77,7 @@ class CMakeBuild(build_ext):
 
         cmake_args = [
             f"-DTYR_VERSION_INFO={__version__}",
-            f"-DCMAKE_BUILD_TYPE={build_type}",  # not used on MSVC, but no harm
+            f"-DCMAKE_BUILD_TYPE={get_build_type()}",  # not used on MSVC, but no harm
             f"-DCMAKE_PREFIX_PATH={str(temp_directory / 'dependencies' / 'installs')}",
             f"-DPython_EXECUTABLE={sys.executable}",
             "-DBUILD_PYTYR=ON",
