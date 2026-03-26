@@ -61,6 +61,8 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
     datalog/formatter.cpp
     datalog/rule_scheduler.cpp
 
+    planning/state_storage/numeric_tree_compression.cpp
+
     planning/heuristics/goal_count.cpp
 
     planning/ground_task/axiom_evaluator.cpp

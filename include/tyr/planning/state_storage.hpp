@@ -18,7 +18,10 @@
 #ifndef TYR_PLANNING_STATE_STORAGE_HPP_
 #define TYR_PLANNING_STATE_STORAGE_HPP_
 
+#include "tyr/common/config.hpp"
+
 #include <concepts>
+#include <vector>
 
 namespace tyr::planning
 {
@@ -31,10 +34,10 @@ template<typename Task, typename Tag>
 struct AtomStorageBackend;
 
 template<typename Task, typename Tag>
-struct FactPackedBackend;
+struct FactStorageBackend;
 
 template<typename Task, typename Tag>
-struct NumericPackedBackend;
+struct NumericStorageBackend;
 
 /**
  * Packed
@@ -60,7 +63,10 @@ template<typename Task>
 struct FactUnpackedStorage;
 
 template<typename Task>
-struct NumericUnpackedStorage;
+struct NumericUnpackedStorage
+{
+    std::vector<float_t> values;
+};
 
 }
 

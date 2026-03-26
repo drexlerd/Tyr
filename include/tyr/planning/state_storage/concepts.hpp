@@ -28,16 +28,10 @@ namespace tyr::planning
  * Concept
  */
 
-template<typename Packed, typename Unpacked>
-concept StorageTranslationConcept = requires(Packed& packed, const Packed& cpacked, Unpacked& unpacked, const Unpacked& cunpacked) {
-    { encode(cunpacked, packed) } -> std::same_as<void>;
-    { decode(cpacked, unpacked) } -> std::same_as<void>;
-};
-
-template<typename T, typename Task, typename Packed>
-concept StorageBackendConcept = requires(T& backend, const T& cbackend, const Packed& packed, Index<State<Task>> state_index) {
-    { backend.insert(packed) } -> std::same_as<std::pair<Index<State<Task>>, bool>>;
-    { cbackend[state_index] } -> std::same_as<const Packed&>;
+template<typename T, typename Packed, typename Unpacked>
+concept StorageBackendConcept = requires(T& backend, const T& cbackend, const Packed& cpacked, Unpacked& unpacked, uint_t index) {
+    { backend.insert(cpacked) } -> std::same_as<std::pair<uint_t, bool>>;
+    { cbackend.unpack(cpacked, unpacked) } -> std::same_as<void>;
 };
 }
 

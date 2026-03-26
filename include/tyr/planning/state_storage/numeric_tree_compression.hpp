@@ -18,8 +18,39 @@
 #ifndef TYR_PLANNING_STATE_STORAGE_NUMERIC_TREE_COMPRESSION_HPP_
 #define TYR_PLANNING_STATE_STORAGE_NUMERIC_TREE_COMPRESSION_HPP_
 
+#include "tyr/common/config.hpp"
+#include "tyr/planning/state_storage.hpp"
+#include "tyr/planning/state_storage/tags.hpp"
+
+#include <limits>
+#include <valla/valla.hpp>
+
 namespace tyr::planning
 {
+
+template<typename Task>
+struct NumericPackedStorage<Task, TreeCompression>
+{
+    valla::Slot<uint_t> slot;
+};
+
+template<typename Task>
+class NumericStorageBackend<Task, TreeCompression>
+{
+public:
+    using Unpacked = NumericUnpackedStorage<Task>;
+    using Packed = NumericPackedStorage<Task, TreeCompression>;
+
+    NumericStorageBackend();
+
+    std::pair<Packed, bool> insert(const Unpacked& unpacked);
+
+    void unpack(const Packed& packed, Unpacked& unpacked) const;
+
+private:
+    valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> m_uint_nodes;
+    valla::IndexedHashSet<float_t, uint_t> m_float_nodes;
+};
 
 }
 
