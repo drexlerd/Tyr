@@ -77,7 +77,8 @@ public:
 
     const T* operator[](uint_t idx) const noexcept { return (*m_pool)[idx]; }
 
-    std::size_t size() const noexcept { return m_pool->size(); }
+    size_t size() const noexcept { return m_pool->size(); }
+    size_t array_size() const noexcept { return m_pool->array_size(); }
 
 private:
     struct IndexableHash

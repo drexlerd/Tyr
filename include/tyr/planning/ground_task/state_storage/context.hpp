@@ -38,8 +38,9 @@ struct StateStorageContext<GroundTask, TreeCompression>
 {
     struct VariableInfo
     {
-        uint_t pos;
-        uint_t length;
+        uint_t begin;
+        uint8_t offset;
+        uint8_t length;
     };
 
     RawArraySet<uint_t> fluent_array_set;

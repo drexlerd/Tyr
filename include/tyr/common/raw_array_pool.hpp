@@ -99,6 +99,7 @@ public:
     }
 
     size_t size() const noexcept { return m_size; }
+    size_t array_size() const noexcept { return m_array_size; }
 
 private:
     std::vector<std::vector<T>> m_segments;

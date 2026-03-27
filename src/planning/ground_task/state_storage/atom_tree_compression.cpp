@@ -25,7 +25,8 @@ namespace tyr::planning
 
 AtomStorageBackend<GroundTask, TreeCompression>::AtomStorageBackend(StateStorageContext<GroundTask, TreeCompression>& ctx) :
     m_array_set(ctx.derived_array_set),
-    m_num_bits(ctx.derived_num_bits)
+    m_num_bits(ctx.derived_num_bits),
+    m_buffer(m_array_set.array_size())
 {
 }
 

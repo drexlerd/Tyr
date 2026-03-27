@@ -21,6 +21,7 @@
 #include "tyr/common/config.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/state_storage.hpp"
+#include "tyr/planning/ground_task/state_storage/context.hpp"
 #include "tyr/planning/state_storage.hpp"
 #include "tyr/planning/state_storage/tags.hpp"
 
@@ -54,6 +55,8 @@ public:
 private:
     RawArraySet<uint_t>& m_array_set;
     const std::vector<VariableInfo>& m_infos;
+
+    std::vector<uint_t> m_buffer;
 };
 
 }
