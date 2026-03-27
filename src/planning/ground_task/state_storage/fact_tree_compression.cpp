@@ -54,6 +54,9 @@ void FactStorageBackend<GroundTask, TreeCompression>::unpack(const typename Fact
     const auto data = m_array_set[packed.index];
     auto& values = unpacked.values;
 
+    if (values.size() != m_infos.size())
+        values.resize(m_infos.size());
+
     for (uint_t i = 0; i < m_infos.size(); ++i)
     {
         const auto& info = m_infos[i];

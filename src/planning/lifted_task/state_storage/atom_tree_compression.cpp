@@ -40,13 +40,15 @@ AtomStorageBackend<LiftedTask, TreeCompression>::insert(const typename AtomStora
 void AtomStorageBackend<LiftedTask, TreeCompression>::unpack(const typename AtomStorageBackend<LiftedTask, TreeCompression>::Packed& packed,
                                                              typename AtomStorageBackend<LiftedTask, TreeCompression>::Unpacked& unpacked)
 {
+    auto& indices = unpacked.indices;
+
     m_uint_node_buffer.clear();
-    unpacked.indices.clear();
+    indices.clear();
 
     valla::read_sequence(packed.slot, m_uint_nodes, std::back_inserter(m_uint_node_buffer));
 
     for (const auto i : m_uint_node_buffer)
-        unpacked.indices.set(i);
+        tyr::set(i, true, indices);
 }
 
 }

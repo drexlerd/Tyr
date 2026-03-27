@@ -47,6 +47,10 @@ void AtomStorageBackend<GroundTask, TreeCompression>::unpack(const typename Atom
 {
     const auto data = m_array_set[packed.index];
     auto& indices = unpacked.indices;
+
+    if (indices.size() != m_num_bits)
+        indices.resize(m_num_bits);
+
     for (uint_t i = 0; i < m_num_bits; ++i)
         indices[i] = bool(bit::bit_reference(data, i));
 }
