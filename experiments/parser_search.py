@@ -79,6 +79,9 @@ class SearchParser(Parser):
 
         self.add_pattern("total_time_ms", r"\[Total\] Total time: (\d+) ms", type=int)
         self.add_pattern("total_time_ns", r"\[Total\] Total time: \d+ ms \((\d+) ns\)", type=int)
+        self.add_pattern("num_fluent_atoms", r"\[Total\] Number of fluent atoms: (\d+)", type=int)
+        self.add_pattern("num_derived_atoms", r"\[Total\] Number of derived atoms: (\d+)", type=int)
+        self.add_pattern("num_fluent_fterms", r"\[Total\] Number of fluent fterms: (\d+)", type=int)
         self.add_pattern("states_memory_usage_bytes", r"\[Total\] States memory usage: (\d+) bytes", type=int)
         self.add_pattern("peak_memory_usage_bytes", r"\[Total\] Peak memory usage: (\d+) bytes", type=int)
 
@@ -112,5 +115,11 @@ class SearchParser(Parser):
             Attribute("search_time_ms_per_expanded", function=geometric_mean, digits=2),
             Attribute("total_time_s", function=geometric_mean, digits=2),
             Attribute("preprocessing_time_s", function=geometric_mean, digits=2),
+            "num_fluent_atoms",
+            "num_derived_atoms",
+            "num_fluent_fterms",
+            Attribute("states_memory_usage_bytes", function=geometric_mean),
+            Attribute("peak_memory_usage_bytes", function=geometric_mean),
             Attribute("memory_mb", function=geometric_mean),
+            
         ]
