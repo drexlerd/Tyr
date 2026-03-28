@@ -49,18 +49,26 @@ public:
     using pointer = void;
 
     FDRFactIterator() noexcept : m_data(nullptr), m_i(0) {}
-    FDRFactIterator(const boost::dynamic_bitset<>& data, bool begin) noexcept : m_data(&data), m_i(begin ? 0 : m_data->size()) {}
+    FDRFactIterator(const boost::dynamic_bitset<>& data, bool begin) noexcept : m_data(&data), m_i(begin ? 0 : m_data->size())
+    {
+        if (begin)
+            while (m_i < m_data->size() && !m_data->test(m_i))
+                ++m_i;
+    }
 
     value_type operator*() const noexcept
     {
         assert(m_data);
+        assert(m_data->test(m_i));
         return Data<formalism::planning::FDRFact<Tag>> { Index<formalism::planning::FDRVariable<Tag>> { static_cast<uint_t>(m_i) },
-                                                         m_data->test(m_i) ? formalism::planning::FDRValue { 1 } : formalism::planning::FDRValue { 0 } };
+                                                         formalism::planning::FDRValue { 1 } };
     }
 
     FDRFactIterator& operator++() noexcept
     {
         ++m_i;
+        while (m_i < m_data->size() && !m_data->test(m_i))
+            ++m_i;
         return *this;
     }
     FDRFactIterator operator++(int) noexcept

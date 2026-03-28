@@ -115,6 +115,21 @@ inline bool consistent_literals(const Vertex& vertex,
                 }
             }
         }
+
+        /// constants c,c' with position pos_c < pos_c'
+        if (info.num_constants >= 1)
+        {
+            for (const auto& [pos_c, obj_c] : info.position_mappings.constant_positions)
+            {
+                auto assignment = VertexAssignment(f::ParameterIndex(pos_c), obj_c);
+                assert(assignment.is_valid());
+
+                // std::cout << assignment << std::endl;
+
+                if (polarity != pred_set.at(assignment))
+                    return false;
+            }
+        }
     }
 
     return true;
@@ -168,6 +183,9 @@ template<f::FactKind T>
 inline ClosedInterval<float_t>
 consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex, const FunctionAssignmentSets<T>& function_assignment_sets) noexcept
 {
+    const auto object_index = vertex.get_object_index();
+    const auto parameter_index = vertex.get_parameter_index();
+
     const auto function = info.function;
     const auto& func_set = function_assignment_sets.get_set(function);
 
@@ -177,9 +195,9 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex,
 
     if (info.num_parameters >= 1)
     {
-        for (const auto position : info.position_mappings.parameter_to_positions[uint_t(vertex.get_parameter_index())])
+        for (const auto position : info.position_mappings.parameter_to_positions[uint_t(parameter_index)])
         {
-            auto assignment = VertexAssignment(f::ParameterIndex(position), vertex.get_object_index());
+            auto assignment = VertexAssignment(f::ParameterIndex(position), object_index);
             assert(assignment.is_valid());
 
             // std::cout << assignment << std::endl;
@@ -187,14 +205,42 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Vertex& vertex,
             bounds = intersect(bounds, func_set.at(assignment));
             if (empty(bounds))
                 return bounds;  // early exit
+
+            if (info.num_constants >= 1)
+            {
+                for (const auto& [pos_c, obj_c] : info.position_mappings.constant_positions)
+                {
+                    assert(position != pos_c);
+
+                    auto first_pos = position;
+                    auto second_pos = pos_c;
+                    auto first_obj = object_index;
+                    auto second_obj = obj_c;
+
+                    if (first_pos > second_pos)
+                    {
+                        std::swap(first_pos, second_pos);
+                        std::swap(first_obj, second_obj);
+                    }
+
+                    auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                    assert(assignment.is_valid());
+
+                    // std::cout << assignment << std::endl;
+
+                    bounds = intersect(bounds, func_set.at(assignment));
+                    if (empty(bounds))
+                        return bounds;  // early exit
+                }
+            }
         }
     }
 
     if (info.num_constants >= 1)
     {
-        for (const auto& [position, object] : info.position_mappings.constant_positions)
+        for (const auto& [pos_c, obj_c] : info.position_mappings.constant_positions)
         {
-            auto assignment = VertexAssignment(f::ParameterIndex(position), object);
+            auto assignment = VertexAssignment(f::ParameterIndex(pos_c), obj_c);
             assert(assignment.is_valid());
 
             // std::cout << assignment << std::endl;
@@ -340,14 +386,14 @@ consistent_interval(const RuleToFunctionTermInfo<T>& info, const Edge& edge, con
     {
         for (uint_t i = 0; i < info.position_mappings.constant_positions.size(); ++i)
         {
-            const auto& [first_pos, first_obj] = info.position_mappings.constant_positions[i];
+            const auto& [first_pos_c, first_obj_c] = info.position_mappings.constant_positions[i];
 
             for (uint_t j = i + 1; j < info.position_mappings.constant_positions.size(); ++j)
             {
-                const auto& [second_pos, second_obj] = info.position_mappings.constant_positions[j];
-                assert(first_pos < second_pos);
+                const auto& [second_pos_c, second_obj_c] = info.position_mappings.constant_positions[j];
+                assert(first_pos_c < second_pos_c);
 
-                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos), first_obj, f::ParameterIndex(second_pos), second_obj);
+                auto assignment = EdgeAssignment(f::ParameterIndex(first_pos_c), first_obj_c, f::ParameterIndex(second_pos_c), second_obj_c);
                 assert(assignment.is_valid());
 
                 // std::cout << assignment << std::endl;

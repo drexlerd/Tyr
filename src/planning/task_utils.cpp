@@ -30,71 +30,11 @@
 #include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
 
-#include <algorithm>
-#include <boost/dynamic_bitset.hpp>
-#include <valla/valla.hpp>
-#include <vector>
-
 namespace f = tyr::formalism;
 namespace fp = tyr::formalism::planning;
 
 namespace tyr::planning
 {
-void fill_atoms(valla::Slot<uint_t> slot,
-                const valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
-                std::vector<uint_t>& buffer,
-                boost::dynamic_bitset<>& atoms)
-{
-    buffer.clear();
-
-    valla::read_sequence(slot, uint_nodes, std::back_inserter(buffer));
-
-    if (!buffer.empty())
-    {
-        assert(std::is_sorted(buffer.begin(), buffer.end()));
-        atoms.resize(buffer.back() + 1, false);
-        for (const auto& atom_index : buffer)
-            atoms.set(atom_index);
-    }
-}
-
-void fill_numeric_variables(valla::Slot<uint_t> slot,
-                            const valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
-                            const valla::IndexedHashSet<float_t, uint_t>& float_nodes,
-                            std::vector<uint_t>& buffer,
-                            std::vector<float_t>& numeric_variables)
-{
-    buffer.clear();
-
-    valla::read_sequence(slot, uint_nodes, std::back_inserter(buffer));
-
-    if (!buffer.empty())
-        valla::decode_from_unsigned_integrals(buffer, float_nodes, std::back_inserter(numeric_variables));
-}
-
-valla::Slot<uint_t>
-create_atoms_slot(const boost::dynamic_bitset<>& atoms, std::vector<uint_t>& buffer, valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes)
-{
-    buffer.clear();
-
-    const auto& bits = atoms;
-    for (auto i = bits.find_first(); i != boost::dynamic_bitset<>::npos; i = bits.find_next(i))
-        buffer.push_back(i);
-
-    return valla::insert_sequence(buffer, uint_nodes);
-}
-
-valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float_t>& numeric_variables,
-                                                  std::vector<uint_t>& buffer,
-                                                  valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
-                                                  valla::IndexedHashSet<float_t, uint_t>& float_nodes)
-{
-    buffer.clear();
-
-    valla::encode_as_unsigned_integrals(numeric_variables, float_nodes, std::back_inserter(buffer));
-
-    return valla::insert_sequence(buffer, uint_nodes);
-}
 
 void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
                                      const formalism::planning::Repository& repository,
@@ -102,26 +42,7 @@ void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
                                      datalog::TaggedFactSets<f::FluentTag>& fact_sets)
 {
     for (const auto fact : state.get_fluent_facts_view(repository))
-        if (fact.has_value())
-            fact_sets.predicate.insert(fp::merge_p2d<f::FluentTag, f::FluentTag>(fact.get_atom().value(), merge_context).first);
-}
-
-void insert_derived_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
-                                      const formalism::planning::Repository& repository,
-                                      fp::MergeDatalogContext& merge_context,
-                                      datalog::TaggedFactSets<f::FluentTag>& fact_sets)
-{
-    for (const auto atom : state.get_derived_atoms_view(repository))
-        fact_sets.predicate.insert(fp::merge_p2d<f::DerivedTag, f::FluentTag>(atom, merge_context).first);
-}
-
-void insert_numeric_variables_to_fact_set(const UnpackedState<LiftedTask>& state,
-                                          const formalism::planning::Repository& repository,
-                                          fp::MergeDatalogContext& merge_context,
-                                          datalog::TaggedFactSets<f::FluentTag>& fact_sets)
-{
-    for (const auto& [fterm, value] : state.get_fluent_fterm_values_view(repository))
-        fact_sets.function.insert(fp::merge_p2d(fterm, merge_context).first, value);
+        fact_sets.predicate.insert(fp::merge_p2d<f::FluentTag, f::FluentTag>(fact.get_atom().value(), merge_context).first);
 }
 
 }

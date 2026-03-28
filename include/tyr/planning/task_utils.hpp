@@ -22,40 +22,12 @@
 #include "tyr/common/config.hpp"
 #include "tyr/datalog/declarations.hpp"
 #include "tyr/formalism/datalog/repository.hpp"
-#include "tyr/formalism/planning/merge_datalog.hpp"
+#include "tyr/formalism/planning/merge_datalog_decl.hpp"
 #include "tyr/formalism/planning/repository.hpp"
-#include "tyr/formalism/planning/views.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
-
-#include <boost/dynamic_bitset.hpp>
-#include <valla/valla.hpp>
-#include <vector>
 
 namespace tyr::planning
 {
-
-// Slot -> Unpacked
-
-extern void fill_atoms(valla::Slot<uint_t> slot,
-                       const valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
-                       std::vector<uint_t>& buffer,
-                       boost::dynamic_bitset<>& atoms);
-
-extern void fill_numeric_variables(valla::Slot<uint_t> slot,
-                                   const valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
-                                   const valla::IndexedHashSet<float_t, uint_t>& float_nodes,
-                                   std::vector<uint_t>& buffer,
-                                   std::vector<float_t>& numeric_variables);
-
-// Unpacked -> Slot
-
-extern valla::Slot<uint_t>
-create_atoms_slot(const boost::dynamic_bitset<>& atoms, std::vector<uint_t>& buffer, valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes);
-
-extern valla::Slot<uint_t> create_numeric_variables_slot(const std::vector<float_t>& numeric_variables,
-                                                         std::vector<uint_t>& buffer,
-                                                         valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& uint_nodes,
-                                                         valla::IndexedHashSet<float_t, uint_t>& float_nodes);
 
 // Fact Set
 
@@ -63,16 +35,6 @@ extern void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTask>& sta
                                             const formalism::planning::Repository& repository,
                                             formalism::planning::MergeDatalogContext& merge_context,
                                             datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
-
-extern void insert_derived_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
-                                             const formalism::planning::Repository& repository,
-                                             formalism::planning::MergeDatalogContext& merge_context,
-                                             datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
-
-extern void insert_numeric_variables_to_fact_set(const UnpackedState<LiftedTask>& state,
-                                                 const formalism::planning::Repository& repository,
-                                                 formalism::planning::MergeDatalogContext& merge_context,
-                                                 datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);
 
 }
 

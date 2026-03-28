@@ -23,112 +23,196 @@
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/declarations.hpp"
 
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <type_traits>
+
 namespace tyr::formalism
 {
 
-template<typename T>
-inline bool apply(OpEq, T lhs, T rhs)
+template<std::floating_point T>
+struct FloatCmp
 {
-    return lhs == rhs;
+    static constexpr T abs_eps = static_cast<T>(1e-12);
+    static constexpr T rel_eps = static_cast<T>(1e-12);
+
+    static T tol(T a, T b) noexcept { return std::max(abs_eps, rel_eps * std::max(std::abs(a), std::abs(b))); }
+
+    static bool eq(T a, T b) noexcept { return std::abs(a - b) <= tol(a, b); }
+
+    static bool ne(T a, T b) noexcept { return !eq(a, b); }
+
+    static bool le(T a, T b) noexcept { return a <= b + tol(a, b); }
+
+    static bool lt(T a, T b) noexcept { return a < b - tol(a, b); }
+
+    static bool ge(T a, T b) noexcept { return a + tol(a, b) >= b; }
+
+    static bool gt(T a, T b) noexcept { return a > b + tol(a, b); }
+};
+
+namespace detail
+{
+template<typename T>
+bool eq_scalar(T lhs, T rhs) noexcept
+{
+    if constexpr (std::is_floating_point_v<T>)
+        return FloatCmp<T>::eq(lhs, rhs);
+    else
+        return lhs == rhs;
 }
 
 template<typename T>
-inline bool apply(OpNe, T lhs, T rhs)
+bool ne_scalar(T lhs, T rhs) noexcept
 {
-    return lhs != rhs;
+    if constexpr (std::is_floating_point_v<T>)
+        return FloatCmp<T>::ne(lhs, rhs);
+    else
+        return lhs != rhs;
 }
 
 template<typename T>
-inline bool apply(OpGe, T lhs, T rhs)
+bool ge_scalar(T lhs, T rhs) noexcept
 {
-    return lhs >= rhs;
+    if constexpr (std::is_floating_point_v<T>)
+        return FloatCmp<T>::ge(lhs, rhs);
+    else
+        return lhs >= rhs;
 }
 
 template<typename T>
-inline bool apply(OpGt, T lhs, T rhs)
+bool gt_scalar(T lhs, T rhs) noexcept
 {
-    return lhs > rhs;
+    if constexpr (std::is_floating_point_v<T>)
+        return FloatCmp<T>::gt(lhs, rhs);
+    else
+        return lhs > rhs;
 }
 
 template<typename T>
-inline bool apply(OpLe, T lhs, T rhs)
+bool le_scalar(T lhs, T rhs) noexcept
 {
-    return lhs <= rhs;
+    if constexpr (std::is_floating_point_v<T>)
+        return FloatCmp<T>::le(lhs, rhs);
+    else
+        return lhs <= rhs;
 }
 
 template<typename T>
-inline bool apply(OpLt, T lhs, T rhs)
+bool lt_scalar(T lhs, T rhs) noexcept
 {
-    return lhs < rhs;
+    if constexpr (std::is_floating_point_v<T>)
+        return FloatCmp<T>::lt(lhs, rhs);
+    else
+        return lhs < rhs;
+}
 }
 
 /**
- * Existential
+ * Scalar comparisons
  */
 
-template<IsFloatingPoint A>
-inline bool apply_existential(OpEq, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<typename T>
+bool apply(OpEq, T lhs, T rhs) noexcept
 {
-    if (empty(lhs) || empty(rhs))
-        return false;
-
-    // ∃ x ∈ lhs, ∃ y ∈ rhs : x = y.
-    return lower(lhs) <= upper(rhs) && upper(lhs) >= lower(rhs);
+    return detail::eq_scalar(lhs, rhs);
 }
 
-template<IsFloatingPoint A>
-inline bool apply_existential(OpNe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<typename T>
+bool apply(OpNe, T lhs, T rhs) noexcept
+{
+    return detail::ne_scalar(lhs, rhs);
+}
+
+template<typename T>
+bool apply(OpGe, T lhs, T rhs) noexcept
+{
+    return detail::ge_scalar(lhs, rhs);
+}
+
+template<typename T>
+bool apply(OpGt, T lhs, T rhs) noexcept
+{
+    return detail::gt_scalar(lhs, rhs);
+}
+
+template<typename T>
+bool apply(OpLe, T lhs, T rhs) noexcept
+{
+    return detail::le_scalar(lhs, rhs);
+}
+
+template<typename T>
+bool apply(OpLt, T lhs, T rhs) noexcept
+{
+    return detail::lt_scalar(lhs, rhs);
+}
+
+/**
+ * Existential interval comparisons
+ */
+
+template<std::floating_point A>
+bool apply_existential(OpEq, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {
     if (empty(lhs) || empty(rhs))
         return false;
 
-    // ∃ x ∈ lhs, ∃ y ∈ rhs : x ≠ y.
-    const bool lhs_is_point = lower(lhs) == upper(lhs);
-    const bool rhs_is_point = lower(rhs) == upper(rhs);
+    return detail::le_scalar(lower(lhs), upper(rhs)) && detail::ge_scalar(upper(lhs), lower(rhs));
+}
+
+template<std::floating_point A>
+bool apply_existential(OpNe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+{
+    if (empty(lhs) || empty(rhs))
+        return false;
+
+    const bool lhs_is_point = detail::eq_scalar(lower(lhs), upper(lhs));
+    const bool rhs_is_point = detail::eq_scalar(lower(rhs), upper(rhs));
+
     if (lhs_is_point && rhs_is_point)
-        return lower(lhs) != lower(rhs);
+        return detail::ne_scalar(lower(lhs), lower(rhs));
+
     return true;
 }
 
-template<IsFloatingPoint A>
-inline bool apply_existential(OpGe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<std::floating_point A>
+bool apply_existential(OpGe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {
     if (empty(lhs) || empty(rhs))
         return false;
 
-    // ∃ x ∈ lhs, ∃ y ∈ rhs : x >= y.
-    return upper(lhs) >= lower(rhs);
+    return detail::ge_scalar(upper(lhs), lower(rhs));
 }
 
-template<IsFloatingPoint A>
-inline bool apply_existential(OpGt, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<std::floating_point A>
+bool apply_existential(OpGt, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {
     if (empty(lhs) || empty(rhs))
         return false;
 
-    // ∃ x ∈ lhs, ∃ y ∈ rhs : x > y.
-    return upper(lhs) > lower(rhs);
+    return detail::gt_scalar(upper(lhs), lower(rhs));
 }
 
-template<IsFloatingPoint A>
-inline bool apply_existential(OpLe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<std::floating_point A>
+bool apply_existential(OpLe, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {
     if (empty(lhs) || empty(rhs))
         return false;
 
-    // ∃ x ∈ lhs, ∃ y ∈ rhs : x <= y.
-    return lower(lhs) <= upper(rhs);
+    return detail::le_scalar(lower(lhs), upper(rhs));
 }
 
-template<IsFloatingPoint A>
-inline bool apply_existential(OpLt, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
+template<std::floating_point A>
+bool apply_existential(OpLt, const ClosedInterval<A>& lhs, const ClosedInterval<A>& rhs)
 {
     if (empty(lhs) || empty(rhs))
         return false;
 
-    // ∃ x ∈ lhs, ∃ y ∈ rhs : x < y.
-    return lower(lhs) < upper(rhs);
+    return detail::lt_scalar(lower(lhs), upper(rhs));
 }
+
 }
 
 #endif

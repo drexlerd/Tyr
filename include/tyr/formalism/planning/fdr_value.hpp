@@ -29,6 +29,8 @@ struct FDRValue : FixedUintMixin<FDRValue>
     using Base = FixedUintMixin<FDRValue>;
     using Base::Base;
 
+    bool is_none() const noexcept { return *this == none(); }
+
     static constexpr FDRValue none() noexcept { return FDRValue { 0 }; }
 };
 

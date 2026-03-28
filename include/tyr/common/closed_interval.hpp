@@ -28,7 +28,7 @@
 
 namespace tyr
 {
-template<IsFloatingPoint A>
+template<std::floating_point A>
 class ClosedInterval
 {
 public:
@@ -119,7 +119,7 @@ static_assert(sizeof(ClosedInterval<double>) == 16);
  * Pretty printing
  */
 
-template<IsFloatingPoint A>
+template<std::floating_point A>
 inline std::ostream& operator<<(std::ostream& out, const ClosedInterval<A>& element)
 {
     out << "[" << lower(element) << "," << upper(element) << "]";

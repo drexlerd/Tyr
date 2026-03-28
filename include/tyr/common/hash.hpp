@@ -116,7 +116,7 @@ struct Hash<::cista::optional<T>>
 /// @brief Hash specialization for double.
 ///
 /// Returns fixed salt for NaN.
-template<IsFloatingPoint T>
+template<std::floating_point T>
 struct Hash<T>
 {
     size_t operator()(const T& el) const noexcept

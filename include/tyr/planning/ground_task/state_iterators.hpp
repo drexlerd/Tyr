@@ -49,7 +49,12 @@ public:
     using pointer = void;
 
     FDRFactIterator() noexcept : m_data(nullptr), m_i(0) {}
-    FDRFactIterator(const std::vector<uint_t>& data, bool begin) noexcept : m_data(&data), m_i(begin ? 0 : m_data->size()) {}
+    FDRFactIterator(const std::vector<uint_t>& data, bool begin) noexcept : m_data(&data), m_i(begin ? 0 : m_data->size())
+    {
+        if (begin)
+            while (m_i < m_data->size() && formalism::planning::FDRValue((*m_data)[m_i]).is_none())
+                ++m_i;
+    }
 
     value_type operator*() const noexcept
     {
@@ -61,6 +66,8 @@ public:
     FDRFactIterator& operator++() noexcept
     {
         ++m_i;
+        while (m_i < m_data->size() && formalism::planning::FDRValue((*m_data)[m_i]).is_none())
+            ++m_i;
         return *this;
     }
     FDRFactIterator operator++(int) noexcept

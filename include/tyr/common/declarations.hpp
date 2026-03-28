@@ -40,10 +40,6 @@ namespace tyr
  * General utility
  */
 
-/// @brief Checks whether T is a floating point
-template<typename T>
-concept IsFloatingPoint = std::is_floating_point_v<T>;
-
 /// @brief Check whether T has a function that returns members that aims to identify the class.
 template<typename T>
 concept Identifiable = requires(const T a) {

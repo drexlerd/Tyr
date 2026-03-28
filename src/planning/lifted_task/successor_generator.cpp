@@ -41,6 +41,24 @@ namespace tyr::planning
 {
 namespace
 {
+void insert_derived_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
+                                      const formalism::planning::Repository& repository,
+                                      fp::MergeDatalogContext& merge_context,
+                                      datalog::TaggedFactSets<f::FluentTag>& fact_sets)
+{
+    for (const auto atom : state.get_derived_atoms_view(repository))
+        fact_sets.predicate.insert(fp::merge_p2d<f::DerivedTag, f::FluentTag>(atom, merge_context).first);
+}
+
+void insert_numeric_variables_to_fact_set(const UnpackedState<LiftedTask>& state,
+                                          const formalism::planning::Repository& repository,
+                                          fp::MergeDatalogContext& merge_context,
+                                          datalog::TaggedFactSets<f::FluentTag>& fact_sets)
+{
+    for (const auto& [fterm, value] : state.get_fluent_fterm_values_view(repository))
+        fact_sets.function.insert(fp::merge_p2d(fterm, merge_context).first, value);
+}
+
 void insert_extended_state(const UnpackedState<LiftedTask>& unpacked_state,
                            const fp::Repository& atoms_context,
                            fp::MergeDatalogContext& merge_context,
