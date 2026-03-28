@@ -103,6 +103,13 @@ int main(int argc, char** argv)
             plan_file << result.plan.value();
             plan_file.close();
         }
+
+        std::cout << "[Total] Number of fluent atoms: " << lifted_task->get_repository()->size<formalism::planning::GroundAtom<formalism::FluentTag>>()
+                  << std::endl;
+        std::cout << "[Total] Number of derived atoms: " << lifted_task->get_repository()->size<formalism::planning::GroundAtom<formalism::DerivedTag>>()
+                  << std::endl;
+        std::cout << "[Total] Number of fluent fterms: " << lifted_task->get_repository()->size<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>()
+                  << std::endl;
         std::cout << "[Total] States memory usage: " << successor_generator.get_state_repository()->memory_usage() << " bytes" << std::endl;
     }
 
