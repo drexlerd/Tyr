@@ -15,11 +15,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/ground_task/state_storage/fact_tree_compression.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/fact.hpp"
 
 #include "tyr/common/bit.hpp"
 #include "tyr/planning/ground_task.hpp"
-#include "tyr/planning/ground_task/state_storage/context.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/context.hpp"
 
 namespace tyr::planning
 {

@@ -15,12 +15,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/state_storage/numeric_tree_compression.hpp"
+#include "tyr/planning/state_storage/tree_compression/numeric.hpp"
 
 #include "tyr/planning/ground_task.hpp"
-#include "tyr/planning/ground_task/state_storage/context.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/context.hpp"
 #include "tyr/planning/lifted_task.hpp"
-#include "tyr/planning/lifted_task/state_storage/context.hpp"
+#include "tyr/planning/lifted_task/state_storage/tree_compression/context.hpp"
 
 namespace tyr::planning
 {

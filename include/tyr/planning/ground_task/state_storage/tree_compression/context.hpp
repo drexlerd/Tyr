@@ -15,8 +15,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_GROUND_TASK_STATE_STORAGE_CONTEXT_HPP_
-#define TYR_PLANNING_GROUND_TASK_STATE_STORAGE_CONTEXT_HPP_
+#ifndef TYR_PLANNING_GROUND_TASK_STATE_STORAGE_TREE_COMPRESSION_CONTEXT_HPP_
+#define TYR_PLANNING_GROUND_TASK_STATE_STORAGE_TREE_COMPRESSION_CONTEXT_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/common/raw_array_set.hpp"

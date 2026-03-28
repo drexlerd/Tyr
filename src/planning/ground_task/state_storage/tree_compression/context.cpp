@@ -15,7 +15,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "tyr/planning/ground_task/state_storage/context.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/context.hpp"
 
 #include "tyr/planning/ground_task.hpp"
 

@@ -15,13 +15,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_GROUND_TASK_STATE_STORAGE_FACT_TREE_COMPRESSION_HPP_
-#define TYR_PLANNING_GROUND_TASK_STATE_STORAGE_FACT_TREE_COMPRESSION_HPP_
+#ifndef TYR_PLANNING_GROUND_TASK_STATE_STORAGE_TREE_COMPRESSION_FACT_HPP_
+#define TYR_PLANNING_GROUND_TASK_STATE_STORAGE_TREE_COMPRESSION_FACT_HPP_
 
 #include "tyr/common/config.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/state_storage.hpp"
-#include "tyr/planning/ground_task/state_storage/context.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/context.hpp"
 #include "tyr/planning/state_storage.hpp"
 #include "tyr/planning/state_storage/tags.hpp"
 

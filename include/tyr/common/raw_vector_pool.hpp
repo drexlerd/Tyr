@@ -3,199 +3,211 @@
 
 #include "tyr/common/bit.hpp"
 
-#include <bit>
 #include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <new>
+#include <type_traits>
 #include <vector>
 
 namespace tyr
 {
 
-template<std::unsigned_integral Block>
+template<std::unsigned_integral Size, typename T>
+    requires std::is_trivially_copyable_v<T>
 class RawVectorView
 {
 public:
-    RawVectorView() noexcept : m_data(nullptr) {}
-    explicit RawVectorView(Block* data) noexcept : m_data(data) {}
+    RawVectorView() noexcept : m_ptr(nullptr) {}
+    explicit RawVectorView(std::byte* ptr) noexcept : m_ptr(ptr) {}
 
     size_t size() const noexcept
     {
-        assert(m_data);
-        return static_cast<size_t>(m_data[0]);
+        assert(m_ptr);
+        Size value;
+        std::memcpy(&value, m_ptr, sizeof(Size));
+        return static_cast<size_t>(value);
     }
 
-    Block* data() noexcept
+    T* data() noexcept
     {
-        assert(m_data);
-        return m_data + 1;
+        assert(m_ptr);
+        return std::launder(reinterpret_cast<T*>(m_ptr + payload_offset()));
     }
 
-    const Block* data() const noexcept
+    const T* data() const noexcept
     {
-        assert(m_data);
-        return m_data + 1;
+        assert(m_ptr);
+        return std::launder(reinterpret_cast<const T*>(m_ptr + payload_offset()));
     }
 
-    Block& operator[](size_t i) noexcept
+    T& operator[](size_t i) noexcept
     {
-        assert(m_data);
         assert(i < size());
-        return m_data[1 + i];
+        return data()[i];
     }
 
-    const Block& operator[](size_t i) const noexcept
+    const T& operator[](size_t i) const noexcept
     {
-        assert(m_data);
         assert(i < size());
-        return m_data[1 + i];
+        return data()[i];
     }
 
-    Block* raw_data() noexcept { return m_data; }
-    const Block* raw_data() const noexcept { return m_data; }
+    std::byte* raw_data() noexcept { return m_ptr; }
+    const std::byte* raw_data() const noexcept { return m_ptr; }
 
 private:
-    Block* m_data;
+    static constexpr size_t align_up(size_t n, size_t a) noexcept { return (n + a - 1) / a * a; }
+
+    static constexpr size_t payload_offset() noexcept { return align_up(sizeof(Size), alignof(T)); }
+
+    std::byte* m_ptr;
 };
 
-template<std::unsigned_integral Block>
-class RawVectorView<const Block>
+template<std::unsigned_integral Size, typename T>
+    requires std::is_trivially_copyable_v<T>
+class RawVectorView<const Size, const T>
 {
 public:
-    RawVectorView() noexcept : m_data(nullptr) {}
-    explicit RawVectorView(const Block* data) noexcept : m_data(data) {}
+    RawVectorView() noexcept : m_ptr(nullptr) {}
+    explicit RawVectorView(const std::byte* ptr) noexcept : m_ptr(ptr) {}
 
     size_t size() const noexcept
     {
-        assert(m_data);
-        return static_cast<size_t>(m_data[0]);
+        assert(m_ptr);
+        Size value;
+        std::memcpy(&value, m_ptr, sizeof(Size));
+        return static_cast<size_t>(value);
     }
 
-    const Block* data() const noexcept
+    const T* data() const noexcept
     {
-        assert(m_data);
-        return m_data + 1;
+        assert(m_ptr);
+        return std::launder(reinterpret_cast<const T*>(m_ptr + payload_offset()));
     }
 
-    const Block& operator[](size_t i) const noexcept
+    const T& operator[](size_t i) const noexcept
     {
-        assert(m_data);
         assert(i < size());
-        return m_data[1 + i];
+        return data()[i];
     }
 
-    const Block* raw_data() const noexcept { return m_data; }
+    const std::byte* raw_data() const noexcept { return m_ptr; }
 
 private:
-    const Block* m_data;
+    static constexpr size_t align_up(size_t n, size_t a) noexcept { return (n + a - 1) / a * a; }
+
+    static constexpr size_t payload_offset() noexcept { return align_up(sizeof(Size), alignof(T)); }
+
+    const std::byte* m_ptr;
 };
 
-template<std::unsigned_integral Block, size_t VectorsPerSegment = 1024>
+template<std::unsigned_integral Size, typename T, size_t FirstSegmentBytes = 1024>
+    requires std::is_trivially_copyable_v<T>
 class RawVectorPool
 {
-    static_assert(bit::is_power_of_two(VectorsPerSegment));
+    static_assert(bit::is_power_of_two(FirstSegmentBytes));
 
 private:
-    static constexpr size_t next_power_of_two_at_least(size_t n) noexcept
+    static constexpr size_t align_up(size_t n, size_t a) noexcept { return (n + a - 1) / a * a; }
+
+    static constexpr size_t payload_offset() noexcept { return align_up(sizeof(Size), alignof(T)); }
+
+    static constexpr size_t slot_size_bytes(size_t payload_size) noexcept { return payload_offset() + payload_size * sizeof(T); }
+
+    static void write_size(std::byte* ptr, Size size) noexcept { std::memcpy(ptr, &size, sizeof(Size)); }
+
+    static T* payload_ptr(std::byte* ptr) noexcept { return std::launder(reinterpret_cast<T*>(ptr + payload_offset())); }
+
+    struct Segment
     {
-        if (n <= 1)
-            return 1;
-        return size_t(1) << std::bit_width(n - 1);
-    }
+        std::vector<std::byte> storage;
+        size_t used_bytes = 0;
 
-    static constexpr size_t slot_width(size_t payload_capacity) noexcept { return 1 + payload_capacity; }
+        explicit Segment(size_t num_bytes) : storage(num_bytes), used_bytes(0) {}
 
-    bool current_segment_has_space() const noexcept { return !m_segment_storage.empty() && m_current_used_slots < VectorsPerSegment; }
+        size_t capacity_bytes() const noexcept { return storage.size(); }
+        size_t remaining_bytes() const noexcept { return storage.size() - used_bytes; }
 
-    bool current_segment_fits(size_t payload_size) const noexcept { return !m_segment_storage.empty() && m_current_payload_capacity >= payload_size; }
+        std::byte* allocate(size_t num_bytes) noexcept
+        {
+            assert(used_bytes + num_bytes <= storage.size());
+            std::byte* ptr = storage.data() + used_bytes;
+            used_bytes += num_bytes;
+            return ptr;
+        }
 
-    void append_segment(size_t payload_capacity)
+        void clear() noexcept { used_bytes = 0; }
+    };
+
+    bool current_segment_fits(size_t needed_bytes) const noexcept { return !m_segments.empty() && m_segments.back().remaining_bytes() >= needed_bytes; }
+
+    void ensure_current_segment(size_t needed_bytes)
     {
-        m_segment_storage.emplace_back(slot_width(payload_capacity) * VectorsPerSegment);
-        m_current_payload_capacity = payload_capacity;
-        m_current_used_slots = 0;
-    }
-
-    void ensure_current_segment(size_t payload_size)
-    {
-        if (current_segment_fits(payload_size) && current_segment_has_space())
+        if (current_segment_fits(needed_bytes))
             return;
 
-        size_t new_capacity;
-        if (m_segment_storage.empty())
-        {
-            new_capacity = next_power_of_two_at_least(payload_size);
-        }
-        else
-        {
-            new_capacity = m_current_payload_capacity;
-            while (new_capacity < payload_size)
-                new_capacity *= 2;
+        size_t next_bytes = m_segments.empty() ? FirstSegmentBytes : m_segments.back().capacity_bytes() * 2;
+        while (next_bytes < needed_bytes)
+            next_bytes *= 2;
 
-            if (new_capacity == m_current_payload_capacity)
-                new_capacity *= 2;
-        }
-
-        append_segment(new_capacity);
+        m_segments.emplace_back(next_bytes);
     }
 
 public:
-    RawVectorPool() : m_segment_storage(), m_index(), m_current_payload_capacity(0), m_current_used_slots(0) {}
+    RawVectorPool() = default;
 
     RawVectorPool(const RawVectorPool&) = delete;
     RawVectorPool& operator=(const RawVectorPool&) = delete;
     RawVectorPool(RawVectorPool&&) = default;
     RawVectorPool& operator=(RawVectorPool&&) = default;
 
-    uint_t insert(const std::vector<Block>& value) { return insert(value.data(), value.size()); }
+    uint_t insert(const std::vector<T>& value) { return insert(value.data(), value.size()); }
 
-    uint_t insert(const Block* data, size_t size)
+    uint_t insert(const T* data, size_t size)
     {
-        assert(size <= std::numeric_limits<Block>::max());
+        assert(size <= std::numeric_limits<Size>::max());
 
-        ensure_current_segment(size);
+        const size_t needed_bytes = slot_size_bytes(size);
+        ensure_current_segment(needed_bytes);
 
-        auto& seg = m_segment_storage.back();
-        Block* slot = seg.data() + m_current_used_slots * slot_width(m_current_payload_capacity);
-        ++m_current_used_slots;
+        std::byte* slot = m_segments.back().allocate(needed_bytes);
+        write_size(slot, static_cast<Size>(size));
 
-        slot[0] = static_cast<Block>(size);
         if (size > 0)
-            std::memcpy(slot + 1, data, size * sizeof(Block));
+            std::memcpy(payload_ptr(slot), data, size * sizeof(T));
 
         m_index.push_back(slot);
         return static_cast<uint_t>(m_index.size() - 1);
     }
 
-    RawVectorView<Block> operator[](uint_t index) noexcept
+    RawVectorView<Size, T> operator[](uint_t index) noexcept
     {
         assert(index < m_index.size());
-        return RawVectorView<Block>(m_index[index]);
+        return RawVectorView<Size, T>(m_index[index]);
     }
 
-    RawVectorView<const Block> operator[](uint_t index) const noexcept
+    RawVectorView<const Size, const T> operator[](uint_t index) const noexcept
     {
         assert(index < m_index.size());
-        return RawVectorView<const Block>(m_index[index]);
+        return RawVectorView<const Size, const T>(m_index[index]);
     }
 
     size_t size() const noexcept { return m_index.size(); }
 
     void clear() noexcept
     {
+        for (auto& seg : m_segments)
+            seg.clear();
         m_index.clear();
-        m_current_used_slots = 0;
     }
 
 private:
-    std::vector<std::vector<Block>> m_segment_storage;
-    std::vector<Block*> m_index;
-
-    size_t m_current_payload_capacity;
-    size_t m_current_used_slots;
+    std::vector<Segment> m_segments;
+    std::vector<std::byte*> m_index;
 };
 
 }  // namespace tyr

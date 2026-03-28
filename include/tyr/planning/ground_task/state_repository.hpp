@@ -29,11 +29,11 @@
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/state_repository.hpp"
 //
-#include "tyr/planning/ground_task/state_storage/atom_tree_compression.hpp"
-#include "tyr/planning/ground_task/state_storage/context.hpp"
-#include "tyr/planning/ground_task/state_storage/fact_tree_compression.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/atom.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/context.hpp"
+#include "tyr/planning/ground_task/state_storage/tree_compression/fact.hpp"
 #include "tyr/planning/state_storage/config.hpp"
-#include "tyr/planning/state_storage/numeric_tree_compression.hpp"
+#include "tyr/planning/state_storage/tree_compression/numeric.hpp"
 
 #include <memory>
 #include <valla/valla.hpp>

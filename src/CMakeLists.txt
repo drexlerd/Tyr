@@ -61,13 +61,13 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
     datalog/formatter.cpp
     datalog/rule_scheduler.cpp
 
-    planning/state_storage/numeric_tree_compression.cpp
+    planning/state_storage/tree_compression/numeric.cpp
 
     planning/heuristics/goal_count.cpp
 
-    planning/ground_task/state_storage/atom_tree_compression.cpp
-    planning/ground_task/state_storage/fact_tree_compression.cpp
-    planning/ground_task/state_storage/context.cpp
+    planning/ground_task/state_storage/tree_compression/atom.cpp
+    planning/ground_task/state_storage/tree_compression/fact.cpp
+    planning/ground_task/state_storage/tree_compression/context.cpp
     planning/ground_task/axiom_evaluator.cpp
     planning/ground_task/axiom_stratification.cpp
     planning/ground_task/node.cpp
@@ -75,8 +75,8 @@ add_library(core STATIC ${TYR_PRIVATE_HEADER_FILES} ${TYR_PUBLIC_HEADER_FILES}
     planning/ground_task/state.cpp
     planning/ground_task/successor_generator.cpp
 
-    planning/lifted_task/state_storage/atom_tree_compression.cpp
-    planning/lifted_task/state_storage/fact_tree_compression.cpp
+    planning/lifted_task/state_storage/tree_compression/atom.cpp
+    planning/lifted_task/state_storage/tree_compression/fact.cpp
     planning/lifted_task/heuristics/rpg_add.cpp
     planning/lifted_task/heuristics/rpg_max.cpp
     planning/lifted_task/heuristics/rpg_ff.cpp

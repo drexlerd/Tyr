@@ -15,38 +15,35 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_LIFTED_TASK_STATE_STORAGE_FACT_TREE_COMPRESSION_HPP_
-#define TYR_PLANNING_LIFTED_TASK_STATE_STORAGE_FACT_TREE_COMPRESSION_HPP_
+#ifndef TYR_PLANNING_STATE_STORAGE_TREE_COMPRESSION_NUMERIC_HPP_
+#define TYR_PLANNING_STATE_STORAGE_TREE_COMPRESSION_NUMERIC_HPP_
 
 #include "tyr/common/config.hpp"
-#include "tyr/planning/declarations.hpp"
-#include "tyr/planning/lifted_task/state_storage.hpp"
 #include "tyr/planning/state_storage.hpp"
 #include "tyr/planning/state_storage/tags.hpp"
 
-#include <boost/dynamic_bitset.hpp>
 #include <limits>
 #include <valla/valla.hpp>
 
 namespace tyr::planning
 {
 
-template<>
-struct FactPackedStorage<LiftedTask, TreeCompression>
+template<typename Task>
+struct NumericPackedStorage<Task, TreeCompression>
 {
     valla::Slot<uint_t> slot;
 
     auto identifying_members() const noexcept { return std::tie(slot.i1, slot.i2); }
 };
 
-template<>
-class FactStorageBackend<LiftedTask, TreeCompression>
+template<typename Task>
+class NumericStorageBackend<Task, TreeCompression>
 {
 public:
-    using Unpacked = FactUnpackedStorage<LiftedTask>;
-    using Packed = FactPackedStorage<LiftedTask, TreeCompression>;
+    using Unpacked = NumericUnpackedStorage<Task>;
+    using Packed = NumericPackedStorage<Task, TreeCompression>;
 
-    explicit FactStorageBackend(StateStorageContext<LiftedTask, TreeCompression>& ctx);
+    explicit NumericStorageBackend(StateStorageContext<Task, TreeCompression>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 
@@ -54,6 +51,7 @@ public:
 
 private:
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t>& m_uint_nodes;
+    valla::IndexedHashSet<float_t, uint_t>& m_float_nodes;
 
     std::vector<uint_t> m_uint_node_buffer;
 };
