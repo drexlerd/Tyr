@@ -23,6 +23,7 @@
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/state_index.hpp"
+#include "tyr/planning/task.hpp"
 #include "tyr/planning/unpacked_state.hpp"
 
 #include <concepts>
@@ -31,16 +32,16 @@
 namespace tyr
 {
 
-template<typename Task, typename C>
-class View<Index<planning::State<Task>>, C>
+template<planning::TaskKind Kind, typename C>
+class View<Index<planning::State<Kind>>, C>
 {
-    static_assert(dependent_false<Task>::value, "State is not defined for type T.");
+    static_assert(dependent_false<Kind>::value, "State is not defined for type Kind.");
 };
 
 namespace planning
 {
-template<typename Task>
-using StateView = View<Index<State<Task>>, std::shared_ptr<StateRepository<Task>>>;
+template<TaskKind Kind>
+using StateView = View<Index<State<Kind>>, std::shared_ptr<StateRepository<Kind>>>;
 
 /**
  * IterableStateConcept
@@ -97,42 +98,44 @@ concept IterableViewStateConcept = requires(const T& cs) {
  * IndexableStateConcept
  */
 
-template<typename T, typename Task>
+template<typename T, typename Kind>
 concept IndexableStateConcept = requires(const T& cs,
                                          Index<formalism::planning::FDRVariable<formalism::FluentTag>> variable,
                                          Index<formalism::planning::GroundFunctionTerm<formalism::StaticTag>> static_fterm,
                                          Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> fluent_fterm,
                                          Index<formalism::planning::GroundAtom<formalism::StaticTag>> static_atom,
                                          Index<formalism::planning::GroundAtom<formalism::DerivedTag>> derived_atom) {
-    requires std::same_as<typename T::TaskType, Task>;
-    { cs.get_index() } -> std::same_as<Index<State<Task>>>;
+    requires TaskKind<Kind>;
+    requires std::same_as<typename T::TaskType, Task<Kind>>;
+    { cs.get_index() } -> std::same_as<Index<State<Kind>>>;
     { cs.get(variable) } -> std::same_as<formalism::planning::FDRValue>;
     { cs.get(static_fterm) } -> std::same_as<float_t>;
     { cs.get(fluent_fterm) } -> std::same_as<float_t>;
     { cs.test(static_atom) } -> std::same_as<bool>;
     { cs.test(derived_atom) } -> std::same_as<bool>;
-    { cs.get_state_repository() } -> std::same_as<const std::shared_ptr<StateRepository<Task>>&>;
+    { cs.get_state_repository() } -> std::same_as<const std::shared_ptr<StateRepository<Kind>>&>;
 };
 
 /**
  * IndexableStateConcept
  */
 
-template<typename T, typename Task>
+template<typename T, typename Kind>
 concept IndexableViewStateConcept = requires(const T& cs,
                                              formalism::planning::FDRVariableView<formalism::FluentTag> variable,
                                              formalism::planning::GroundFunctionTermView<formalism::StaticTag> static_fterm,
                                              formalism::planning::GroundFunctionTermView<formalism::FluentTag> fluent_fterm,
                                              formalism::planning::GroundAtomView<formalism::StaticTag> static_atom,
                                              formalism::planning::GroundAtomView<formalism::DerivedTag> derived_atom) {
-    requires std::same_as<typename T::TaskType, Task>;
-    { cs.get_index() } -> std::same_as<Index<State<Task>>>;
+    requires TaskKind<Kind>;
+    requires std::same_as<typename T::TaskType, Task<Kind>>;
+    { cs.get_index() } -> std::same_as<Index<State<Kind>>>;
     { cs.get(variable) } -> std::same_as<formalism::planning::FDRValue>;
     { cs.get(static_fterm) } -> std::same_as<float_t>;
     { cs.get(fluent_fterm) } -> std::same_as<float_t>;
     { cs.test(static_atom) } -> std::same_as<bool>;
     { cs.test(derived_atom) } -> std::same_as<bool>;
-    { cs.get_state_repository() } -> std::same_as<const std::shared_ptr<StateRepository<Task>>&>;
+    { cs.get_state_repository() } -> std::same_as<const std::shared_ptr<StateRepository<Kind>>&>;
 };
 
 }

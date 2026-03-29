@@ -68,7 +68,7 @@ std::vector<analysis::DomainListListList> compute_parameter_domains_per_cond_eff
 }
 }
 
-LiftedTask::LiftedTask(formalism::planning::PlanningTask task) :
+Task<LiftedTag>::Task(formalism::planning::PlanningTask task) :
     m_task(std::move(task)),
     m_static_atoms_bitset(),
     m_static_numeric_variables(),

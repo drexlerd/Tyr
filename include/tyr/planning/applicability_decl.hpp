@@ -24,11 +24,11 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 struct StateContext
 {
-    const Task& task;
-    const UnpackedState<Task>& unpacked_state;
+    const Task<Kind>& task;
+    const UnpackedState<Kind>& unpacked_state;
     float_t auxiliary_value;
 };
 

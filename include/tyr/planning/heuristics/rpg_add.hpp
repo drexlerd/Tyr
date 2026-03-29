@@ -18,10 +18,12 @@
 #ifndef TYR_PLANNING_HEURISTICS_RPG_ADD_HPP_
 #define TYR_PLANNING_HEURISTICS_RPG_ADD_HPP_
 
+#include "tyr/planning/task.hpp"
+
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class AddRPGHeuristic;
 
 }

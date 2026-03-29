@@ -32,7 +32,7 @@ namespace tyr::planning
 {
 
 template<>
-struct AtomPackedStorage<GroundTask, HashSet>
+struct AtomPackedStorage<GroundTag, HashSet>
 {
     uint_t index;
 
@@ -40,13 +40,13 @@ struct AtomPackedStorage<GroundTask, HashSet>
 };
 
 template<>
-class AtomStorageBackend<GroundTask, HashSet>
+class AtomStorageBackend<GroundTag, HashSet>
 {
 public:
-    using Unpacked = AtomUnpackedStorage<GroundTask>;
-    using Packed = AtomPackedStorage<GroundTask, HashSet>;
+    using Unpacked = AtomUnpackedStorage<GroundTag>;
+    using Packed = AtomPackedStorage<GroundTag, HashSet>;
 
-    explicit AtomStorageBackend(StateStorageContext<GroundTask, HashSet>& ctx);
+    explicit AtomStorageBackend(StateStorageContext<GroundTag, HashSet>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

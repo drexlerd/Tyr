@@ -26,15 +26,16 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class AxiomEvaluator
 {
-    static_assert(dependent_false<Task>::value, "AxiomEvaluator is not defined for type T.");
+    static_assert(dependent_false<Kind>::value, "AxiomEvaluator is not defined for type T.");
 };
 
-template<typename T, typename Task>
+template<typename T, typename Kind>
 concept AxiomEvaluatorConcept =
-    requires(T& r, std::shared_ptr<Task> task, std::shared_ptr<ExecutionContext> execution_context, UnpackedState<Task>& unpacked_state) {
+    requires(T& r, std::shared_ptr<Task<Kind>> task, std::shared_ptr<ExecutionContext> execution_context, UnpackedState<Kind>& unpacked_state) {
+        requires TaskKind<Kind>;
         { T(task, execution_context) };
         { r.compute_extended_state(unpacked_state) } -> std::same_as<void>;
     };

@@ -25,13 +25,14 @@
 #include "tyr/formalism/planning/merge_datalog_decl.hpp"
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"
+#include "tyr/planning/task.hpp"
 
 namespace tyr::planning
 {
 
 // Fact Set
 
-extern void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
+extern void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTag>& state,
                                             const formalism::planning::Repository& repository,
                                             formalism::planning::MergeDatalogContext& merge_context,
                                             datalog::TaggedFactSets<formalism::FluentTag>& fact_sets);

@@ -27,6 +27,7 @@
 #include "tyr/formalism/planning/views.hpp"  // for View
 #include "tyr/planning/declarations.hpp"
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"  // for Matc...
+#include "tyr/planning/task.hpp"
 
 #include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
 #include <limits>                    // for numeric_limits
@@ -36,10 +37,11 @@
 namespace tyr::planning
 {
 
-class GroundTask
+template<>
+class Task<GroundTag>
 {
 public:
-    explicit GroundTask(formalism::planning::PlanningFDRTask task);
+    explicit Task(formalism::planning::PlanningFDRTask task);
 
     template<formalism::FactKind T>
     size_t get_num_atoms() const noexcept;

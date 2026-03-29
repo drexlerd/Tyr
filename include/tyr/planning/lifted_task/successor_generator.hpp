@@ -35,21 +35,21 @@ namespace tyr::planning
 {
 
 template<>
-class SuccessorGenerator<LiftedTask>
+class SuccessorGenerator<LiftedTag>
 {
 public:
-    explicit SuccessorGenerator(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    explicit SuccessorGenerator(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<SuccessorGenerator<LiftedTask>> create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<SuccessorGenerator<LiftedTag>> create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    Node<LiftedTask> get_initial_node();
+    Node<LiftedTag> get_initial_node();
 
-    std::vector<LabeledNode<LiftedTask>> get_labeled_successor_nodes(const Node<LiftedTask>& node);
-    void get_labeled_successor_nodes(const Node<LiftedTask>& node, std::vector<LabeledNode<LiftedTask>>& out_nodes);
+    std::vector<LabeledNode<LiftedTag>> get_labeled_successor_nodes(const Node<LiftedTag>& node);
+    void get_labeled_successor_nodes(const Node<LiftedTag>& node, std::vector<LabeledNode<LiftedTag>>& out_nodes);
 
-    Node<LiftedTask> get_successor_node(const Node<LiftedTask>& node, formalism::planning::GroundActionView action);
+    Node<LiftedTag> get_successor_node(const Node<LiftedTag>& node, formalism::planning::GroundActionView action);
 
-    Node<LiftedTask> get_node(Index<State<LiftedTask>> state_index);
+    Node<LiftedTag> get_node(Index<State<LiftedTag>> state_index);
 
     /**
      * Expert API
@@ -59,12 +59,12 @@ public:
     const auto& get_workspace() const noexcept { return m_workspace; }
 
 private:
-    std::shared_ptr<LiftedTask> m_task;
+    std::shared_ptr<Task<LiftedTag>> m_task;
     ExecutionContextPtr m_execution_context;
 
     datalog::ProgramWorkspace<datalog::NoOrAnnotationPolicy, datalog::NoAndAnnotationPolicy, datalog::NoTerminationPolicy> m_workspace;
 
-    std::shared_ptr<StateRepository<LiftedTask>> m_state_repository;
+    std::shared_ptr<StateRepository<LiftedTag>> m_state_repository;
 
     ActionExecutor m_executor;
 };

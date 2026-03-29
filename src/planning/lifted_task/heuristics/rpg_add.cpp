@@ -19,8 +19,8 @@
 
 namespace tyr::planning
 {
-AddRPGHeuristic<LiftedTask>::AddRPGHeuristic(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context) :
-    RPGBase<AddRPGHeuristic<LiftedTask>,
+AddRPGHeuristic<LiftedTag>::AddRPGHeuristic(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context) :
+    RPGBase<AddRPGHeuristic<LiftedTag>,
             datalog::OrAnnotationPolicy,
             datalog::AndAnnotationPolicy<datalog::SumAggregation>,
             datalog::TerminationPolicy<datalog::SumAggregation>>(
@@ -33,12 +33,12 @@ AddRPGHeuristic<LiftedTask>::AddRPGHeuristic(std::shared_ptr<LiftedTask> task, E
 {
 }
 
-std::shared_ptr<AddRPGHeuristic<LiftedTask>> AddRPGHeuristic<LiftedTask>::create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context)
+std::shared_ptr<AddRPGHeuristic<LiftedTag>> AddRPGHeuristic<LiftedTag>::create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context)
 {
-    return std::make_shared<AddRPGHeuristic<LiftedTask>>(std::move(task), std::move(execution_context));
+    return std::make_shared<AddRPGHeuristic<LiftedTag>>(std::move(task), std::move(execution_context));
 }
 
-float_t AddRPGHeuristic<LiftedTask>::extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTask>& state)
+float_t AddRPGHeuristic<LiftedTag>::extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTag>& state)
 {
     return m_workspace.tp.get_total_cost(this->m_workspace.or_annot);
 }

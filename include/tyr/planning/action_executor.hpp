@@ -21,7 +21,7 @@
 #include "tyr/common/declarations.hpp"
 #include "tyr/common/types.hpp"
 #include "tyr/formalism/planning/declarations.hpp"
-#include "tyr/formalism/planning/fdr_fact_data.hpp"
+#include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/declarations.hpp"
 
 namespace tyr::planning
@@ -32,11 +32,11 @@ class ActionExecutor
 public:
     ActionExecutor() = default;
 
-    template<typename Task>
-    bool is_applicable(formalism::planning::GroundActionView action, const StateContext<Task>& state);
+    template<TaskKind Kind>
+    bool is_applicable(formalism::planning::GroundActionView action, const StateContext<Kind>& state);
 
-    template<typename Task>
-    Node<Task> apply_action(const StateContext<Task>& state_context, formalism::planning::GroundActionView action, StateRepository<Task>& state_repository);
+    template<TaskKind Kind>
+    Node<Kind> apply_action(const StateContext<Kind>& state_context, formalism::planning::GroundActionView action, StateRepository<Kind>& state_repository);
 
 private:
     DataList<formalism::planning::FDRFact<formalism::FluentTag>> m_del_effects;

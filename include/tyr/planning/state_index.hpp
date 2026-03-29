@@ -24,11 +24,11 @@
 
 namespace tyr
 {
-template<typename Task>
-struct Index<planning::State<Task>> : IndexMixin<Index<planning::State<Task>>>
+template<planning::TaskKind Kind>
+struct Index<planning::State<Kind>> : IndexMixin<Index<planning::State<Kind>>>
 {
     // Inherit constructors
-    using Base = IndexMixin<Index<planning::State<Task>>>;
+    using Base = IndexMixin<Index<planning::State<Kind>>>;
     using Base::Base;
 };
 }

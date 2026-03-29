@@ -45,32 +45,32 @@ namespace tyr::planning
  * evaluate
  */
 
-template<typename Task>
-float_t evaluate(float_t element, const StateContext<Task>& context)
+template<TaskKind Kind>
+float_t evaluate(float_t element, const StateContext<Kind>& context)
 {
     return element;
 }
 
-template<typename Task, formalism::ArithmeticOpKind O>
-float_t evaluate(formalism::planning::GroundUnaryOperatorView<O> element, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::ArithmeticOpKind O>
+float_t evaluate(formalism::planning::GroundUnaryOperatorView<O> element, const StateContext<Kind>& context)
 {
     return formalism::apply(O {}, evaluate(element.get_arg(), context));
 }
 
-template<typename Task, formalism::ArithmeticOpKind O>
-float_t evaluate(formalism::planning::GroundBinaryOperatorView<O> element, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::ArithmeticOpKind O>
+float_t evaluate(formalism::planning::GroundBinaryOperatorView<O> element, const StateContext<Kind>& context)
 {
     return formalism::apply(O {}, evaluate(element.get_lhs(), context), evaluate(element.get_rhs(), context));
 }
 
-template<typename Task, formalism::BooleanOpKind O>
-bool evaluate(formalism::planning::GroundBinaryOperatorView<O> element, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::BooleanOpKind O>
+bool evaluate(formalism::planning::GroundBinaryOperatorView<O> element, const StateContext<Kind>& context)
 {
     return formalism::apply(O {}, evaluate(element.get_lhs(), context), evaluate(element.get_rhs(), context));
 }
 
-template<typename Task, formalism::ArithmeticOpKind O>
-float_t evaluate(formalism::planning::GroundMultiOperatorView<O> element, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::ArithmeticOpKind O>
+float_t evaluate(formalism::planning::GroundMultiOperatorView<O> element, const StateContext<Kind>& context)
 {
     const auto child_fexprs = element.get_args();
 
@@ -81,50 +81,50 @@ float_t evaluate(formalism::planning::GroundMultiOperatorView<O> element, const 
                            { return formalism::apply(formalism::OpMul {}, value, evaluate(child_expr, context)); });
 }
 
-template<typename Task>
-float_t evaluate(formalism::planning::GroundFunctionTermView<formalism::StaticTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+float_t evaluate(formalism::planning::GroundFunctionTermView<formalism::StaticTag> element, const StateContext<Kind>& context)
 {
     return context.task.get(element.get_index());
 }
 
-template<typename Task>
-float_t evaluate(formalism::planning::GroundFunctionTermView<formalism::FluentTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+float_t evaluate(formalism::planning::GroundFunctionTermView<formalism::FluentTag> element, const StateContext<Kind>& context)
 {
     return context.unpacked_state.get(element.get_index());
 }
 
-template<typename Task>
-float_t evaluate(formalism::planning::GroundFunctionTermView<formalism::AuxiliaryTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+float_t evaluate(formalism::planning::GroundFunctionTermView<formalism::AuxiliaryTag> element, const StateContext<Kind>& context)
 {
     return context.auxiliary_value;
 }
 
-template<typename Task>
-float_t evaluate(formalism::planning::GroundFunctionExpressionView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+float_t evaluate(formalism::planning::GroundFunctionExpressionView element, const StateContext<Kind>& context)
 {
     return visit([&](auto&& arg) { return evaluate(arg, context); }, element.get_variant());
 }
 
-template<typename Task>
-float_t evaluate(formalism::planning::GroundArithmeticOperatorView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+float_t evaluate(formalism::planning::GroundArithmeticOperatorView element, const StateContext<Kind>& context)
 {
     return visit([&](auto&& arg) { return evaluate(arg, context); }, element.get_variant());
 }
 
-template<typename Task>
-bool evaluate(formalism::planning::GroundBooleanOperatorView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool evaluate(formalism::planning::GroundBooleanOperatorView element, const StateContext<Kind>& context)
 {
     return visit([&](auto&& arg) { return evaluate(arg, context); }, element.get_variant());
 }
 
-template<typename Task, formalism::planning::NumericEffectOpKind Op, formalism::FactKind T>
-float_t evaluate(formalism::planning::GroundNumericEffectView<Op, T> element, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::planning::NumericEffectOpKind Op, formalism::FactKind T>
+float_t evaluate(formalism::planning::GroundNumericEffectView<Op, T> element, const StateContext<Kind>& context)
 {
     return formalism::planning::apply(Op {}, evaluate(element.get_fterm(), context), evaluate(element.get_fexpr(), context));
 }
 
-template<typename Task, formalism::FactKind T>
-float_t evaluate(formalism::planning::GroundNumericEffectOperatorView<T> element, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::FactKind T>
+float_t evaluate(formalism::planning::GroundNumericEffectOperatorView<T> element, const StateContext<Kind>& context)
 {
     return visit([&](auto&& arg) { return evaluate(arg, context); }, element.get_variant());
 }
@@ -133,9 +133,9 @@ float_t evaluate(formalism::planning::GroundNumericEffectOperatorView<T> element
  * is_applicable_if_fires
  */
 
-template<typename Task>
+template<TaskKind Kind>
 bool is_applicable_if_fires(formalism::planning::GroundConditionalEffectView element,
-                            const StateContext<Task>& context,
+                            const StateContext<Kind>& context,
                             formalism::planning::EffectFamilyList& ref_fluent_effect_families)
 {
     if (!is_applicable(element.get_condition(), context))
@@ -149,51 +149,51 @@ bool is_applicable_if_fires(formalism::planning::GroundConditionalEffectView ele
  * is_applicable
  */
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundLiteralView<formalism::StaticTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundLiteralView<formalism::StaticTag> element, const StateContext<Kind>& context)
 {
     return context.task.test(element.get_atom().get_index()) == element.get_polarity();
 }
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundLiteralView<formalism::DerivedTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundLiteralView<formalism::DerivedTag> element, const StateContext<Kind>& context)
 {
     return context.unpacked_state.test(element.get_atom().get_index()) == element.get_polarity();
 }
 
-template<typename Task, formalism::FactKind T>
-bool is_applicable(formalism::planning::GroundLiteralListView<T> elements, const StateContext<Task>& context)
+template<TaskKind Kind, formalism::FactKind T>
+bool is_applicable(formalism::planning::GroundLiteralListView<T> elements, const StateContext<Kind>& context)
 {
     return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, context); });
 }
 
-template<typename Task>
-bool is_applicable(formalism::planning::FDRFactView<formalism::FluentTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::FDRFactView<formalism::FluentTag> element, const StateContext<Kind>& context)
 {
     return context.unpacked_state.get(element.get_variable().get_index()) == element.get_value();
 }
 
-template<typename Task>
-bool is_applicable(formalism::planning::FDRFactListView<formalism::FluentTag> elements, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::FDRFactListView<formalism::FluentTag> elements, const StateContext<Kind>& context)
 {
     return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, context); });
 }
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundBooleanOperatorView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundBooleanOperatorView element, const StateContext<Kind>& context)
 {
     return evaluate(element, context);
 }
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundBooleanOperatorListView elements, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundBooleanOperatorListView elements, const StateContext<Kind>& context)
 {
     return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, context); });
 }
 
-template<typename Task, formalism::planning::NumericEffectOpKind Op>
+template<TaskKind Kind, formalism::planning::NumericEffectOpKind Op>
 bool is_applicable(formalism::planning::GroundNumericEffectView<Op, formalism::FluentTag> element,
-                   const StateContext<Task>& context,
+                   const StateContext<Kind>& context,
                    formalism::planning::EffectFamilyList& ref_fluent_effect_families)
 {
     const auto fterm_index = element.get_fterm().get_index();
@@ -216,40 +216,40 @@ bool is_applicable(formalism::planning::GroundNumericEffectView<Op, formalism::F
     return !std::isnan(evaluate(element.get_fexpr(), context));
 }
 
-template<typename Task>
+template<TaskKind Kind>
 bool is_applicable(formalism::planning::GroundNumericEffectOperatorView<formalism::FluentTag> element,
-                   const StateContext<Task>& context,
+                   const StateContext<Kind>& context,
                    formalism::planning::EffectFamilyList& ref_fluent_effect_families)
 {
     return visit([&](auto&& arg) { return is_applicable(arg, context, ref_fluent_effect_families); }, element.get_variant());
 }
 
-template<typename Task>
+template<TaskKind Kind>
 bool is_applicable(formalism::planning::GroundNumericEffectOperatorListView<formalism::FluentTag> elements,
-                   const StateContext<Task>& context,
+                   const StateContext<Kind>& context,
                    formalism::planning::EffectFamilyList& ref_fluent_effect_families)
 {
     return std::all_of(elements.begin(), elements.end(), [&](auto&& arg) { return is_applicable(arg, context, ref_fluent_effect_families); });
 }
 
-template<typename Task>
+template<TaskKind Kind>
 bool is_applicable(formalism::planning::GroundNumericEffectView<formalism::planning::OpIncrease, formalism::AuxiliaryTag> element,
-                   const StateContext<Task>& context)
+                   const StateContext<Kind>& context)
 {
     // Check fexpr is well-defined in context
     return !std::isnan(evaluate(element.get_fexpr(), context));
 }
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundNumericEffectOperatorView<formalism::AuxiliaryTag> element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundNumericEffectOperatorView<formalism::AuxiliaryTag> element, const StateContext<Kind>& context)
 {
     return visit([&](auto&& arg) { return is_applicable(arg, context); }, element.get_variant());
 }
 
 // GroundConjunctiveCondition
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundConjunctiveConditionView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundConjunctiveConditionView element, const StateContext<Kind>& context)
 {
     return is_applicable(element.template get_facts<formalism::StaticTag>(), context)      //
            && is_applicable(element.template get_facts<formalism::FluentTag>(), context)   //
@@ -259,9 +259,9 @@ bool is_applicable(formalism::planning::GroundConjunctiveConditionView element, 
 
 // GroundConjunctiveEffect
 
-template<typename Task>
+template<TaskKind Kind>
 bool is_applicable(formalism::planning::GroundConjunctiveEffectView element,
-                   const StateContext<Task>& context,
+                   const StateContext<Kind>& context,
                    formalism::planning::EffectFamilyList& ref_fluent_effect_families)
 {
     return is_applicable(element.get_numeric_effects(), context, ref_fluent_effect_families)
@@ -270,9 +270,9 @@ bool is_applicable(formalism::planning::GroundConjunctiveEffectView element,
 
 // GroundConditionalEffectList
 
-template<typename Task>
+template<TaskKind Kind>
 bool are_applicable_if_fires(formalism::planning::GroundConditionalEffectListView elements,
-                             const StateContext<Task>& context,
+                             const StateContext<Kind>& context,
                              formalism::planning::EffectFamilyList& out_fluent_effect_families)
 {
     out_fluent_effect_families.clear();
@@ -284,9 +284,9 @@ bool are_applicable_if_fires(formalism::planning::GroundConditionalEffectListVie
 
 // GroundAction
 
-template<typename Task>
+template<TaskKind Kind>
 bool is_applicable(formalism::planning::GroundActionView element,
-                   const StateContext<Task>& context,
+                   const StateContext<Kind>& context,
                    formalism::planning::EffectFamilyList& out_fluent_effect_families)
 {
     return is_applicable(element.get_condition(), context) && are_applicable_if_fires(element.get_effects(), context, out_fluent_effect_families);
@@ -294,8 +294,8 @@ bool is_applicable(formalism::planning::GroundActionView element,
 
 // GroundAxiom
 
-template<typename Task>
-bool is_applicable(formalism::planning::GroundAxiomView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_applicable(formalism::planning::GroundAxiomView element, const StateContext<Kind>& context)
 {
     return is_applicable(element.get_body(), context);
 }
@@ -342,8 +342,8 @@ TYR_INLINE_IMPL bool is_statically_applicable(formalism::planning::GroundAxiomVi
 
 // GroundConjunctiveCondition
 
-template<typename Task>
-bool is_dynamically_applicable(formalism::planning::GroundConjunctiveConditionView element, const StateContext<Task>& context)
+template<TaskKind Kind>
+bool is_dynamically_applicable(formalism::planning::GroundConjunctiveConditionView element, const StateContext<Kind>& context)
 {
     return is_applicable(element.template get_facts<formalism::FluentTag>(), context)      //
            && is_applicable(element.template get_facts<formalism::DerivedTag>(), context)  //

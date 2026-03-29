@@ -26,6 +26,6 @@
 namespace tyr::planning
 {
 
-static_assert(NodeConcept<Node<GroundTask>, GroundTask>);
+static_assert(NodeConcept<Node<GroundTag>, GroundTag>);
 
 }

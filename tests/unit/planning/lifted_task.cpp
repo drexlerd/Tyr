@@ -30,9 +30,9 @@ static p::LiftedTaskPtr compute_lifted_task(const fs::path& domain_filepath, con
     return p::LiftedTask::create(fp::Parser(domain_filepath).parse_task(problem_filepath));
 }
 
-static p::SuccessorGenerator<p::LiftedTask> create_successor_generator(std::shared_ptr<p::LiftedTask> task)
+static p::SuccessorGenerator<p::LiftedTag> create_successor_generator(std::shared_ptr<p::Task<p::LiftedTag>> task)
 {
-    return p::SuccessorGenerator<p::LiftedTask>(task, ExecutionContext::create(1));
+    return p::SuccessorGenerator<p::LiftedTag>(task, ExecutionContext::create(1));
 }
 
 static fs::path absolute(const std::string& subdir) { return fs::path(std::string(DATA_DIR)) / subdir; }

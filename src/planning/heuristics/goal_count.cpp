@@ -24,29 +24,29 @@
 namespace tyr::planning
 {
 
-template<typename Task>
-GoalCountHeuristic<Task>::GoalCountHeuristic(std::shared_ptr<const Task> task) : m_task(std::move(task)), m_goal(m_task->get_task().get_goal())
+template<TaskKind Kind>
+GoalCountHeuristic<Kind>::GoalCountHeuristic(std::shared_ptr<const Task<Kind>> task) : m_task(std::move(task)), m_goal(m_task->get_task().get_goal())
 {
 }
 
-template<typename Task>
-std::shared_ptr<GoalCountHeuristic<Task>> GoalCountHeuristic<Task>::create(std::shared_ptr<const Task> task)
+template<TaskKind Kind>
+std::shared_ptr<GoalCountHeuristic<Kind>> GoalCountHeuristic<Kind>::create(std::shared_ptr<const Task<Kind>> task)
 {
     return std::make_shared<GoalCountHeuristic>(std::move(task));
 }
 
-template<typename Task>
-void GoalCountHeuristic<Task>::set_goal(formalism::planning::GroundConjunctiveConditionView goal)
+template<TaskKind Kind>
+void GoalCountHeuristic<Kind>::set_goal(formalism::planning::GroundConjunctiveConditionView goal)
 {
     m_goal = goal;
 }
 
-template<typename Task>
-float_t GoalCountHeuristic<Task>::evaluate(const StateView<Task>& state)
+template<TaskKind Kind>
+float_t GoalCountHeuristic<Kind>::evaluate(const StateView<Kind>& state)
 {
     auto unsat_counter = float_t { 0 };
 
-    auto state_context = StateContext<Task> { *m_task, state.get_unpacked_state(), float_t { 0 } };
+    auto state_context = StateContext<Kind> { *m_task, state.get_unpacked_state(), float_t { 0 } };
 
     for (const auto fact : m_goal.template get_facts<formalism::FluentTag>())
     {
@@ -69,7 +69,7 @@ float_t GoalCountHeuristic<Task>::evaluate(const StateView<Task>& state)
     return unsat_counter;
 }
 
-template class GoalCountHeuristic<LiftedTask>;
-template class GoalCountHeuristic<GroundTask>;
+template class GoalCountHeuristic<LiftedTag>;
+template class GoalCountHeuristic<GroundTag>;
 
 }

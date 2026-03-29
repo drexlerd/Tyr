@@ -29,7 +29,7 @@ namespace tyr::planning
 {
 
 template<>
-struct AtomPackedStorage<LiftedTask, HashSet>
+struct AtomPackedStorage<LiftedTag, HashSet>
 {
     uint_t index;
 
@@ -37,13 +37,13 @@ struct AtomPackedStorage<LiftedTask, HashSet>
 };
 
 template<>
-class AtomStorageBackend<LiftedTask, HashSet>
+class AtomStorageBackend<LiftedTag, HashSet>
 {
 public:
-    using Unpacked = AtomUnpackedStorage<LiftedTask>;
-    using Packed = AtomPackedStorage<LiftedTask, HashSet>;
+    using Unpacked = AtomUnpackedStorage<LiftedTag>;
+    using Packed = AtomPackedStorage<LiftedTag, HashSet>;
 
-    explicit AtomStorageBackend(StateStorageContext<LiftedTask, HashSet>& ctx);
+    explicit AtomStorageBackend(StateStorageContext<LiftedTag, HashSet>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

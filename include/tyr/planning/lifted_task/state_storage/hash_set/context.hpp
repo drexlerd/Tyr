@@ -36,7 +36,7 @@ namespace tyr::planning
  */
 
 template<>
-struct StateStorageContext<LiftedTask, HashSet>
+struct StateStorageContext<LiftedTag, HashSet>
 {
     RawVectorSet<uint_t, uint_t> uint_vec_set;
     RawVectorSet<uint_t, float_t> float_vec_set;

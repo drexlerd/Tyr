@@ -34,46 +34,47 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-SuccessorGenerator<GroundTask>::SuccessorGenerator(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context) :
+SuccessorGenerator<GroundTag>::SuccessorGenerator(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context) :
     m_task(task),
     m_applicable_actions(),
-    m_state_repository(std::make_shared<StateRepository<GroundTask>>(task, execution_context)),
+    m_state_repository(std::make_shared<StateRepository<GroundTag>>(task, execution_context)),
     m_executor()
 {
 }
 
-std::shared_ptr<SuccessorGenerator<GroundTask>> SuccessorGenerator<GroundTask>::create(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context)
+std::shared_ptr<SuccessorGenerator<GroundTag>> SuccessorGenerator<GroundTag>::create(std::shared_ptr<Task<GroundTag>> task,
+                                                                                     ExecutionContextPtr execution_context)
 {
-    return std::make_shared<SuccessorGenerator<GroundTask>>(std::move(task), std::move(execution_context));
+    return std::make_shared<SuccessorGenerator<GroundTag>>(std::move(task), std::move(execution_context));
 }
 
-Node<GroundTask> SuccessorGenerator<GroundTask>::get_initial_node()
+Node<GroundTag> SuccessorGenerator<GroundTag>::get_initial_node()
 {
     auto initial_state = m_state_repository->get_initial_state();
 
-    const auto state_context = StateContext<GroundTask>(*m_task, initial_state.get_unpacked_state(), 0);
+    const auto state_context = StateContext<GroundTag>(*m_task, initial_state.get_unpacked_state(), 0);
 
     const auto state_metric = evaluate_metric(m_task->get_task().get_metric(), m_task->get_task().get_auxiliary_fterm_value(), state_context);
 
-    return Node<GroundTask>(std::move(initial_state), state_metric);
+    return Node<GroundTag>(std::move(initial_state), state_metric);
 }
 
-std::vector<LabeledNode<GroundTask>> SuccessorGenerator<GroundTask>::get_labeled_successor_nodes(const Node<GroundTask>& node)
+std::vector<LabeledNode<GroundTag>> SuccessorGenerator<GroundTag>::get_labeled_successor_nodes(const Node<GroundTag>& node)
 {
-    auto result = std::vector<LabeledNode<GroundTask>> {};
+    auto result = std::vector<LabeledNode<GroundTag>> {};
 
     get_labeled_successor_nodes(node, result);
 
     return result;
 }
 
-void SuccessorGenerator<GroundTask>::get_labeled_successor_nodes(const Node<GroundTask>& node, std::vector<LabeledNode<GroundTask>>& out_nodes)
+void SuccessorGenerator<GroundTag>::get_labeled_successor_nodes(const Node<GroundTag>& node, std::vector<LabeledNode<GroundTag>>& out_nodes)
 {
     out_nodes.clear();
 
     const auto state = node.get_state();
 
-    const auto state_context = StateContext<GroundTask>(*m_task, state.get_unpacked_state(), node.get_metric());
+    const auto state_context = StateContext<GroundTag>(*m_task, state.get_unpacked_state(), node.get_metric());
 
     m_task->get_action_match_tree()->generate(state_context, m_applicable_actions);
 
@@ -84,23 +85,23 @@ void SuccessorGenerator<GroundTask>::get_labeled_successor_nodes(const Node<Grou
     }
 }
 
-Node<GroundTask> SuccessorGenerator<GroundTask>::get_successor_node(const Node<GroundTask>& node, fp::GroundActionView action)
+Node<GroundTag> SuccessorGenerator<GroundTag>::get_successor_node(const Node<GroundTag>& node, fp::GroundActionView action)
 {
     const auto& state = node.get_state();
-    const auto state_context = StateContext<GroundTask>(*m_task, state.get_unpacked_state(), node.get_metric());
+    const auto state_context = StateContext<GroundTag>(*m_task, state.get_unpacked_state(), node.get_metric());
 
     return m_executor.apply_action(state_context, action, *m_state_repository);
 }
 
-Node<GroundTask> SuccessorGenerator<GroundTask>::get_node(Index<State<GroundTask>> state_index)
+Node<GroundTag> SuccessorGenerator<GroundTag>::get_node(Index<State<GroundTag>> state_index)
 {
     auto state = m_state_repository->get_registered_state(state_index);
-    const auto state_context = StateContext<GroundTask>(*m_task, state.get_unpacked_state(), 0);
+    const auto state_context = StateContext<GroundTag>(*m_task, state.get_unpacked_state(), 0);
     const auto state_metric = evaluate_metric(m_task->get_task().get_metric(), m_task->get_task().get_auxiliary_fterm_value(), state_context);
 
-    return Node<GroundTask>(std::move(state), state_metric);
+    return Node<GroundTag>(std::move(state), state_metric);
 }
 
-static_assert(SuccessorGeneratorConcept<SuccessorGenerator<GroundTask>, GroundTask>);
+static_assert(SuccessorGeneratorConcept<SuccessorGenerator<GroundTag>, GroundTag>);
 
 }

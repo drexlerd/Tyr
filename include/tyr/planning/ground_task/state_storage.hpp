@@ -29,13 +29,13 @@ namespace tyr::planning
 {
 
 template<>
-struct AtomUnpackedStorage<GroundTask>
+struct AtomUnpackedStorage<GroundTag>
 {
     boost::dynamic_bitset<> indices;
 };
 
 template<>
-struct FactUnpackedStorage<GroundTask>
+struct FactUnpackedStorage<GroundTag>
 {
     std::vector<uint_t> values;
 };

@@ -31,7 +31,7 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class Heuristic
 {
 public:
@@ -39,7 +39,7 @@ public:
 
     virtual void set_goal(formalism::planning::GroundConjunctiveConditionView goal) = 0;
 
-    virtual float_t evaluate(const StateView<Task>& state) = 0;
+    virtual float_t evaluate(const StateView<Kind>& state) = 0;
 
     virtual const UnorderedSet<Index<formalism::planning::GroundAction>>& get_preferred_actions()
     {

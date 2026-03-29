@@ -24,6 +24,7 @@
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/state_repository.hpp"
 #include "tyr/planning/state_view.hpp"
+#include "tyr/planning/task.hpp"
 #include "tyr/planning/unpacked_state.hpp"
 
 #include <concepts>
@@ -31,31 +32,32 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class StateRepository
 {
-    static_assert(dependent_false<Task>::value, "State is not defined for type T.");
+    static_assert(dependent_false<Kind>::value, "State is not defined for type T.");
 };
 
-template<typename T, typename Task>
+template<typename T, typename Kind>
 concept StateRepositoryConcept =
     requires(T& r,
-             std::shared_ptr<Task> task,
+             std::shared_ptr<Task<Kind>> task,
              std::shared_ptr<ExecutionContext> execution_context,
-             Index<State<Task>> index,
-             SharedObjectPoolPtr<UnpackedState<Task>> unregistered_state,
+             Index<State<Kind>> index,
+             SharedObjectPoolPtr<UnpackedState<Kind>> unregistered_state,
              const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
              const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values,
              const std::vector<formalism::planning::FDRFactView<formalism::FluentTag>>& fluent_fact_views,
              const std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>>& fterm_value_views) {
+        requires TaskKind<Kind>;
         { T(task, execution_context) };
-        { r.get_initial_state() } -> std::same_as<StateView<Task>>;
-        { r.get_registered_state(index) } -> std::same_as<StateView<Task>>;
-        { r.create_state(fluent_facts, fterm_values) } -> std::same_as<StateView<Task>>;
-        { r.create_state(fluent_fact_views, fterm_value_views) } -> std::same_as<StateView<Task>>;
-        { r.get_unregistered_state() } -> std::same_as<SharedObjectPoolPtr<UnpackedState<Task>>>;
-        { r.register_state(unregistered_state) } -> std::same_as<StateView<Task>>;
-        { r.get_task() } -> std::same_as<const std::shared_ptr<Task>&>;
+        { r.get_initial_state() } -> std::same_as<StateView<Kind>>;
+        { r.get_registered_state(index) } -> std::same_as<StateView<Kind>>;
+        { r.create_state(fluent_facts, fterm_values) } -> std::same_as<StateView<Kind>>;
+        { r.create_state(fluent_fact_views, fterm_value_views) } -> std::same_as<StateView<Kind>>;
+        { r.get_unregistered_state() } -> std::same_as<SharedObjectPoolPtr<UnpackedState<Kind>>>;
+        { r.register_state(unregistered_state) } -> std::same_as<StateView<Kind>>;
+        { r.get_task() } -> std::same_as<const std::shared_ptr<Task<Kind>>&>;
     };
 }
 

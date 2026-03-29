@@ -33,8 +33,8 @@
 namespace tyr::planning
 {
 
-FFRPGHeuristic<LiftedTask>::FFRPGHeuristic(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context) :
-    RPGBase<FFRPGHeuristic<LiftedTask>,
+FFRPGHeuristic<LiftedTag>::FFRPGHeuristic(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context) :
+    RPGBase<FFRPGHeuristic<LiftedTag>,
             datalog::OrAnnotationPolicy,
             datalog::AndAnnotationPolicy<datalog::SumAggregation>,
             datalog::TerminationPolicy<datalog::SumAggregation>>(
@@ -56,12 +56,12 @@ FFRPGHeuristic<LiftedTask>::FFRPGHeuristic(std::shared_ptr<LiftedTask> task, Exe
 {
 }
 
-std::shared_ptr<FFRPGHeuristic<LiftedTask>> FFRPGHeuristic<LiftedTask>::create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context)
+std::shared_ptr<FFRPGHeuristic<LiftedTag>> FFRPGHeuristic<LiftedTag>::create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context)
 {
-    return std::make_shared<FFRPGHeuristic<LiftedTask>>(std::move(task), std::move(execution_context));
+    return std::make_shared<FFRPGHeuristic<LiftedTag>>(std::move(task), std::move(execution_context));
 }
 
-float_t FFRPGHeuristic<LiftedTask>::extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTask>& state)
+float_t FFRPGHeuristic<LiftedTag>::extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTag>& state)
 {
     m_preferred_action_views_dirty = true;
     m_relaxed_plan.clear();
@@ -69,7 +69,7 @@ float_t FFRPGHeuristic<LiftedTask>::extract_cost_and_set_preferred_actions_impl(
     for (auto& bitset : m_markings)
         bitset.reset();
 
-    auto state_context = StateContext<LiftedTask>(*this->m_task, state.get_unpacked_state(), float_t(0));
+    auto state_context = StateContext<LiftedTag>(*this->m_task, state.get_unpacked_state(), float_t(0));
     auto grounder_context = formalism::planning::GrounderContext { this->m_workspace.planning_builder, *this->m_task->get_repository(), m_binding };
 
     for (const auto atom : m_workspace.tp.get_bindings())
@@ -78,9 +78,9 @@ float_t FFRPGHeuristic<LiftedTask>::extract_cost_and_set_preferred_actions_impl(
     return m_relaxed_plan.size();
 }
 
-const UnorderedSet<Index<formalism::planning::GroundAction>>& FFRPGHeuristic<LiftedTask>::get_preferred_actions() { return m_preferred_actions; }
+const UnorderedSet<Index<formalism::planning::GroundAction>>& FFRPGHeuristic<LiftedTag>::get_preferred_actions() { return m_preferred_actions; }
 
-const UnorderedSet<formalism::planning::GroundActionView>& FFRPGHeuristic<LiftedTask>::get_preferred_action_views()
+const UnorderedSet<formalism::planning::GroundActionView>& FFRPGHeuristic<LiftedTag>::get_preferred_action_views()
 {
     if (m_preferred_action_views_dirty)
     {
@@ -94,7 +94,7 @@ const UnorderedSet<formalism::planning::GroundActionView>& FFRPGHeuristic<Lifted
     return m_preferred_action_views;
 }
 
-bool FFRPGHeuristic<LiftedTask>::mark_atom(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding)
+bool FFRPGHeuristic<LiftedTag>::mark_atom(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding)
 {
     const auto g = uint_t(binding.get_index().relation);
     const auto i = uint_t(binding.get_index().row);
@@ -106,9 +106,9 @@ bool FFRPGHeuristic<LiftedTask>::mark_atom(formalism::datalog::PredicateBindingV
     return false;
 }
 
-void FFRPGHeuristic<LiftedTask>::extract_relaxed_plan_and_preferred_actions(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding,
-                                                                            const StateContext<LiftedTask>& state_context,
-                                                                            formalism::planning::GrounderContext& grounder_context)
+void FFRPGHeuristic<LiftedTag>::extract_relaxed_plan_and_preferred_actions(formalism::datalog::PredicateBindingView<formalism::FluentTag> binding,
+                                                                           const StateContext<LiftedTag>& state_context,
+                                                                           formalism::planning::GrounderContext& grounder_context)
 {
     // Base case 1: atom is already marked => do not recurse again
     if (mark_atom(binding))

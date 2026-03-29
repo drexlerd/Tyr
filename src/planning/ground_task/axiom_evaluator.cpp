@@ -22,23 +22,23 @@
 #include "tyr/formalism/planning/repository.hpp"  // for Repository
 #include "tyr/formalism/planning/views.hpp"       // for View
 #include "tyr/planning/applicability.hpp"         // for StateCo...
-#include "tyr/planning/ground_task.hpp"           // for GroundTask
+#include "tyr/planning/ground_task.hpp"           // for GroundTag
 #include "tyr/planning/ground_task/match_tree/match_tree.hpp"
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 
 namespace tyr::planning
 {
 
-AxiomEvaluator<GroundTask>::AxiomEvaluator(std::shared_ptr<GroundTask> task, ExecutionContextPtr) : m_task(task), m_applicable_axioms() {}
+AxiomEvaluator<GroundTag>::AxiomEvaluator(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr) : m_task(task), m_applicable_axioms() {}
 
-std::shared_ptr<AxiomEvaluator<GroundTask>> AxiomEvaluator<GroundTask>::create(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context)
+std::shared_ptr<AxiomEvaluator<GroundTag>> AxiomEvaluator<GroundTag>::create(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context)
 {
-    return std::make_shared<AxiomEvaluator<GroundTask>>(std::move(task), std::move(execution_context));
+    return std::make_shared<AxiomEvaluator<GroundTag>>(std::move(task), std::move(execution_context));
 }
 
-void AxiomEvaluator<GroundTask>::compute_extended_state(UnpackedState<GroundTask>& unpacked_state)
+void AxiomEvaluator<GroundTag>::compute_extended_state(UnpackedState<GroundTag>& unpacked_state)
 {
-    auto state_context = StateContext<GroundTask> { *m_task, unpacked_state, float_t(0) };
+    auto state_context = StateContext<GroundTag> { *m_task, unpacked_state, float_t(0) };
 
     for (const auto& match_tree : m_task->get_axiom_match_tree_strata())
     {
@@ -65,6 +65,6 @@ void AxiomEvaluator<GroundTask>::compute_extended_state(UnpackedState<GroundTask
     }
 }
 
-static_assert(AxiomEvaluatorConcept<AxiomEvaluator<GroundTask>, GroundTask>);
+static_assert(AxiomEvaluatorConcept<AxiomEvaluator<GroundTag>, GroundTag>);
 
 }

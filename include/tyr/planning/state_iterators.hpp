@@ -95,10 +95,10 @@ private:
  * FDRFact
  */
 
-template<typename Task, class Tag>
+template<TaskKind Kind, class IteratorTag>
 class FDRFactIterator;
 
-template<typename Task, class Tag>
+template<TaskKind Kind, class RangeTag>
 class FDRFactRange;
 
 /**

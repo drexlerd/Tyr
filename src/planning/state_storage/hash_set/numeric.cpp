@@ -17,28 +17,27 @@
 
 #include "tyr/planning/state_storage/hash_set/numeric.hpp"
 
-#include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/ground_task/state_storage/hash_set/context.hpp"
-#include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/state_storage/hash_set/context.hpp"
+#include "tyr/planning/task.hpp"
 
 namespace tyr::planning
 {
-template<typename Task>
-NumericStorageBackend<Task, HashSet>::NumericStorageBackend(StateStorageContext<Task, HashSet>& ctx) : m_float_vec_set(ctx.float_vec_set)
+template<TaskKind Kind>
+NumericStorageBackend<Kind, HashSet>::NumericStorageBackend(StateStorageContext<Kind, HashSet>& ctx) : m_float_vec_set(ctx.float_vec_set)
 {
 }
 
-template<typename Task>
-typename NumericStorageBackend<Task, HashSet>::Packed
-NumericStorageBackend<Task, HashSet>::insert(const typename NumericStorageBackend<Task, HashSet>::Unpacked& unpacked)
+template<TaskKind Kind>
+typename NumericStorageBackend<Kind, HashSet>::Packed
+NumericStorageBackend<Kind, HashSet>::insert(const typename NumericStorageBackend<Kind, HashSet>::Unpacked& unpacked)
 {
-    return NumericStorageBackend<Task, HashSet>::Packed { m_float_vec_set.insert(unpacked.values) };
+    return NumericStorageBackend<Kind, HashSet>::Packed { m_float_vec_set.insert(unpacked.values) };
 }
 
-template<typename Task>
-void NumericStorageBackend<Task, HashSet>::unpack(const typename NumericStorageBackend<Task, HashSet>::Packed& packed,
-                                                  typename NumericStorageBackend<Task, HashSet>::Unpacked& unpacked)
+template<TaskKind Kind>
+void NumericStorageBackend<Kind, HashSet>::unpack(const typename NumericStorageBackend<Kind, HashSet>::Packed& packed,
+                                                  typename NumericStorageBackend<Kind, HashSet>::Unpacked& unpacked)
 {
     const auto view = m_float_vec_set[packed.index];
 
@@ -47,7 +46,7 @@ void NumericStorageBackend<Task, HashSet>::unpack(const typename NumericStorageB
         unpacked.values[i] = view[i];
 }
 
-template class NumericStorageBackend<LiftedTask, HashSet>;
-template class NumericStorageBackend<GroundTask, HashSet>;
+template class NumericStorageBackend<LiftedTag, HashSet>;
+template class NumericStorageBackend<GroundTag, HashSet>;
 
 }

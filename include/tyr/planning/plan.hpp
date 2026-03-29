@@ -25,24 +25,24 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class Plan
 {
 private:
-    Node<Task> m_start_node;
-    LabeledNodeList<Task> m_labeled_succ_nodes;
+    Node<Kind> m_start_node;
+    LabeledNodeList<Kind> m_labeled_succ_nodes;
 
 public:
-    Plan(Node<Task> start_node) : Plan(start_node, LabeledNodeList<Task> {}) {}
+    Plan(Node<Kind> start_node) : Plan(start_node, LabeledNodeList<Kind> {}) {}
 
-    Plan(Node<Task> start_node, LabeledNodeList<Task> labeled_succ_nodes) :
+    Plan(Node<Kind> start_node, LabeledNodeList<Kind> labeled_succ_nodes) :
         m_start_node(std::move(start_node)),
         m_labeled_succ_nodes(std::move(labeled_succ_nodes))
     {
     }
 
-    const Node<Task>& get_start_node() const noexcept { return m_start_node; }
-    const LabeledNodeList<Task>& get_labeled_succ_nodes() const noexcept { return m_labeled_succ_nodes; }
+    const Node<Kind>& get_start_node() const noexcept { return m_start_node; }
+    const LabeledNodeList<Kind>& get_labeled_succ_nodes() const noexcept { return m_labeled_succ_nodes; }
     float_t get_cost() const noexcept { return get_length() > 0 ? m_labeled_succ_nodes.back().node.get_metric() : 0.; }
     size_t get_length() const noexcept { return m_labeled_succ_nodes.size(); }
 };

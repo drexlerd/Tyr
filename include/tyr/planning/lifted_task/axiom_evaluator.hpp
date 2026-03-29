@@ -33,19 +33,19 @@ namespace tyr::planning
 {
 
 template<>
-class AxiomEvaluator<LiftedTask>
+class AxiomEvaluator<LiftedTag>
 {
 public:
-    explicit AxiomEvaluator(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    explicit AxiomEvaluator(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<AxiomEvaluator<LiftedTask>> create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<AxiomEvaluator<LiftedTag>> create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    void compute_extended_state(UnpackedState<LiftedTask>& unpacked_state);
+    void compute_extended_state(UnpackedState<LiftedTag>& unpacked_state);
 
     const auto& get_workspace() const noexcept { return m_workspace; }
 
 private:
-    std::shared_ptr<LiftedTask> m_task;
+    std::shared_ptr<Task<LiftedTag>> m_task;
     ExecutionContextPtr m_execution_context;
 
     datalog::ProgramWorkspace<datalog::NoOrAnnotationPolicy, datalog::NoAndAnnotationPolicy, datalog::NoTerminationPolicy> m_workspace;

@@ -40,7 +40,7 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-StateRepository<GroundTask>::StateRepository(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context) :
+StateRepository<GroundTag>::StateRepository(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context) :
     m_task(task),
     m_context(*m_task),
     m_fluent_backend(m_context),
@@ -48,16 +48,16 @@ StateRepository<GroundTask>::StateRepository(std::shared_ptr<GroundTask> task, E
     m_numeric_backend(m_context),
     m_packed_states(),
     m_unpacked_state_pool(),
-    m_axiom_evaluator(std::make_shared<AxiomEvaluator<GroundTask>>(task, execution_context))
+    m_axiom_evaluator(std::make_shared<AxiomEvaluator<GroundTag>>(task, execution_context))
 {
 }
 
-std::shared_ptr<StateRepository<GroundTask>> StateRepository<GroundTask>::create(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context)
+std::shared_ptr<StateRepository<GroundTag>> StateRepository<GroundTag>::create(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context)
 {
-    return std::make_shared<StateRepository<GroundTask>>(std::move(task), std::move(execution_context));
+    return std::make_shared<StateRepository<GroundTag>>(std::move(task), std::move(execution_context));
 }
 
-StateView<GroundTask> StateRepository<GroundTask>::get_initial_state()
+StateView<GroundTag> StateRepository<GroundTag>::get_initial_state()
 {
     auto unpacked_state = get_unregistered_state();
 
@@ -70,7 +70,7 @@ StateView<GroundTask> StateRepository<GroundTask>::get_initial_state()
     return register_state(unpacked_state);
 }
 
-StateView<GroundTask> StateRepository<GroundTask>::get_registered_state(Index<State<GroundTask>> state_index)
+StateView<GroundTag> StateRepository<GroundTag>::get_registered_state(Index<State<GroundTag>> state_index)
 {
     const auto& packed_state = m_packed_states[state_index];
 
@@ -81,12 +81,11 @@ StateView<GroundTask> StateRepository<GroundTask>::get_registered_state(Index<St
     m_derived_backend.unpack(packed_state.template get_atoms<f::DerivedTag>(), unpacked_state->template get_atoms<f::DerivedTag>());
     m_numeric_backend.unpack(packed_state.get_numeric_variables(), unpacked_state->get_numeric_variables());
 
-    return StateView<GroundTask>(shared_from_this(), std::move(unpacked_state));
+    return StateView<GroundTag>(shared_from_this(), std::move(unpacked_state));
 }
 
-StateView<GroundTask>
-StateRepository<GroundTask>::create_state(const std::vector<Data<fp::FDRFact<f::FluentTag>>>& fluent_facts,
-                                          const std::vector<std::pair<Index<fp::GroundFunctionTerm<f::FluentTag>>, float_t>>& fterm_values)
+StateView<GroundTag> StateRepository<GroundTag>::create_state(const std::vector<Data<fp::FDRFact<f::FluentTag>>>& fluent_facts,
+                                                              const std::vector<std::pair<Index<fp::GroundFunctionTerm<f::FluentTag>>, float_t>>& fterm_values)
 {
     auto unpacked_state = get_unregistered_state();
 
@@ -98,8 +97,8 @@ StateRepository<GroundTask>::create_state(const std::vector<Data<fp::FDRFact<f::
     return register_state(std::move(unpacked_state));
 }
 
-StateView<GroundTask> StateRepository<GroundTask>::create_state(const std::vector<fp::FDRFactView<f::FluentTag>>& fluent_facts,
-                                                                const std::vector<fp::GroundFunctionTermViewValuePair<f::FluentTag>>& fterm_values)
+StateView<GroundTag> StateRepository<GroundTag>::create_state(const std::vector<fp::FDRFactView<f::FluentTag>>& fluent_facts,
+                                                              const std::vector<fp::GroundFunctionTermViewValuePair<f::FluentTag>>& fterm_values)
 {
     auto unpacked_state = get_unregistered_state();
 
@@ -111,7 +110,7 @@ StateView<GroundTask> StateRepository<GroundTask>::create_state(const std::vecto
     return register_state(std::move(unpacked_state));
 }
 
-SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_unregistered_state()
+SharedObjectPoolPtr<UnpackedState<GroundTag>> StateRepository<GroundTag>::get_unregistered_state()
 {
     auto state = m_unpacked_state_pool.get_or_allocate();
     state->clear();
@@ -122,21 +121,21 @@ SharedObjectPoolPtr<UnpackedState<GroundTask>> StateRepository<GroundTask>::get_
     return state;
 }
 
-StateView<GroundTask> StateRepository<GroundTask>::register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state)
+StateView<GroundTag> StateRepository<GroundTag>::register_state(SharedObjectPoolPtr<UnpackedState<GroundTag>> state)
 {
     m_axiom_evaluator->compute_extended_state(*state);
 
     state->set(m_packed_states
-                   .insert(Data<State<GroundTask>>(Index<State<GroundTask>>(m_packed_states.size()),
-                                                   m_fluent_backend.insert(state->template get_atoms<f::FluentTag>()),
-                                                   m_derived_backend.insert(state->template get_atoms<f::DerivedTag>()),
-                                                   m_numeric_backend.insert(state->get_numeric_variables())))
+                   .insert(Data<State<GroundTag>>(Index<State<GroundTag>>(m_packed_states.size()),
+                                                  m_fluent_backend.insert(state->template get_atoms<f::FluentTag>()),
+                                                  m_derived_backend.insert(state->template get_atoms<f::DerivedTag>()),
+                                                  m_numeric_backend.insert(state->get_numeric_variables())))
                    .first);
 
-    return StateView<GroundTask>(shared_from_this(), std::move(state));
+    return StateView<GroundTag>(shared_from_this(), std::move(state));
 }
 
-size_t StateRepository<GroundTask>::memory_usage() const noexcept
+size_t StateRepository<GroundTag>::memory_usage() const noexcept
 {
     size_t bytes = 0;
     bytes += m_context.memory_usage();
@@ -144,6 +143,6 @@ size_t StateRepository<GroundTask>::memory_usage() const noexcept
     return bytes;
 }
 
-static_assert(StateRepositoryConcept<StateRepository<GroundTask>, GroundTask>);
+static_assert(StateRepositoryConcept<StateRepository<GroundTag>, GroundTag>);
 
 }

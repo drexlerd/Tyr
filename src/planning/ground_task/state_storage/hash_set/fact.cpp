@@ -24,15 +24,15 @@
 namespace tyr::planning
 {
 
-FactStorageBackend<GroundTask, HashSet>::FactStorageBackend(StateStorageContext<GroundTask, HashSet>& ctx) :
+FactStorageBackend<GroundTag, HashSet>::FactStorageBackend(StateStorageContext<GroundTag, HashSet>& ctx) :
     m_array_set(ctx.fluent_array_set),
     m_infos(ctx.fluent_infos),
     m_buffer(m_array_set.array_size())
 {
 }
 
-typename FactStorageBackend<GroundTask, HashSet>::Packed
-FactStorageBackend<GroundTask, HashSet>::insert(const typename FactStorageBackend<GroundTask, HashSet>::Unpacked& unpacked)
+typename FactStorageBackend<GroundTag, HashSet>::Packed
+FactStorageBackend<GroundTag, HashSet>::insert(const typename FactStorageBackend<GroundTag, HashSet>::Unpacked& unpacked)
 {
     auto data = m_buffer.data();
     const auto& values = unpacked.values;
@@ -45,11 +45,11 @@ FactStorageBackend<GroundTask, HashSet>::insert(const typename FactStorageBacken
         bit::int_reference(data + info.begin, info.offset, info.length) = values[i];
     }
 
-    return typename FactStorageBackend<GroundTask, HashSet>::Packed { m_array_set.insert(m_buffer) };
+    return typename FactStorageBackend<GroundTag, HashSet>::Packed { m_array_set.insert(m_buffer) };
 }
 
-void FactStorageBackend<GroundTask, HashSet>::unpack(const typename FactStorageBackend<GroundTask, HashSet>::Packed& packed,
-                                                     typename FactStorageBackend<GroundTask, HashSet>::Unpacked& unpacked)
+void FactStorageBackend<GroundTag, HashSet>::unpack(const typename FactStorageBackend<GroundTag, HashSet>::Packed& packed,
+                                                    typename FactStorageBackend<GroundTag, HashSet>::Unpacked& unpacked)
 {
     const auto data = m_array_set[packed.index];
     auto& values = unpacked.values;

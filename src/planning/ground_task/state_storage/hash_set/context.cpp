@@ -24,9 +24,9 @@ namespace tyr::planning
 namespace
 {
 template<std::unsigned_integral Block>
-auto compute_layout_data(const GroundTask& task) -> StateStorageContext<GroundTask, HashSet>::LayoutData
+auto compute_layout_data(const Task<GroundTag>& task) -> StateStorageContext<GroundTag, HashSet>::LayoutData
 {
-    using Context = StateStorageContext<GroundTask, HashSet>;
+    using Context = StateStorageContext<GroundTag, HashSet>;
     using VariableInfo = Context::VariableInfo;
     using LayoutData = Context::LayoutData;
 
@@ -59,9 +59,9 @@ auto compute_layout_data(const GroundTask& task) -> StateStorageContext<GroundTa
 
 }
 
-StateStorageContext<GroundTask, HashSet>::StateStorageContext(const GroundTask& task) : StateStorageContext(compute_layout_data<uint_t>(task)) {}
+StateStorageContext<GroundTag, HashSet>::StateStorageContext(const Task<GroundTag>& task) : StateStorageContext(compute_layout_data<uint_t>(task)) {}
 
-StateStorageContext<GroundTask, HashSet>::StateStorageContext(LayoutData&& layout_data) :
+StateStorageContext<GroundTag, HashSet>::StateStorageContext(LayoutData&& layout_data) :
     fluent_infos(layout_data.fluent_infos),
     fluent_array_set(layout_data.fluent_array_size),
     derived_num_bits(layout_data.derived_num_bits),

@@ -29,13 +29,13 @@ namespace tyr::planning
 {
 
 template<>
-struct AtomUnpackedStorage<LiftedTask>
+struct AtomUnpackedStorage<LiftedTag>
 {
     boost::dynamic_bitset<> indices;
 };
 
 template<>
-struct FactUnpackedStorage<LiftedTask>
+struct FactUnpackedStorage<LiftedTag>
 {
     boost::dynamic_bitset<> indices;
 };

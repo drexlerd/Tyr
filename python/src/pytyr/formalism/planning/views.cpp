@@ -560,6 +560,10 @@ void bind_boolean_operator(nb::module_& m, const std::string& name)
 }
 }
 
+/**
+ * bind_views
+ */
+
 void bind_views(nb::module_& m)
 {
     bind_object(m, "Object");

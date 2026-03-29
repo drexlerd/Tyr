@@ -53,24 +53,24 @@ namespace tyr::planning::astar_eager
  * GBFS search node
  */
 
-template<typename Task>
+template<TaskKind Kind>
 struct SearchNode
 {
     float_t g_value;
-    Index<State<Task>> parent_state;
+    Index<State<Kind>> parent_state;
     SearchNodeStatus status;
 };
 
-static_assert(sizeof(SearchNode<LiftedTask>) == 16);
-static_assert(sizeof(SearchNode<GroundTask>) == 16);
+static_assert(sizeof(SearchNode<LiftedTag>) == 16);
+static_assert(sizeof(SearchNode<GroundTag>) == 16);
 
-template<typename Task>
-using SearchNodeVector = SegmentedVector<SearchNode<Task>>;
+template<TaskKind Kind>
+using SearchNodeVector = SegmentedVector<SearchNode<Kind>>;
 
-template<typename Task>
-static SearchNode<Task>& get_or_create_search_node(Index<State<Task>> state_index, SearchNodeVector<Task>& search_nodes)
+template<TaskKind Kind>
+static SearchNode<Kind>& get_or_create_search_node(Index<State<Kind>> state_index, SearchNodeVector<Kind>& search_nodes)
 {
-    static auto default_node = SearchNode { std::numeric_limits<float_t>::infinity(), Index<State<Task>>::max(), SearchNodeStatus::NEW };
+    static auto default_node = SearchNode { std::numeric_limits<float_t>::infinity(), Index<State<Kind>>::max(), SearchNodeStatus::NEW };
 
     while (uint_t(state_index) >= search_nodes.size())
     {
@@ -83,41 +83,41 @@ static SearchNode<Task>& get_or_create_search_node(Index<State<Task>> state_inde
  * GBFS queue
  */
 
-template<typename Task>
+template<TaskKind Kind>
 struct QueueEntry
 {
     using KeyType = std::tuple<float_t, SearchNodeStatus>;
-    using ItemType = std::tuple<float_t, Index<State<Task>>>;
+    using ItemType = std::tuple<float_t, Index<State<Kind>>>;
 
     float_t f_value;
-    Index<State<Task>> state;
+    Index<State<Kind>> state;
     SearchNodeStatus status;
 
     KeyType get_key() const { return std::make_tuple(f_value, status); }
     ItemType get_item() const { return std::make_tuple(f_value, state); }
 };
 
-static_assert(sizeof(QueueEntry<LiftedTask>) == 16);
-static_assert(sizeof(QueueEntry<GroundTask>) == 16);
+static_assert(sizeof(QueueEntry<LiftedTag>) == 16);
+static_assert(sizeof(QueueEntry<GroundTag>) == 16);
 
-template<typename Task>
-using Queue = PriorityQueue<QueueEntry<Task>>;
+template<TaskKind Kind>
+using Queue = PriorityQueue<QueueEntry<Kind>>;
 
-template<typename Task>
-SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor_generator, Heuristic<Task>& heuristic, const Options<Task>& options)
+template<TaskKind Kind>
+SearchResult<Kind> find_solution(Task<Kind>& task, SuccessorGenerator<Kind>& successor_generator, Heuristic<Kind>& heuristic, const Options<Kind>& options)
 {
     const auto start_node = (options.start_node) ? options.start_node.value() : successor_generator.get_initial_node();
     const auto& start_state = start_node.get_state();
     const auto start_state_index = start_state.get_index();
-    const auto event_handler = (options.event_handler) ? options.event_handler : DefaultEventHandler<Task>::create(0);
-    const auto pruning_strategy = (options.pruning_strategy) ? options.pruning_strategy : PruningStrategy<Task>::create();
-    const auto goal_strategy = (options.goal_strategy) ? options.goal_strategy : TaskGoalStrategy<Task>::create(task);
+    const auto event_handler = (options.event_handler) ? options.event_handler : DefaultEventHandler<Kind>::create(0);
+    const auto pruning_strategy = (options.pruning_strategy) ? options.pruning_strategy : PruningStrategy<Kind>::create();
+    const auto goal_strategy = (options.goal_strategy) ? options.goal_strategy : TaskGoalStrategy<Kind>::create(task);
     auto rng = std::mt19937_64(options.random_seed);
     auto& state_repository = *successor_generator.get_state_repository();
 
-    auto result = SearchResult<Task>();
-    auto search_nodes = SearchNodeVector<Task>();
-    auto openlist = Queue<Task>();
+    auto result = SearchResult<Kind>();
+    auto search_nodes = SearchNodeVector<Kind>();
+    auto openlist = Queue<Kind>();
     const auto start_h_value = heuristic.evaluate(start_state);
     const auto start_f_value = start_node.get_metric() + start_h_value;
     auto& start_search_node = get_or_create_search_node(start_state_index, search_nodes);
@@ -143,7 +143,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
     {
         event_handler->on_end_search();
 
-        result.plan = Plan(start_node, LabeledNodeList<Task> {});
+        result.plan = Plan(start_node, LabeledNodeList<Kind> {});
         result.goal_node = start_node;
         result.status = SearchStatus::SOLVED;
 
@@ -181,7 +181,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
         return result;
     }
 
-    auto labeled_succ_nodes = std::vector<LabeledNode<Task>> {};
+    auto labeled_succ_nodes = std::vector<LabeledNode<Kind>> {};
     auto f_value = start_f_value;
     openlist.insert(QueueEntry { start_f_value, start_state_index, start_search_node.status });
 
@@ -203,7 +203,7 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
         openlist.pop();
 
         auto& search_node = get_or_create_search_node(state_index, search_nodes);
-        auto node = Node<Task>(state, search_node.g_value);
+        auto node = Node<Kind>(state, search_node.g_value);
 
         /* Close state. */
 
@@ -328,14 +328,14 @@ SearchResult<Task> find_solution(Task& task, SuccessorGenerator<Task>& successor
     return result;
 }
 
-template SearchResult<LiftedTask> find_solution<LiftedTask>(LiftedTask& task,
-                                                            SuccessorGenerator<LiftedTask>& successor_generator,
-                                                            Heuristic<LiftedTask>& heuristic,
-                                                            const Options<LiftedTask>& options);
+template SearchResult<LiftedTag> find_solution<LiftedTag>(Task<LiftedTag>& task,
+                                                          SuccessorGenerator<LiftedTag>& successor_generator,
+                                                          Heuristic<LiftedTag>& heuristic,
+                                                          const Options<LiftedTag>& options);
 
-template SearchResult<GroundTask> find_solution<GroundTask>(GroundTask& task,
-                                                            SuccessorGenerator<GroundTask>& successor_generator,
-                                                            Heuristic<GroundTask>& heuristic,
-                                                            const Options<GroundTask>& options);
+template SearchResult<GroundTag> find_solution<GroundTag>(Task<GroundTag>& task,
+                                                          SuccessorGenerator<GroundTag>& successor_generator,
+                                                          Heuristic<GroundTag>& heuristic,
+                                                          const Options<GroundTag>& options);
 
 }

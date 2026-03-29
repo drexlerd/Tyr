@@ -562,6 +562,10 @@ void bind_boolean_operator_builder(nb::module_& m, const std::string& name)
 }
 }
 
+/**
+ * bind_datas
+ */
+
 void bind_datas(nb::module_& m)
 {
     bind_object_builder(m, "ObjectBuilder");

@@ -63,9 +63,9 @@ planning::AtomRange<formalism::StaticTag> LiftedStateView::get_static_atoms() co
     return planning::AtomRange<formalism::StaticTag>(m_state_repository->get_task()->get_static_atoms_bitset());
 }
 
-planning::FDRFactRange<planning::LiftedTask, formalism::FluentTag> LiftedStateView::get_fluent_facts() const noexcept
+planning::FDRFactRange<planning::LiftedTag, formalism::FluentTag> LiftedStateView::get_fluent_facts() const noexcept
 {
-    return planning::FDRFactRange<planning::LiftedTask, formalism::FluentTag>(get_atoms<formalism::FluentTag>());
+    return planning::FDRFactRange<planning::LiftedTag, formalism::FluentTag>(get_atoms<formalism::FluentTag>());
 }
 
 planning::AtomRange<formalism::DerivedTag> LiftedStateView::get_derived_atoms() const noexcept
@@ -90,7 +90,7 @@ const std::shared_ptr<formalism::planning::Repository>& LiftedStateView::get_rep
 
 static_assert(planning::IterableStateConcept<LiftedStateView>);
 static_assert(planning::IterableViewStateConcept<LiftedStateView>);
-static_assert(planning::IndexableStateConcept<LiftedStateView, planning::LiftedTask>);
-static_assert(planning::IndexableViewStateConcept<LiftedStateView, planning::LiftedTask>);
+static_assert(planning::IndexableStateConcept<LiftedStateView, planning::LiftedTag>);
+static_assert(planning::IndexableViewStateConcept<LiftedStateView, planning::LiftedTag>);
 
 }

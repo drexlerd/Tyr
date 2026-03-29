@@ -35,6 +35,10 @@ void bind_relation_binding_index(nb::module_& m, const std::string& name)
 
 }
 
+/**
+ * bind_indices
+ */
+
 void bind_indices(nb::module_& m)
 {
     bind_index<Index<Row>>(m, "RowIndex");

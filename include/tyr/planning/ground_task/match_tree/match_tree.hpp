@@ -652,7 +652,7 @@ public:
     MatchTree(MatchTree&& other) = delete;
     MatchTree& operator=(MatchTree&& other) = delete;
 
-    void generate(const StateContext<GroundTask>& state, IndexList<Tag>& out_applicable_elements)
+    void generate(const StateContext<GroundTag>& state, IndexList<Tag>& out_applicable_elements)
     {
         out_applicable_elements.clear();
         m_evaluate_stack.clear();

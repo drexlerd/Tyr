@@ -40,10 +40,10 @@
 namespace tyr::planning
 {
 template<>
-class UnpackedState<GroundTask>
+class UnpackedState<GroundTag>
 {
 public:
-    using TaskType = GroundTask;
+    using TaskType = Task<GroundTag>;
 
     UnpackedState() = default;
 
@@ -51,8 +51,8 @@ public:
      * UnpackedStateConcept
      */
 
-    Index<State<GroundTask>> get_index() const;
-    void set(Index<State<GroundTask>> index);
+    Index<State<GroundTag>> get_index() const;
+    void set(Index<State<GroundTag>> index);
 
     formalism::planning::FDRValue get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const;
     void set(Data<formalism::planning::FDRFact<formalism::FluentTag>> fact);
@@ -66,10 +66,10 @@ public:
     void clear();
     void clear_unextended_part();
     void clear_extended_part();
-    void assign_unextended_part(const UnpackedState<GroundTask>& other);
+    void assign_unextended_part(const UnpackedState<GroundTag>& other);
 
     /**
-     * For GroundTask
+     * For GroundTag
      */
 
     void resize_fluent_facts(size_t num_fluent_facts);
@@ -84,86 +84,86 @@ public:
     const auto& get_numeric_variables() const noexcept;
 
 private:
-    Index<State<GroundTask>> m_index;
+    Index<State<GroundTag>> m_index;
 
-    planning::FactUnpackedStorage<TaskType> m_fact_storage;
-    planning::AtomUnpackedStorage<TaskType> m_atom_storage;
-    planning::NumericUnpackedStorage<TaskType> m_numeric_storage;
+    planning::FactUnpackedStorage<GroundTag> m_fact_storage;
+    planning::AtomUnpackedStorage<GroundTag> m_atom_storage;
+    planning::NumericUnpackedStorage<GroundTag> m_numeric_storage;
 };
 
-static_assert(UnpackedStateConcept<UnpackedState<GroundTask>, GroundTask>);
+static_assert(UnpackedStateConcept<UnpackedState<GroundTag>, GroundTag>);
 
 /**
  * Implementations
  */
 
-inline Index<State<GroundTask>> UnpackedState<GroundTask>::get_index() const { return m_index; }
+inline Index<State<GroundTag>> UnpackedState<GroundTag>::get_index() const { return m_index; }
 
-inline void UnpackedState<GroundTask>::set(Index<State<GroundTask>> index) { m_index = index; }
+inline void UnpackedState<GroundTag>::set(Index<State<GroundTag>> index) { m_index = index; }
 
 // Fluent facts
-inline formalism::planning::FDRValue UnpackedState<GroundTask>::get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const
+inline formalism::planning::FDRValue UnpackedState<GroundTag>::get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const
 {
     assert(uint_t(index) < m_fact_storage.values.size());
     return formalism::planning::FDRValue(m_fact_storage.values[uint_t(index)]);
 }
 
-inline void UnpackedState<GroundTask>::set(Data<formalism::planning::FDRFact<formalism::FluentTag>> fact)
+inline void UnpackedState<GroundTag>::set(Data<formalism::planning::FDRFact<formalism::FluentTag>> fact)
 {
     assert(uint_t(fact.variable) < m_fact_storage.values.size());
     m_fact_storage.values[uint_t(fact.variable)] = uint_t(fact.value);
 }
 
 // Fluent numeric variables
-inline float_t UnpackedState<GroundTask>::get(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index) const
+inline float_t UnpackedState<GroundTag>::get(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index) const
 {
     return tyr::get(uint_t(index), m_numeric_storage.values, std::numeric_limits<float_t>::quiet_NaN());
 }
 
-inline void UnpackedState<GroundTask>::set(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index, float_t value)
+inline void UnpackedState<GroundTag>::set(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index, float_t value)
 {
     tyr::set(uint_t(index), value, m_numeric_storage.values, std::numeric_limits<float_t>::quiet_NaN());
 }
 
 // Derived atoms
-inline bool UnpackedState<GroundTask>::test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const
+inline bool UnpackedState<GroundTag>::test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const
 {
     assert(uint_t(index) < m_atom_storage.indices.size());
     return m_atom_storage.indices.test(uint_t(index));
 }
 
-inline void UnpackedState<GroundTask>::set(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index)
+inline void UnpackedState<GroundTag>::set(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index)
 {
     assert(uint_t(index) < m_atom_storage.indices.size());
     m_atom_storage.indices.set(uint_t(index));
 }
 
-inline void UnpackedState<GroundTask>::clear()
+inline void UnpackedState<GroundTag>::clear()
 {
     clear_unextended_part();
     clear_extended_part();
 }
 
-inline void UnpackedState<GroundTask>::clear_unextended_part()
+inline void UnpackedState<GroundTag>::clear_unextended_part()
 {
     m_fact_storage.values.clear();
     m_numeric_storage.values.clear();
 }
 
-inline void UnpackedState<GroundTask>::clear_extended_part() { m_atom_storage.indices.clear(); }
+inline void UnpackedState<GroundTag>::clear_extended_part() { m_atom_storage.indices.clear(); }
 
-inline void UnpackedState<GroundTask>::assign_unextended_part(const UnpackedState<GroundTask>& other)
+inline void UnpackedState<GroundTag>::assign_unextended_part(const UnpackedState<GroundTag>& other)
 {
     m_fact_storage = other.m_fact_storage;
     m_numeric_storage = other.m_numeric_storage;
 }
 
-inline void UnpackedState<GroundTask>::resize_fluent_facts(size_t num_fluent_facts) { m_fact_storage.values.resize(num_fluent_facts, 0); }
+inline void UnpackedState<GroundTag>::resize_fluent_facts(size_t num_fluent_facts) { m_fact_storage.values.resize(num_fluent_facts, 0); }
 
-inline void UnpackedState<GroundTask>::resize_derived_atoms(size_t num_derived_atoms) { m_atom_storage.indices.resize(num_derived_atoms, false); }
+inline void UnpackedState<GroundTag>::resize_derived_atoms(size_t num_derived_atoms) { m_atom_storage.indices.resize(num_derived_atoms, false); }
 
 template<formalism::FactKind T>
-inline auto& UnpackedState<GroundTask>::get_atoms() noexcept
+inline auto& UnpackedState<GroundTag>::get_atoms() noexcept
 {
     if constexpr (std::same_as<T, formalism::FluentTag>)
         return m_fact_storage;
@@ -174,7 +174,7 @@ inline auto& UnpackedState<GroundTask>::get_atoms() noexcept
 }
 
 template<formalism::FactKind T>
-inline const auto& UnpackedState<GroundTask>::get_atoms() const noexcept
+inline const auto& UnpackedState<GroundTag>::get_atoms() const noexcept
 {
     if constexpr (std::same_as<T, formalism::FluentTag>)
         return m_fact_storage;
@@ -184,9 +184,9 @@ inline const auto& UnpackedState<GroundTask>::get_atoms() const noexcept
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
-inline auto& UnpackedState<GroundTask>::get_numeric_variables() noexcept { return m_numeric_storage; }
+inline auto& UnpackedState<GroundTag>::get_numeric_variables() noexcept { return m_numeric_storage; }
 
-inline const auto& UnpackedState<GroundTask>::get_numeric_variables() const noexcept { return m_numeric_storage; }
+inline const auto& UnpackedState<GroundTag>::get_numeric_variables() const noexcept { return m_numeric_storage; }
 
 }
 

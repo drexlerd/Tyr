@@ -33,7 +33,7 @@ namespace tyr::planning
 {
 
 template<>
-struct FactPackedStorage<GroundTask, TreeCompression>
+struct FactPackedStorage<GroundTag, TreeCompression>
 {
     uint_t index;
 
@@ -41,14 +41,14 @@ struct FactPackedStorage<GroundTask, TreeCompression>
 };
 
 template<>
-class FactStorageBackend<GroundTask, TreeCompression>
+class FactStorageBackend<GroundTag, TreeCompression>
 {
 public:
-    using Unpacked = FactUnpackedStorage<GroundTask>;
-    using Packed = FactPackedStorage<GroundTask, TreeCompression>;
-    using VariableInfo = typename StateStorageContext<GroundTask, TreeCompression>::VariableInfo;
+    using Unpacked = FactUnpackedStorage<GroundTag>;
+    using Packed = FactPackedStorage<GroundTag, TreeCompression>;
+    using VariableInfo = typename StateStorageContext<GroundTag, TreeCompression>::VariableInfo;
 
-    explicit FactStorageBackend(StateStorageContext<GroundTask, TreeCompression>& ctx);
+    explicit FactStorageBackend(StateStorageContext<GroundTag, TreeCompression>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

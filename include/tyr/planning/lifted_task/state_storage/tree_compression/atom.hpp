@@ -29,7 +29,7 @@ namespace tyr::planning
 {
 
 template<>
-struct AtomPackedStorage<LiftedTask, TreeCompression>
+struct AtomPackedStorage<LiftedTag, TreeCompression>
 {
     valla::Slot<uint_t> slot;
 
@@ -37,13 +37,13 @@ struct AtomPackedStorage<LiftedTask, TreeCompression>
 };
 
 template<>
-class AtomStorageBackend<LiftedTask, TreeCompression>
+class AtomStorageBackend<LiftedTag, TreeCompression>
 {
 public:
-    using Unpacked = AtomUnpackedStorage<LiftedTask>;
-    using Packed = AtomPackedStorage<LiftedTask, TreeCompression>;
+    using Unpacked = AtomUnpackedStorage<LiftedTag>;
+    using Packed = AtomPackedStorage<LiftedTag, TreeCompression>;
 
-    explicit AtomStorageBackend(StateStorageContext<LiftedTask, TreeCompression>& ctx);
+    explicit AtomStorageBackend(StateStorageContext<LiftedTag, TreeCompression>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

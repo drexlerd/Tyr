@@ -26,6 +26,6 @@
 namespace tyr::planning
 {
 
-static_assert(NodeConcept<Node<LiftedTask>, LiftedTask>);
+static_assert(NodeConcept<Node<LiftedTag>, LiftedTag>);
 
 }

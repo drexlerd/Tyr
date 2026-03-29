@@ -28,18 +28,18 @@ namespace tyr::planning
 {
 
 template<>
-class MaxRPGHeuristic<LiftedTask> :
-    public RPGBase<MaxRPGHeuristic<LiftedTask>,
+class MaxRPGHeuristic<LiftedTag> :
+    public RPGBase<MaxRPGHeuristic<LiftedTag>,
                    datalog::OrAnnotationPolicy,
                    datalog::AndAnnotationPolicy<datalog::MaxAggregation>,
                    datalog::TerminationPolicy<datalog::MaxAggregation>>
 {
 public:
-    MaxRPGHeuristic(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    MaxRPGHeuristic(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<MaxRPGHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<MaxRPGHeuristic<LiftedTag>> create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    float_t extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTask>& state);
+    float_t extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTag>& state);
 };
 
 }

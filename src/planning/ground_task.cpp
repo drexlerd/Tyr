@@ -34,7 +34,7 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-GroundTask::GroundTask(formalism::planning::PlanningFDRTask task) :
+Task<GroundTag>::Task(formalism::planning::PlanningFDRTask task) :
     m_task(std::move(task)),
     m_static_atoms_bitset(),
     m_static_numeric_variables(),

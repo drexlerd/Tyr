@@ -30,7 +30,7 @@
 #include "tyr/formalism/planning/merge_planning.hpp"  // for MergeContext
 #include "tyr/formalism/planning/repository.hpp"      // for Repository
 #include "tyr/formalism/planning/views.hpp"
-#include "tyr/planning/lifted_task.hpp"  // for LiftedTask
+#include "tyr/planning/lifted_task.hpp"  // for LiftedTag
 #include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/unpacked_state.hpp"  // for UnpackedState
 #include "tyr/planning/task_utils.hpp"                  // for insert_fact_s...
@@ -47,7 +47,7 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_state,
+static void insert_unextended_state(const UnpackedState<LiftedTag>& unpacked_state,
                                     const fp::Repository& atoms_context,
                                     fp::MergeDatalogContext& merge_context,
                                     d::TaggedFactSets<f::FluentTag>& fact_sets,
@@ -62,7 +62,7 @@ static void insert_unextended_state(const UnpackedState<LiftedTask>& unpacked_st
 }
 
 static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram& axiom_program,
-                                                    UnpackedState<LiftedTask>& unpacked_state,
+                                                    UnpackedState<LiftedTag>& unpacked_state,
                                                     fp::MergePlanningContext& merge_context,
                                                     d::TaggedFactSets<f::FluentTag>& fact_sets)
 {
@@ -80,7 +80,7 @@ static void read_derived_atoms_from_program_context(const AxiomEvaluatorProgram&
     }
 }
 
-AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context) :
+AxiomEvaluator<LiftedTag>::AxiomEvaluator(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context) :
     m_task(std::move(task)),
     m_execution_context(std::move(execution_context)),
     m_workspace(m_task->get_axiom_program().get_program_context(),
@@ -91,12 +91,12 @@ AxiomEvaluator<LiftedTask>::AxiomEvaluator(std::shared_ptr<LiftedTask> task, Exe
 {
 }
 
-std::shared_ptr<AxiomEvaluator<LiftedTask>> AxiomEvaluator<LiftedTask>::create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context)
+std::shared_ptr<AxiomEvaluator<LiftedTag>> AxiomEvaluator<LiftedTag>::create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context)
 {
-    return std::make_shared<AxiomEvaluator<LiftedTask>>(std::move(task), std::move(execution_context));
+    return std::make_shared<AxiomEvaluator<LiftedTag>>(std::move(task), std::move(execution_context));
 }
 
-void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask>& unpacked_state)
+void AxiomEvaluator<LiftedTag>::compute_extended_state(UnpackedState<LiftedTag>& unpacked_state)
 {
     auto merge_datalog_context = fp::MergeDatalogContext { m_workspace.datalog_builder, m_workspace.workspace_repository };
 
@@ -112,6 +112,6 @@ void AxiomEvaluator<LiftedTask>::compute_extended_state(UnpackedState<LiftedTask
     read_derived_atoms_from_program_context(m_task->get_axiom_program(), unpacked_state, merge_planning_context, m_workspace.facts.fact_sets);
 }
 
-static_assert(AxiomEvaluatorConcept<AxiomEvaluator<LiftedTask>, LiftedTask>);
+static_assert(AxiomEvaluatorConcept<AxiomEvaluator<LiftedTag>, LiftedTag>);
 
 }

@@ -29,7 +29,7 @@ namespace tyr::planning
 {
 
 template<>
-struct FactPackedStorage<LiftedTask, HashSet>
+struct FactPackedStorage<LiftedTag, HashSet>
 {
     uint_t index;
 
@@ -37,13 +37,13 @@ struct FactPackedStorage<LiftedTask, HashSet>
 };
 
 template<>
-class FactStorageBackend<LiftedTask, HashSet>
+class FactStorageBackend<LiftedTag, HashSet>
 {
 public:
-    using Unpacked = FactUnpackedStorage<LiftedTask>;
-    using Packed = FactPackedStorage<LiftedTask, HashSet>;
+    using Unpacked = FactUnpackedStorage<LiftedTag>;
+    using Packed = FactPackedStorage<LiftedTag, HashSet>;
 
-    explicit FactStorageBackend(StateStorageContext<LiftedTask, HashSet>& ctx);
+    explicit FactStorageBackend(StateStorageContext<LiftedTag, HashSet>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

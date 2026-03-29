@@ -29,7 +29,7 @@ namespace tyr::planning
 {
 
 template<>
-struct FactPackedStorage<LiftedTask, TreeCompression>
+struct FactPackedStorage<LiftedTag, TreeCompression>
 {
     valla::Slot<uint_t> slot;
 
@@ -37,13 +37,13 @@ struct FactPackedStorage<LiftedTask, TreeCompression>
 };
 
 template<>
-class FactStorageBackend<LiftedTask, TreeCompression>
+class FactStorageBackend<LiftedTag, TreeCompression>
 {
 public:
-    using Unpacked = FactUnpackedStorage<LiftedTask>;
-    using Packed = FactPackedStorage<LiftedTask, TreeCompression>;
+    using Unpacked = FactUnpackedStorage<LiftedTag>;
+    using Packed = FactPackedStorage<LiftedTag, TreeCompression>;
 
-    explicit FactStorageBackend(StateStorageContext<LiftedTask, TreeCompression>& ctx);
+    explicit FactStorageBackend(StateStorageContext<LiftedTag, TreeCompression>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

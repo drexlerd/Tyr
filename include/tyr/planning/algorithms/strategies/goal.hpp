@@ -27,33 +27,33 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class GoalStrategy
 {
 public:
     virtual ~GoalStrategy() = default;
 
     virtual bool is_static_goal_satisfied() = 0;
-    virtual bool is_dynamic_goal_satisfied(const StateView<Task>& state) = 0;
+    virtual bool is_dynamic_goal_satisfied(const StateView<Kind>& state) = 0;
 };
 
-template<typename Task>
-class TaskGoalStrategy : public GoalStrategy<Task>
+template<TaskKind Kind>
+class TaskGoalStrategy : public GoalStrategy<Kind>
 {
 public:
-    TaskGoalStrategy(const Task& task) : m_task(task) {}
+    TaskGoalStrategy(const Task<Kind>& task) : m_task(task) {}
 
-    static std::shared_ptr<TaskGoalStrategy<Task>> create(const Task& task) { return std::make_shared<TaskGoalStrategy<Task>>(task); }
+    static std::shared_ptr<TaskGoalStrategy<Kind>> create(const Task<Kind>& task) { return std::make_shared<TaskGoalStrategy<Kind>>(task); }
 
     bool is_static_goal_satisfied() override { return is_statically_applicable(m_task.get_task().get_goal(), m_task.get_static_atoms_bitset()); }
-    bool is_dynamic_goal_satisfied(const StateView<Task>& state) override
+    bool is_dynamic_goal_satisfied(const StateView<Kind>& state) override
     {
         const auto state_context = StateContext { m_task, state.get_unpacked_state(), float_t { 0 } };
         return is_dynamically_applicable(m_task.get_task().get_goal(), state_context);
     }
 
 private:
-    const Task& m_task;
+    const Task<Kind>& m_task;
 };
 }
 

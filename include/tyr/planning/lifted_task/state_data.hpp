@@ -32,6 +32,7 @@
 #include "tyr/planning/state_storage/config.hpp"
 #include "tyr/planning/state_storage/hash_set/numeric.hpp"
 #include "tyr/planning/state_storage/tree_compression/numeric.hpp"
+#include "tyr/planning/task.hpp"
 
 #include <valla/valla.hpp>
 
@@ -42,16 +43,16 @@
 namespace tyr
 {
 template<>
-struct Data<planning::State<planning::LiftedTask>>
+struct Data<planning::State<planning::LiftedTag>>
 {
 public:
-    using TaskType = planning::LiftedTask;
+    using TaskType = planning::Task<planning::LiftedTag>;
 
     Data() noexcept = default;
-    Data(Index<planning::State<TaskType>> index,
-         planning::FactPackedStorage<TaskType, planning::StateStoragePolicyTag> fact_storage,
-         planning::AtomPackedStorage<TaskType, planning::StateStoragePolicyTag> atom_storage,
-         planning::NumericPackedStorage<TaskType, planning::StateStoragePolicyTag> numeric_storage) noexcept :
+    Data(Index<planning::State<planning::LiftedTag>> index,
+         planning::FactPackedStorage<planning::LiftedTag, planning::StateStoragePolicyTag> fact_storage,
+         planning::AtomPackedStorage<planning::LiftedTag, planning::StateStoragePolicyTag> atom_storage,
+         planning::NumericPackedStorage<planning::LiftedTag, planning::StateStoragePolicyTag> numeric_storage) noexcept :
         m_index(index),
         m_fact_storage(fact_storage),
         m_atom_storage(atom_storage),
@@ -59,7 +60,7 @@ public:
     {
     }
 
-    Index<planning::State<TaskType>> get_index() const noexcept { return m_index; }
+    Index<planning::State<planning::LiftedTag>> get_index() const noexcept { return m_index; }
 
     /**
      * New
@@ -81,11 +82,11 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_fact_storage, m_atom_storage, m_numeric_storage); }
 
 private:
-    Index<planning::State<TaskType>> m_index;
+    Index<planning::State<planning::LiftedTag>> m_index;
 
-    planning::FactPackedStorage<TaskType, planning::StateStoragePolicyTag> m_fact_storage;
-    planning::AtomPackedStorage<TaskType, planning::StateStoragePolicyTag> m_atom_storage;
-    planning::NumericPackedStorage<TaskType, planning::StateStoragePolicyTag> m_numeric_storage;
+    planning::FactPackedStorage<planning::LiftedTag, planning::StateStoragePolicyTag> m_fact_storage;
+    planning::AtomPackedStorage<planning::LiftedTag, planning::StateStoragePolicyTag> m_atom_storage;
+    planning::NumericPackedStorage<planning::LiftedTag, planning::StateStoragePolicyTag> m_numeric_storage;
 };
 
 }

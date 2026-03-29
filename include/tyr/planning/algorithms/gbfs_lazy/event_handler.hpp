@@ -36,26 +36,26 @@ namespace tyr::planning::gbfs_lazy
 /// @brief `IEventHandler` to react on event during GBFS search.
 ///
 /// Inspired by boost graph library: https://www.boost.org/doc/libs/1_75_0/libs/graph/doc/AStarVisitor.html
-template<typename Task>
+template<TaskKind Kind>
 class EventHandler
 {
 public:
     virtual ~EventHandler() = default;
 
     /// @brief React on expanding a node. This is called immediately after popping from the queue.
-    virtual void on_expand_node(const Node<Task>& node) = 0;
+    virtual void on_expand_node(const Node<Kind>& node) = 0;
 
     /// @brief React on expanding a goal `node`.
-    virtual void on_expand_goal_node(const Node<Task>& node) = 0;
+    virtual void on_expand_goal_node(const Node<Kind>& node) = 0;
 
     /// @brief React on generating a successor `node` by applying an action.
-    virtual void on_generate_node(const LabeledNode<Task>& labeled_succ_node) = 0;
+    virtual void on_generate_node(const LabeledNode<Kind>& labeled_succ_node) = 0;
 
     /// @brief React on pruning a node.
-    virtual void on_prune_node(const Node<Task>& node) = 0;
+    virtual void on_prune_node(const Node<Kind>& node) = 0;
 
     /// @brief React on starting a search.
-    virtual void on_start_search(const Node<Task>& node, float_t h_value) = 0;
+    virtual void on_start_search(const Node<Kind>& node, float_t h_value) = 0;
 
     /// @brief React on new best h_value
     virtual void on_new_best_h_value(float_t h_value) = 0;
@@ -64,7 +64,7 @@ public:
     virtual void on_end_search() = 0;
 
     /// @brief React on solving a search.
-    virtual void on_solved(const Plan<Task>& plan) = 0;
+    virtual void on_solved(const Plan<Kind>& plan) = 0;
 
     /// @brief React on proving unsolvability during a search.
     virtual void on_unsolvable() = 0;
@@ -78,8 +78,8 @@ public:
  *
  * Collect statistics and call implementation of derived class.
  */
-template<typename Derived, typename Task>
-class EventHandlerBase : public EventHandler<Task>
+template<typename Derived, TaskKind Kind>
+class EventHandlerBase : public EventHandler<Kind>
 {
 protected:
     tyr::planning::Statistics m_statistics;
@@ -98,7 +98,7 @@ private:
 public:
     explicit EventHandlerBase(size_t verbosity = 0) : m_statistics(), m_verbosity(verbosity) {}
 
-    void on_expand_node(const Node<Task>& node) override
+    void on_expand_node(const Node<Kind>& node) override
     {
         m_statistics.increment_num_expanded();
 
@@ -106,13 +106,13 @@ public:
             self().on_expand_node_impl(node);
     }
 
-    void on_expand_goal_node(const Node<Task>& node) override
+    void on_expand_goal_node(const Node<Kind>& node) override
     {
         if (verbosity(2))
             self().on_expand_goal_node_impl(node);
     }
 
-    void on_generate_node(const LabeledNode<Task>& labeled_succ_node) override
+    void on_generate_node(const LabeledNode<Kind>& labeled_succ_node) override
     {
         m_statistics.increment_num_generated();
 
@@ -122,7 +122,7 @@ public:
         }
     }
 
-    void on_prune_node(const Node<Task>& node) override
+    void on_prune_node(const Node<Kind>& node) override
     {
         m_statistics.increment_num_pruned();
 
@@ -132,7 +132,7 @@ public:
         }
     }
 
-    void on_start_search(const Node<Task>& node, float_t h_value) override
+    void on_start_search(const Node<Kind>& node, float_t h_value) override
     {
         m_statistics = tyr::planning::Statistics();
 
@@ -161,7 +161,7 @@ public:
             self().on_end_search_impl();
     }
 
-    void on_solved(const Plan<Task>& plan) override
+    void on_solved(const Plan<Kind>& plan) override
     {
         if (verbosity(0))
         {
@@ -192,28 +192,28 @@ public:
     const tyr::planning::Statistics& get_statistics() const { return m_statistics; }
 };
 
-template<typename Task>
-class DefaultEventHandler : public EventHandlerBase<DefaultEventHandler<Task>, Task>
+template<TaskKind Kind>
+class DefaultEventHandler : public EventHandlerBase<DefaultEventHandler<Kind>, Kind>
 {
 private:
     /* Implement EventHandlerBase interface */
-    friend class EventHandlerBase<DefaultEventHandler<Task>, Task>;
+    friend class EventHandlerBase<DefaultEventHandler<Kind>, Kind>;
 
-    void on_expand_node_impl(const Node<Task>& node) const;
+    void on_expand_node_impl(const Node<Kind>& node) const;
 
-    void on_expand_goal_node_impl(const Node<Task>& node) const;
+    void on_expand_goal_node_impl(const Node<Kind>& node) const;
 
-    void on_generate_node_impl(const LabeledNode<Task>& labeled_succ_node) const;
+    void on_generate_node_impl(const LabeledNode<Kind>& labeled_succ_node) const;
 
-    void on_prune_node_impl(const Node<Task>& node) const;
+    void on_prune_node_impl(const Node<Kind>& node) const;
 
-    void on_start_search_impl(const Node<Task>& node, float_t h_value) const;
+    void on_start_search_impl(const Node<Kind>& node, float_t h_value) const;
 
     void on_new_best_h_value_impl(float_t h_value, uint64_t num_expanded_states, uint64_t num_generated_states) const;
 
     void on_end_search_impl() const;
 
-    void on_solved_impl(const Plan<Task>& plan) const;
+    void on_solved_impl(const Plan<Kind>& plan) const;
 
     void on_unsolvable_impl() const;
 
@@ -222,7 +222,7 @@ private:
 public:
     DefaultEventHandler(size_t verbosity = 0);
 
-    static DefaultEventHandlerPtr<Task> create(size_t verbosity = 0);
+    static DefaultEventHandlerPtr<Kind> create(size_t verbosity = 0);
 };
 
 }

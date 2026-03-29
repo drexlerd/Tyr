@@ -36,18 +36,18 @@ namespace tyr::planning
 {
 
 template<>
-class FFRPGHeuristic<LiftedTask> :
-    public RPGBase<FFRPGHeuristic<LiftedTask>,
+class FFRPGHeuristic<LiftedTag> :
+    public RPGBase<FFRPGHeuristic<LiftedTag>,
                    datalog::OrAnnotationPolicy,
                    datalog::AndAnnotationPolicy<datalog::SumAggregation>,
                    datalog::TerminationPolicy<datalog::SumAggregation>>
 {
 public:
-    FFRPGHeuristic(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    FFRPGHeuristic(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<FFRPGHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<FFRPGHeuristic<LiftedTag>> create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    float_t extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTask>& state);
+    float_t extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTag>& state);
 
     const UnorderedSet<Index<formalism::planning::GroundAction>>& get_preferred_actions() override;
 
@@ -57,7 +57,7 @@ public:
 
 private:
     void extract_relaxed_plan_and_preferred_actions(formalism::datalog::PredicateBindingView<formalism::FluentTag> atom,
-                                                    const StateContext<LiftedTask>& state_context,
+                                                    const StateContext<LiftedTag>& state_context,
                                                     formalism::planning::GrounderContext& grounder_context);
 
 private:

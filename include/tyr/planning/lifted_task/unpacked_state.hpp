@@ -40,20 +40,20 @@
 namespace tyr::planning
 {
 template<>
-class UnpackedState<LiftedTask>
+class UnpackedState<LiftedTag>
 {
 public:
-    using TaskType = LiftedTask;
+    using TaskType = Task<LiftedTag>;
 
     UnpackedState() = default;
 
-    Index<State<LiftedTask>> get_index() const;
-    void set(Index<State<LiftedTask>> index);
+    Index<State<LiftedTag>> get_index() const;
+    void set(Index<State<LiftedTag>> index);
 
     void clear();
     void clear_unextended_part();
     void clear_extended_part();
-    void assign_unextended_part(const UnpackedState<LiftedTask>& other);
+    void assign_unextended_part(const UnpackedState<LiftedTag>& other);
 
     /**
      * UnpackedStateConcept
@@ -90,125 +90,125 @@ public:
     const auto& get_numeric_variables() const noexcept;
 
 private:
-    Index<State<TaskType>> m_index;
+    Index<State<LiftedTag>> m_index;
 
-    planning::FactUnpackedStorage<TaskType> m_fact_storage;
-    planning::AtomUnpackedStorage<TaskType> m_atom_storage;
-    planning::NumericUnpackedStorage<TaskType> m_numeric_storage;
+    planning::FactUnpackedStorage<LiftedTag> m_fact_storage;
+    planning::AtomUnpackedStorage<LiftedTag> m_atom_storage;
+    planning::NumericUnpackedStorage<LiftedTag> m_numeric_storage;
 };
 
-static_assert(UnpackedStateConcept<UnpackedState<LiftedTask>, LiftedTask>);
+static_assert(UnpackedStateConcept<UnpackedState<LiftedTag>, LiftedTag>);
 
 /**
  * Implementations
  */
 
-inline Index<State<LiftedTask>> UnpackedState<LiftedTask>::get_index() const { return m_index; }
+inline Index<State<LiftedTag>> UnpackedState<LiftedTag>::get_index() const { return m_index; }
 
-inline void UnpackedState<LiftedTask>::set(Index<State<LiftedTask>> index) { m_index = index; }
+inline void UnpackedState<LiftedTag>::set(Index<State<LiftedTag>> index) { m_index = index; }
 
 // Fluent facts
-inline formalism::planning::FDRValue UnpackedState<LiftedTask>::get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const
+inline formalism::planning::FDRValue UnpackedState<LiftedTag>::get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const
 {
     return formalism::planning::FDRValue(tyr::test(uint_t(index), m_fact_storage.indices));
 }
 
-inline void UnpackedState<LiftedTask>::set(Data<formalism::planning::FDRFact<formalism::FluentTag>> fact)
+inline void UnpackedState<LiftedTag>::set(Data<formalism::planning::FDRFact<formalism::FluentTag>> fact)
 {
     assert(uint_t(fact.value) < 2);  // can only handle binary using bitsets
     tyr::set(uint_t(fact.variable), bool(uint_t(fact.value)), m_fact_storage.indices);
 }
 
 // Fluent numeric variables
-inline float_t UnpackedState<LiftedTask>::get(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index) const
+inline float_t UnpackedState<LiftedTag>::get(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index) const
 {
     return tyr::get(uint_t(index), m_numeric_storage.values, std::numeric_limits<float_t>::quiet_NaN());
 }
 
-inline void UnpackedState<LiftedTask>::set(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index, float_t value)
+inline void UnpackedState<LiftedTag>::set(Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>> index, float_t value)
 {
     tyr::set(uint_t(index), value, m_numeric_storage.values, std::numeric_limits<float_t>::quiet_NaN());
 }
 
 // Derived atoms
-inline bool UnpackedState<LiftedTask>::test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const
+inline bool UnpackedState<LiftedTag>::test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const
 {
     return tyr::test(uint_t(index), m_atom_storage.indices);
 }
 
-inline void UnpackedState<LiftedTask>::set(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index)
+inline void UnpackedState<LiftedTag>::set(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index)
 {
     tyr::set(uint_t(index), true, m_atom_storage.indices);
 }
 
 // Fluent facts
-inline formalism::planning::FDRValue UnpackedState<LiftedTask>::get(formalism::planning::FDRVariableView<formalism::FluentTag> view) const
+inline formalism::planning::FDRValue UnpackedState<LiftedTag>::get(formalism::planning::FDRVariableView<formalism::FluentTag> view) const
 {
     return get(view.get_index());
 }
 
-inline void UnpackedState<LiftedTask>::set(formalism::planning::FDRFactView<formalism::FluentTag> view) { set(view.get_data()); }
+inline void UnpackedState<LiftedTag>::set(formalism::planning::FDRFactView<formalism::FluentTag> view) { set(view.get_data()); }
 
 // Fluent numeric variables
-inline float_t UnpackedState<LiftedTask>::get(formalism::planning::GroundFunctionTermView<formalism::FluentTag> view) const { return get(view.get_index()); }
+inline float_t UnpackedState<LiftedTag>::get(formalism::planning::GroundFunctionTermView<formalism::FluentTag> view) const { return get(view.get_index()); }
 
-inline void UnpackedState<LiftedTask>::set(formalism::planning::GroundFunctionTermView<formalism::FluentTag> view, float_t value)
+inline void UnpackedState<LiftedTag>::set(formalism::planning::GroundFunctionTermView<formalism::FluentTag> view, float_t value)
 {
     set(view.get_index(), value);
 }
 
 // Derived atoms
-inline bool UnpackedState<LiftedTask>::test(formalism::planning::GroundAtomView<formalism::DerivedTag> view) const { return test(view.get_index()); }
+inline bool UnpackedState<LiftedTag>::test(formalism::planning::GroundAtomView<formalism::DerivedTag> view) const { return test(view.get_index()); }
 
-inline void UnpackedState<LiftedTask>::set(formalism::planning::GroundAtomView<formalism::DerivedTag> view) { set(view.get_index()); }
+inline void UnpackedState<LiftedTag>::set(formalism::planning::GroundAtomView<formalism::DerivedTag> view) { set(view.get_index()); }
 
-inline void UnpackedState<LiftedTask>::clear()
+inline void UnpackedState<LiftedTag>::clear()
 {
     clear_unextended_part();
     clear_extended_part();
 }
 
-inline void UnpackedState<LiftedTask>::clear_unextended_part()
+inline void UnpackedState<LiftedTag>::clear_unextended_part()
 {
     m_fact_storage.indices.clear();
     m_numeric_storage.values.clear();
 }
 
-inline void UnpackedState<LiftedTask>::clear_extended_part() { m_atom_storage.indices.clear(); }
+inline void UnpackedState<LiftedTag>::clear_extended_part() { m_atom_storage.indices.clear(); }
 
-inline void UnpackedState<LiftedTask>::assign_unextended_part(const UnpackedState<LiftedTask>& other)
+inline void UnpackedState<LiftedTag>::assign_unextended_part(const UnpackedState<LiftedTag>& other)
 {
     m_fact_storage = other.m_fact_storage;
     m_numeric_storage = other.m_numeric_storage;
 }
 
-inline auto UnpackedState<LiftedTask>::get_fluent_facts() const noexcept { return FDRFactRange<LiftedTask, formalism::FluentTag>(m_fact_storage.indices); }
+inline auto UnpackedState<LiftedTag>::get_fluent_facts() const noexcept { return FDRFactRange<LiftedTag, formalism::FluentTag>(m_fact_storage.indices); }
 
-inline auto UnpackedState<LiftedTask>::get_derived_atoms() const noexcept { return AtomRange<formalism::DerivedTag>(m_atom_storage.indices); }
+inline auto UnpackedState<LiftedTag>::get_derived_atoms() const noexcept { return AtomRange<formalism::DerivedTag>(m_atom_storage.indices); }
 
-inline auto UnpackedState<LiftedTask>::get_fluent_fterm_values() const noexcept
+inline auto UnpackedState<LiftedTag>::get_fluent_fterm_values() const noexcept
 {
     return FunctionTermValueRange<formalism::FluentTag>(m_numeric_storage.values);
 }
 
-inline auto UnpackedState<LiftedTask>::get_fluent_facts_view(const formalism::planning::Repository& repository_) const noexcept
+inline auto UnpackedState<LiftedTag>::get_fluent_facts_view(const formalism::planning::Repository& repository_) const noexcept
 {
     return get_fluent_facts() | std::views::transform([repository = &repository_](auto id) { return make_view(id, *repository); });
 }
 
-inline auto UnpackedState<LiftedTask>::get_derived_atoms_view(const formalism::planning::Repository& repository_) const noexcept
+inline auto UnpackedState<LiftedTag>::get_derived_atoms_view(const formalism::planning::Repository& repository_) const noexcept
 {
     return get_derived_atoms() | std::views::transform([repository = &repository_](auto id) { return make_view(id, *repository); });
 }
 
-inline auto UnpackedState<LiftedTask>::get_fluent_fterm_values_view(const formalism::planning::Repository& repository_) const noexcept
+inline auto UnpackedState<LiftedTag>::get_fluent_fterm_values_view(const formalism::planning::Repository& repository_) const noexcept
 {
     return get_fluent_fterm_values()
            | std::views::transform([repository = &repository_](auto&& pair) { return std::make_pair(make_view(pair.first, *repository), pair.second); });
 }
 
 template<formalism::FactKind T>
-inline auto& UnpackedState<LiftedTask>::get_atoms() noexcept
+inline auto& UnpackedState<LiftedTag>::get_atoms() noexcept
 {
     if constexpr (std::same_as<T, formalism::FluentTag>)
         return m_fact_storage;
@@ -219,7 +219,7 @@ inline auto& UnpackedState<LiftedTask>::get_atoms() noexcept
 }
 
 template<formalism::FactKind T>
-inline const auto& UnpackedState<LiftedTask>::get_atoms() const noexcept
+inline const auto& UnpackedState<LiftedTag>::get_atoms() const noexcept
 {
     if constexpr (std::same_as<T, formalism::FluentTag>)
         return m_fact_storage;
@@ -229,9 +229,9 @@ inline const auto& UnpackedState<LiftedTask>::get_atoms() const noexcept
         static_assert(dependent_false<T>::value, "Missing case");
 }
 
-inline auto& UnpackedState<LiftedTask>::get_numeric_variables() noexcept { return m_numeric_storage; }
+inline auto& UnpackedState<LiftedTag>::get_numeric_variables() noexcept { return m_numeric_storage; }
 
-inline const auto& UnpackedState<LiftedTask>::get_numeric_variables() const noexcept { return m_numeric_storage; }
+inline const auto& UnpackedState<LiftedTag>::get_numeric_variables() const noexcept { return m_numeric_storage; }
 }
 
 #endif

@@ -33,7 +33,7 @@ namespace tyr::planning
 {
 
 template<typename Derived, typename OrAP, typename AndAP, typename TP>
-class RPGBase : public Heuristic<LiftedTask>
+class RPGBase : public Heuristic<LiftedTag>
 {
 private:
     /// @brief Helper to cast to Derived.
@@ -41,7 +41,7 @@ private:
     constexpr auto& self() { return static_cast<Derived&>(*this); }
 
 public:
-    explicit RPGBase(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context, const OrAP& or_ap, const AndAP& and_ap, const TP& tp) :
+    explicit RPGBase(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context, const OrAP& or_ap, const AndAP& and_ap, const TP& tp) :
         m_task(std::move(task)),
         m_execution_context(std::move(execution_context)),
         m_workspace(m_task->get_rpg_program().get_program_context(), m_task->get_rpg_program().get_const_program_workspace(), or_ap, and_ap, tp)
@@ -62,7 +62,7 @@ public:
         }
     }
 
-    float_t evaluate(const StateView<LiftedTask>& state) override
+    float_t evaluate(const StateView<LiftedTag>& state) override
     {
         m_workspace.facts.reset();
 
@@ -81,7 +81,7 @@ public:
     const auto& get_workspace() const noexcept { return m_workspace; }
 
 protected:
-    std::shared_ptr<LiftedTask> m_task;
+    std::shared_ptr<Task<LiftedTag>> m_task;
     ExecutionContextPtr m_execution_context;
 
     datalog::ProgramWorkspace<OrAP, AndAP, TP> m_workspace;

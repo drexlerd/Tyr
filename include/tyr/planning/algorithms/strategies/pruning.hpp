@@ -26,17 +26,17 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class PruningStrategy
 {
 public:
     virtual ~PruningStrategy() = default;
 
-    static std::shared_ptr<PruningStrategy<Task>> create() { return std::make_shared<PruningStrategy<Task>>(); }
+    static std::shared_ptr<PruningStrategy<Kind>> create() { return std::make_shared<PruningStrategy<Kind>>(); }
 
-    virtual bool should_prune_state(const StateView<Task>& state) { return false; }
+    virtual bool should_prune_state(const StateView<Kind>& state) { return false; }
 
-    virtual bool should_prune_successor_state(const StateView<Task>& state, const StateView<Task>& succ_state, bool is_new_succ) { return false; }
+    virtual bool should_prune_successor_state(const StateView<Kind>& state, const StateView<Kind>& succ_state, bool is_new_succ) { return false; }
 };
 
 }

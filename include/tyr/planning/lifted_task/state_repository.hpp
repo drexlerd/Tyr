@@ -43,27 +43,27 @@ namespace tyr::planning
 {
 
 template<>
-class StateRepository<LiftedTask> : public std::enable_shared_from_this<StateRepository<LiftedTask>>
+class StateRepository<LiftedTag> : public std::enable_shared_from_this<StateRepository<LiftedTag>>
 {
 public:
-    explicit StateRepository(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    explicit StateRepository(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<StateRepository<LiftedTask>> create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<StateRepository<LiftedTag>> create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    StateView<LiftedTask> get_initial_state();
+    StateView<LiftedTag> get_initial_state();
 
-    StateView<LiftedTask> get_registered_state(Index<State<LiftedTask>> state_index);
+    StateView<LiftedTag> get_registered_state(Index<State<LiftedTag>> state_index);
 
-    StateView<LiftedTask>
+    StateView<LiftedTag>
     create_state(const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
                  const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values);
 
-    StateView<LiftedTask> create_state(const std::vector<formalism::planning::FDRFactView<formalism::FluentTag>>& fluent_facts,
-                                       const std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>>& fterm_values);
+    StateView<LiftedTag> create_state(const std::vector<formalism::planning::FDRFactView<formalism::FluentTag>>& fluent_facts,
+                                      const std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>>& fterm_values);
 
-    SharedObjectPoolPtr<UnpackedState<LiftedTask>> get_unregistered_state();
+    SharedObjectPoolPtr<UnpackedState<LiftedTag>> get_unregistered_state();
 
-    StateView<LiftedTask> register_state(SharedObjectPoolPtr<UnpackedState<LiftedTask>> state);
+    StateView<LiftedTag> register_state(SharedObjectPoolPtr<UnpackedState<LiftedTag>> state);
 
     size_t memory_usage() const noexcept;
 
@@ -71,17 +71,17 @@ public:
     const auto& get_axiom_evaluator() const noexcept { return m_axiom_evaluator; }
 
 private:
-    std::shared_ptr<LiftedTask> m_task;
+    std::shared_ptr<Task<LiftedTag>> m_task;
 
-    StateStorageContext<LiftedTask, StateStoragePolicyTag> m_context;
-    FactStorageBackend<LiftedTask, StateStoragePolicyTag> m_fluent_backend;
-    AtomStorageBackend<LiftedTask, StateStoragePolicyTag> m_derived_backend;
-    NumericStorageBackend<LiftedTask, StateStoragePolicyTag> m_numeric_backend;
+    StateStorageContext<LiftedTag, StateStoragePolicyTag> m_context;
+    FactStorageBackend<LiftedTag, StateStoragePolicyTag> m_fluent_backend;
+    AtomStorageBackend<LiftedTag, StateStoragePolicyTag> m_derived_backend;
+    NumericStorageBackend<LiftedTag, StateStoragePolicyTag> m_numeric_backend;
 
-    IndexedHashSet<State<LiftedTask>> m_packed_states;
-    SharedObjectPool<UnpackedState<LiftedTask>> m_unpacked_state_pool;
+    IndexedHashSet<State<LiftedTag>> m_packed_states;
+    SharedObjectPool<UnpackedState<LiftedTag>> m_unpacked_state_pool;
 
-    std::shared_ptr<AxiomEvaluator<LiftedTask>> m_axiom_evaluator;
+    std::shared_ptr<AxiomEvaluator<LiftedTag>> m_axiom_evaluator;
 };
 
 }

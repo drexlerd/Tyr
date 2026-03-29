@@ -28,68 +28,68 @@
 
 namespace tyr::planning::astar_eager
 {
-template<typename Task>
-void DefaultEventHandler<Task>::on_expand_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_expand_node_impl(const Node<Kind>& node) const
 {
     std::cout << "[ASTAR] ----------------------------------------\n"
               << "[ASTAR] Expanding node: " << node << "\n"
               << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_expand_goal_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_expand_goal_node_impl(const Node<Kind>& node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_generate_node_impl(const LabeledNode<Task>& labeled_succ_node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_generate_node_impl(const LabeledNode<Kind>& labeled_succ_node) const
 {
     std::cout << "[ASTAR] Action: " << labeled_succ_node.label << "\n";
     std::cout << "[ASTAR] Successor node: " << labeled_succ_node.node << "\n" << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_generate_node_relaxed_impl(const LabeledNode<Task>& labeled_succ_node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_generate_node_relaxed_impl(const LabeledNode<Kind>& labeled_succ_node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_generate_node_not_relaxed_impl(const LabeledNode<Task>& labeled_succ_node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_generate_node_not_relaxed_impl(const LabeledNode<Kind>& labeled_succ_node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_close_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_close_node_impl(const Node<Kind>& node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_prune_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_prune_node_impl(const Node<Kind>& node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_start_search_impl(const Node<Task>& node, float_t f_value) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_start_search_impl(const Node<Kind>& node, float_t f_value) const
 {
     std::cout << "[ASTAR] Search started.\n"
               << "[ASTAR] Start node f_value: " << f_value << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_finish_f_layer_impl(float_t f_value, uint64_t num_expanded_states, uint64_t num_generated_states) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_finish_f_layer_impl(float_t f_value, uint64_t num_expanded_states, uint64_t num_generated_states) const
 {
     std::cout << "[ASTAR] Finished f-layer: " << f_value << " with num expanded states " << num_expanded_states << " and num generated states "
               << num_generated_states << " (" << to_ms(this->get_statistics().get_current_search_time()) << " ms)" << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_end_search_impl() const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_end_search_impl() const
 {
     std::cout << "[ASTAR] Search ended.\n" << this->m_statistics << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_solved_impl(const Plan<Task>& plan) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_solved_impl(const Plan<Kind>& plan) const
 {
     std::cout << "[ASTAR] Plan found.\n"
               << "[ASTAR] Plan cost: " << plan.get_cost() << "\n"
@@ -98,30 +98,30 @@ void DefaultEventHandler<Task>::on_solved_impl(const Plan<Task>& plan) const
     std::cout << plan << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_unsolvable_impl() const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_unsolvable_impl() const
 {
     std::cout << "[ASTAR] Task is unsolvable!" << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_exhausted_impl() const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_exhausted_impl() const
 {
     std::cout << "[ASTAR] Task is unsolvable!" << std::endl;
 }
 
-template<typename Task>
-DefaultEventHandler<Task>::DefaultEventHandler(size_t verbosity) : EventHandlerBase<DefaultEventHandler<Task>, Task>(verbosity)
+template<TaskKind Kind>
+DefaultEventHandler<Kind>::DefaultEventHandler(size_t verbosity) : EventHandlerBase<DefaultEventHandler<Kind>, Kind>(verbosity)
 {
 }
 
-template<typename Task>
-DefaultEventHandlerPtr<Task> DefaultEventHandler<Task>::create(size_t verbosity)
+template<TaskKind Kind>
+DefaultEventHandlerPtr<Kind> DefaultEventHandler<Kind>::create(size_t verbosity)
 {
-    return std::make_shared<DefaultEventHandler<Task>>(verbosity);
+    return std::make_shared<DefaultEventHandler<Kind>>(verbosity);
 }
 
-template class DefaultEventHandler<LiftedTask>;
-template class DefaultEventHandler<GroundTask>;
+template class DefaultEventHandler<LiftedTag>;
+template class DefaultEventHandler<GroundTag>;
 
 }

@@ -23,21 +23,21 @@
 namespace tyr::planning
 {
 
-AtomStorageBackend<LiftedTask, HashSet>::AtomStorageBackend(StateStorageContext<LiftedTask, HashSet>& ctx) : m_uint_vec_set(ctx.uint_vec_set), m_buffer() {}
+AtomStorageBackend<LiftedTag, HashSet>::AtomStorageBackend(StateStorageContext<LiftedTag, HashSet>& ctx) : m_uint_vec_set(ctx.uint_vec_set), m_buffer() {}
 
-typename AtomStorageBackend<LiftedTask, HashSet>::Packed
-AtomStorageBackend<LiftedTask, HashSet>::insert(const typename AtomStorageBackend<LiftedTask, HashSet>::Unpacked& unpacked)
+typename AtomStorageBackend<LiftedTag, HashSet>::Packed
+AtomStorageBackend<LiftedTag, HashSet>::insert(const typename AtomStorageBackend<LiftedTag, HashSet>::Unpacked& unpacked)
 {
     m_buffer.clear();
     const auto& bits = unpacked.indices;
     for (auto i = bits.find_first(); i != boost::dynamic_bitset<>::npos; i = bits.find_next(i))
         m_buffer.push_back(i);
 
-    return AtomStorageBackend<LiftedTask, HashSet>::Packed { m_uint_vec_set.insert(m_buffer) };
+    return AtomStorageBackend<LiftedTag, HashSet>::Packed { m_uint_vec_set.insert(m_buffer) };
 }
 
-void AtomStorageBackend<LiftedTask, HashSet>::unpack(const typename AtomStorageBackend<LiftedTask, HashSet>::Packed& packed,
-                                                     typename AtomStorageBackend<LiftedTask, HashSet>::Unpacked& unpacked)
+void AtomStorageBackend<LiftedTag, HashSet>::unpack(const typename AtomStorageBackend<LiftedTag, HashSet>::Packed& packed,
+                                                    typename AtomStorageBackend<LiftedTag, HashSet>::Unpacked& unpacked)
 {
     const auto view = m_uint_vec_set[packed.index];
 

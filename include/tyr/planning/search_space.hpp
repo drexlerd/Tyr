@@ -27,26 +27,26 @@
 namespace tyr::planning
 {
 
-template<typename Task, typename SearchNode>
-    requires SearchNodeConcept<SearchNode, Task>
-NodeList<Task> extract_node_trajectory(const SegmentedVector<SearchNode>& search_nodes,
+template<TaskKind Kind, typename SearchNode>
+    requires SearchNodeConcept<SearchNode, Kind>
+NodeList<Kind> extract_node_trajectory(const SegmentedVector<SearchNode>& search_nodes,
                                        const SearchNode& final_search_node,
-                                       const Node<Task>& final_node,
-                                       SuccessorGenerator<Task>& successor_generator)
+                                       const Node<Kind>& final_node,
+                                       SuccessorGenerator<Kind>& successor_generator)
 {
-    auto trajectory = NodeList<Task> {};
+    auto trajectory = NodeList<Kind> {};
     trajectory.push_back(final_node);
 
     auto cur_search_node = &final_search_node;
     auto& state_repository = *successor_generator.get_state_repository();
 
-    while (cur_search_node->parent_state != Index<State<Task>>::max())
+    while (cur_search_node->parent_state != Index<State<Kind>>::max())
     {
         const auto parent_state_index = cur_search_node->parent_state;
 
         cur_search_node = &search_nodes.at(uint_t(cur_search_node->parent_state));
 
-        trajectory.push_back(Node<Task>(state_repository.get_registered_state(parent_state_index), cur_search_node->g_value));
+        trajectory.push_back(Node<Kind>(state_repository.get_registered_state(parent_state_index), cur_search_node->g_value));
     }
 
     std::reverse(trajectory.begin(), trajectory.end());
@@ -54,14 +54,14 @@ NodeList<Task> extract_node_trajectory(const SegmentedVector<SearchNode>& search
     return trajectory;
 }
 
-template<typename Task>
-LabeledNodeList<Task> extract_labeled_node_trajectory(const NodeList<Task>& node_trajectory, SuccessorGenerator<Task>& successor_generator)
+template<TaskKind Kind>
+LabeledNodeList<Kind> extract_labeled_node_trajectory(const NodeList<Kind>& node_trajectory, SuccessorGenerator<Kind>& successor_generator)
 {
     assert(!node_trajectory.empty());
 
-    auto labeled_node_trajectory = LabeledNodeList<Task> {};
+    auto labeled_node_trajectory = LabeledNodeList<Kind> {};
     auto cur_node = node_trajectory.front();
-    auto labeled_succ_nodes = std::vector<LabeledNode<Task>> {};
+    auto labeled_succ_nodes = std::vector<LabeledNode<Kind>> {};
 
     for (size_t i = 1; i < node_trajectory.size(); ++i)
     {
@@ -81,18 +81,18 @@ LabeledNodeList<Task> extract_labeled_node_trajectory(const NodeList<Task>& node
     return labeled_node_trajectory;
 }
 
-template<typename Task, typename SearchNode>
-    requires SearchNodeConcept<SearchNode, Task>
-inline Plan<Task> extract_total_ordered_plan(const SearchNode& final_search_node,
-                                             const Node<Task>& final_node,
+template<TaskKind Kind, typename SearchNode>
+    requires SearchNodeConcept<SearchNode, Kind>
+inline Plan<Kind> extract_total_ordered_plan(const SearchNode& final_search_node,
+                                             const Node<Kind>& final_node,
                                              const SegmentedVector<SearchNode>& search_nodes,
-                                             SuccessorGenerator<Task>& successor_generator)
+                                             SuccessorGenerator<Kind>& successor_generator)
 {
     const auto node_trajetory = extract_node_trajectory(search_nodes, final_search_node, final_node, successor_generator);
 
     auto labeled_node_trajectory = extract_labeled_node_trajectory(node_trajetory, successor_generator);
 
-    return Plan<Task>(node_trajetory.front(), std::move(labeled_node_trajectory));
+    return Plan<Kind>(node_trajetory.front(), std::move(labeled_node_trajectory));
 }
 
 }

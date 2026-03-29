@@ -25,34 +25,36 @@
 #include "tyr/formalism/planning/repository.hpp"
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/state_view.hpp"
+#include "tyr/planning/task.hpp"
 
 #include <concepts>
 #include <ranges>
 
 namespace tyr::planning
 {
-template<typename Task>
+template<TaskKind Kind>
 class Node
 {
-    static_assert(dependent_false<Task>::value, "Node is not defined for type T.");
+    static_assert(dependent_false<Kind>::value, "Node is not defined for type Kind.");
 };
 
-template<typename Task>
-using NodeList = std::vector<Node<Task>>;
+template<TaskKind Kind>
+using NodeList = std::vector<Node<Kind>>;
 
-template<typename Task>
+template<TaskKind Kind>
 struct LabeledNode
 {
     formalism::planning::GroundActionView label;
-    Node<Task> node;
+    Node<Kind> node;
 };
 
-template<typename Task>
-using LabeledNodeList = std::vector<LabeledNode<Task>>;
+template<TaskKind Kind>
+using LabeledNodeList = std::vector<LabeledNode<Kind>>;
 
-template<typename T, typename Task>
+template<typename T, typename Kind>
 concept NodeConcept = requires(const T& cn) {
-    { cn.get_state() } -> std::same_as<const StateView<Task>&>;
+    requires TaskKind<Kind>;
+    { cn.get_state() } -> std::same_as<const StateView<Kind>&>;
     { cn.get_metric() } -> std::same_as<float_t>;
 };
 }

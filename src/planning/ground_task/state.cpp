@@ -62,9 +62,9 @@ planning::AtomRange<formalism::StaticTag> GroundStateView::get_static_atoms() co
     return planning::AtomRange<formalism::StaticTag>(m_state_repository->get_task()->get_static_atoms_bitset());
 }
 
-planning::FDRFactRange<planning::GroundTask, formalism::FluentTag> GroundStateView::get_fluent_facts() const noexcept
+planning::FDRFactRange<planning::GroundTag, formalism::FluentTag> GroundStateView::get_fluent_facts() const noexcept
 {
-    return planning::FDRFactRange<planning::GroundTask, formalism::FluentTag>(get_fluent_values());
+    return planning::FDRFactRange<planning::GroundTag, formalism::FluentTag>(get_fluent_values());
 }
 
 planning::AtomRange<formalism::DerivedTag> GroundStateView::get_derived_atoms() const noexcept
@@ -89,6 +89,6 @@ const std::shared_ptr<formalism::planning::Repository>& GroundStateView::get_rep
 
 static_assert(planning::IterableStateConcept<GroundStateView>);
 static_assert(planning::IterableViewStateConcept<GroundStateView>);
-static_assert(planning::IndexableStateConcept<GroundStateView, planning::GroundTask>);
-static_assert(planning::IndexableViewStateConcept<GroundStateView, planning::GroundTask>);
+static_assert(planning::IndexableStateConcept<GroundStateView, planning::GroundTag>);
+static_assert(planning::IndexableViewStateConcept<GroundStateView, planning::GroundTag>);
 }

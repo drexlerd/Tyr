@@ -28,18 +28,18 @@ namespace tyr::planning
 {
 
 template<>
-class AddRPGHeuristic<LiftedTask> :
-    public RPGBase<AddRPGHeuristic<LiftedTask>,
+class AddRPGHeuristic<LiftedTag> :
+    public RPGBase<AddRPGHeuristic<LiftedTag>,
                    datalog::OrAnnotationPolicy,
                    datalog::AndAnnotationPolicy<datalog::SumAggregation>,
                    datalog::TerminationPolicy<datalog::SumAggregation>>
 {
 public:
-    AddRPGHeuristic(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    AddRPGHeuristic(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<AddRPGHeuristic<LiftedTask>> create(std::shared_ptr<LiftedTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<AddRPGHeuristic<LiftedTag>> create(std::shared_ptr<Task<LiftedTag>> task, ExecutionContextPtr execution_context);
 
-    float_t extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTask>& state);
+    float_t extract_cost_and_set_preferred_actions_impl(const StateView<LiftedTag>& state);
 };
 
 }

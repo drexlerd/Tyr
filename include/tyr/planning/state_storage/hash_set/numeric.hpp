@@ -27,22 +27,22 @@
 
 namespace tyr::planning
 {
-template<typename Task>
-struct NumericPackedStorage<Task, HashSet>
+template<TaskKind Kind>
+struct NumericPackedStorage<Kind, HashSet>
 {
     uint_t index;
 
     auto identifying_members() const noexcept { return std::tie(index); }
 };
 
-template<typename Task>
-class NumericStorageBackend<Task, HashSet>
+template<TaskKind Kind>
+class NumericStorageBackend<Kind, HashSet>
 {
 public:
-    using Unpacked = NumericUnpackedStorage<Task>;
-    using Packed = NumericPackedStorage<Task, HashSet>;
+    using Unpacked = NumericUnpackedStorage<Kind>;
+    using Packed = NumericPackedStorage<Kind, HashSet>;
 
-    explicit NumericStorageBackend(StateStorageContext<Task, HashSet>& ctx);
+    explicit NumericStorageBackend(StateStorageContext<Kind, HashSet>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

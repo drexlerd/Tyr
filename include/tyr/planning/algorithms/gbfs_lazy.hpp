@@ -28,13 +28,13 @@
 namespace tyr::planning::gbfs_lazy
 {
 
-template<typename Task>
+template<TaskKind Kind>
 struct Options
 {
-    std::optional<Node<Task>> start_node = std::nullopt;
-    EventHandlerPtr<Task> event_handler = nullptr;
-    PruningStrategyPtr<Task> pruning_strategy = nullptr;
-    GoalStrategyPtr<Task> goal_strategy = nullptr;
+    std::optional<Node<Kind>> start_node = std::nullopt;
+    EventHandlerPtr<Kind> event_handler = nullptr;
+    PruningStrategyPtr<Kind> pruning_strategy = nullptr;
+    GoalStrategyPtr<Kind> goal_strategy = nullptr;
     uint_t max_num_states = std::numeric_limits<uint_t>::max();
     std::optional<std::chrono::steady_clock::duration> max_time = std::nullopt;
     uint_t boost_preferred_queue = 1000;
@@ -44,9 +44,9 @@ struct Options
     Options() = default;
 };
 
-template<typename Task>
-SearchResult<Task>
-find_solution(Task& task, SuccessorGenerator<Task>& successor_generator, Heuristic<Task>& heuristic, const Options<Task>& options = Options<Task>());
+template<TaskKind Kind>
+SearchResult<Kind>
+find_solution(Task<Kind>& task, SuccessorGenerator<Kind>& successor_generator, Heuristic<Kind>& heuristic, const Options<Kind>& options = Options<Kind>());
 }
 
 #endif

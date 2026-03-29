@@ -36,9 +36,9 @@ namespace tyr::planning
  */
 
 template<>
-struct StateStorageContext<GroundTask, HashSet>
+struct StateStorageContext<GroundTag, HashSet>
 {
-    explicit StateStorageContext(const GroundTask& task);
+    explicit StateStorageContext(const Task<GroundTag>& task);
 
     struct VariableInfo
     {

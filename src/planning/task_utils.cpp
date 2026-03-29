@@ -36,7 +36,7 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTask>& state,
+void insert_fluent_atoms_to_fact_set(const UnpackedState<LiftedTag>& state,
                                      const formalism::planning::Repository& repository,
                                      fp::MergeDatalogContext& merge_context,
                                      datalog::TaggedFactSets<f::FluentTag>& fact_sets)

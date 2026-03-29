@@ -23,10 +23,10 @@
 namespace tyr::planning
 {
 
-FactStorageBackend<LiftedTask, TreeCompression>::FactStorageBackend(StateStorageContext<LiftedTask, TreeCompression>& ctx) : m_uint_nodes(ctx.uint_nodes) {}
+FactStorageBackend<LiftedTag, TreeCompression>::FactStorageBackend(StateStorageContext<LiftedTag, TreeCompression>& ctx) : m_uint_nodes(ctx.uint_nodes) {}
 
-typename FactStorageBackend<LiftedTask, TreeCompression>::Packed
-FactStorageBackend<LiftedTask, TreeCompression>::insert(const typename FactStorageBackend<LiftedTask, TreeCompression>::Unpacked& unpacked)
+typename FactStorageBackend<LiftedTag, TreeCompression>::Packed
+FactStorageBackend<LiftedTag, TreeCompression>::insert(const typename FactStorageBackend<LiftedTag, TreeCompression>::Unpacked& unpacked)
 {
     m_uint_node_buffer.clear();
     const auto& bits = unpacked.indices;
@@ -34,11 +34,11 @@ FactStorageBackend<LiftedTask, TreeCompression>::insert(const typename FactStora
         m_uint_node_buffer.push_back(i);
 
     const auto slot = valla::insert_sequence(m_uint_node_buffer, m_uint_nodes);
-    return FactStorageBackend<LiftedTask, TreeCompression>::Packed { slot };
+    return FactStorageBackend<LiftedTag, TreeCompression>::Packed { slot };
 }
 
-void FactStorageBackend<LiftedTask, TreeCompression>::unpack(const typename FactStorageBackend<LiftedTask, TreeCompression>::Packed& packed,
-                                                             typename FactStorageBackend<LiftedTask, TreeCompression>::Unpacked& unpacked)
+void FactStorageBackend<LiftedTag, TreeCompression>::unpack(const typename FactStorageBackend<LiftedTag, TreeCompression>::Packed& packed,
+                                                            typename FactStorageBackend<LiftedTag, TreeCompression>::Unpacked& unpacked)
 {
     auto& indices = unpacked.indices;
 

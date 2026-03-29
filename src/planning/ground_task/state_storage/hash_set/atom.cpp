@@ -18,32 +18,32 @@
 #include "tyr/planning/ground_task/state_storage/hash_set/atom.hpp"
 
 #include "tyr/common/bit.hpp"
-#include "tyr/planning/ground_task.hpp"
 #include "tyr/planning/ground_task/state_storage/hash_set/context.hpp"
+#include "tyr/planning/task.hpp"
 
 namespace tyr::planning
 {
 
-AtomStorageBackend<GroundTask, HashSet>::AtomStorageBackend(StateStorageContext<GroundTask, HashSet>& ctx) :
+AtomStorageBackend<GroundTag, HashSet>::AtomStorageBackend(StateStorageContext<GroundTag, HashSet>& ctx) :
     m_array_set(ctx.derived_array_set),
     m_num_bits(ctx.derived_num_bits),
     m_buffer(m_array_set.array_size())
 {
 }
 
-typename AtomStorageBackend<GroundTask, HashSet>::Packed
-AtomStorageBackend<GroundTask, HashSet>::insert(const typename AtomStorageBackend<GroundTask, HashSet>::Unpacked& unpacked)
+typename AtomStorageBackend<GroundTag, HashSet>::Packed
+AtomStorageBackend<GroundTag, HashSet>::insert(const typename AtomStorageBackend<GroundTag, HashSet>::Unpacked& unpacked)
 {
     auto data = m_buffer.data();
 
     std::fill(m_buffer.begin(), m_buffer.end(), uint_t(0));
     for (uint_t i = 0; i < m_num_bits; ++i)
         bit::bit_reference(data, i) = unpacked.indices.test(i);
-    return typename AtomStorageBackend<GroundTask, HashSet>::Packed { m_array_set.insert(m_buffer) };
+    return typename AtomStorageBackend<GroundTag, HashSet>::Packed { m_array_set.insert(m_buffer) };
 }
 
-void AtomStorageBackend<GroundTask, HashSet>::unpack(const typename AtomStorageBackend<GroundTask, HashSet>::Packed& packed,
-                                                     typename AtomStorageBackend<GroundTask, HashSet>::Unpacked& unpacked)
+void AtomStorageBackend<GroundTag, HashSet>::unpack(const typename AtomStorageBackend<GroundTag, HashSet>::Packed& packed,
+                                                    typename AtomStorageBackend<GroundTag, HashSet>::Unpacked& unpacked)
 {
     const auto data = m_array_set[packed.index];
     auto& indices = unpacked.indices;

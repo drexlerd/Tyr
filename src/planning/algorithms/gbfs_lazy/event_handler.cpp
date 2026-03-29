@@ -28,53 +28,53 @@
 
 namespace tyr::planning::gbfs_lazy
 {
-template<typename Task>
-void DefaultEventHandler<Task>::on_expand_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_expand_node_impl(const Node<Kind>& node) const
 {
     std::cout << "[GBFS] ----------------------------------------\n"
               << "[GBFS] Expanding node: " << node << "\n"
               << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_expand_goal_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_expand_goal_node_impl(const Node<Kind>& node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_generate_node_impl(const LabeledNode<Task>& labeled_succ_node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_generate_node_impl(const LabeledNode<Kind>& labeled_succ_node) const
 {
     std::cout << "[GBFS] Action: " << labeled_succ_node.label << "\n";
     std::cout << "[GBFS] Successor node: " << labeled_succ_node.node << "\n" << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_prune_node_impl(const Node<Task>& node) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_prune_node_impl(const Node<Kind>& node) const
 {
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_start_search_impl(const Node<Task>& node, float_t h_value) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_start_search_impl(const Node<Kind>& node, float_t h_value) const
 {
     std::cout << "[GBFS] Search started.\n"
               << "[GBFS] Start node h_value: " << h_value << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_new_best_h_value_impl(float_t h_value, uint64_t num_expanded_states, uint64_t num_generated_states) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_new_best_h_value_impl(float_t h_value, uint64_t num_expanded_states, uint64_t num_generated_states) const
 {
     std::cout << "[GBFS] New best h_value: " << h_value << " with num expanded states " << num_expanded_states << " and num generated states "
               << num_generated_states << " (" << to_ms(this->get_statistics().get_current_search_time()) << " ms)" << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_end_search_impl() const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_end_search_impl() const
 {
     std::cout << "[GBFS] Search ended.\n" << this->m_statistics << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_solved_impl(const Plan<Task>& plan) const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_solved_impl(const Plan<Kind>& plan) const
 {
     std::cout << "[GBFS] Plan found.\n"
               << "[GBFS] Plan cost: " << plan.get_cost() << "\n"
@@ -83,30 +83,30 @@ void DefaultEventHandler<Task>::on_solved_impl(const Plan<Task>& plan) const
     std::cout << plan << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_unsolvable_impl() const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_unsolvable_impl() const
 {
     std::cout << "[GBFS] Task is unsolvable!" << std::endl;
 }
 
-template<typename Task>
-void DefaultEventHandler<Task>::on_exhausted_impl() const
+template<TaskKind Kind>
+void DefaultEventHandler<Kind>::on_exhausted_impl() const
 {
     std::cout << "[GBFS] Task is unsolvable!" << std::endl;
 }
 
-template<typename Task>
-DefaultEventHandler<Task>::DefaultEventHandler(size_t verbosity) : EventHandlerBase<DefaultEventHandler<Task>, Task>(verbosity)
+template<TaskKind Kind>
+DefaultEventHandler<Kind>::DefaultEventHandler(size_t verbosity) : EventHandlerBase<DefaultEventHandler<Kind>, Kind>(verbosity)
 {
 }
 
-template<typename Task>
-DefaultEventHandlerPtr<Task> DefaultEventHandler<Task>::create(size_t verbosity)
+template<TaskKind Kind>
+DefaultEventHandlerPtr<Kind> DefaultEventHandler<Kind>::create(size_t verbosity)
 {
-    return std::make_shared<DefaultEventHandler<Task>>(verbosity);
+    return std::make_shared<DefaultEventHandler<Kind>>(verbosity);
 }
 
-template class DefaultEventHandler<LiftedTask>;
-template class DefaultEventHandler<GroundTask>;
+template class DefaultEventHandler<LiftedTag>;
+template class DefaultEventHandler<GroundTag>;
 
 }

@@ -24,10 +24,8 @@
 
 namespace tyr::formalism::planning
 {
-
 namespace
 {
-
 template<typename T>
 auto bind_get_or_create_canonical()
 {
@@ -38,6 +36,10 @@ auto bind_get_or_create_canonical()
     };
 }
 }
+
+/**
+ * bind_module_definitions
+ */
 
 void bind_module_definitions(nb::module_& m)
 {

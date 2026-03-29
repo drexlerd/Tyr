@@ -42,10 +42,10 @@ namespace fp = tyr::formalism::planning;
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 void process_effects(fp::GroundActionView action,
-                     UnpackedState<Task>& succ_unpacked_state,
-                     StateContext<Task>& state_context,
+                     UnpackedState<Kind>& succ_unpacked_state,
+                     StateContext<Kind>& state_context,
                      DataList<fp::FDRFact<f::FluentTag>>& tmp_del_effects,
                      DataList<fp::FDRFact<f::FluentTag>>& tmp_add_effects)
 {
@@ -70,8 +70,8 @@ void process_effects(fp::GroundActionView action,
     }
 }
 
-template<typename Task>
-bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateContext<Task>& state)
+template<TaskKind Kind>
+bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateContext<Kind>& state)
 {
     // Ensure that condition applicability was verified already.
     assert(tyr::planning::are_applicable_if_fires(action.get_effects(), state, m_effect_families)
@@ -80,11 +80,11 @@ bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateConte
     return are_applicable_if_fires(action.get_effects(), state, m_effect_families);
 }
 
-template bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateContext<LiftedTask>& state);
-template bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateContext<GroundTask>& state);
+template bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateContext<LiftedTag>& state);
+template bool ActionExecutor::is_applicable(fp::GroundActionView action, const StateContext<GroundTag>& state);
 
-template<typename Task>
-Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context, fp::GroundActionView action, StateRepository<Task>& state_repository)
+template<TaskKind Kind>
+Node<Kind> ActionExecutor::apply_action(const StateContext<Kind>& state_context, fp::GroundActionView action, StateRepository<Kind>& state_repository)
 {
     m_del_effects.clear();
     m_add_effects.clear();
@@ -111,11 +111,11 @@ Node<Task> ActionExecutor::apply_action(const StateContext<Task>& state_context,
     else
         ++succ_state_context.auxiliary_value;  // Assume unit cost if no metric is given
 
-    return Node<Task>(succ_state, succ_state_context.auxiliary_value);
+    return Node<Kind>(succ_state, succ_state_context.auxiliary_value);
 }
 
-template Node<LiftedTask>
-ActionExecutor::apply_action(const StateContext<LiftedTask>& state_context, fp::GroundActionView action, StateRepository<LiftedTask>& state_repository);
-template Node<GroundTask>
-ActionExecutor::apply_action(const StateContext<GroundTask>& state_context, fp::GroundActionView action, StateRepository<GroundTask>& state_repository);
+template Node<LiftedTag>
+ActionExecutor::apply_action(const StateContext<LiftedTag>& state_context, fp::GroundActionView action, StateRepository<LiftedTag>& state_repository);
+template Node<GroundTag>
+ActionExecutor::apply_action(const StateContext<GroundTag>& state_context, fp::GroundActionView action, StateRepository<GroundTag>& state_repository);
 }

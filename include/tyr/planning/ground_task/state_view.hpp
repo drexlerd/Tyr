@@ -26,21 +26,22 @@
 #include "tyr/planning/ground_task/unpacked_state.hpp"
 #include "tyr/planning/state_iterators.hpp"
 #include "tyr/planning/state_view.hpp"
+#include "tyr/planning/task.hpp"
 
 #include <boost/dynamic_bitset.hpp>
 
 namespace tyr
 {
 template<>
-struct View<Index<planning::State<planning::GroundTask>>, std::shared_ptr<planning::StateRepository<planning::GroundTask>>>
+struct View<Index<planning::State<planning::GroundTag>>, std::shared_ptr<planning::StateRepository<planning::GroundTag>>>
 {
 public:
-    using TaskType = planning::GroundTask;
+    using TaskType = planning::Task<planning::GroundTag>;
 
-    View(std::shared_ptr<planning::StateRepository<planning::GroundTask>> owner,
-         SharedObjectPoolPtr<planning::UnpackedState<planning::GroundTask>> unpacked) noexcept;
+    View(std::shared_ptr<planning::StateRepository<planning::GroundTag>> owner,
+         SharedObjectPoolPtr<planning::UnpackedState<planning::GroundTag>> unpacked) noexcept;
 
-    Index<planning::State<planning::GroundTask>> get_index() const;
+    Index<planning::State<planning::GroundTag>> get_index() const;
 
     /**
      * IndexableStateConcept
@@ -67,7 +68,7 @@ public:
      */
 
     planning::AtomRange<formalism::StaticTag> get_static_atoms() const noexcept;
-    planning::FDRFactRange<planning::GroundTask, formalism::FluentTag> get_fluent_facts() const noexcept;
+    planning::FDRFactRange<planning::GroundTag, formalism::FluentTag> get_fluent_facts() const noexcept;
     planning::AtomRange<formalism::DerivedTag> get_derived_atoms() const noexcept;
     planning::FunctionTermValueRange<formalism::StaticTag> get_static_fterm_values() const noexcept;
     planning::FunctionTermValueRange<formalism::FluentTag> get_fluent_fterm_values() const noexcept;
@@ -87,8 +88,8 @@ public:
      */
 
     const std::shared_ptr<formalism::planning::Repository>& get_repository() const noexcept;
-    const std::shared_ptr<planning::StateRepository<planning::GroundTask>>& get_state_repository() const noexcept;
-    const planning::UnpackedState<planning::GroundTask>& get_unpacked_state() const noexcept;
+    const std::shared_ptr<planning::StateRepository<planning::GroundTag>>& get_state_repository() const noexcept;
+    const planning::UnpackedState<planning::GroundTag>& get_unpacked_state() const noexcept;
 
     template<formalism::FactKind T>
     const boost::dynamic_bitset<>& get_atoms() const noexcept;
@@ -99,24 +100,24 @@ public:
     const std::vector<float_t>& get_numeric_variables() const noexcept;
 
 private:
-    std::shared_ptr<planning::StateRepository<planning::GroundTask>> m_state_repository;
-    SharedObjectPoolPtr<planning::UnpackedState<planning::GroundTask>> m_unpacked;
+    std::shared_ptr<planning::StateRepository<planning::GroundTag>> m_state_repository;
+    SharedObjectPoolPtr<planning::UnpackedState<planning::GroundTag>> m_unpacked;
 };
 
-using GroundStateView = View<Index<planning::State<planning::GroundTask>>, std::shared_ptr<planning::StateRepository<planning::GroundTask>>>;
+using GroundStateView = View<Index<planning::State<planning::GroundTag>>, std::shared_ptr<planning::StateRepository<planning::GroundTag>>>;
 
 /**
  * Implemntations
  */
 
-inline GroundStateView::View(std::shared_ptr<planning::StateRepository<planning::GroundTask>> owner,
-                             SharedObjectPoolPtr<planning::UnpackedState<planning::GroundTask>> unpacked) noexcept :
+inline GroundStateView::View(std::shared_ptr<planning::StateRepository<planning::GroundTag>> owner,
+                             SharedObjectPoolPtr<planning::UnpackedState<planning::GroundTag>> unpacked) noexcept :
     m_state_repository(std::move(owner)),
     m_unpacked(std::move(unpacked))
 {
 }
 
-inline Index<planning::State<planning::GroundTask>> GroundStateView::get_index() const { return m_unpacked->get_index(); }
+inline Index<planning::State<planning::GroundTag>> GroundStateView::get_index() const { return m_unpacked->get_index(); }
 
 inline formalism::planning::FDRValue GroundStateView::get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const
 {
@@ -127,12 +128,12 @@ inline float_t GroundStateView::get(Index<formalism::planning::GroundFunctionTer
 
 inline bool GroundStateView::test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const { return m_unpacked->test(index); }
 
-inline const std::shared_ptr<planning::StateRepository<planning::GroundTask>>& GroundStateView::get_state_repository() const noexcept
+inline const std::shared_ptr<planning::StateRepository<planning::GroundTag>>& GroundStateView::get_state_repository() const noexcept
 {
     return m_state_repository;
 }
 
-inline const planning::UnpackedState<planning::GroundTask>& GroundStateView::get_unpacked_state() const noexcept { return *m_unpacked; }
+inline const planning::UnpackedState<planning::GroundTag>& GroundStateView::get_unpacked_state() const noexcept { return *m_unpacked; }
 
 inline const std::vector<uint_t>& GroundStateView::get_fluent_values() const noexcept { return m_unpacked->get_atoms<formalism::FluentTag>().values; }
 

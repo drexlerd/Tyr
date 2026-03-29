@@ -27,25 +27,26 @@
 namespace tyr::planning
 {
 
-template<typename Task>
+template<TaskKind Kind>
 class SuccessorGenerator
 {
-    static_assert(dependent_false<Task>::value, "SuccessorGenerator is not defined for type T.");
+    static_assert(dependent_false<Kind>::value, "SuccessorGenerator is not defined for type T.");
 };
 
-template<typename T, typename Task>
+template<typename T, typename Kind>
 concept SuccessorGeneratorConcept = requires(T& r,
-                                             std::shared_ptr<Task> task,
+                                             std::shared_ptr<Task<Kind>> task,
                                              std::shared_ptr<ExecutionContext> execution_context,
-                                             Index<State<Task>> state_index,
-                                             const Node<Task>& node,
-                                             std::vector<LabeledNode<Task>>& labeled_successor_nodes,
+                                             Index<State<Kind>> state_index,
+                                             const Node<Kind>& node,
+                                             std::vector<LabeledNode<Kind>>& labeled_successor_nodes,
                                              formalism::planning::GroundActionView action) {
-    { r.get_initial_node() } -> std::same_as<Node<Task>>;
-    { r.get_labeled_successor_nodes(node) } -> std::same_as<std::vector<LabeledNode<Task>>>;
+    requires TaskKind<Kind>;
+    { r.get_initial_node() } -> std::same_as<Node<Kind>>;
+    { r.get_labeled_successor_nodes(node) } -> std::same_as<std::vector<LabeledNode<Kind>>>;
     { r.get_labeled_successor_nodes(node, labeled_successor_nodes) } -> std::same_as<void>;
-    { r.get_successor_node(node, action) } -> std::same_as<Node<Task>>;
-    { r.get_node(state_index) } -> std::same_as<Node<Task>>;
+    { r.get_successor_node(node, action) } -> std::same_as<Node<Kind>>;
+    { r.get_node(state_index) } -> std::same_as<Node<Kind>>;
 };
 
 }

@@ -59,5 +59,6 @@
 #include "tyr/planning/state_index.hpp"
 #include "tyr/planning/state_iterators.hpp"
 #include "tyr/planning/state_repository.hpp"
+#include "tyr/planning/task.hpp"
 
 #endif

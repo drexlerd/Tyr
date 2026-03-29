@@ -19,6 +19,7 @@
 #define TYR_PLANNING_STATE_STORAGE_HPP_
 
 #include "tyr/common/config.hpp"
+#include "tyr/planning/task.hpp"
 
 #include <concepts>
 #include <vector>
@@ -30,46 +31,46 @@ namespace tyr::planning
  * Context
  */
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct StateStorageContext;
 
 /**
  * Backend
  */
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct AtomStorageBackend;
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct FactStorageBackend;
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct NumericStorageBackend;
 
 /**
  * Packed
  */
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct AtomPackedStorage;
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct FactPackedStorage;
 
-template<typename Task, typename Tag>
+template<TaskKind Kind, typename Tag>
 struct NumericPackedStorage;
 
 /**
  * Unpacked
  */
 
-template<typename Task>
+template<TaskKind Kind>
 struct AtomUnpackedStorage;
 
-template<typename Task>
+template<TaskKind Kind>
 struct FactUnpackedStorage;
 
-template<typename Task>
+template<TaskKind Kind>
 struct NumericUnpackedStorage
 {
     std::vector<float_t> values;

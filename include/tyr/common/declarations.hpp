@@ -46,18 +46,6 @@ concept Identifiable = requires(const T a) {
     { a.identifying_members() };
 };
 
-template<class T>
-concept PointerLike = requires(T t) {
-    { static_cast<bool>(t) } -> std::convertible_to<bool>;
-    { *t };
-};
-
-template<class T>
-concept OptionalLike = requires(T t) {
-    { t.has_value() } -> std::convertible_to<bool>;
-    { *t };
-};
-
 template<typename T>
 struct dependent_false : std::false_type
 {

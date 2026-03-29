@@ -81,15 +81,15 @@ int main(int argc, char** argv)
 
         auto execution_context = ExecutionContext::create(num_worker_threads);
 
-        auto successor_generator = planning::SuccessorGenerator<planning::LiftedTask>(lifted_task, execution_context);
+        auto successor_generator = planning::SuccessorGenerator<planning::LiftedTag>(lifted_task, execution_context);
 
-        auto options = planning::gbfs_lazy::Options<planning::LiftedTask>();
+        auto options = planning::gbfs_lazy::Options<planning::LiftedTag>();
         options.start_node = successor_generator.get_initial_node();
-        options.event_handler = planning::gbfs_lazy::DefaultEventHandler<planning::LiftedTask>::create(verbosity);
+        options.event_handler = planning::gbfs_lazy::DefaultEventHandler<planning::LiftedTag>::create(verbosity);
         options.random_seed = random_seed;
         options.shuffle_labeled_succ_nodes = shuffle_labeled_succ_nodes;
 
-        auto ff_heuristic = planning::FFRPGHeuristic<planning::LiftedTask>::create(lifted_task, execution_context);
+        auto ff_heuristic = planning::FFRPGHeuristic<planning::LiftedTag>::create(lifted_task, execution_context);
 
         auto result = planning::gbfs_lazy::find_solution(*lifted_task, successor_generator, *ff_heuristic, options);
 

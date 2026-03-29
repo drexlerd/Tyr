@@ -38,12 +38,12 @@ enum class SearchStatus
     UNSOLVABLE
 };
 
-template<typename Task>
+template<TaskKind Kind>
 struct SearchResult
 {
     SearchStatus status = SearchStatus::IN_PROGRESS;
-    std::optional<Plan<Task>> plan = std::nullopt;
-    std::optional<Node<Task>> goal_node = std::nullopt;
+    std::optional<Plan<Kind>> plan = std::nullopt;
+    std::optional<Node<Kind>> goal_node = std::nullopt;
 };
 
 }

@@ -32,9 +32,9 @@ static p::GroundTaskPtr compute_ground_task(const fs::path& domain_filepath, con
     return p::LiftedTask(fp::Parser(domain_filepath).parse_task(problem_filepath)).instantiate_ground_task(execution_context);
 }
 
-static p::SuccessorGenerator<p::GroundTask> create_successor_generator(std::shared_ptr<p::GroundTask> task)
+static p::SuccessorGenerator<p::GroundTag> create_successor_generator(std::shared_ptr<p::Task<p::GroundTag>> task)
 {
-    return p::SuccessorGenerator<p::GroundTask>(task, ExecutionContext::create(1));
+    return p::SuccessorGenerator<p::GroundTag>(task, ExecutionContext::create(1));
 }
 
 static fs::path absolute(const std::string& subdir) { return fs::path(std::string(DATA_DIR)) / subdir; }

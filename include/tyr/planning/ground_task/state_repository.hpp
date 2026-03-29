@@ -45,27 +45,27 @@ namespace tyr::planning
 {
 
 template<>
-class StateRepository<GroundTask> : public std::enable_shared_from_this<StateRepository<GroundTask>>
+class StateRepository<GroundTag> : public std::enable_shared_from_this<StateRepository<GroundTag>>
 {
 public:
-    explicit StateRepository(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context);
+    explicit StateRepository(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<StateRepository<GroundTask>> create(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<StateRepository<GroundTag>> create(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context);
 
-    StateView<GroundTask> get_initial_state();
+    StateView<GroundTag> get_initial_state();
 
-    StateView<GroundTask> get_registered_state(Index<State<GroundTask>> state_index);
+    StateView<GroundTag> get_registered_state(Index<State<GroundTag>> state_index);
 
-    StateView<GroundTask>
+    StateView<GroundTag>
     create_state(const std::vector<Data<formalism::planning::FDRFact<formalism::FluentTag>>>& fluent_facts,
                  const std::vector<std::pair<Index<formalism::planning::GroundFunctionTerm<formalism::FluentTag>>, float_t>>& fterm_values);
 
-    StateView<GroundTask> create_state(const std::vector<formalism::planning::FDRFactView<formalism::FluentTag>>& fluent_facts,
-                                       const std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>>& fterm_values);
+    StateView<GroundTag> create_state(const std::vector<formalism::planning::FDRFactView<formalism::FluentTag>>& fluent_facts,
+                                      const std::vector<formalism::planning::GroundFunctionTermViewValuePair<formalism::FluentTag>>& fterm_values);
 
-    SharedObjectPoolPtr<UnpackedState<GroundTask>> get_unregistered_state();
+    SharedObjectPoolPtr<UnpackedState<GroundTag>> get_unregistered_state();
 
-    StateView<GroundTask> register_state(SharedObjectPoolPtr<UnpackedState<GroundTask>> state);
+    StateView<GroundTag> register_state(SharedObjectPoolPtr<UnpackedState<GroundTag>> state);
 
     size_t memory_usage() const noexcept;
 
@@ -73,17 +73,17 @@ public:
     const auto& get_axiom_evaluator() const noexcept { return m_axiom_evaluator; }
 
 private:
-    std::shared_ptr<GroundTask> m_task;
+    std::shared_ptr<Task<GroundTag>> m_task;
 
-    StateStorageContext<GroundTask, StateStoragePolicyTag> m_context;
-    FactStorageBackend<GroundTask, StateStoragePolicyTag> m_fluent_backend;
-    AtomStorageBackend<GroundTask, StateStoragePolicyTag> m_derived_backend;
-    NumericStorageBackend<GroundTask, StateStoragePolicyTag> m_numeric_backend;
+    StateStorageContext<GroundTag, StateStoragePolicyTag> m_context;
+    FactStorageBackend<GroundTag, StateStoragePolicyTag> m_fluent_backend;
+    AtomStorageBackend<GroundTag, StateStoragePolicyTag> m_derived_backend;
+    NumericStorageBackend<GroundTag, StateStoragePolicyTag> m_numeric_backend;
 
-    IndexedHashSet<State<GroundTask>> m_packed_states;
-    SharedObjectPool<UnpackedState<GroundTask>> m_unpacked_state_pool;
+    IndexedHashSet<State<GroundTag>> m_packed_states;
+    SharedObjectPool<UnpackedState<GroundTag>> m_unpacked_state_pool;
 
-    std::shared_ptr<AxiomEvaluator<GroundTask>> m_axiom_evaluator;
+    std::shared_ptr<AxiomEvaluator<GroundTag>> m_axiom_evaluator;
 };
 
 }

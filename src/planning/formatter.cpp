@@ -36,7 +36,7 @@
 #include "tyr/planning/ground_task/state_repository.hpp"
 #include "tyr/planning/ground_task/state_view.hpp"  // for State
 #include "tyr/planning/ground_task/unpacked_state.hpp"
-#include "tyr/planning/lifted_task.hpp"       // for LiftedTask
+#include "tyr/planning/lifted_task.hpp"
 #include "tyr/planning/lifted_task/node.hpp"  // for Node
 #include "tyr/planning/lifted_task/state_repository.hpp"
 #include "tyr/planning/lifted_task/state_view.hpp"  // for State
@@ -68,13 +68,13 @@ std::ostream& print(std::ostream& os, const planning::GroundTask& el)
     return os;
 }
 
-std::ostream& print(std::ostream& os, const Data<planning::State<planning::LiftedTask>>& el) { return os; }
+std::ostream& print(std::ostream& os, const Data<planning::State<planning::LiftedTag>>& el) { return os; }
 
-std::ostream& print(std::ostream& os, const planning::UnpackedState<planning::LiftedTask>& el) { return os; }
+std::ostream& print(std::ostream& os, const planning::UnpackedState<planning::LiftedTag>& el) { return os; }
 
-std::ostream& print(std::ostream& os, const Data<planning::State<planning::GroundTask>>& el) { return os; }
+std::ostream& print(std::ostream& os, const Data<planning::State<planning::GroundTag>>& el) { return os; }
 
-std::ostream& print(std::ostream& os, const planning::UnpackedState<planning::GroundTask>& el) { return os; }
+std::ostream& print(std::ostream& os, const planning::UnpackedState<planning::GroundTag>& el) { return os; }
 
 std::ostream& print(std::ostream& os, const planning::Statistics& el)
 {
@@ -92,8 +92,8 @@ std::ostream& print(std::ostream& os, const planning::Statistics& el)
     return os;
 }
 
-template<typename Task>
-std::ostream& print(std::ostream& os, const planning::StateView<Task>& el)
+template<planning::TaskKind Kind>
+std::ostream& print(std::ostream& os, const planning::StateView<Kind>& el)
 {
     auto static_atoms = std::vector<formalism::planning::GroundAtomView<formalism::StaticTag>> {};
     for (auto&& atom : el.get_static_atoms_view())
@@ -138,11 +138,11 @@ std::ostream& print(std::ostream& os, const planning::StateView<Task>& el)
     return os;
 }
 
-template std::ostream& print(std::ostream& os, const planning::StateView<planning::LiftedTask>& el);
-template std::ostream& print(std::ostream& os, const planning::StateView<planning::GroundTask>& el);
+template std::ostream& print(std::ostream& os, const planning::StateView<planning::LiftedTag>& el);
+template std::ostream& print(std::ostream& os, const planning::StateView<planning::GroundTag>& el);
 
-template<typename Task>
-std::ostream& print(std::ostream& os, const planning::Node<Task>& el)
+template<planning::TaskKind Kind>
+std::ostream& print(std::ostream& os, const planning::Node<Kind>& el)
 {
     os << "Node(\n";
     {
@@ -157,11 +157,11 @@ std::ostream& print(std::ostream& os, const planning::Node<Task>& el)
     return os;
 }
 
-template std::ostream& print(std::ostream& os, const planning::Node<planning::LiftedTask>& el);
-template std::ostream& print(std::ostream& os, const planning::Node<planning::GroundTask>& el);
+template std::ostream& print(std::ostream& os, const planning::Node<planning::LiftedTag>& el);
+template std::ostream& print(std::ostream& os, const planning::Node<planning::GroundTag>& el);
 
-template<typename Task>
-std::ostream& print(std::ostream& os, const planning::Plan<Task>& el)
+template<planning::TaskKind Kind>
+std::ostream& print(std::ostream& os, const planning::Plan<Kind>& el)
 {
     for (const auto& labeled_node : el.get_labeled_succ_nodes())
         os << std::make_pair(labeled_node.label, formalism::planning::PlanFormatting()) << "\n";
@@ -169,8 +169,8 @@ std::ostream& print(std::ostream& os, const planning::Plan<Task>& el)
     return os;
 }
 
-template std::ostream& print(std::ostream& os, const planning::Plan<planning::LiftedTask>& el);
-template std::ostream& print(std::ostream& os, const planning::Plan<planning::GroundTask>& el);
+template std::ostream& print(std::ostream& os, const planning::Plan<planning::LiftedTag>& el);
+template std::ostream& print(std::ostream& os, const planning::Plan<planning::GroundTag>& el);
 
 namespace planning
 {
@@ -179,42 +179,42 @@ std::ostream& operator<<(std::ostream& os, const LiftedTask& el) { return tyr::p
 
 std::ostream& operator<<(std::ostream& os, const GroundTask& el) { return tyr::print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const Data<State<LiftedTask>>& el) { return tyr::print(os, el); }
+std::ostream& operator<<(std::ostream& os, const Data<State<LiftedTag>>& el) { return tyr::print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const UnpackedState<LiftedTask>& el) { return tyr::print(os, el); }
+std::ostream& operator<<(std::ostream& os, const UnpackedState<LiftedTag>& el) { return tyr::print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const Data<State<GroundTask>>& el) { return tyr::print(os, el); }
+std::ostream& operator<<(std::ostream& os, const Data<State<GroundTag>>& el) { return tyr::print(os, el); }
 
-std::ostream& operator<<(std::ostream& os, const UnpackedState<GroundTask>& el) { return tyr::print(os, el); }
+std::ostream& operator<<(std::ostream& os, const UnpackedState<GroundTag>& el) { return tyr::print(os, el); }
 
 std::ostream& operator<<(std::ostream& os, const Statistics& el) { return tyr::print(os, el); }
 
-template<typename Task>
-std::ostream& operator<<(std::ostream& os, const StateView<Task>& el)
+template<TaskKind Kind>
+std::ostream& operator<<(std::ostream& os, const StateView<Kind>& el)
 {
     return tyr::print(os, el);
 }
 
-template std::ostream& operator<<(std::ostream& os, const StateView<LiftedTask>& el);
-template std::ostream& operator<<(std::ostream& os, const StateView<GroundTask>& el);
+template std::ostream& operator<<(std::ostream& os, const StateView<LiftedTag>& el);
+template std::ostream& operator<<(std::ostream& os, const StateView<GroundTag>& el);
 
-template<typename Task>
-std::ostream& operator<<(std::ostream& os, const Node<Task>& el)
+template<TaskKind Kind>
+std::ostream& operator<<(std::ostream& os, const Node<Kind>& el)
 {
     return tyr::print(os, el);
 }
 
-template std::ostream& operator<<(std::ostream& os, const Node<LiftedTask>& el);
-template std::ostream& operator<<(std::ostream& os, const Node<GroundTask>& el);
+template std::ostream& operator<<(std::ostream& os, const Node<LiftedTag>& el);
+template std::ostream& operator<<(std::ostream& os, const Node<GroundTag>& el);
 
-template<typename Task>
-std::ostream& operator<<(std::ostream& os, const Plan<Task>& el)
+template<TaskKind Kind>
+std::ostream& operator<<(std::ostream& os, const Plan<Kind>& el)
 {
     return tyr::print(os, el);
 }
 
-template std::ostream& operator<<(std::ostream& os, const Plan<LiftedTask>& el);
-template std::ostream& operator<<(std::ostream& os, const Plan<GroundTask>& el);
+template std::ostream& operator<<(std::ostream& os, const Plan<LiftedTag>& el);
+template std::ostream& operator<<(std::ostream& os, const Plan<GroundTag>& el);
 
 }
 }

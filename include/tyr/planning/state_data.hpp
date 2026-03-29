@@ -29,10 +29,10 @@
 
 namespace tyr
 {
-template<typename Task>
-class Data<planning::State<Task>>
+template<planning::TaskKind Kind>
+class Data<planning::State<Kind>>
 {
-    static_assert(dependent_false<Task>::value, "Data<State<Task>> is not defined for type T.");
+    static_assert(dependent_false<Kind>::value, "Data<State<Kind>> is not defined for type T.");
 };
 }
 

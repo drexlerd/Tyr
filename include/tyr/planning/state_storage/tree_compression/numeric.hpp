@@ -28,22 +28,22 @@
 namespace tyr::planning
 {
 
-template<typename Task>
-struct NumericPackedStorage<Task, TreeCompression>
+template<TaskKind Kind>
+struct NumericPackedStorage<Kind, TreeCompression>
 {
     valla::Slot<uint_t> slot;
 
     auto identifying_members() const noexcept { return std::tie(slot.i1, slot.i2); }
 };
 
-template<typename Task>
-class NumericStorageBackend<Task, TreeCompression>
+template<TaskKind Kind>
+class NumericStorageBackend<Kind, TreeCompression>
 {
 public:
-    using Unpacked = NumericUnpackedStorage<Task>;
-    using Packed = NumericPackedStorage<Task, TreeCompression>;
+    using Unpacked = NumericUnpackedStorage<Kind>;
+    using Packed = NumericPackedStorage<Kind, TreeCompression>;
 
-    explicit NumericStorageBackend(StateStorageContext<Task, TreeCompression>& ctx);
+    explicit NumericStorageBackend(StateStorageContext<Kind, TreeCompression>& ctx);
 
     Packed insert(const Unpacked& unpacked);
 

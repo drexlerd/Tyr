@@ -30,6 +30,7 @@
 #include "tyr/planning/programs/action.hpp"
 #include "tyr/planning/programs/axiom.hpp"
 #include "tyr/planning/programs/rpg.hpp"
+#include "tyr/planning/task.hpp"
 
 #include <boost/dynamic_bitset.hpp>  // for dynamic_bitset
 #include <limits>                    // for numeric_limits
@@ -39,12 +40,13 @@
 namespace tyr::planning
 {
 
-class LiftedTask
+template<>
+class Task<LiftedTag>
 {
 public:
-    explicit LiftedTask(formalism::planning::PlanningTask task);
+    explicit Task(formalism::planning::PlanningTask task);
 
-    static std::shared_ptr<LiftedTask> create(formalism::planning::PlanningTask task);
+    static std::shared_ptr<Task<LiftedTag>> create(formalism::planning::PlanningTask task);
 
     GroundTaskPtr instantiate_ground_task(ExecutionContext& execution_context);
 

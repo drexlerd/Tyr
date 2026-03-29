@@ -18,78 +18,76 @@
 #ifndef TYR_PLANNING_DECLARATIONS_HPP_
 #define TYR_PLANNING_DECLARATIONS_HPP_
 
+#include "tyr/planning/task.hpp"
+
 #include <concepts>
 #include <memory>
 
 namespace tyr::planning
 {
-class LiftedTask;
-using LiftedTaskPtr = std::shared_ptr<LiftedTask>;
-class GroundTask;
-using GroundTaskPtr = std::shared_ptr<GroundTask>;
 
-template<typename Task>
+template<TaskKind Kind>
 class Node;
-template<typename Task>
+template<TaskKind Kind>
 struct LabeledNode;
 
-template<typename Task>
+template<TaskKind Kind>
 class UnpackedState;
-template<typename Task>
+template<TaskKind Kind>
 class State;
 
-template<typename Task>
+template<TaskKind Kind>
 struct StateContext;
 
-template<typename Task>
+template<TaskKind Kind>
 class SuccessorGenerator;
-template<typename Task>
+template<TaskKind Kind>
 class StateRepository;
-template<typename Task>
+template<TaskKind Kind>
 class AxiomEvaluator;
 
-template<typename Task>
+template<TaskKind Kind>
 class Heuristic;
-template<typename Task>
-using HeuristicPtr = std::shared_ptr<Heuristic<Task>>;
+template<TaskKind Kind>
+using HeuristicPtr = std::shared_ptr<Heuristic<Kind>>;
 
-template<typename Task>
+template<TaskKind Kind>
 class PruningStrategy;
-template<typename Task>
-using PruningStrategyPtr = std::shared_ptr<PruningStrategy<Task>>;
+template<TaskKind Kind>
+using PruningStrategyPtr = std::shared_ptr<PruningStrategy<Kind>>;
 
-template<typename Task>
+template<TaskKind Kind>
 class GoalStrategy;
-template<typename Task>
-using GoalStrategyPtr = std::shared_ptr<GoalStrategy<Task>>;
+template<TaskKind Kind>
+using GoalStrategyPtr = std::shared_ptr<GoalStrategy<Kind>>;
 
-template<typename Task>
+template<TaskKind Kind>
 class Plan;
 
 class Statistics;
 
 namespace astar_eager
 {
-template<typename Task>
+template<TaskKind Kind>
 class EventHandler;
-template<typename Task>
-using EventHandlerPtr = std::shared_ptr<EventHandler<Task>>;
-template<typename Task>
+template<TaskKind Kind>
+using EventHandlerPtr = std::shared_ptr<EventHandler<Kind>>;
+template<TaskKind Kind>
 class DefaultEventHandler;
-template<typename Task>
-using DefaultEventHandlerPtr = std::shared_ptr<DefaultEventHandler<Task>>;
+template<TaskKind Kind>
+using DefaultEventHandlerPtr = std::shared_ptr<DefaultEventHandler<Kind>>;
 }
 
 namespace gbfs_lazy
 {
-template<typename Task>
+template<TaskKind Kind>
 class EventHandler;
-template<typename Task>
-using EventHandlerPtr = std::shared_ptr<EventHandler<Task>>;
-template<typename Task>
+template<TaskKind Kind>
+using EventHandlerPtr = std::shared_ptr<EventHandler<Kind>>;
+template<TaskKind Kind>
 class DefaultEventHandler;
-template<typename Task>
-using DefaultEventHandlerPtr = std::shared_ptr<DefaultEventHandler<Task>>;
+template<TaskKind Kind>
+using DefaultEventHandlerPtr = std::shared_ptr<DefaultEventHandler<Kind>>;
 }
 }
 

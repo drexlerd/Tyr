@@ -24,26 +24,26 @@
 namespace tyr::planning
 {
 
-AtomStorageBackend<GroundTask, TreeCompression>::AtomStorageBackend(StateStorageContext<GroundTask, TreeCompression>& ctx) :
+AtomStorageBackend<GroundTag, TreeCompression>::AtomStorageBackend(StateStorageContext<GroundTag, TreeCompression>& ctx) :
     m_array_set(ctx.derived_array_set),
     m_num_bits(ctx.derived_num_bits),
     m_buffer(m_array_set.array_size())
 {
 }
 
-typename AtomStorageBackend<GroundTask, TreeCompression>::Packed
-AtomStorageBackend<GroundTask, TreeCompression>::insert(const typename AtomStorageBackend<GroundTask, TreeCompression>::Unpacked& unpacked)
+typename AtomStorageBackend<GroundTag, TreeCompression>::Packed
+AtomStorageBackend<GroundTag, TreeCompression>::insert(const typename AtomStorageBackend<GroundTag, TreeCompression>::Unpacked& unpacked)
 {
     auto data = m_buffer.data();
 
     std::fill(m_buffer.begin(), m_buffer.end(), uint_t(0));
     for (uint_t i = 0; i < m_num_bits; ++i)
         bit::bit_reference(data, i) = unpacked.indices.test(i);
-    return typename AtomStorageBackend<GroundTask, TreeCompression>::Packed { m_array_set.insert(m_buffer) };
+    return typename AtomStorageBackend<GroundTag, TreeCompression>::Packed { m_array_set.insert(m_buffer) };
 }
 
-void AtomStorageBackend<GroundTask, TreeCompression>::unpack(const typename AtomStorageBackend<GroundTask, TreeCompression>::Packed& packed,
-                                                             typename AtomStorageBackend<GroundTask, TreeCompression>::Unpacked& unpacked)
+void AtomStorageBackend<GroundTag, TreeCompression>::unpack(const typename AtomStorageBackend<GroundTag, TreeCompression>::Packed& packed,
+                                                            typename AtomStorageBackend<GroundTag, TreeCompression>::Unpacked& unpacked)
 {
     const auto data = m_array_set[packed.index];
     auto& indices = unpacked.indices;

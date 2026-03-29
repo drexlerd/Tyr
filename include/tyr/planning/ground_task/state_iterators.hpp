@@ -38,7 +38,7 @@ namespace tyr::planning
  */
 
 template<class Tag>
-class FDRFactIterator<GroundTask, Tag>
+class FDRFactIterator<GroundTag, Tag>
 {
 public:
     using value_type = Data<formalism::planning::FDRFact<Tag>>;
@@ -86,14 +86,14 @@ private:
 };
 
 template<typename Tag>
-class FDRFactRange<GroundTask, Tag> : public std::ranges::view_interface<FDRFactRange<GroundTask, Tag>>
+class FDRFactRange<GroundTag, Tag> : public std::ranges::view_interface<FDRFactRange<GroundTag, Tag>>
 {
 public:
     FDRFactRange() = default;
     explicit FDRFactRange(const std::vector<uint_t>& values) : m_data(&values) {}
 
-    auto begin() const { return FDRFactIterator<GroundTask, Tag>(*m_data, true); }
-    auto end() const { return FDRFactIterator<GroundTask, Tag>(*m_data, false); }
+    auto begin() const { return FDRFactIterator<GroundTag, Tag>(*m_data, true); }
+    auto end() const { return FDRFactIterator<GroundTag, Tag>(*m_data, false); }
 
 private:
     const std::vector<uint_t>* m_data;

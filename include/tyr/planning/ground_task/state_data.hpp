@@ -29,6 +29,7 @@
 #include "tyr/planning/state_storage/config.hpp"
 #include "tyr/planning/state_storage/hash_set/numeric.hpp"
 #include "tyr/planning/state_storage/tree_compression/numeric.hpp"
+#include "tyr/planning/task.hpp"
 
 #include <valla/valla.hpp>
 
@@ -40,16 +41,16 @@ namespace tyr
 {
 
 template<>
-struct Data<planning::State<planning::GroundTask>>
+struct Data<planning::State<planning::GroundTag>>
 {
 public:
-    using TaskType = planning::GroundTask;
+    using TaskType = planning::Task<planning::GroundTag>;
 
     Data() noexcept = default;
-    Data(Index<planning::State<TaskType>> index,
-         planning::FactPackedStorage<TaskType, planning::StateStoragePolicyTag> fact_storage,
-         planning::AtomPackedStorage<TaskType, planning::StateStoragePolicyTag> atom_storage,
-         planning::NumericPackedStorage<TaskType, planning::StateStoragePolicyTag> numeric_storage) noexcept :
+    Data(Index<planning::State<planning::GroundTag>> index,
+         planning::FactPackedStorage<planning::GroundTag, planning::StateStoragePolicyTag> fact_storage,
+         planning::AtomPackedStorage<planning::GroundTag, planning::StateStoragePolicyTag> atom_storage,
+         planning::NumericPackedStorage<planning::GroundTag, planning::StateStoragePolicyTag> numeric_storage) noexcept :
         m_index(index),
         m_fact_storage(fact_storage),
         m_atom_storage(atom_storage),
@@ -57,7 +58,7 @@ public:
     {
     }
 
-    Index<planning::State<TaskType>> get_index() const noexcept { return m_index; }
+    Index<planning::State<planning::GroundTag>> get_index() const noexcept { return m_index; }
 
     template<formalism::FactKind T>
     const auto get_atoms() const noexcept
@@ -75,11 +76,11 @@ public:
     auto identifying_members() const noexcept { return std::tie(m_fact_storage, m_atom_storage, m_numeric_storage); }
 
 private:
-    Index<planning::State<TaskType>> m_index;
+    Index<planning::State<planning::GroundTag>> m_index;
 
-    planning::FactPackedStorage<TaskType, planning::StateStoragePolicyTag> m_fact_storage;
-    planning::AtomPackedStorage<TaskType, planning::StateStoragePolicyTag> m_atom_storage;
-    planning::NumericPackedStorage<TaskType, planning::StateStoragePolicyTag> m_numeric_storage;
+    planning::FactPackedStorage<planning::GroundTag, planning::StateStoragePolicyTag> m_fact_storage;
+    planning::AtomPackedStorage<planning::GroundTag, planning::StateStoragePolicyTag> m_atom_storage;
+    planning::NumericPackedStorage<planning::GroundTag, planning::StateStoragePolicyTag> m_numeric_storage;
 };
 }
 

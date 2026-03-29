@@ -19,24 +19,25 @@
 #define TYR_PLANNING_HEURISTICS_GOAL_COUNT_HPP_
 
 #include "tyr/planning/heuristic.hpp"
+#include "tyr/planning/task.hpp"
 
 namespace tyr::planning
 {
 
-template<typename Task>
-class GoalCountHeuristic : public Heuristic<Task>
+template<TaskKind Kind>
+class GoalCountHeuristic : public Heuristic<Kind>
 {
 public:
-    explicit GoalCountHeuristic(std::shared_ptr<const Task> task);
+    explicit GoalCountHeuristic(std::shared_ptr<const Task<Kind>> task);
 
-    static std::shared_ptr<GoalCountHeuristic<Task>> create(std::shared_ptr<const Task> task);
+    static std::shared_ptr<GoalCountHeuristic<Kind>> create(std::shared_ptr<const Task<Kind>> task);
 
     void set_goal(formalism::planning::GroundConjunctiveConditionView goal) override;
 
-    float_t evaluate(const StateView<Task>& state) override;
+    float_t evaluate(const StateView<Kind>& state) override;
 
 protected:
-    std::shared_ptr<const Task> m_task;
+    std::shared_ptr<const Task<Kind>> m_task;
 
     formalism::planning::GroundConjunctiveConditionView m_goal;
 };

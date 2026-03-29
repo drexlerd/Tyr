@@ -25,27 +25,27 @@
 namespace tyr::planning
 {
 
-template<typename Task>
-NumericStorageBackend<Task, TreeCompression>::NumericStorageBackend(StateStorageContext<Task, TreeCompression>& ctx) :
+template<TaskKind Kind>
+NumericStorageBackend<Kind, TreeCompression>::NumericStorageBackend(StateStorageContext<Kind, TreeCompression>& ctx) :
     m_uint_nodes(ctx.uint_nodes),
     m_float_nodes(ctx.float_nodes),
     m_uint_node_buffer()
 {
 }
 
-template<typename Task>
-typename NumericStorageBackend<Task, TreeCompression>::Packed
-NumericStorageBackend<Task, TreeCompression>::insert(const typename NumericStorageBackend<Task, TreeCompression>::Unpacked& unpacked)
+template<TaskKind Kind>
+typename NumericStorageBackend<Kind, TreeCompression>::Packed
+NumericStorageBackend<Kind, TreeCompression>::insert(const typename NumericStorageBackend<Kind, TreeCompression>::Unpacked& unpacked)
 {
     m_uint_node_buffer.clear();
     valla::encode_as_unsigned_integrals(unpacked.values, m_float_nodes, std::back_inserter(m_uint_node_buffer));
     const auto slot = valla::insert_sequence(m_uint_node_buffer, m_uint_nodes);
-    return NumericStorageBackend<Task, TreeCompression>::Packed { slot };
+    return NumericStorageBackend<Kind, TreeCompression>::Packed { slot };
 }
 
-template<typename Task>
-void NumericStorageBackend<Task, TreeCompression>::unpack(const typename NumericStorageBackend<Task, TreeCompression>::Packed& packed,
-                                                          typename NumericStorageBackend<Task, TreeCompression>::Unpacked& unpacked)
+template<TaskKind Kind>
+void NumericStorageBackend<Kind, TreeCompression>::unpack(const typename NumericStorageBackend<Kind, TreeCompression>::Packed& packed,
+                                                          typename NumericStorageBackend<Kind, TreeCompression>::Unpacked& unpacked)
 {
     m_uint_node_buffer.clear();
     unpacked.values.clear();
@@ -53,7 +53,7 @@ void NumericStorageBackend<Task, TreeCompression>::unpack(const typename Numeric
     valla::decode_from_unsigned_integrals(m_uint_node_buffer, m_float_nodes, std::back_inserter(unpacked.values));
 }
 
-template class NumericStorageBackend<LiftedTask, TreeCompression>;
-template class NumericStorageBackend<GroundTask, TreeCompression>;
+template class NumericStorageBackend<LiftedTag, TreeCompression>;
+template class NumericStorageBackend<GroundTag, TreeCompression>;
 
 }

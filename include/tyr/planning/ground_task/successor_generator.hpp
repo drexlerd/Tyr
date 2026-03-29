@@ -31,21 +31,21 @@ namespace tyr::planning
 {
 
 template<>
-class SuccessorGenerator<GroundTask>
+class SuccessorGenerator<GroundTag>
 {
 public:
-    explicit SuccessorGenerator(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context);
+    explicit SuccessorGenerator(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context);
 
-    static std::shared_ptr<SuccessorGenerator<GroundTask>> create(std::shared_ptr<GroundTask> task, ExecutionContextPtr execution_context);
+    static std::shared_ptr<SuccessorGenerator<GroundTag>> create(std::shared_ptr<Task<GroundTag>> task, ExecutionContextPtr execution_context);
 
-    Node<GroundTask> get_initial_node();
+    Node<GroundTag> get_initial_node();
 
-    std::vector<LabeledNode<GroundTask>> get_labeled_successor_nodes(const Node<GroundTask>& node);
-    void get_labeled_successor_nodes(const Node<GroundTask>& node, std::vector<LabeledNode<GroundTask>>& out_nodes);
+    std::vector<LabeledNode<GroundTag>> get_labeled_successor_nodes(const Node<GroundTag>& node);
+    void get_labeled_successor_nodes(const Node<GroundTag>& node, std::vector<LabeledNode<GroundTag>>& out_nodes);
 
-    Node<GroundTask> get_successor_node(const Node<GroundTask>& node, formalism::planning::GroundActionView action);
+    Node<GroundTag> get_successor_node(const Node<GroundTag>& node, formalism::planning::GroundActionView action);
 
-    Node<GroundTask> get_node(Index<State<GroundTask>> state_index);
+    Node<GroundTag> get_node(Index<State<GroundTag>> state_index);
 
     /**
      * Expert API
@@ -54,11 +54,11 @@ public:
     const auto& get_state_repository() const noexcept { return m_state_repository; }
 
 private:
-    std::shared_ptr<GroundTask> m_task;
+    std::shared_ptr<Task<GroundTag>> m_task;
 
     IndexList<formalism::planning::GroundAction> m_applicable_actions;
 
-    std::shared_ptr<StateRepository<GroundTask>> m_state_repository;
+    std::shared_ptr<StateRepository<GroundTag>> m_state_repository;
 
     ActionExecutor m_executor;
 };

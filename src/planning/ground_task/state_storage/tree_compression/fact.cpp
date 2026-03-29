@@ -24,15 +24,15 @@
 namespace tyr::planning
 {
 
-FactStorageBackend<GroundTask, TreeCompression>::FactStorageBackend(StateStorageContext<GroundTask, TreeCompression>& ctx) :
+FactStorageBackend<GroundTag, TreeCompression>::FactStorageBackend(StateStorageContext<GroundTag, TreeCompression>& ctx) :
     m_array_set(ctx.fluent_array_set),
     m_infos(ctx.fluent_infos),
     m_buffer(m_array_set.array_size())
 {
 }
 
-typename FactStorageBackend<GroundTask, TreeCompression>::Packed
-FactStorageBackend<GroundTask, TreeCompression>::insert(const typename FactStorageBackend<GroundTask, TreeCompression>::Unpacked& unpacked)
+typename FactStorageBackend<GroundTag, TreeCompression>::Packed
+FactStorageBackend<GroundTag, TreeCompression>::insert(const typename FactStorageBackend<GroundTag, TreeCompression>::Unpacked& unpacked)
 {
     auto data = m_buffer.data();
     const auto& values = unpacked.values;
@@ -45,11 +45,11 @@ FactStorageBackend<GroundTask, TreeCompression>::insert(const typename FactStora
         bit::int_reference(data + info.begin, info.offset, info.length) = values[i];
     }
 
-    return typename FactStorageBackend<GroundTask, TreeCompression>::Packed { m_array_set.insert(m_buffer) };
+    return typename FactStorageBackend<GroundTag, TreeCompression>::Packed { m_array_set.insert(m_buffer) };
 }
 
-void FactStorageBackend<GroundTask, TreeCompression>::unpack(const typename FactStorageBackend<GroundTask, TreeCompression>::Packed& packed,
-                                                             typename FactStorageBackend<GroundTask, TreeCompression>::Unpacked& unpacked)
+void FactStorageBackend<GroundTag, TreeCompression>::unpack(const typename FactStorageBackend<GroundTag, TreeCompression>::Packed& packed,
+                                                            typename FactStorageBackend<GroundTag, TreeCompression>::Unpacked& unpacked)
 {
     const auto data = m_array_set[packed.index];
     auto& values = unpacked.values;

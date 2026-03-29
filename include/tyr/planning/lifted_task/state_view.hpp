@@ -33,15 +33,15 @@
 namespace tyr
 {
 template<>
-struct View<Index<planning::State<planning::LiftedTask>>, std::shared_ptr<planning::StateRepository<planning::LiftedTask>>>
+struct View<Index<planning::State<planning::LiftedTag>>, std::shared_ptr<planning::StateRepository<planning::LiftedTag>>>
 {
 public:
-    using TaskType = planning::LiftedTask;
+    using TaskType = planning::Task<planning::LiftedTag>;
 
-    View(std::shared_ptr<planning::StateRepository<planning::LiftedTask>> owner,
-         SharedObjectPoolPtr<planning::UnpackedState<planning::LiftedTask>> unpacked) noexcept;
+    View(std::shared_ptr<planning::StateRepository<planning::LiftedTag>> owner,
+         SharedObjectPoolPtr<planning::UnpackedState<planning::LiftedTag>> unpacked) noexcept;
 
-    Index<planning::State<planning::LiftedTask>> get_index() const;
+    Index<planning::State<planning::LiftedTag>> get_index() const;
 
     /**
      * IndexableStateConcept
@@ -68,7 +68,7 @@ public:
      */
 
     planning::AtomRange<formalism::StaticTag> get_static_atoms() const noexcept;
-    planning::FDRFactRange<planning::LiftedTask, formalism::FluentTag> get_fluent_facts() const noexcept;
+    planning::FDRFactRange<planning::LiftedTag, formalism::FluentTag> get_fluent_facts() const noexcept;
     planning::AtomRange<formalism::DerivedTag> get_derived_atoms() const noexcept;
     planning::FunctionTermValueRange<formalism::StaticTag> get_static_fterm_values() const noexcept;
     planning::FunctionTermValueRange<formalism::FluentTag> get_fluent_fterm_values() const noexcept;
@@ -88,8 +88,8 @@ public:
      */
 
     const std::shared_ptr<formalism::planning::Repository>& get_repository() const noexcept;
-    const std::shared_ptr<planning::StateRepository<planning::LiftedTask>>& get_state_repository() const noexcept;
-    const planning::UnpackedState<planning::LiftedTask>& get_unpacked_state() const noexcept;
+    const std::shared_ptr<planning::StateRepository<planning::LiftedTag>>& get_state_repository() const noexcept;
+    const planning::UnpackedState<planning::LiftedTag>& get_unpacked_state() const noexcept;
 
 private:
     template<formalism::FactKind T>
@@ -98,24 +98,24 @@ private:
     template<formalism::FactKind T>
     const std::vector<float_t>& get_numeric_variables() const noexcept;
 
-    std::shared_ptr<planning::StateRepository<planning::LiftedTask>> m_state_repository;
-    SharedObjectPoolPtr<planning::UnpackedState<planning::LiftedTask>> m_unpacked;
+    std::shared_ptr<planning::StateRepository<planning::LiftedTag>> m_state_repository;
+    SharedObjectPoolPtr<planning::UnpackedState<planning::LiftedTag>> m_unpacked;
 };
 
-using LiftedStateView = View<Index<planning::State<planning::LiftedTask>>, std::shared_ptr<planning::StateRepository<planning::LiftedTask>>>;
+using LiftedStateView = View<Index<planning::State<planning::LiftedTag>>, std::shared_ptr<planning::StateRepository<planning::LiftedTag>>>;
 
 /**
  * Implementations
  */
 
-inline LiftedStateView::View(std::shared_ptr<planning::StateRepository<planning::LiftedTask>> owner,
-                             SharedObjectPoolPtr<planning::UnpackedState<planning::LiftedTask>> unpacked) noexcept :
+inline LiftedStateView::View(std::shared_ptr<planning::StateRepository<planning::LiftedTag>> owner,
+                             SharedObjectPoolPtr<planning::UnpackedState<planning::LiftedTag>> unpacked) noexcept :
     m_state_repository(std::move(owner)),
     m_unpacked(std::move(unpacked))
 {
 }
 
-inline Index<planning::State<planning::LiftedTask>> LiftedStateView::get_index() const { return m_unpacked->get_index(); }
+inline Index<planning::State<planning::LiftedTag>> LiftedStateView::get_index() const { return m_unpacked->get_index(); }
 
 inline formalism::planning::FDRValue LiftedStateView::get(Index<formalism::planning::FDRVariable<formalism::FluentTag>> index) const
 {
@@ -126,12 +126,12 @@ inline float_t LiftedStateView::get(Index<formalism::planning::GroundFunctionTer
 
 inline bool LiftedStateView::test(Index<formalism::planning::GroundAtom<formalism::DerivedTag>> index) const { return m_unpacked->test(index); }
 
-inline const std::shared_ptr<planning::StateRepository<planning::LiftedTask>>& LiftedStateView::get_state_repository() const noexcept
+inline const std::shared_ptr<planning::StateRepository<planning::LiftedTag>>& LiftedStateView::get_state_repository() const noexcept
 {
     return m_state_repository;
 }
 
-inline const planning::UnpackedState<planning::LiftedTask>& LiftedStateView::get_unpacked_state() const noexcept { return *m_unpacked; }
+inline const planning::UnpackedState<planning::LiftedTag>& LiftedStateView::get_unpacked_state() const noexcept { return *m_unpacked; }
 
 inline bool LiftedStateView::test(formalism::planning::GroundAtomView<formalism::StaticTag> view) const { return test(view.get_index()); }
 

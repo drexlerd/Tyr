@@ -35,7 +35,7 @@ namespace tyr::planning
  */
 
 template<>
-struct StateStorageContext<LiftedTask, TreeCompression>
+struct StateStorageContext<LiftedTag, TreeCompression>
 {
     valla::IndexedHashSet<valla::Slot<uint_t>, uint_t> uint_nodes;
     valla::IndexedHashSet<float_t, uint_t> float_nodes;

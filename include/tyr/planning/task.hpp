@@ -15,27 +15,31 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef TYR_PLANNING_HEURISTICS_BLIND_HPP_
-#define TYR_PLANNING_HEURISTICS_BLIND_HPP_
+#ifndef TYR_PLANNING_TASK_HPP_
+#define TYR_PLANNING_TASK_HPP_
 
-#include "tyr/planning/heuristic.hpp"
-#include "tyr/planning/task.hpp"
+#include <concepts>
+#include <memory>
 
 namespace tyr::planning
 {
+struct GroundTag
+{
+};
+struct LiftedTag
+{
+};
+
+template<typename Tag>
+concept TaskKind = std::same_as<Tag, GroundTag> || std::same_as<Tag, LiftedTag>;
 
 template<TaskKind Kind>
-class BlindHeuristic : public Heuristic<Kind>
-{
-public:
-    BlindHeuristic() = default;
+class Task;
 
-    static std::shared_ptr<BlindHeuristic> create() { return std::make_shared<BlindHeuristic>(); }
-
-    void set_goal(formalism::planning::GroundConjunctiveConditionView goal) override {}
-
-    float_t evaluate(const StateView<Kind>& state) override { return float_t { 0 }; }
-};
+using LiftedTask = Task<LiftedTag>;
+using LiftedTaskPtr = std::shared_ptr<LiftedTask>;
+using GroundTask = Task<GroundTag>;
+using GroundTaskPtr = std::shared_ptr<GroundTask>;
 
 }
 

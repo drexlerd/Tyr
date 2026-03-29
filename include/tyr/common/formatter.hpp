@@ -211,6 +211,18 @@ std::ostream& print(std::ostream& os, const T& t)
  * Helpers to materialize strings
  */
 
+template<class T>
+concept PointerLike = requires(T t) {
+    { static_cast<bool>(t) } -> std::convertible_to<bool>;
+    { *t };
+};
+
+template<class T>
+concept OptionalLike = requires(T t) {
+    { t.has_value() } -> std::convertible_to<bool>;
+    { *t };
+};
+
 template<typename T>
 std::string to_string(const T& element)
 {

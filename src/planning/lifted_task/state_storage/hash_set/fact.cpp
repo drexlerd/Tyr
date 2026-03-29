@@ -23,21 +23,21 @@
 namespace tyr::planning
 {
 
-FactStorageBackend<LiftedTask, HashSet>::FactStorageBackend(StateStorageContext<LiftedTask, HashSet>& ctx) : m_uint_vec_set(ctx.uint_vec_set), m_buffer() {}
+FactStorageBackend<LiftedTag, HashSet>::FactStorageBackend(StateStorageContext<LiftedTag, HashSet>& ctx) : m_uint_vec_set(ctx.uint_vec_set), m_buffer() {}
 
-typename FactStorageBackend<LiftedTask, HashSet>::Packed
-FactStorageBackend<LiftedTask, HashSet>::insert(const typename FactStorageBackend<LiftedTask, HashSet>::Unpacked& unpacked)
+typename FactStorageBackend<LiftedTag, HashSet>::Packed
+FactStorageBackend<LiftedTag, HashSet>::insert(const typename FactStorageBackend<LiftedTag, HashSet>::Unpacked& unpacked)
 {
     m_buffer.clear();
     const auto& bits = unpacked.indices;
     for (auto i = bits.find_first(); i != boost::dynamic_bitset<>::npos; i = bits.find_next(i))
         m_buffer.push_back(i);
 
-    return FactStorageBackend<LiftedTask, HashSet>::Packed { m_uint_vec_set.insert(m_buffer) };
+    return FactStorageBackend<LiftedTag, HashSet>::Packed { m_uint_vec_set.insert(m_buffer) };
 }
 
-void FactStorageBackend<LiftedTask, HashSet>::unpack(const typename FactStorageBackend<LiftedTask, HashSet>::Packed& packed,
-                                                     typename FactStorageBackend<LiftedTask, HashSet>::Unpacked& unpacked)
+void FactStorageBackend<LiftedTag, HashSet>::unpack(const typename FactStorageBackend<LiftedTag, HashSet>::Packed& packed,
+                                                    typename FactStorageBackend<LiftedTag, HashSet>::Unpacked& unpacked)
 {
     const auto view = m_uint_vec_set[packed.index];
 

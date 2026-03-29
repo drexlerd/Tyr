@@ -30,20 +30,20 @@
 namespace tyr::planning
 {
 template<>
-class Node<LiftedTask>
+class Node<LiftedTag>
 {
 public:
-    using TaskType = LiftedTask;
+    using TaskType = Task<LiftedTag>;
 
-    Node(StateView<LiftedTask> state, float_t metric) noexcept : m_state(std::move(state)), m_metric(metric) {}
+    Node(StateView<LiftedTag> state, float_t metric) noexcept : m_state(std::move(state)), m_metric(metric) {}
 
-    const StateView<LiftedTask>& get_state() const noexcept { return m_state; }
+    const StateView<LiftedTag>& get_state() const noexcept { return m_state; }
     float_t get_metric() const noexcept { return m_metric; }
 
     auto identifying_members() const noexcept { return std::make_tuple(m_state.get_index(), m_metric); }
 
 private:
-    StateView<LiftedTask> m_state;
+    StateView<LiftedTag> m_state;
     float_t m_metric;
 };
 
